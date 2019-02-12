@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+
+#*  **************************************************************************
+#*
+#*  XPACDT, eXtended PolyAtomic Chemical Dynamics Toolkit
+#*  XPACDT is a program that can treat polyatomic chemical dynamics problems 
+#*  by solving Newtons equations of motion directly or in an 
+#*  extended ring-polymer phase space. Non-Born-Oppenheimer effects are 
+#*  included employ different approaches, including fewest switches surface 
+#*  hopping.
+#*
+#*  Copyright (C) 2019
+#*  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#*
+#*  This file is part of XPACDT.
+#*
+#*  CDTK is free software: you can redistribute it and/or modify
+#*  it under the terms of the GNU General Public License as published by
+#*  the Free Software Foundation, either version 3 of the License, or
+#*  (at your option) any later version.
+#*
+#*  This program is distributed in the hope that it will be useful,
+#*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#*  GNU General Public License for more details.
+#*
+#*  You should have received a copy of the GNU General Public License
+#*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#*
+#*  **************************************************************************
+
+import os
+import sys
+
+### This file creates the basic XPACDT configuration file ".XPACDT" and sets important
+### environment variables. 
+
+# Obtain path for current file.
+filePath = os.path.realpath(__file__)
+
+# Extract base path, i.e., base path for XPACDT.
+basePath = os.path.split(filePath)[0]
+
+# Activation file.
+activationFilePath = os.path.join(basePath, ".XPACDT")
+activationFile = open(activationFilePath, 'w')
+
+# Set up all important variables
+PATH = os.path.join(basePath, "XPACDT", "Bin")
+PYTHONPATH = os.path.join(basePath, "XPACDT")
+XPACDTPATH = os.path.join(basePath, "XPACDT")
+
+# Ask if XATOM is installed and where.
+isXATOM = input("Is XATOM installed on this system? (y/n) ")
+
+if isXATOM is 'y':
+   XPACDT_XATOM = input("Please enter path to XATOM: ")
+else:
+   sys.stdout.write("No XATOM path set. \n \n")
+
+
+
+# Write variables to file.
+activationFile.write("export PATH=" + PATH + ":$PATH\n")
+activationFile.write("export PYTHONPATH=" + PYTHONPATH + ":$PYTHONPATH\n")
+activationFile.write("export XPACDTPATH=" + XPACDTPATH + "\n")
+if isXATOM is 'y':
+   activationFile.write("export XPACDT_XATOM=" + XPACDT_XATOM + " \n")
+
+activationFile.close()
+
+# Give advise for permanent sourcing.
+sys.stdout.write("To set the required XPACDT environment variables, please run: \n")
+sys.stdout.write("source " + activationFilePath + " \n \n")
+sys.stdout.write("For permanent activation add that line to your ~/.bashrc, ~/.bash_profile, etc.: \n")
+
+

@@ -32,6 +32,9 @@
 import argparse
 
 
+import XPACDT.Input.Inputfile as infile
+
+
 def start():
     """Start any XPACDT calculation."""
 
@@ -43,6 +46,9 @@ def start():
 
     args = parser.parse_args()
     print("The inputfile '" + args.InputFile + "' is read! \n")
+
+    inputFile = infile.Inputfile(args.InputFile)
+    print(inputFile.getSection("quack"))
 
     return
 

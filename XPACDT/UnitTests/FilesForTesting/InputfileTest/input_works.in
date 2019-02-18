@@ -1,0 +1,26 @@
+$system  ## inline comment
+miep = muh
+blah
+# triple
+# line 
+# comment
+blubb
+$end 
+
+## in between comment
+
+$trajectory
+# full line comment
+blubb = 1.3 fs
+$end
+
+$pes
+	# tab full line comment
+blibb = 1.3 fs
+hot
+
+
+
+temp = 300 K
+ # space full line comment
+$end

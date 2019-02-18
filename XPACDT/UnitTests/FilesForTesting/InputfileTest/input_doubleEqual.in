@@ -1,0 +1,8 @@
+$system  ## inline comment
+miep = muh 
+blah
+# triple
+# line 
+# comment
+blubb = miep = falsch
+$end 

@@ -54,10 +54,10 @@ class Inputfile(object):
         with open(self._filename, 'r') as infile:
             self._intext = infile.read()
 
-        self._parseFile()
+        self._parse_file()
         return
 
-    def getSection(self, name):
+    def get_section(self, name):
         """
         Obtain a dictonary of a given section in the input file.
 
@@ -75,21 +75,22 @@ class Inputfile(object):
 
         return self._input.get(name)
 
-    def _parseFile(self):
+    def _parse_file(self):
         """
         Parses the text of an input file and saves it as a dictonary of
         sections. Each section then is also an dictonary of set variables.
         """
 
-        no_comment_text = re.sub("#.*\n", "", self._intext)
+        no_comment_text = re.sub("#.*?\n", "\n", self._intext)
+        no_newline_text = re.sub("(\n\s*?\n)+", "\n", no_comment_text)
         # *? is non-greedy; DOTALL matches also newlines
-        section_texts = re.findall("(\$.*?)\$end", no_comment_text,
+        section_texts = re.findall("(\$.*?)\$end", no_newline_text,
                                    flags=re.DOTALL | re.IGNORECASE)
         section_texts = [a.strip() for a in section_texts]
 
         self._input = {}
         for section in section_texts:
-            match = re.search("\$(\w+)\n(.*)", section, flags=re.DOTALL)
+            match = re.search("\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
             keyword = match.group(1)
             values = match.group(2)
 
@@ -97,11 +98,11 @@ class Inputfile(object):
                 # TODO: Use Better Error
                 raise IOError("Key '" + keyword + "' defined twice!")
             else:
-                self._input[keyword] = self._parseValues(values)
+                self._input[keyword] = self._parse_values(values)
 
         return
 
-    def _parseValues(self, values):
+    def _parse_values(self, values):
         """
         Parses the text of a section in the input file and creates
         a dictonary.

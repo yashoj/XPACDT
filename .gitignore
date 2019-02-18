@@ -1,2 +1,3 @@
 .XPACDT
 .spyproject/
+__pycache__

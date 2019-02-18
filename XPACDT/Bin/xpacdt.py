@@ -31,7 +31,6 @@
 
 import argparse
 
-
 import XPACDT.Input.Inputfile as infile
 
 
@@ -48,7 +47,7 @@ def start():
     print("The inputfile '" + args.InputFile + "' is read! \n")
 
     inputFile = infile.Inputfile(args.InputFile)
-    print(inputFile.getSection("quack"))
+    print(inputFile.get_section("quack"))
 
     return
 

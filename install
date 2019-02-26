@@ -47,7 +47,7 @@ activationFile = open(activationFilePath, 'w')
 
 # Set up all important variables
 PATH = os.path.join(basePath, "XPACDT", "Bin")
-PYTHONPATH = os.path.join(basePath, "XPACDT")
+PYTHONPATH = basePath
 XPACDTPATH = os.path.join(basePath, "XPACDT")
 
 # Ask if XATOM is installed and where.

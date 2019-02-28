@@ -30,8 +30,13 @@
 #  **************************************************************************
 
 import argparse
+import numpy as np
 
+import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.Input.Inputfile as infile
+
+import XPACDT.Interfaces.OneDPolynomial as oneDP
+import XPACDT.Interfaces.InterfaceTemplate as template
 
 
 def start():
@@ -46,9 +51,36 @@ def start():
     args = parser.parse_args()
     print("The inputfile '" + args.InputFile + "' is read! \n")
 
-    inputFile = infile.Inputfile(args.InputFile)
-    print(inputFile.get_section("quack"))
+    parameters = infile.Inputfile(args.InputFile)
+    print(parameters.get_section("1dPolynomial"))
 
+    # Example usage for potentials
+    pes = oneDP.OneDPolynomial(**parameters.get_section("1dPolynomial"))
+    print(isinstance(pes, oneDP.OneDPolynomial))
+    print(isinstance(pes, template.Interface))
+#    print(pes.name)
+#    print(pes.energy(np.array([[0.0]])))
+#    print(pes.energy(np.array([[0.0]])))
+#    print(pes.energy(np.array([[1.0]])))
+#    print(pes.minimize(np.array([0.1])))
+#
+#    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
+#    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, True)
+
+    # Example usage for propagator - not meant to be used like this later!!
+    propagator = vv.VelocityVerlet(0.0001, pes, np.array([1.0]), **{'beta': 8.0})
+    r = np.random.rand(4).reshape(1, 4) + 1.0
+    p = np.array([[0.0]*4])
+    print(r, p)
+    outfile = open("/tmp/blah.dat", 'w')
+    for i in range(101):
+        outfile.write(str(i*0.1) + " ")
+        outfile.write(str(np.mean(r[0])) + " ")
+        outfile.write(str(p[0, 0]) + " ")
+        outfile.write("\n")
+        r, p = propagator.propagate(r, p, 0.1)
+    outfile.close()
+    pass
     return
 
 

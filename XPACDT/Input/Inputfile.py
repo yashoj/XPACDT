@@ -146,7 +146,7 @@ class Inputfile(object):
 
         d = StringIO(values)
         try:
-            mc = np.loadtxt(d, converters={0: lambda s:
+            mc = np.loadtxt(d, ndmin=2, converters={0: lambda s:
                             self.periodic_table[str(s)[2]].get("atomic_mass")})
         except KeyError as e:
             sys.stderr.write("Unknwon atomic symbol given: " + str(e) + "\n")
@@ -183,7 +183,7 @@ class Inputfile(object):
 
         d = StringIO(values)
         try:
-            mc = np.loadtxt(d)
+            mc = np.loadtxt(d, ndmin=2)
         except ValueError as e:
             sys.stderr.write("Too few/many beads given. Please check the error"
                              " for the line number with the first"

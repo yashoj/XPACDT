@@ -40,7 +40,18 @@ class Nuclei(object):
     Parameters:
     -----------
     degrees_of_freedom : int
-                         The number of nuclear degrees of freedom present.
+        The number of nuclear degrees of freedom present.
+    coordinate : two-dimensional ndarray of floats
+        The positions of all beads in the system. The first axis is the degrees
+        of freedom and the second axis the beads.
+    momenta : two-dimensional ndarray of floats
+        The momenta of all beads in the system. The first axis is the degrees
+        of freedom and the second axis the beads.
+    propagator : VelocityVerlet object, optional
+        The propagator used to integrate the equations of motion for this
+        system. Default: None.
+
+    # TODO: Do we need those two???
     xyz_atoms : bool, optional
                 Whether this is a molecule with xyz-coordinates for each atom.
                 Default: False
@@ -57,7 +68,8 @@ class Nuclei(object):
     momenta
     """
 
-    def __init__(self, degrees_of_freedom, xyz_atoms=False, n_beads=[1]):
+    def __init__(self, degrees_of_freedom, coordinates, momenta,
+                 propagator=None, xyz_atoms=False, n_beads=[1]):
         self.n_dof = degrees_of_freedom
 
         if xyz_atoms:
@@ -67,9 +79,10 @@ class Nuclei(object):
 
         self.n_beads = n_beads
 
-        self.positions = np.zeros((self.n_dof, max(self.n_beads)))
-        self.momenta = np.zeros((self.n_dof, max(self.n_beads)))
+        self.positions = coordinates
+        self.momenta = momenta
 
+        self.__propagator = propagator
         return
 
     @property
@@ -111,6 +124,11 @@ beads given."
         self.__positions = a.copy()
 
     @property
+    def x_centroid(self):
+        """ Array of floats : The centroid of each coordinate. """
+        return np.mean(self.positions, axis=1)
+
+    @property
     def momenta(self):
         """two-dimensional ndarray of floats : The momenta of all beads in
             the system. The first axis is the degrees of freedom and the
@@ -119,4 +137,15 @@ beads given."
 
     @momenta.setter
     def momenta(self, a):
-        self.__positions = a.copy()
+        self.__momenta = a.copy()
+
+    @property
+    def p_centroid(self):
+        """ Array of floats : The centroid of each momentum. """
+        return np.mean(self.momenta, axis=1)
+
+
+    def propagate(self, time):
+        self.positions, self.momenta = \
+            self.__propagator.propagate(self.positions, self.momenta, time)
+        print(self.positions, self.momenta)

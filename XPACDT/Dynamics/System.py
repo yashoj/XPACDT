@@ -100,18 +100,32 @@ class System(object):
             Dictonary-like presentation of the input file.
         """
 
-        # TODO: coordinates, masses from input - reshape here!
-        coordinates = parameters._coordinates
+        # coordinates, masses from input - reshape and test some consistency
         masses = parameters._masses
+        if parameters._c_type == 'mass-value':
+            coordinates = parameters._coordinates.reshape((self.n_dof, -1))
+        elif parameters._c_type == 'xyz':
+            coordinates = parameters._coordinates.T.reshape((self.n_dof, -1))
 
+        try:
+            momenta = parameters._momenta.reshape(coordinates.shape)
+        except ValueError:
+            sys.stderr.write("Number of given momenta and coordinates "
+                             "does not match! \n")
+            sys.exit(-1)
+
+        # set up propagator
         p = parameters.get_section("propagation")
         dt = float(p.get("dt").split()[0])  # TODO: unit conversion here
         kwargs = {}
         if parameters.get_section("rpmd"):
-            kwargs["beta"] = parameters.get_section("rpmd").get("beta")
+            kwargs["beta"] = float(parameters.get_section("rpmd").get("beta"))
         propagator = vv.VelocityVerlet(dt, self.__pes, masses, **kwargs)
 
-        self.__nuclei = nuclei.Nuclei(self.n_dof)
+        self.__nuclei = nuclei.Nuclei(self.n_dof, coordinates, momenta,
+                                      propagator=propagator,
+                                      n_beads=[coordinates.shape[1]])
+        print(self.__nuclei.n_beads)
 
     def _init_electrons(self, parameters):
         """ Function to set up the electrons of a system including all
@@ -131,4 +145,13 @@ class System(object):
 
     def propagate(self):
         """ Propagate the system."""
-        pass
+
+        # only a basic test right now
+        outfile = open("/tmp/blah.dat", 'w')
+        for i in range(101):
+            outfile.write(str(i*0.1) + " ")
+            outfile.write(str(self.__nuclei.x_centroid[0]) + " ")
+            outfile.write(str(self.__nuclei.p_centroid[0]) + " ")
+            outfile.write("\n")
+            self.__nuclei.propagate(0.1)
+        outfile.close()

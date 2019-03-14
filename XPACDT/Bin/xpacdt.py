@@ -34,6 +34,7 @@ import git
 from inspect import getsourcefile
 import numpy as np
 from os.path import abspath
+import sys
 
 import XPACDT.Dynamics.System as xSystem
 import XPACDT.Dynamics.VelocityVerlet as vv
@@ -70,7 +71,6 @@ def start():
     # Get input file
     print("The inputfile '" + args.InputFile + "' is read! \n")
     parameters = infile.Inputfile(args.InputFile)
-    print(parameters.get_section("OneDPolynomial"))
 
 # TODO: Main code goes here
     system = xSystem.System(parameters)
@@ -78,40 +78,40 @@ def start():
     job = parameters.get_section("system").get("job")
     if job == "sample":
         system.sample()
-    elif job == "propagte":
+    elif job == "propagate":
         system.propagate()
+        sys.exit(-1)
+    else:
+        print("Nothing to be done! Exiting...")
+        sys.exit(-1)
 
-    exit(-1)
-
-
-
-    # Example usage for potentials
-    pes = oneDP.OneDPolynomial(**parameters.get_section("OneDPolynomial"))
-    print(isinstance(pes, oneDP.OneDPolynomial))
-    print(isinstance(pes, template.Interface))
-#    print(pes.name)
-#    print(pes.energy(np.array([[0.0]])))
-#    print(pes.energy(np.array([[0.0]])))
-#    print(pes.energy(np.array([[1.0]])))
-#    print(pes.minimize(np.array([0.1])))
+#    # Example usage for potentials
+#    pes = oneDP.OneDPolynomial(**parameters.get_section("OneDPolynomial"))
+#    print(isinstance(pes, oneDP.OneDPolynomial))
+#    print(isinstance(pes, template.Interface))
+##    print(pes.name)
+##    print(pes.energy(np.array([[0.0]])))
+##    print(pes.energy(np.array([[0.0]])))
+##    print(pes.energy(np.array([[1.0]])))
+##    print(pes.minimize(np.array([0.1])))
+##
+##    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
+##    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, True)
 #
-#    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
-#    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, True)
-
-    # Example usage for propagator - not meant to be used like this later!!
-    propagator = vv.VelocityVerlet(0.0001, pes, np.array([1.0]), **{'beta': 8.0})
-    r = np.random.rand(4).reshape(1, 4) + 1.0
-    p = np.array([[0.0]*4])
-    print(r, p)
-    outfile = open("/tmp/blah.dat", 'w')
-    for i in range(101):
-        outfile.write(str(i*0.1) + " ")
-        outfile.write(str(np.mean(r[0])) + " ")
-        outfile.write(str(np.mean(p[0])) + " ")
-        outfile.write("\n")
-        r, p = propagator.propagate(r, p, 0.1)
-    outfile.close()
-    pass
+#    # Example usage for propagator - not meant to be used like this later!!
+#    propagator = vv.VelocityVerlet(0.0001, pes, np.array([1.0]), **{'beta': 8.0})
+#    r = np.random.rand(4).reshape(1, 4) + 1.0
+#    p = np.array([[0.0]*4])
+#    print(r, p)
+#    outfile = open("/tmp/blah.dat", 'w')
+#    for i in range(101):
+#        outfile.write(str(i*0.1) + " ")
+#        outfile.write(str(np.mean(r[0])) + " ")
+#        outfile.write(str(np.mean(p[0])) + " ")
+#        outfile.write("\n")
+#        r, p = propagator.propagate(r, p, 0.1)
+#    outfile.close()
+#    pass
     return
 
 

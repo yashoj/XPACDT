@@ -27,8 +27,11 @@
 #
 #  **************************************************************************
 
+from io import StringIO
+import numpy as np
 import os
 import re
+import sys
 
 from errno import ENOENT
 
@@ -64,13 +67,13 @@ class Inputfile(object):
         Parameters
         ----------
         name : str
-               The name of the requested section.
+            The name of the requested section.
 
-         Returns
-         ----------
-         dict
-             A dictonary containing all Key-Value pairs of the requested
-             section.
+        Returns
+        -------
+        out : dict
+            A dictonary containing all Key-Value pairs of the requested
+            section.
         """
 
         return self._input.get(name)
@@ -90,15 +93,105 @@ class Inputfile(object):
 
         self._input = {}
         for section in section_texts:
-            match = re.search("\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
-            keyword = match.group(1)
-            values = match.group(2)
+            if section[0:12] == "$coordinates":
+                try:
+                    match = re.search("\$(\w+).*?\n.*type.*=\s*(\S+)(.*)",
+                                      section, flags=re.DOTALL)
+                    keyword = match.group(1)
+                    self._c_type = match.group(2)
+                    values = match.group(3)
+                except AttributeError:
+                    raise IOError("Coordinate type not given.")
 
-            if keyword in self._input:
-                # TODO: Use Better Error
-                raise IOError("Key '" + keyword + "' defined twice!")
+                if self._c_type == 'xyz':
+                    self._parse_xyz(values)
+                elif self._c_type == 'mass-value':
+                    self._parse_mass_value(values)
+                else:
+                    raise IOError("Coordinate type not understood: "
+                                  + self._c_type)
+
+            elif section[0:8] == "$momenta":
+                d = StringIO(section[8:])
+                self._momenta = np.loadtxt(d)
             else:
-                self._input[keyword] = self._parse_values(values)
+                match = re.search("\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
+                keyword = match.group(1)
+                values = match.group(2)
+
+                if keyword in self._input:
+                    # TODO: Use Better Error
+                    raise IOError("Key '" + keyword + "' defined twice!")
+                else:
+                    self._input[keyword] = self._parse_values(values)
+
+        return
+
+    def _parse_xyz(self, values):
+        """
+        Parse coordinate input that have an atom symbol and the corresponding
+        xyz coordinates per line. The format has to be as follows. The first
+        entry per line gives the atom symbol. The next three entries give the
+        xyz positions in bohr. Each RPMD bead has to come in a new line!
+
+        The results are stored in self._masses, which are the au (not amu!)
+        masses for each atom, and in self._coordinates, which is a two-d
+        numpy array of floats.
+
+        Parameters
+        ----------
+        values : str
+            String representation of the input.
+        """
+
+        d = StringIO(values)
+        try:
+            mc = np.loadtxt(d, converters={0: lambda s:
+                            self.periodic_table[str(s)[2]].get("atomic_mass")})
+        except KeyError as e:
+            sys.stderr.write("Unknwon atomic symbol given: " + str(e) + "\n")
+            raise e
+        except ValueError as e:
+            sys.stderr.write("Too few/many coordinates given. Please check the"
+                             " error forthe line number with the first "
+                             "inconsistency." + str(e) + "\n")
+            raise e
+
+        self._masses = mc[:, 0]
+        self._coordinates = mc[:, 1:]
+
+        return
+
+    def _parse_mass_value(self, values):
+        """
+        Parse coordinate input that has a mass and a coordinate value per line.
+        The format has to be as follows. The first entry per line gives the
+        mass for this degree of freedom (in au, not amu). The next entry is
+        the coordinate value for this degree of freedom. All bead values can
+        be given in one line if the same number of beads is used for all
+        degrees of freedom.
+
+        The results are stored in self._masses, which are the au (not amu!)
+        masses for each atom, and in self._coordinates, which is a two-d
+        numpy array of floats.
+
+        Parameters
+        ----------
+        values : str
+            String representation of the input.
+        """
+
+        d = StringIO(values)
+        try:
+            mc = np.loadtxt(d)
+        except ValueError as e:
+            sys.stderr.write("Too few/many beads given. Please check the error"
+                             " for the line number with the first"
+                             " inconsistency." + str(e) + "\n")
+            raise e
+
+        self._masses = mc[:, 0]
+        self._coordinates = mc[:, 1:]
 
         return
 
@@ -135,3 +228,44 @@ class Inputfile(object):
                               + key_value_pair)
 
         return value_dict
+
+    # TODO: this needs to go away!
+    # Dictionary of element names and atomic number:
+    periodic_table = {
+            'H'  :  { 'atomic_number': 1,
+                      'atomic_mass'  : 1.007825 * 1822.8885300626
+                    },
+            'D'  :  { 'atomic_number': 1,
+                      'atomic_mass'  : 2.0140 * 1822.8885300626
+                    },
+            'He' :  { 'atomic_number': 2,
+                      'atomic_mass'  : 4.00260 * 1822.8885300626  # He 4
+                    },
+            'Li' :  { 'atomic_number': 3,
+                      'atomic_mass'  : 7.016003 * 1822.8885300626  # Li 7
+                    },
+            'Be' :  { 'atomic_number': 4,
+                      'atomic_mass'  : 9.012182 * 1822.8885300626
+                    },
+            'B'  :  { 'atomic_number': 5,
+                      'atomic_mass'  : 11.009305 * 1822.8885300626 # B 11
+                    },
+            'C'  :  { 'atomic_number': 6,
+                      'atomic_mass'  : 12.000000 * 1822.8885300626  # C 12
+                    },
+            'N'  :  { 'atomic_number': 7,
+                      'atomic_mass'  : 14.003074 * 1822.8885300626  # N 14
+                    },
+            'O'  :  { 'atomic_number': 8,
+                      'atomic_mass'  : 15.994915 * 1822.8885300626  # O 16
+                    },
+            'F'  :  { 'atomic_number': 9,
+                      'atomic_mass'  : 18.9984032 * 1822.8885300626
+                    },
+            'Ne' :  { 'atomic_number': 10,
+                      'atomic_mass'  : 19.992435 * 1822.8885300626  # Ne 20
+                    },
+            'I' :  { 'atomic_number': 53,
+                      'atomic_mass' : 126.904473 * 1822.8885300626  # I 53
+                    }
+            }

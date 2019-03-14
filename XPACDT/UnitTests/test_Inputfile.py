@@ -29,16 +29,13 @@
 #
 #  **************************************************************************
 
+import numpy as np
 import unittest
 
 import XPACDT.Input.Inputfile as infile
 
 
 class InputfileTest(unittest.TestCase):
-
-#    def setUp(self):
-#        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
 
     def test_creation(self):
         with self.assertRaises(FileNotFoundError):
@@ -87,6 +84,59 @@ class InputfileTest(unittest.TestCase):
             key_value = parameters._parse_values("mehrere = ist = doof")
 
         return
+
+    def test_parse_xyz(self):
+        parameters = infile.Inputfile(
+                "FilesForTesting/InputfileTest/input_empty.in")
+
+        mass_ref = np.array([1837.15263281, 34631.971282785])
+        coordinate_ref = np.array([[1.0, 2.0, 3.0], [2.0, 1.0, 4.0]])
+        input_string = "H 1.0 2.0 3.0 \n" \
+            + "F 2.0 1.0 4.0 \n"
+
+        parameters._parse_xyz(input_string)
+        np.testing.assert_allclose(parameters._masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters._coordinates, coordinate_ref,
+                                   rtol=1e-7)
+
+        # test unknwon element
+        input_string = "J 1.0 2.0 3.0 \n" \
+            + "F 2.0 1.0 4.0 \n"
+        with self.assertRaises(KeyError):
+            parameters._parse_xyz(input_string)
+
+        # test too many/few coordinates given
+        input_string = "H 1.0 2.0 \n" \
+            + "F 2.0 1.0 4.0 \n"
+        with self.assertRaises(ValueError):
+            parameters._parse_xyz(input_string)
+
+        input_string = "H 1.0 2.0 3.0\n" \
+            + "F 2.0 1.0 4.0 6.0\n"
+        with self.assertRaises(ValueError):
+            parameters._parse_xyz(input_string)
+
+        pass
+
+    def test_parse_mass_value(self):
+        parameters = infile.Inputfile(
+                "FilesForTesting/InputfileTest/input_empty.in")
+
+        mass_ref = np.array([1837.1526, 34631.9713])
+        coordinate_ref = np.array([[1.0, 2.0, 3.0], [2.0, 1.0, 4.0]])
+        input_string = "1837.1526 1.0 2.0 3.0 \n" \
+            + "34631.9713 2.0 1.0 4.0 \n"
+
+        parameters._parse_mass_value(input_string)
+        np.testing.assert_allclose(parameters._masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters._coordinates, coordinate_ref,
+                                   rtol=1e-7)
+
+        input_string = "1837.1526 1.0 2.0 \n" \
+            + "34631.9713 2.0 1.0 4.0 \n"
+        with self.assertRaises(ValueError):
+            parameters._parse_mass_value(input_string)
+        pass
 
     def test_get_section(self):
         section1_reference = {"miep": "muh", "blah": "", "blubb": ""}

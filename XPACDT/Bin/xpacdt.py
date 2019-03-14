@@ -30,8 +30,12 @@
 #  **************************************************************************
 
 import argparse
+import git
+from inspect import getsourcefile
 import numpy as np
+from os.path import abspath
 
+import XPACDT.Dynamics.System as xSystem
 import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.Input.Inputfile as infile
 
@@ -42,20 +46,47 @@ import XPACDT.Interfaces.InterfaceTemplate as template
 def start():
     """Start any XPACDT calculation."""
 
+    # Save version used for later reference
+    current_path = abspath(getsourcefile(lambda: 0))
+    repo = git.Repo(path=current_path, search_parent_directories=True)
+    version_file = open('.version', 'w')
+    version_file.write("Branch: " + repo.active_branch.name + " \n")
+    version_file.write("Commit: " + repo.head.object.hexsha + " \n")
+    version_file.close()
+    print("Branch: " + repo.active_branch.name)
+    print("Commit: " + repo.head.object.hexsha)
+
+    # Parse command line arguments
     parser = argparse.ArgumentParser()
 
     iHelp = "Name of the XPACDT input file."
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
                         required=True, help=iHelp)
 
-    args = parser.parse_args()
-    print("The inputfile '" + args.InputFile + "' is read! \n")
+# TODO: Add more command line arguments as fit
 
+    args = parser.parse_args()
+
+    # Get input file
+    print("The inputfile '" + args.InputFile + "' is read! \n")
     parameters = infile.Inputfile(args.InputFile)
-    print(parameters.get_section("1dPolynomial"))
+    print(parameters.get_section("OneDPolynomial"))
+
+# TODO: Main code goes here
+    system = xSystem.System(parameters)
+
+    job = parameters.get_section("system").get("job")
+    if job == "sample":
+        system.sample()
+    elif job == "propagte":
+        system.propagate()
+
+    exit(-1)
+
+
 
     # Example usage for potentials
-    pes = oneDP.OneDPolynomial(**parameters.get_section("1dPolynomial"))
+    pes = oneDP.OneDPolynomial(**parameters.get_section("OneDPolynomial"))
     print(isinstance(pes, oneDP.OneDPolynomial))
     print(isinstance(pes, template.Interface))
 #    print(pes.name)
@@ -76,7 +107,7 @@ def start():
     for i in range(101):
         outfile.write(str(i*0.1) + " ")
         outfile.write(str(np.mean(r[0])) + " ")
-        outfile.write(str(p[0, 0]) + " ")
+        outfile.write(str(np.mean(p[0])) + " ")
         outfile.write("\n")
         r, p = propagator.propagate(r, p, 0.1)
     outfile.close()

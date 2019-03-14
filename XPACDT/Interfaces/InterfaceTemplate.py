@@ -268,6 +268,7 @@ class Interface(object):
         after the energy.
 
         TODO: Implement the use of a certain excited state.
+        TODO: add variable file name
 
         Parameters
         ----------
@@ -339,6 +340,7 @@ class Interface(object):
         coordinate, an additional newline is given.
 
         TODO: Implement the use of a certain excited state.
+                TODO: add variable file name
 
         Parameters
         ----------

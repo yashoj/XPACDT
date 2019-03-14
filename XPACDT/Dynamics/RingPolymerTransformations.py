@@ -31,6 +31,8 @@ import itertools
 import numpy as np
 import scipy.fftpack as fft
 
+# TODO: Check if numpy.fft is better
+
 
 def to_RingPolymer_normalModes(X, i=None):
     """

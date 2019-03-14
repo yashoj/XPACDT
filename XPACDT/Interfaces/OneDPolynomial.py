@@ -56,17 +56,30 @@ class OneDPolynomial(itemplate.Interface):
 
     @property
     def a(self):
-        """ Expansion coefficients for the polynomial. """
+        """ndarray of floats : Expansion coefficients for the polynomial. """
         return self.__as
 
     @property
     def x0(self):
-        """ The equilibrium position. Default is x0=0. """
+        """float : The equilibrium position. Default is x0=0. """
         return self.__x0
 
-    def _calculate(self, R, P, S=None):
+    def _calculate(self, R, P=None, S=None):
         """
-        Calculate th"""
+        Calculate the value of the potential and the gradient at positions R.
+
+        Parameters:
+        R : two-dimensional ndarray of floats
+            The positions of all beads in the system. The first axis is the
+            degrees of freedom and the second axis the beads.
+        P : two-dimensional ndarray of floats, optional
+            The momenta of all beads in the system. The first axis is the
+            degrees of freedom and the second axis the beads. This is not
+            used in this potential and thus defaults to None.
+        S : int, optional
+            The current electronic state. This is not used in this potential
+            and thus defaults to None.
+        """
 
         assert (isinstance(R, np.ndarray)), "R not a numpy array!"
         assert (R.ndim == 2), "Position array not two-dimensional!"

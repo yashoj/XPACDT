@@ -1,3 +1,4 @@
 .XPACDT
 .spyproject/
 __pycache__
+.version

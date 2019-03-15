@@ -90,6 +90,11 @@ class System(object):
         assert (int(i) > 0), "Number of degrees of freedom less than 1!"
         self.__n_dof = int(i)
 
+    @property
+    def nuclei(self):
+        """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
+        return self.__nuclei
+
     def _init_nuclei(self, parameters):
         """ Function to set up the nuclei of a system including all associated
         objects like propagators.
@@ -139,19 +144,9 @@ class System(object):
 
         self.__electrons = None
 
-    def sample(self):
-        """ Sample the system."""
-        pass
-
-    def propagate(self):
-        """ Propagate the system."""
-
-        # only a basic test right now
-        outfile = open("/tmp/blah.dat", 'w')
-        for i in range(101):
-            outfile.write(str(i*0.1) + " ")
-            outfile.write(str(self.__nuclei.x_centroid[0]) + " ")
-            outfile.write(str(self.__nuclei.p_centroid[0]) + " ")
-            outfile.write("\n")
-            self.__nuclei.propagate(0.1)
-        outfile.close()
+    def step(self, time):
+        """ Step in time."""
+        # TODO: more advanced here.
+        # TODO: add electrons
+        # TODO: add logging
+        self.__nuclei.propagate(time)

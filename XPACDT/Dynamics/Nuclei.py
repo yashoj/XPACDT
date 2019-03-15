@@ -144,7 +144,6 @@ beads given."
         """ Array of floats : The centroid of each momentum. """
         return np.mean(self.momenta, axis=1)
 
-
     def propagate(self, time):
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta, time)

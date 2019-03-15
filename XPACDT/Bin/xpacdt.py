@@ -36,6 +36,7 @@ import numpy as np
 from os.path import abspath
 import sys
 
+import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Dynamics.System as xSystem
 import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.Input.Inputfile as infile
@@ -79,11 +80,9 @@ def start():
     if job == "sample":
         system.sample()
     elif job == "propagate":
-        system.propagate()
-        sys.exit(-1)
+        rt.propagate(system, parameters)
     else:
         print("Nothing to be done! Exiting...")
-        sys.exit(-1)
 
 #    # Example usage for potentials
 #    pes = oneDP.OneDPolynomial(**parameters.get_section("OneDPolynomial"))

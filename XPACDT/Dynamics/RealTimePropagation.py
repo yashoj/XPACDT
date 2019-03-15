@@ -29,6 +29,8 @@
 #
 #  **************************************************************************
 
+import pickle
+
 # import XPACDT.Dynamics.System as xSystem
 # import XPACDT.Input.Inputfile as infile
 
@@ -38,10 +40,26 @@ def propagate(system, parameters):
 
     # only a basic test right now
     outfile = open("/tmp/blah.dat", 'w')
-    for i in range(101):
+    for i in range(11):
         outfile.write(str(i*0.1) + " ")
         outfile.write(str(system.nuclei.x_centroid[0]) + " ")
         outfile.write(str(system.nuclei.p_centroid[0]) + " ")
         outfile.write("\n")
         system.step(0.1)
+
+    pickle.dump(system, open("/tmp/pickle.dat", 'wb'), -1)
+    system2 = pickle.load(open("/tmp/pickle.dat", 'rb'))
+
+    for t, nt in system2._log:
+        print(t, nt.x_centroid[0])
+
+    for i in range(11):
+        outfile.write(str((i+11)*0.1) + " ")
+        outfile.write(str(system2.nuclei.x_centroid[0]) + " ")
+        outfile.write(str(system2.nuclei.p_centroid[0]) + " ")
+        outfile.write("\n")
+        system2.step(0.1)
     outfile.close()
+
+    for t, nt in system2._log:
+        print(t, nt.x_centroid[0])

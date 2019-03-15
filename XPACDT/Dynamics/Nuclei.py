@@ -70,7 +70,7 @@ class Nuclei(object):
     """
 
     def __init__(self, degrees_of_freedom, coordinates, momenta,
-                 propagator=None, xyz_atoms=False, n_beads=[1]):
+                 propagator=None, xyz_atoms=False, n_beads=[1], **kwargs):
         self.n_dof = degrees_of_freedom
 
         if xyz_atoms:
@@ -82,6 +82,8 @@ class Nuclei(object):
 
         self.positions = coordinates
         self.momenta = momenta
+        
+        self.log = []
 
         self.__propagator = propagator
         return
@@ -157,5 +159,7 @@ beads given."
 
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta, time)
+
+        self.log.append(self.positions.copy())
 
         return

@@ -27,6 +27,8 @@
 #
 #  **************************************************************************
 
+import copy
+import pickle
 import sys
 
 import XPACDT.Dynamics.VelocityVerlet as vv
@@ -78,6 +80,9 @@ class System(object):
         # TOOD: init electrons
         self._init_electrons(parameters)
 
+        self.time = kwargs.get('time', 0.0)
+        self.log(init=True)
+
         pass
 
     @property
@@ -89,6 +94,15 @@ class System(object):
     def n_dof(self, i):
         assert (int(i) > 0), "Number of degrees of freedom less than 1!"
         self.__n_dof = int(i)
+
+    @property
+    def time(self):
+        """float : Current time of the system in au."""
+        return self.__time
+
+    @time.setter
+    def time(self, f):
+        self.__time = f
 
     @property
     def nuclei(self):
@@ -150,3 +164,10 @@ class System(object):
         # TODO: add electrons
         # TODO: add logging
         self.__nuclei.propagate(time)
+        self.time += time
+        self.log()
+
+    def log(self, init=False):
+        if init:
+            self._log = []
+        self._log.append([self.time, copy.deepcopy(self.nuclei)])

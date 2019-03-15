@@ -12,7 +12,7 @@
 #
 #  This file is part of XPACDT.
 #
-#  CDTK is free software: you can redistribute it and/or modify
+#  XPACDT is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
@@ -31,6 +31,7 @@ import numpy as np
 # import scipy as sp
 
 # TODO: Design decision - how to roder R, P, etc. beads x DOF or DOF x beads
+# TODO: add more quantities calculated for the nuclei!
 
 
 class Nuclei(object):
@@ -145,6 +146,16 @@ beads given."
         return np.mean(self.momenta, axis=1)
 
     def propagate(self, time):
+        """ This functions advances the positions and momenta of the nuclei
+        for a given time using the proapgator assigned.
+
+        Parameters
+        ----------
+        time : float
+            The time to advance the nuclei.
+        """
+
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta, time)
-        print(self.positions, self.momenta)
+
+        return

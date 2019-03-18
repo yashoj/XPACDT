@@ -1,0 +1,35 @@
+$system		# general parameters
+dof = 4		# the number of degrees of freedom
+job = sample	# The job type (possible: sample, propagate)
+Interface = OneDPolynomial   # the interface to the potential to be used
+	    		     # (possible: OneDPolynomial)
+$end
+
+$OneDPolynomial # must match the interface specified; specific to each interface
+a = 0 0 0.5
+x0 = 0
+$end
+
+$rpmd
+beads = 
+beta = 
+$end
+
+$propagation	# propagator input
+dt = 1.0 au	# time step used
+$end
+
+
+$coordinates	# coordinates given here
+type = mass-value # coordinate format (possible: mass-value, xyz)
+1.0 2.0 3.0
+2.0 1.0 4.0
+$end
+
+
+$momenta	# momenta, must be the same ordering as coordinates
+1.0 2.0 3.0
+4.0 5.0 6.0
+$end
+
+### more comments!!

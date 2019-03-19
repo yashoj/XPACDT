@@ -2,3 +2,6 @@
 .spyproject/
 __pycache__
 .version
+build
+_static
+_templates

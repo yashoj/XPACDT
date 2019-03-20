@@ -28,7 +28,6 @@
 #  **************************************************************************
 
 import copy
-import pickle
 import sys
 
 import XPACDT.Dynamics.VelocityVerlet as vv
@@ -135,7 +134,7 @@ class System(object):
 
         # set up propagator
         p = parameters.get_section("propagation")
-        dt = float(p.get("dt").split()[0])  # TODO: unit conversion here
+        dt = float(p.get("timestep_nuclei").split()[0])  # TODO: unit conversion here
         kwargs = {}
         if parameters.get_section("rpmd"):
             kwargs["beta"] = float(parameters.get_section("rpmd").get("beta"))
@@ -163,6 +162,7 @@ class System(object):
         # TODO: more advanced here.
         # TODO: add electrons
         # TODO: add logging
+        # TODO: split in timesteps
         self.__nuclei.propagate(time)
         self.time += time
         self.log()

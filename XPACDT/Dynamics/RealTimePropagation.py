@@ -38,28 +38,22 @@ import pickle
 def propagate(system, parameters):
     """ Propagate the system."""
 
-    # only a basic test right now
-    outfile = open("/tmp/blah.dat", 'w')
-    for i in range(11):
-        outfile.write(str(i*0.1) + " ")
-        outfile.write(str(system.nuclei.x_centroid[0]) + " ")
-        outfile.write(str(system.nuclei.p_centroid[0]) + " ")
-        outfile.write("\n")
-        system.step(0.1)
+    picklefile_name = parameters.get_section('system').\
+        get('picklefile', 'pickle.dat')
+    if parameters.get_section('system').get('restart') is not None:
+        system = pickle.load(open(picklefile_name, 'rb'))
 
-    pickle.dump(system, open("/tmp/pickle.dat", 'wb'), -1)
-    system2 = pickle.load(open("/tmp/pickle.dat", 'rb'))
+    time_end = float(parameters.get_section('propagation').get('time_end'))
+    timestep_output = parameters.get_section('propagation').get('time_output')
+    if timestep_output is not None:
+        timestep_output = float(timestep_output)
+    else:
+        timestep_output = float(parameters.get_section('propagation').
+                                get('timestep_nuclei'))
 
-    for t, nt in system2._log:
-        print(t, nt.x_centroid[0])
+    print(system.time, system.nuclei.x_centroid[0])
+    while(system.time < time_end):
+        system.step(timestep_output)
+        print(system.time, system.nuclei.x_centroid[0])
 
-    for i in range(11):
-        outfile.write(str((i+11)*0.1) + " ")
-        outfile.write(str(system2.nuclei.x_centroid[0]) + " ")
-        outfile.write(str(system2.nuclei.p_centroid[0]) + " ")
-        outfile.write("\n")
-        system2.step(0.1)
-    outfile.close()
-
-    for t, nt in system2._log:
-        print(t, nt.x_centroid[0])
+    pickle.dump(system, open(picklefile_name, 'wb'), -1)

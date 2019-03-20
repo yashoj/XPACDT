@@ -82,7 +82,7 @@ class Nuclei(object):
 
         self.positions = coordinates
         self.momenta = momenta
-        
+
         self.log = []
 
         self.__propagator = propagator

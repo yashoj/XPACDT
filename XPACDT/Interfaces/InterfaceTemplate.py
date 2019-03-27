@@ -66,6 +66,11 @@ class Interface(object):
         """ Theshold for using saved variables. """
         return self.__SAVE_THRESHOLD
 
+    @property
+    def STEPSIZE(self):
+        """ Step size for numerical derivatives. """
+        return 1e-4
+
     def _calculate(self, R, P, S=None):
         """
         Calculate the energy, gradient and possibly couplings at the current
@@ -417,3 +422,33 @@ class Interface(object):
                 outfile.write('\n')
 
         return
+
+    def get_Hessian(self, R):
+        """
+        Calculate the Hessian at a given geometry R. The Hessian is calculated
+        using numerical differentiation of the gradients.
+
+        Parameters
+        ----------
+        R : array of floats
+            Position for which the Hessian is calculated
+            .
+        Returns
+        -------
+        H : array of array of floats
+            Hessian of the potential at the given geometry.
+        """
+
+        n = len(R)
+        H = np.zeros((n, n))
+
+        for i in range(len(R)):
+            # TODO: maybe put into some numerics module?
+            R[i] += self.STEPSIZE
+            grad_plus = self._gradient_wrapper(R)
+            R[i] -= 2.0*self.STEPSIZE
+            grad_minus = self._gradient_wrapper(R)
+            R[i] += self.STEPSIZE
+            H[i] = (grad_plus - grad_minus) / (2.0 * self.STEPSIZE)
+
+        return H

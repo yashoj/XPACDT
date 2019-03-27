@@ -102,7 +102,7 @@ class OneDPolynomialTest(unittest.TestCase):
                            == np.array([1.0+2.0+0.8, 1.0+0.5-0.1, 1.0])))
         self.assertTrue(
                 np.alltrue(pes._gradient
-                           == np.array([[[2.0+1.2, -1.0+0.3, 0.0]]])))
+                           == np.array([[2.0+1.2, -1.0+0.3, 0.0]])))
 
         return
 

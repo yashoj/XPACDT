@@ -91,14 +91,40 @@ class OneDPolynomial(itemplate.Interface):
 
         n = R.shape[1]
 
-        self._energy = np.array([[self.a[0]]*n])
-        self._gradient = np.zeros((1, 1, n))
+        self._energy, self._gradient = self.__polynomial(R)
+        self._energy += np.array([self.a[0]]*n)
+        self._gradient = self._gradient.reshape((-1, n))
 
-        for k, R_b in enumerate(R[0]):
-            _distance = R_b - self.x0
-            _power = 1.0
-            for i, a in enumerate(self.a[1:]):
-                self._gradient[:, 0, k] += float(i+1) * a * _power
+        return
 
-                _power *= _distance
-                self._energy[0, k] += a * _power
+    def __polynomial(self, R):
+        """
+        Function to calculate the one-D polynomial that can be vectorized.
+
+        Parameters:
+        -----------
+        R : two-dimensional ndarray of floats
+            The positions of all beads in the system. The first axis is the
+            degrees of freedom and the second axis the beads.
+
+        Returns:
+        --------
+        energy : ndarray of floats
+            The potential energy of each bead.
+        gradient : ndarray of floats
+            The gradient along the one dimension of each bead.
+        """
+
+        distance = R[0] - self.x0
+        power = np.ones_like(distance)
+
+        gradient = np.zeros_like(distance)
+        energy = np.zeros_like(distance)
+
+        for i, a in enumerate(self.a[1:]):
+            gradient += float(i+1) * a * power
+
+            power *= distance
+            energy += a * power
+
+        return energy, gradient

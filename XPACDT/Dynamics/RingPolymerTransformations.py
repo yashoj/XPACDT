@@ -30,8 +30,9 @@
 import itertools
 import numpy as np
 import scipy.fftpack as fft
+import math
 
-# TODO: Check if numpy.fft is better
+# TODO: Check if numpy.fft is better; the reordering is super slow!
 
 
 def to_RingPolymer_normalModes(X, i=None):
@@ -128,8 +129,8 @@ def _1d_to_nm(x, n):
     if n == 1:
         return x
 
-    after_fft = fft.rfft(x) / np.sqrt(n)
-    after_fft[1:-1] *= np.sqrt(2.0)
+    after_fft = fft.rfft(x) / math.sqrt(n)
+    after_fft[1:-1] *= math.sqrt(2.0)
 
     reorder_index = [0, 1] + list(range(3, n+1, 2)) + list(range(n-2, 1, -2))
 
@@ -163,7 +164,7 @@ def _1d_from_nm(nm, n):
     reorder_index = [0, 1] + list(itertools.chain(*zip(l1, l2)))
 
     fft_input = nm[reorder_index]
-    fft_input *= np.sqrt(n)
-    fft_input[1:-1] /= np.sqrt(2.0)
+    fft_input *= math.sqrt(n)
+    fft_input[1:-1] /= math.sqrt(2.0)
 
     return fft.irfft(fft_input)

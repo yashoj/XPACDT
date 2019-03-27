@@ -73,3 +73,14 @@ sys.stdout.write("To set the required XPACDT environment "
 sys.stdout.write("source " + activationFilePath + " \n \n")
 sys.stdout.write("For permanent activation add that line to "
                  "your ~/.bashrc, ~/.bash_profile, etc. \n")
+
+sys.stdout.write("\nTo generate the general documentation "
+                 "please execute the following commands: \n"
+                 "cd docs \n"
+                 "make html \n"
+                 "The documentation can then be accessed using "
+                 "a standard browser to open "
+                 "'docs/build/html/index.html' \n"
+                 "Documentation can also be build in other "
+                 "formats. Please run 'make' in the "
+                 "docs folder to learn more. \n")

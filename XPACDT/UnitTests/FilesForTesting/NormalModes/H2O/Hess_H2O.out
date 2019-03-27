@@ -1,0 +1,2853 @@
+   This copy of MOLCAS is licensed to  Otfried Geffert
+                                                                                                
+                                                                                                 
+                                         @@@@@                                                   
+                                        @@@@@@@                                                  
+                                       @@@@@@@@                                                  
+                     @@@@@@            @@@@@@@@                                                  
+                     @@@@@@@           @@@@@@@@@                                                 
+                    @@@@@@@@          @@@@@ @@@@                                                 
+                    @@@@@@@@@         @@@@@ @@@@                                                 
+                    @@@@ @@@@         @@@@  @@@@                     Version 8.2
+                    @@@@  @@@@       @@@@@  @@@@
+                   @@@@@  @@@@ @@@@@ @@@@    @@@                     Release at 170401
+                   @@@@@   @ @@@@@@@@  @@    @@@@                                                
+                   @@@@ @@@    @@@@@@   @@@  @@@@                                                
+                   @@ @@@@@@   @@@@@   @@@@@@ @@@                                                
+                 @@   @@@@@@   @@@@@   @@@@@@@   @                                               
+              @@@@@   @@@@@@@   @@@    @@@@@@@   @@@@                                            
+          @@@@@@@@@   @@@@@@@    @@   @@@@@@@@   @@@@@@@@                                        
+       @@@@@@@@@@@@   @@@@@@@@       @@@@@@@@@   @@@@@@@@@@@                                     
+   @@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@@   @@@@@@@@@@@@@@                                 
+ @@@@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@@                              
+ @@@@@@@@@@@@@@@@@   @@@@@@@@@ @  @ @  @@@@@@@@   @@@@@@@@  @@@@@@@                              
+ @@@@@@@@@@@@@@@@@   @@@@@                 @@@@   @@@@@@     @@@@@@                              
+ @@@@@@@@@@@@@@@@@        @@@@@@@@@@@@@@@     @   @@@@@      @@@@@@                              
+ @@@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@@@@        @@@@      @@@@@@                              
+ @@@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@@@@@      @@@@  @   @@@@@@  
+ @@@@@@@@@@@@@@@@    @@@@@@@@@@@@@@@@@@@@@@@@@@    @@@   @   @@@@@@  
+ @@@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@    @@@   @   @@@@@@  
+ @@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@   @@@   @   @@@@@@  
+ @@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@   @@@   @   @@@@@@    @@@@@@     @@@     @@@@@  
+ @@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@    @@   @   @@@@@@   @@@  @@@    @@@    @@   @@ 
+ @@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@    @    @   @@@@@@   @@    @@   @@ @@   @@      
+ @@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@    @    @   @@@@@@   @@         @@ @@   @@    
+ @@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@@@@@@@@@@@     @    @   @@@@@@   @@  	 @  @@    @@@@@ 
+ @@@@@@@@@@@@@  @@    @@@@@@@@@@@@@@@@@@@@@@@@@     @   @@   @@@@@@   @@  	@@   @@     @@@@ 
+ @@@@@@@@@@@   @@@@@    @@@@@@@@@@@@@@@@@@@@@  @@   @   @@   @@@@@@   @@    @@  @@@@@@@  @    @@ 
+ @@@@@@@@@   @@@@@@@@@     @@@@@@@@@@@@@@@@  @@@@       @@   @@@@@@   @@@  @@@  @    @@  @@   @@ 
+          @@@@@@@@@@@@@@@      @@@@@@      @@@@@@@      @@      @@     @@@@@@  @@     @@  @@@@@  
+     @@@@@@@@@@@@@@@@@@@@@@@@         @@@@@@@@@@@@@    @@@@          
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   
+    @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@     
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@      
+           @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                      
+               @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                          
+                  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                             
+                      @@@@@@@@@@@@@@@@@@@@@@@@@@@                                                
+                         @@@@@@@@@@@@@@@@@@@@                                                    
+                            @@@@@@@@@@@@@                                                        
+                                @@@@@@@                                                          
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                      
+                     Copyright. all rights. reserved:                 
+                   Permission is hereby granted to use                
+          but not to reproduce or distribute any part of this         
+       program. The use is restricted to research purposes only.      
+                      Lund University, Sweden, 2017.                  
+                                                                      
+            For the author list and the recommended citation,         
+             consult http://www.molcas.org/citations.html             
+                                                                                                 
+                                                                                                 
+
+
+   -------------------------------------------------------------------
+  |                                                                   
+  |   Project         = Hess_H2
+  |   Submitted from  = /home/ralph/results/Raha_sampling/h2o
+  |   Scratch area    = /tmp/Hess_H2.9914
+  |   Save outputs to = /home/ralph/results/Raha_sampling/h2o
+  |   Molcas          = /work/bin/molcas82_dir/molcas82
+  |   Parallel        = No
+  |                                                                   
+  |   Scratch area is empty
+  |                                                                   
+  |                                                                   
+   -------------------------------------------------------------------
+--- Start Module: auto at Tue Apr 17 15:15:45 2018 
+
+++ ---------   Input file   ---------
+
+  &GATEWAY
+    TITLE 
+    TBT Hessian Sampling 
+    COORD
+      3
+    Angstrom 
+    H     0.356115     0.0     0.0
+    o     0.0          1.0     0.0 
+    H    -0.356115     0.0     0.0
+    BASIS SET 
+    STO-3G
+    NOMOVE
+    Group 
+    NoSym
+ >>>  Export  MOLCAS_MAXITER=400
+ >>>  Do  while
+  &SEWARD
+  &SCF
+    Title
+    "TBT  minimum  optimization"
+  &SLAPAF
+ >>>  EndDo
+  &MCKINLEY
+    Perturbation
+    Hessian
+    ShowHessian
+
+-- ----------------------------------
+
+--- Start Module: gateway at Tue Apr 17 15:15:45 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &GATEWAY
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+ Title:
+                                      TBT Hessian Sampling                              
+
+
+++    Symmetry information:
+      ---------------------
+
+                    Character Table for C1 
+
+                             E  
+                    a        1  x, y, xy, Rz, z, xz, Ry, yz, Rx, I
+--
+
+
+++    Basis set information:
+      ----------------------
+
+
+      Basis set label: H.STO-3G.........
+
+      Electronic valence basis set:
+      ------------------
+      Associated Effective Charge  1.000000 au
+      Associated Actual Charge     1.000000 au
+      Nuclear Model: Point charge
+
+      Shell  nPrim  nBasis  Cartesian Spherical Contaminant
+         s       3       1        X                  
+
+
+      Basis set label: O.STO-3G.........
+
+      Electronic valence basis set:
+      ------------------
+      Associated Effective Charge  8.000000 au
+      Associated Actual Charge     8.000000 au
+      Nuclear Model: Point charge
+
+      Shell  nPrim  nBasis  Cartesian Spherical Contaminant
+         s       6       2        X                  
+         p       3       1        X                  
+
+
+      Basis set label: H.STO-3G.........
+
+      Electronic valence basis set:
+      ------------------
+      Associated Effective Charge  1.000000 au
+      Associated Actual Charge     1.000000 au
+      Nuclear Model: Point charge
+
+      Shell  nPrim  nBasis  Cartesian Spherical Contaminant
+         s       3       1        X                  
+--
+
+
+++    Molecular structure info:
+      -------------------------
+
+                    ************************************************ 
+                    **** Cartesian Coordinates / Bohr, Angstrom **** 
+                    ************************************************ 
+
+     Center  Label                x              y              z                     x              y              z
+        1      H1               0.672960       0.000000       0.000000              0.356115       0.000000       0.000000
+        2      O2               0.000000       1.889726       0.000000              0.000000       1.000000       0.000000
+        3      H3              -0.672960       0.000000       0.000000             -0.356115       0.000000       0.000000
+
+                    *************************************** 
+                    *    InterNuclear Distances / Bohr    * 
+                    *************************************** 
+
+               1 H1            2 O2            3 H3    
+    1 H1       0.000000
+    2 O2       2.005976        0.000000
+    3 H3       1.345920        2.005976        0.000000
+
+                    ******************************************* 
+                    *    InterNuclear Distances / Angstrom    * 
+                    ******************************************* 
+
+               1 H1            2 O2            3 H3    
+    1 H1       0.000000
+    2 O2       1.061517        0.000000
+    3 H3       0.712230        1.061517        0.000000
+
+                    ************************************** 
+                    *    Valence Bond Angles / Degree    * 
+                    ************************************** 
+                          Atom centers                 Phi
+                      2 O2       1 H1       3 H3        70.40
+                      1 H1       2 O2       3 H3        39.20
+                      1 H1       3 H3       2 O2        70.40
+--
+
+
+            Nuclear Potential Energy              8.71915359 au
+
+--- Stop Module:  gateway at Tue Apr 17 15:15:46 2018 /rc=0 ---
+--- Start Module: auto at Tue Apr 17 15:15:46 2018 
+--- Start Module: seward at Tue Apr 17 15:15:46 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+               SEWARD will generate:
+                  Multipole Moment integrals up to order  2
+                  Kinetic Energy integrals
+                  Nuclear Attraction integrals (point charge)
+                  One-Electron Hamiltonian integrals
+                  Velocity integrals
+                  Two-Electron Repulsion integrals
+
+                   Integrals are discarded if absolute value <: 0.10E-13
+                   Integral cutoff threshold is set to       <: 0.10E-15
+
+            Nuclear Potential Energy              8.71915359 au
+
+
+      Basis set specifications :
+      Symmetry species         a  
+      Basis functions            7
+
+
+  Input file to MOLDEN was generated!
+
+--- Stop Module:  seward at Tue Apr 17 15:15:47 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:15:47 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+++    Input section:
+      --------------
+
+      Header of the integral files:
+                                TBT Hessian Sampling
+       Integrals generated by seward 4.2.0  , Tue Apr 17 15:15:47 2018
+
+       Title:
+        "TBT  minimum  optimization"
+
+      Cartesian coordinates in Angstrom:
+      -----------------------------------------------------
+      No.  Label        X            Y            Z        
+      -----------------------------------------------------
+       1   H1         0.35611500   0.00000000   0.00000000
+       2   O2         0.00000000   1.00000000   0.00000000
+       3   H3        -0.35611500   0.00000000   0.00000000
+      -----------------------------------------------------
+      Nuclear repulsion energy =    8.71915359
+--
+
+++    Orbital specifications:
+      -----------------------
+
+      Symmetry species               1
+                                     a
+      Frozen orbitals                0
+      Occupied orbitals              5
+      Secondary orbitals             2
+      Deleted orbitals               0
+      Total number of orbitals       7
+      Number of basis functions      7
+--
+
+      Molecular charge                           0.000
+
+++    Optimization specifications:
+      ----------------------------
+
+      SCF Algorithm: Conventional
+
+++ Convergence information
+                                   SCF        iterations: Energy and convergence statistics
+
+Iter     Tot. SCF        One-elec.       Two-elec.    Energy       Max Dij or  Max Fij      DNorm      TNorm      AccCon     Time
+          Energy          Energy          Energy       Change      Delta Norm                                                 in Sec.
+   1   -74.647674168  -122.146540975    38.779713219   0.00E+00    0.33E+00*   0.17E+00*    0.46E+01   0.21E+02   NoneDamp     0.
+   2   -74.766733489  -120.990471091    37.504584015  -0.12E+00*   0.44E-01*   0.39E-01*    0.14E+01   0.21E+02   EDIIS        0.
+   3   -74.769034618  -121.190472735    37.702284529  -0.23E-02*   0.74E-03*   0.77E-02*    0.93E-01   0.21E+02   c2DIIS       0.
+   4   -74.769129901  -121.179319876    37.691036387  -0.95E-04*   0.49E-03*   0.77E-02*    0.85E-02   0.21E+02   QNRc2DIIS    0.
+   5   -74.769130473  -121.181887537    37.693603477  -0.57E-06*   0.20E-03*   0.16E-03*    0.17E-02   0.21E+02   QNRc2DIIS    0.
+   6   -74.769130563  -121.181697238    37.693413088  -0.90E-07*   0.88E-04*   0.63E-04     0.25E-04   0.21E+02   QNRc2DIIS    0.
+   7   -74.769130574  -121.181497420    37.693213259  -0.11E-07*   0.30E-05    0.38E-05     0.51E-04   0.21E+02   QNRc2DIIS    0.
+   8   -74.769130574  -121.181504067    37.693219906  -0.23E-10    0.23E-07    0.20E-06     0.12E-02   0.21E+02   QNRc2DIIS    0.
+
+       Convergence after  8 Macro Iterations and  0 additional LS Iterations...
+--
+
+ *****************************************************************************************************************************
+ *                                                                                                                           *
+ *                                             SCF/KS-DFT Program, Final results                                             *
+ *                                                                                                                           *
+ *                                                                                                                           *
+ *                                                                                                                           *
+ *                                                       Final Results                                                       *
+ *                                                                                                                           *
+ *****************************************************************************************************************************
+
+::    Total SCF energy                                -74.7691305737
+      One-electron energy                            -121.1815040672
+      Two-electron energy                              37.6932199059
+      Nuclear repulsion energy                          8.7191535876
+      Kinetic energy (interpolated)                    74.9452105690
+      Virial theorem                                    0.9976505504
+      Total spin, S(S+1)                                0.0000000000
+      Total spin, S                                     0.0000000000
+      Max non-diagonal density matrix element           0.0000000000
+      Max non-diagonal Fock matrix element              0.0000002036
+
+
+      All orbitals with orbital energies smaller than  E(LUMO)+0.5 are printed
+
+++    Molecular orbitals:
+      -------------------
+
+      Title: SCF orbitals
+
+      Molecular orbitals for symmetry species 1: a  
+
+          Orbital        1         2         3         4         5         6         7
+          Energy      -20.2225   -1.2702   -0.5995   -0.4199   -0.3855    0.4617    0.7417
+          Occ. No.      2.0000    2.0000    2.0000    2.0000    2.0000    0.0000    0.0000
+
+        1 H1    1s      0.0035   -0.1855    0.4114    0.3637    0.0000    0.4955    1.2535
+        2 O2    1s     -0.9945    0.2217    0.1483   -0.0000    0.0000    0.0719   -0.0000
+        3 O2    2s     -0.0235   -0.7972   -0.7317    0.0000    0.0000   -0.4572    0.0000
+        4 O2    2px    -0.0000   -0.0000   -0.0000    0.8737    0.0000   -0.0000   -0.5775
+        5 O2    2py     0.0036    0.1288   -0.4204    0.0000    0.0000    1.0040   -0.0000
+        6 O2    2pz     0.0000    0.0000    0.0000    0.0000    1.0000    0.0000    0.0000
+        7 H3    1s      0.0035   -0.1855    0.4114   -0.3637    0.0000    0.4955   -1.2535
+--
+
+
+++    Molecular charges:
+      ------------------
+
+      Mulliken charges per centre and basis function type
+      ---------------------------------------------------
+
+             H1      O2      H3    
+      1s     0.8522  1.9992  0.8522
+      2s     0.0000  1.9681  0.0000
+      2px    0.0000  1.6781  0.0000
+      2pz    0.0000  2.0000  0.0000
+      2py    0.0000  0.6501  0.0000
+      Total  0.8522  8.2955  0.8522
+
+      N-E    0.1478 -0.2955  0.1478
+
+      Total electronic charge=   10.000000
+
+      Total            charge=   -0.000000
+--
+
+
+++    Molecular properties:
+      ---------------------
+
+      Charge (e):
+                      =   -0.0000
+      Dipole Moment (Debye):
+      Origin of the operator (Ang)=    0.0000    0.0000    0.0000
+                     X=   -0.0000               Y=   -1.7707               Z=    0.0000           Total=    1.7707
+      Quadrupole Moment (Debye*Ang):
+      Origin of the operator (Ang)=    0.0000    0.8881    0.0000
+                    XX=   -5.9075              XY=    0.0000              XZ=    0.0000              YY=   -4.1897
+                    YZ=    0.0000              ZZ=   -6.2191
+      In traceless form (Debye*Ang)
+                    XX=   -0.7031              XY=    0.0000              XZ=    0.0000              YY=    1.8735
+                    YZ=    0.0000              ZZ=   -1.1705
+--
+
+
+  Input file to MOLDEN was generated!
+
+--- Stop Module:  scf at Tue Apr 17 15:15:48 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:48 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:15:48 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:15:48 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+                     Threshold for contributions to the gradient: .100E-06
+
+
+                    ********************************************
+                    * Symmetry Adapted Cartesian Displacements *
+                    ********************************************
+
+
+           Irreducible representation : a  
+           Basis function(s) of irrep: x, y, xy, Rz, z, xz, Ry, yz, Rx, I                                              
+
+ Basis Label        Type   Center Phase
+   1   H1           x         1     1
+   2   H1           y         1     1
+   3   H1           z         1     1
+   4   O2           x         2     1
+   5   O2           y         2     1
+   6   O2           z         2     1
+   7   H3           x         3     1
+   8   H3           y         3     1
+   9   H3           z         3     1
+
+                     No automatic utilization of translational and rotational invariance of the energy is employed.
+
+ Conventional ERI gradients!
+
+ Wavefunction type: RHF-SCF 
+
+
+ **************************************************
+ *                                                *
+ *              Molecular gradients               *
+ *                                                *
+ **************************************************
+
+  Irreducible representation: a  
+ ---------------------------------------------------------
+                     X             Y             Z        
+ ---------------------------------------------------------
+  H1               -0.25284288    0.01450540    0.00000000
+  O2                0.00000000   -0.02901081    0.00000000
+  H3                0.25284288    0.01450540    0.00000000
+ ---------------------------------------------------
+
+--- Stop Module:  alaska at Tue Apr 17 15:15:49 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:49 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+
+++       Slapaf input parameters:
+         ------------------------
+
+ Max iterations:                             400
+ Convergence test a la Schlegel.
+ Convergence criterion on gradient/para.<=: 0.3E-03
+ Convergence criterion on step/parameter<=: 0.3E-03
+ Convergence criterion on energy change <=: 0.0E+00
+ Max change of an internal coordinate:     0.30E+00
+
+ Line search is performed
+
+
+ -Optimization for minimum.
+  Optimization method: RS-RFO.
+
+ -Initial Hessian guessed by Hessian Model Function (HMF).
+  HMF augmented with weak interactions.
+
+ -Hessian update method: Broyden-Fletcher-Goldfarb-Shanno
+  Max number of points in Hessian update:  5
+
+ -Relaxation will be done on non-redundant internal coordinates, based on
+  force constant weighted redundant internal coordinates.
+
+ -The origin of the hyper sphere is defined implicitly.
+--
+
+ ******************************************
+ * Statistics of the internal coordinates *
+ ******************************************
+ Translations and Rotations:         0
+ Bonds                     :         3
+ Angles                    :         3
+ Torsions                  :         0
+ Out-of-plane angles       :         0
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 1.0720E-01  1.2000E-03     No    + 2.5409E-01  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.3112E-01  1.8000E-03     No    + 2.1966E-01  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.803999        0.004681        0.000000
+  O2               0.000000        1.880364        0.000000
+  H3              -0.803999        0.004681        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.425458        0.002477        0.000000
+  O2               0.000000        0.995046        0.000000
+  H3              -0.425458        0.002477        0.000000
+
+
+                    *************************************** 
+                    *    InterNuclear Distances / Bohr    * 
+                    *************************************** 
+
+               1 H1            2 O2            3 H3    
+    1 H1       0.000000
+    2 O2       2.040736        0.000000
+    3 H3       1.607997        2.040736        0.000000
+
+                    ******************************************* 
+                    *    InterNuclear Distances / Angstrom    * 
+                    ******************************************* 
+
+               1 H1            2 O2            3 H3    
+    1 H1       0.000000
+    2 O2       1.079911        0.000000
+    3 H3       0.850916        1.079911        0.000000
+
+                    ************************************** 
+                    *    Valence Bond Angles / Degree    * 
+                    ************************************** 
+                          Atom centers                 Phi
+                      2 O2       1 H1       3 H3        66.80
+                      1 H1       2 O2       3 H3        46.40
+                      1 H1       3 H3       2 O2        66.80
+
+                **************************************************
+                * Radius of hypersphere / au*amu**(1/2)/amu(1/2) *
+                **************************************************
+                                     0.0447
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:15:49 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:15:49 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:15:49 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:15:49 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:15:50 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:15:50 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:15:51 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:51 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:15:51 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:15:51 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:15:52 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:52 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 7.6768E-02  1.2000E-03     No    + 1.6198E-01  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 8.7163E-02  1.8000E-03     No    + 1.3714E-01  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.887522        0.029606        0.000000
+  O2               0.000000        1.830514        0.000000
+  H3              -0.887522        0.029606        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.469656        0.015667        0.000000
+  O2               0.000000        0.968667        0.000000
+  H3              -0.469656        0.015667        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:15:52 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:15:52 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:15:52 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:15:52 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:15:53 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:15:53 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:15:54 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:54 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:15:54 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:15:55 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:15:55 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:55 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 1.0393E-01  1.2000E-03     No    + 1.5631E-01  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.1981E-01  1.8000E-03     No    + 2.7296E-01  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.003411        0.060001        0.000000
+  O2               0.000000        1.769724        0.000000
+  H3              -1.003411        0.060001        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.530982        0.031751        0.000000
+  O2               0.000000        0.936498        0.000000
+  H3              -0.530982        0.031751        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:15:55 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:15:55 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:15:55 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:15:56 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:15:56 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:15:57 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:15:57 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:57 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:15:57 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:15:58 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:15:58 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:15:58 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 9.9859E-02  1.2000E-03     No    + 1.4819E-01  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.1334E-01  1.8000E-03     No    + 2.1778E-01  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.111993        0.092496        0.000000
+  O2               0.000000        1.704734        0.000000
+  H3              -1.111993        0.092496        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.588441        0.048947        0.000000
+  O2               0.000000        0.902107        0.000000
+  H3              -0.588441        0.048947        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:15:58 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:15:58 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:15:59 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:15:59 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:15:59 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:16:00 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:16:00 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:00 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:16:00 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:16:01 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:16:01 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:01 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+  5    -74.91755450 -0.03026019 0.184956  0.163986 nrc003   0.129406* nrc003      -74.93089533 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 9.3859E-02  1.2000E-03     No    + 1.3078E-01  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.0361E-01  1.8000E-03     No    + 1.6399E-01  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.209445        0.127697        0.000000
+  O2               0.000000        1.634332        0.000000
+  H3              -1.209445        0.127697        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.640011        0.067574        0.000000
+  O2               0.000000        0.864851        0.000000
+  H3              -0.640011        0.067574        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:16:01 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:16:01 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:16:02 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:16:02 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:16:03 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:16:03 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:16:03 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:03 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:16:03 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:16:04 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:16:04 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:04 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+  5    -74.91755450 -0.03026019 0.184956  0.163986 nrc003   0.129406* nrc003      -74.93089533 RS-RFO  BFGS      0    
+  6    -74.94058630 -0.02303180 0.144062  0.113084 nrc003   0.239706* nrc003      -74.95976364 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 1.6613E-01  1.2000E-03     No    + 1.0187E-01  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.7146E-01  1.8000E-03     No    + 1.1308E-01  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.362404        0.205166        0.000000
+  O2               0.000000        1.479393        0.000000
+  H3              -1.362404        0.205166        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.720953        0.108569        0.000000
+  O2               0.000000        0.782861        0.000000
+  H3              -0.720953        0.108569        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:16:05 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:16:05 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:16:05 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:16:05 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:16:06 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:16:06 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:16:06 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:07 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:16:07 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:16:07 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:16:08 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:08 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+  5    -74.91755450 -0.03026019 0.184956  0.163986 nrc003   0.129406* nrc003      -74.93089533 RS-RFO  BFGS      0    
+  6    -74.94058630 -0.02303180 0.144062  0.113084 nrc003   0.239706* nrc003      -74.95976364 RS-RFO  BFGS      0    
+  7    -74.96406040 -0.02347410 0.032440  0.035048 nrc003   0.115697  nrc003      -74.96611950 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 7.7688E-02  1.2000E-03     No    + 2.2938E-02  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 9.1022E-02  1.8000E-03     No    + 3.5048E-02  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.451291        0.224763        0.000000
+  O2               0.000000        1.440200        0.000000
+  H3              -1.451291        0.224763        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.767990        0.118940        0.000000
+  O2               0.000000        0.762121        0.000000
+  H3              -0.767990        0.118940        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:16:08 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:16:08 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:16:08 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:16:08 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:16:09 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:16:09 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:16:10 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:10 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:16:10 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:16:11 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:16:11 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:11 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+  5    -74.91755450 -0.03026019 0.184956  0.163986 nrc003   0.129406* nrc003      -74.93089533 RS-RFO  BFGS      0    
+  6    -74.94058630 -0.02303180 0.144062  0.113084 nrc003   0.239706* nrc003      -74.95976364 RS-RFO  BFGS      0    
+  7    -74.96406040 -0.02347410 0.032440  0.035048 nrc003   0.115697  nrc003      -74.96611950 RS-RFO  BFGS      0    
+  8    -74.96556739 -0.00150700 0.025841 -0.016915 nrc002  -0.030786  nrc002      -74.96591092 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 1.7184E-02  1.2000E-03     No    + 1.8272E-02  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.9767E-02  1.8000E-03     No    + 1.6915E-02  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.432196        0.229873        0.000000
+  O2               0.000000        1.429979        0.000000
+  H3              -1.432196        0.229873        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.757886        0.121644        0.000000
+  O2               0.000000        0.756712        0.000000
+  H3              -0.757886        0.121644        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:16:12 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:16:12 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:16:12 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:16:12 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:16:13 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:16:13 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:16:14 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:14 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:16:14 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:16:14 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:16:15 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:15 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+  5    -74.91755450 -0.03026019 0.184956  0.163986 nrc003   0.129406* nrc003      -74.93089533 RS-RFO  BFGS      0    
+  6    -74.94058630 -0.02303180 0.144062  0.113084 nrc003   0.239706* nrc003      -74.95976364 RS-RFO  BFGS      0    
+  7    -74.96406040 -0.02347410 0.032440  0.035048 nrc003   0.115697  nrc003      -74.96611950 RS-RFO  BFGS      0    
+  8    -74.96556739 -0.00150700 0.025841 -0.016915 nrc002  -0.030786  nrc002      -74.96591092 RS-RFO  BFGS      0    
+  9    -74.96590030 -0.00033290 0.001440  0.000957 nrc002   0.001862  nrc002      -74.96590119 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 7.1507E-04  1.2000E-03     Yes   + 1.0182E-03  3.0000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 9.0792E-04  1.8000E-03     Yes   + 9.5700E-04  4.5000E-04     No    +
+ +-----+----------------------------------+----------------------------------+
+
+ Convergence not reached yet!
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the new structure
+********************************************************************************
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.432582        0.229419        0.000000
+  O2               0.000000        1.430887        0.000000
+  H3              -1.432582        0.229419        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates for the next iteration / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.758090        0.121404        0.000000
+  O2               0.000000        0.757193        0.000000
+  H3              -0.758090        0.121404        0.000000
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:16:15 2018 /rc= _CONTINUE_LOOP_ ---
+--- Stop Module:  auto at Tue Apr 17 15:16:15 2018 /rc= _CONTINUE_LOOP_ ---
+--- Start Module: auto at Tue Apr 17 15:16:15 2018 
+*** 
+--- Start Module: seward at Tue Apr 17 15:16:16 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SEWARD
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  seward at Tue Apr 17 15:16:17 2018 /rc=0 ---
+*** 
+--- Start Module: scf at Tue Apr 17 15:16:17 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                                &SCF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  scf at Tue Apr 17 15:16:17 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:17 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  slapaf at Tue Apr 17 15:16:18 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: alaska at Tue Apr 17 15:16:18 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &ALASKA
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+--- Stop Module:  alaska at Tue Apr 17 15:16:19 2018 /rc=0 ---
+*** 
+--- Start Module: slapaf at Tue Apr 17 15:16:19 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                              &SLAPAF
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+**********************************************************************************************************************
+*                                    Energy Statistics for Geometry Optimization                                     *
+**********************************************************************************************************************
+                       Energy     Grad      Grad              Step                 Estimated   Geom       Hessian     
+Iter      Energy       Change     Norm      Max    Element    Max     Element     Final Energy Update Update   Index  
+  1    -74.76913057  0.00000000 0.359335  0.219659 nrc001   0.296346* nrc001      -74.80209595 RS-RFO  None      0    
+  2    -74.82089653 -0.05176596 0.229073  0.137136 nrc002   0.205684* nrc002      -74.83606509 RS-RFO  BFGS      0    
+  3    -74.85065270 -0.02975616 0.221049  0.272961 nrc003   0.136040* nrc003      -74.87049489 RS-RFO  BFGS      0    
+  4    -74.88729431 -0.03664162 0.209567  0.217785 nrc003   0.134313* nrc003      -74.90411428 RS-RFO  BFGS      0    
+  5    -74.91755450 -0.03026019 0.184956  0.163986 nrc003   0.129406* nrc003      -74.93089533 RS-RFO  BFGS      0    
+  6    -74.94058630 -0.02303180 0.144062  0.113084 nrc003   0.239706* nrc003      -74.95976364 RS-RFO  BFGS      0    
+  7    -74.96406040 -0.02347410 0.032440  0.035048 nrc003   0.115697  nrc003      -74.96611950 RS-RFO  BFGS      0    
+  8    -74.96556739 -0.00150700 0.025841 -0.016915 nrc002  -0.030786  nrc002      -74.96591092 RS-RFO  BFGS      0    
+  9    -74.96590030 -0.00033290 0.001440  0.000957 nrc002   0.001862  nrc002      -74.96590119 RS-RFO  BFGS      0    
+ 10    -74.96590119 -0.00000090 0.000011 -0.000008 nrc003  -0.000026  nrc003      -74.96590119 RS-RFO  BFGS      0    
+
+       +----------------------------------+----------------------------------+
+       +    Cartesian Displacements       +    Gradient in internals         +
+       +  Value      Threshold Converged? +  Value      Threshold Converged? +
+ +-----+----------------------------------+----------------------------------+
+ + RMS + 1.7643E-05  1.2000E-03     Yes   + 7.6970E-06  3.0000E-04     Yes   +
+ +-----+----------------------------------+----------------------------------+
+ + Max + 1.8332E-05  1.8000E-03     Yes   + 7.7259E-06  4.5000E-04     Yes   +
+ +-----+----------------------------------+----------------------------------+
+
+ Geometry is converged in  10 iterations to a Minimum Structure
+
+*****************************************************************************************************************
+*****************************************************************************************************************
+
+++ Geometry section
+
+********************************************************************************
+  Geometrical information of the final structure
+********************************************************************************
+
+  NOTE: on convergence the final predicted structure will be printed here.
+  This is not identical to the structure printed in the head of the output.
+
+ *********************************************************
+ * Nuclear coordinates of the final structure / Bohr     *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               1.432566        0.229411        0.000000
+  O2               0.000000        1.430903        0.000000
+  H3              -1.432566        0.229411        0.000000
+
+
+ *********************************************************
+ * Nuclear coordinates of the final structure / Angstrom *
+ *********************************************************
+  ATOM              X               Y               Z     
+  H1               0.758081        0.121399        0.000000
+  O2               0.000000        0.757201        0.000000
+  H3              -0.758081        0.121399        0.000000
+
+
+                    *************************************** 
+                    *    InterNuclear Distances / Bohr    * 
+                    *************************************** 
+
+               1 H1            2 O2            3 H3    
+    1 H1       0.000000
+    2 O2       1.869713        0.000000
+    3 H3       2.865131        1.869713        0.000000
+
+                    ******************************************* 
+                    *    InterNuclear Distances / Angstrom    * 
+                    ******************************************* 
+
+               1 H1            2 O2            3 H3    
+    1 H1       0.000000
+    2 O2       0.989410        0.000000
+    3 H3       1.516162        0.989410        0.000000
+
+                    ************************************** 
+                    *    Valence Bond Angles / Degree    * 
+                    ************************************** 
+                          Atom centers                 Phi
+                      2 O2       1 H1       3 H3        39.99
+                      1 H1       2 O2       3 H3       100.03
+                      1 H1       3 H3       2 O2        39.99
+
+                **************************************************
+                * Radius of hypersphere / au*amu**(1/2)/amu(1/2) *
+                **************************************************
+                                     0.5074
+
+--
+--- Stop Module:  slapaf at Tue Apr 17 15:16:19 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: last_energy at Tue Apr 17 15:16:20 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                            &LAST_ENERGY
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+    Geometry read from RUNFILE
+
+               SEWARD will generate:
+                  Multipole Moment integrals up to order  2
+                  Kinetic Energy integrals
+                  Nuclear Attraction integrals (point charge)
+                  One-Electron Hamiltonian integrals
+                  Velocity integrals
+                  Two-Electron Repulsion integrals
+
+                   Integrals are discarded if absolute value <: 0.10E-13
+                   Integral cutoff threshold is set to       <: 0.10E-15
+
+            Nuclear Potential Energy              8.90648690 au
+
+
+      Basis set specifications :
+      Symmetry species         a  
+      Basis functions            7
+
+++    Input section:
+      --------------
+
+      Header of the integral files:
+                                TBT Hessian Sampling
+       Integrals generated by seward 4.2.0  , Tue Apr 17 15:16:20 2018
+
+       Title:
+        "TBT  minimum  optimization"
+
+      Cartesian coordinates in Angstrom:
+      -----------------------------------------------------
+      No.  Label        X            Y            Z        
+      -----------------------------------------------------
+       1   H1         0.75808106   0.12139929   0.00000000
+       2   O2         0.00000000   0.75720143   0.00000000
+       3   H3        -0.75808106   0.12139929   0.00000000
+      -----------------------------------------------------
+      Nuclear repulsion energy =    8.90648690
+--
+
+++    Orbital specifications:
+      -----------------------
+
+      Symmetry species               1
+                                     a
+      Frozen orbitals                0
+      Occupied orbitals              5
+      Secondary orbitals             2
+      Deleted orbitals               0
+      Total number of orbitals       7
+      Number of basis functions      7
+--
+
+      Molecular charge                           0.000
+
+++    Optimization specifications:
+      ----------------------------
+
+      SCF Algorithm: Conventional
+
+++ Convergence information
+                                   SCF        iterations: Energy and convergence statistics
+
+Iter     Tot. SCF        One-elec.       Two-elec.    Energy       Max Dij or  Max Fij      DNorm      TNorm      AccCon     Time
+          Energy          Energy          Energy       Change      Delta Norm                                                 in Sec.
+   1   -74.965901192  -121.834133648    37.961745559   0.00E+00    0.60E-05    0.31E-05     0.47E+01   0.21E+02   NoneDamp     0.
+   2   -74.965901192  -121.834120354    37.961732266  -0.24E-10    0.18E-05    0.96E-06     0.17E-04   0.21E+02   EDIIS        0.
+
+       Convergence after  2 Macro Iterations and  0 additional LS Iterations...
+--
+
+ *****************************************************************************************************************************
+ *                                                                                                                           *
+ *                                             SCF/KS-DFT Program, Final results                                             *
+ *                                                                                                                           *
+ *                                                                                                                           *
+ *                                                                                                                           *
+ *                                                       Final Results                                                       *
+ *                                                                                                                           *
+ *****************************************************************************************************************************
+
+::    Total SCF energy                                -74.9659011923
+      One-electron energy                            -121.8341203542
+      Two-electron energy                              37.9617322658
+      Nuclear repulsion energy                          8.9064868961
+      Kinetic energy (interpolated)                    74.5185981037
+      Virial theorem                                    1.0060025698
+      Total spin, S(S+1)                                0.0000000000
+      Total spin, S                                     0.0000000000
+      Max non-diagonal density matrix element           0.0000018353
+      Max non-diagonal Fock matrix element              0.0000009558
+
+
+      All orbitals with orbital energies smaller than  E(LUMO)+0.5 are printed
+
+++    Molecular orbitals:
+      -------------------
+
+      Title: SCF orbitals
+
+      Molecular orbitals for symmetry species 1: a  
+
+          Orbital        1         2         3         4         5         6         7
+          Energy      -20.2516   -1.2575   -0.5939   -0.4597   -0.3926    0.5818    0.6927
+          Occ. No.      2.0000    2.0000    2.0000    2.0000    2.0000    0.0000    0.0000
+
+        1 H1    1s      0.0056   -0.1556    0.4492   -0.2951    0.0000    0.7692    0.8146
+        2 O2    1s     -0.9942    0.2338    0.0000   -0.1040    0.0000    0.1258    0.0000
+        3 O2    2s     -0.0258   -0.8444   -0.0000    0.5382    0.0000   -0.8201   -0.0000
+        4 O2    2px     0.0000    0.0000    0.6127    0.0000    0.0000    0.0000   -0.9598
+        5 O2    2py     0.0042    0.1228   -0.0000    0.7559    0.0000    0.7636    0.0000
+        6 O2    2pz     0.0000    0.0000    0.0000    0.0000    1.0000    0.0000    0.0000
+        7 H3    1s      0.0056   -0.1556   -0.4492   -0.2951    0.0000    0.7692   -0.8146
+--
+
+
+++    Molecular charges:
+      ------------------
+
+      Mulliken charges per centre and basis function type
+      ---------------------------------------------------
+
+             H1      O2      H3    
+      1s     0.8347  1.9978  0.8347
+      2s     0.0000  1.8489  0.0000
+      2px    0.0000  1.0731  0.0000
+      2pz    0.0000  2.0000  0.0000
+      2py    0.0000  1.4107  0.0000
+      Total  0.8347  8.3305  0.8347
+
+      N-E    0.1653 -0.3305  0.1653
+
+      Total electronic charge=   10.000000
+
+      Total            charge=   -0.000000
+--
+
+
+++    Molecular properties:
+      ---------------------
+
+      Charge (e):
+                      =   -0.0000
+      Dipole Moment (Debye):
+      Origin of the operator (Ang)=    0.0000    0.0000    0.0000
+                     X=   -0.0000               Y=   -1.7092               Z=    0.0000           Total=    1.7092
+      Quadrupole Moment (Debye*Ang):
+      Origin of the operator (Ang)=   -0.0000    0.6860    0.0000
+                    XX=   -4.4856              XY=    0.0000              XZ=    0.0000              YY=   -5.1418
+                    YZ=    0.0000              ZZ=   -6.1257
+      In traceless form (Debye*Ang)
+                    XX=    1.1481              XY=    0.0000              XZ=    0.0000              YY=    0.1638
+                    YZ=    0.0000              ZZ=   -1.3120
+--
+
+
+  Input file to MOLDEN was generated!
+
+--- Stop Module:  last_energy at Tue Apr 17 15:16:21 2018 /rc=0 ---
+--- Stop Module:  auto at Tue Apr 17 15:16:22 2018 /rc=0 ---
+--- Module auto spent 7 seconds 
+*** 
+--- Start Module: mckinley at Tue Apr 17 15:16:22 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                             &MCKINLEY
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+
+                     Threshold for contributions to the gradient or Hessian: .100E-06
+
+  The Renormalization Contribution                                               
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+        0.0000000000000000
+        0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+        0.0000000000000000      0.0000000000000000      0.0000000000000000      0.0000000000000000
+  The Kinetic Energy Contribution                                                
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+       -0.0855119545408025
+        0.4192320970598474      0.0493947428921751
+       -0.0000000000000000      0.0000000000000000      0.3928176637376132
+        0.1132980725341605     -0.4192320970598474      0.0000000000000000     -0.2265961450683200
+       -0.4192320970598474     -0.0547773885136236     -0.0000000000000000      0.0000000000000003      0.1095547770272456
+        0.0000000000000000     -0.0000000000000000     -0.3982003093590618     -0.0000000000000000      0.0000000000000000
+        0.7964006187181223
+       -0.0277861179933580      0.0000000000000000      0.0000000000000000      0.1132980725341595      0.4192320970598472
+        0.0000000000000000     -0.0855119545408015
+        0.0000000000000000      0.0053826456214485      0.0000000000000000      0.4192320970598472     -0.0547773885136220
+        0.0000000000000000     -0.4192320970598472      0.0493947428921735
+        0.0000000000000000      0.0000000000000000      0.0053826456214485      0.0000000000000000      0.0000000000000000
+       -0.3982003093590606     -0.0000000000000000     -0.0000000000000000      0.3928176637376121
+  The Nuclear Attraction Contribution                                            
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+        0.2784372805575956
+        3.2816261295633304      1.2769330652937092
+        0.0000000000000000      0.0000000000000000      3.9729365656147517
+       -0.1041684442613724     -3.3496786114317851      0.0000000000000000      0.2083368885227496
+       -3.2135736476948766     -1.3835081399786104      0.0000000000000000      0.0000000000000077      2.7670162799572067
+        0.0000000000000000      0.0000000000000000     -4.0348447655212150      0.0000000000000000      0.0000000000000000
+        8.0696895310424068
+       -0.1742688362962234      0.0680524818684543      0.0000000000000000     -0.1041684442613774      3.2135736476948704
+        0.0000000000000000      0.2784372805576009
+       -0.0680524818684541      0.1065750746849015      0.0000000000000000      3.3496786114317780     -1.3835081399785969
+        0.0000000000000000     -3.2816261295633247      1.2769330652936954
+        0.0000000000000000      0.0000000000000000      0.0619081999064632      0.0000000000000000      0.0000000000000000
+       -4.0348447655211928      0.0000000000000000      0.0000000000000000      3.9729365656147295
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+        0.1987530812993114
+        2.7904701425797391      1.0870757525753318
+        0.0000000000000000     -0.0000000000000000      3.3733738056536771
+       -0.0750146266904319     -2.8585226244481938     -0.0000000000000000      0.1500292533808673
+       -2.7224176607112853     -1.1752778633511083      0.0000000000000000      0.0000000000000056      2.3505557267022055
+       -0.0000000000000000      0.0000000000000000     -3.4169090416510151      0.0000000000000000     -0.0000000000000000
+        6.8338180833020115
+       -0.1237384546088797      0.0680524818684543     -0.0000000000000000     -0.0750146266904357      2.7224176607112809
+       -0.0000000000000000      0.1987530812993154
+       -0.0680524818684541      0.0882021107757767     -0.0000000000000000      2.8585226244481885     -1.1752778633510979
+       -0.0000000000000000     -2.7904701425797351      1.0870757525753212
+       -0.0000000000000000     -0.0000000000000000      0.0435352359973384     -0.0000000000000000     -0.0000000000000000
+       -3.4169090416509968      0.0000000000000000      0.0000000000000000      3.3733738056536584
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+        1.0166672092382703
+       -1.8078890770503573      0.2498041488847397
+        0.0000000000000000      0.0000000000000000     -1.2664713581230096
+       -0.9316324544579657      1.8078890770503573      0.0000000000000000      1.8632649089159314
+        1.8078890770503573     -0.2923215262748919      0.0000000000000000     -0.0000000000000042      0.5846430525497812
+        0.0000000000000000      0.0000000000000000      1.2239539807328572      0.0000000000000000      0.0000000000000000
+       -2.4479079614657122
+       -0.0850347547803046      0.0000000000000000      0.0000000000000000     -0.9316324544579656     -1.8078890770503531
+        0.0000000000000000      1.0166672092382703
+        0.0000000000000000      0.0425173773901523      0.0000000000000000     -1.8078890770503531     -0.2923215262748893
+        0.0000000000000000      1.8078890770503531      0.2498041488847370
+        0.0000000000000000      0.0000000000000000      0.0425173773901523      0.0000000000000000      0.0000000000000000
+        1.2239539807328548      0.0000000000000000      0.0000000000000000     -1.2664713581230072
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+        1.2154202905375817
+        0.9825810655293818      1.3368799014600716
+        0.0000000000000000     -0.0000000000000000      2.1069024475306675
+       -1.0066470811483976     -1.0506335473978365     -0.0000000000000000      2.0132941622967988
+       -0.9145285836609280     -1.4675993896260002      0.0000000000000000      0.0000000000000014      2.9351987792519867
+       -0.0000000000000000      0.0000000000000000     -2.1929550609181581      0.0000000000000000     -0.0000000000000000
+        4.3859101218362992
+       -0.2087732093891843      0.0680524818684543     -0.0000000000000000     -1.0066470811484014      0.9145285836609278
+       -0.0000000000000000      1.2154202905375857
+       -0.0680524818684541      0.1307194881659289     -0.0000000000000000      1.0506335473978354     -1.4675993896259871
+       -0.0000000000000000     -0.9825810655293821      1.3368799014600583
+       -0.0000000000000000     -0.0000000000000000      0.0860526133874907     -0.0000000000000000     -0.0000000000000000
+       -2.1929550609181421      0.0000000000000000      0.0000000000000000      2.1069024475306515
+ OVRGRD  :   0.14397452811677866     
+ oper:   0.14496867594025920     
+ Dens:    1623.9379455357116     
+ OVRGRD  :  -0.16093582609307835     
+ oper:    8.8707746018846609E-002
+ Dens:    1623.9379455357116     
+ OVRGRD  :    0.0000000000000000     
+ oper:    4.1750991816288746E-002
+ Dens:    1623.9379455357116     
+ OVRGRD  :   -3.6637359812630166E-015
+ oper:   0.21701247289632855     
+ Dens:    1623.9379455357116     
+ OVRGRD  :   0.32187165218615515     
+ oper:   0.17741549203769308     
+ Dens:    1623.9379455357116     
+ OVRGRD  :    0.0000000000000000     
+ oper:    8.3501983632577326E-002
+ Dens:    1623.9379455357116     
+ OVRGRD  :  -0.14397452811677497     
+ oper:   0.14496867594025914     
+ Dens:    1623.9379455357116     
+ OVRGRD  :  -0.16093582609307647     
+ oper:    8.8707746018846442E-002
+ Dens:    1623.9379455357116     
+ OVRGRD  :    0.0000000000000000     
+ oper:    4.1750991816288628E-002
+ Dens:    1623.9379455357116     
+ KNEGRD  :  -0.40188359814709346     
+ oper:   0.13115307945258670     
+ Dens:    21.998664085283785     
+ KNEGRD  :   0.34370112371648986     
+ oper:    9.6716479194112720E-002
+ Dens:    21.998664085283785     
+ KNEGRD  :    0.0000000000000000     
+ oper:    1.9349010547207748E-002
+ Dens:    21.998664085283785     
+ KNEGRD  :    1.4988010832439613E-015
+ oper:   0.25867422617001101     
+ Dens:    21.998664085283785     
+ KNEGRD  :  -0.68740224743297962     
+ oper:   0.19343295838822525     
+ Dens:    21.998664085283785     
+ KNEGRD  :    0.0000000000000000     
+ oper:    3.8698021094415405E-002
+ Dens:    21.998664085283785     
+ KNEGRD  :   0.40188359814709196     
+ oper:   0.13115307945258647     
+ Dens:    21.998664085283785     
+ KNEGRD  :   0.34370112371648937     
+ oper:    9.6716479194112345E-002
+ Dens:    21.998664085283785     
+ KNEGRD  :    0.0000000000000000     
+ oper:    1.9349010547207654E-002
+ Dens:    21.998664085283785     
+ NAGRD   :    4.1154133692974755     
+ oper:    17.719185122568561     
+ Dens:    21.998664085283785     
+ NAGRD   :   -3.5524308170428323     
+ oper:    11.274244560918325     
+ Dens:    21.998664085283785     
+ NAGRD   :    0.0000000000000000     
+ oper:    2.2308001157737740     
+ Dens:    21.998664085283785     
+ NAGRD   :   -1.6542323066914832E-014
+ oper:    29.025684068609429     
+ Dens:    21.998664085283785     
+ NAGRD   :    7.1048616340856583     
+ oper:    23.188378058064281     
+ Dens:    21.998664085283785     
+ NAGRD   :    0.0000000000000000     
+ oper:    4.6576462256745597     
+ Dens:    21.998664085283785     
+ NAGRD   :   -4.1154133692974595     
+ oper:    17.719185122568543     
+ Dens:    21.998664085283785     
+ NAGRD   :   -3.5524308170428269     
+ oper:    11.274244560918293     
+ Dens:    21.998664085283785     
+ NAGRD   :    0.0000000000000000     
+ oper:    2.2308001157737674     
+ Dens:    21.998664085283785     
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    1
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     19.03298072    
+TOTAL:     19.03298072    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    2
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     14.25591593    
+TOTAL:     14.25591593    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    3
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     3.570429688    
+TOTAL:     3.570429688    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    4
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     41.98166803    
+TOTAL:     41.98166803    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    5
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     27.63226227    
+TOTAL:     27.63226227    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    6
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     6.371710684    
+TOTAL:     6.371710684    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    7
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     19.03298072    
+TOTAL:     19.03298072    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    8
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     14.25591593    
+TOTAL:     14.25591593    
+
+ <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ jDisp=                    9
+
+ Fock1
+
+ jIrrep,kIrrep=                    0                    0
+ipAct:     3.570429688    
+TOTAL:     3.570429688    
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+       -1.0756828368278346
+       -1.0674654418757683     -1.2276494674348815
+        0.0000000000000000      0.0000000000000000     -2.1111996292540858
+        0.8989277435515866      1.0713773331050771      0.0000000000000000     -1.7978554871031669
+        1.0635535506464591      1.3191893065848386      0.0000000000000000     -0.0000000000000042     -2.6383786131696554
+        0.0000000000000000      0.0000000000000000      2.1811088421572316      0.0000000000000000      0.0000000000000000
+       -4.3622176843144445
+        0.1767550932762478     -0.0039118912293091      0.0000000000000000      0.8989277435515806     -1.0635535506464551
+        0.0000000000000000     -1.0756828368278284
+        0.0039118912293089     -0.0915398391499563      0.0000000000000000     -1.0713773331050731      1.3191893065848175
+        0.0000000000000000      1.0674654418757643     -1.2276494674348610
+        0.0000000000000000      0.0000000000000000     -0.0699092129031451      0.0000000000000000      0.0000000000000000
+        2.1811088421572125      0.0000000000000000      0.0000000000000000     -2.1111996292540676
+ *************************
+ *                       *
+ *Complete static Hessian*
+ *                       *
+ *************************
+
+  Hessian in Irrep a                                                                                                      
+  mat. size =     9x    9
+
+        0.1397374537097471
+       -0.0848843763463865      0.1092304340251902
+        0.0000000000000000     -0.0000000000000000     -0.0042971817234183
+       -0.1077193375968111      0.0207437857072406     -0.0000000000000000      0.2154386751936319
+        0.1490249669855310     -0.1484100830411617      0.0000000000000000     -0.0000000000000028      0.2968201660823313
+       -0.0000000000000000      0.0000000000000000     -0.0118462187609265      0.0000000000000000     -0.0000000000000000
+        0.0236924375218548
+       -0.0320181161129365      0.0641405906391452     -0.0000000000000000     -0.1077193375968208     -0.1490249669855273
+       -0.0000000000000000      0.1397374537097573
+       -0.0641405906391452      0.0391796490159727     -0.0000000000000000     -0.0207437857072377     -0.1484100830411696
+       -0.0000000000000000      0.0848843763463822      0.1092304340251973
+       -0.0000000000000000     -0.0000000000000000      0.0161434004843456     -0.0000000000000000     -0.0000000000000000
+       -0.0118462187609296      0.0000000000000000      0.0000000000000000     -0.0042971817234161
+ **************************************************************************************************************************
+ *                                                                                                                        *
+ *                 All data is written to disk, and could be accessed through the MCLR or RASSI program.                  *
+ *                                                                                                                        *
+ **************************************************************************************************************************
+--- Stop Module:  mckinley at Tue Apr 17 15:16:22 2018 /rc= _INVOKED_OTHER_MODULE_ ---
+*** 
+--- Start Module: mclr at Tue Apr 17 15:16:22 2018 
+
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+                                               &MCLR
+
+                                   only a single process is used
+                       available to each process: 2.0 GB of memory, 1 thread
+()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()
+
+ Ordinary integral handling
+ OrdInt status: non-squared
+
+++   Wave function specifications:
+     -----------------------------
+     Wavefunction type:                          SCF
+     Number of irreducible symmetry groups       1
+     Number of basis functions                   7
+     Number of occupied orbitals                 5
+     SCF energy =                   -74.9659011923
+--
+
+     Convergence threshold=               1.0000E-04
+     Max number of iterations in PCG:            200
+
+++   Perturbation specifications:
+     ----------------------------
+
+     Number of perturbations in each symmetry   12
+     Type of perturbation:                       Hessian         
+--
+
+++   Perturbations:
+     --------------
+
+     -------------------------------------
+      No.    Symmetry    Center Direction 
+     -------------------------------------
+       1       a            H1         x
+       2       a            H1         y
+       3       a            H1         z
+       4       a            O2         x
+       5       a            O2         y
+       6       a            O2         z
+       7       a            H3         x
+       8       a            H3         y
+       9       a            H3         z
+      10       a            MLTPL  1 X
+      11       a            MLTPL  1 Y
+      12       a            MLTPL  1 Z
+     -------------------------------------
+--
+
+
+     Linear response function is computed for Restricted Hartree-Fock wavefunction
+
+ Process perturbation number                     1
+      Perturbation no:    1 converged in    4 steps.
+
+ Process perturbation number                     2
+      Perturbation no:    2 converged in    4 steps.
+
+ Process perturbation number                     3
+      Perturbation no:    3 converged in    0 steps.
+
+ Process perturbation number                     4
+      Perturbation no:    4 converged in    3 steps.
+
+ Process perturbation number                     5
+      Perturbation no:    5 converged in    3 steps.
+
+ Process perturbation number                     6
+      Perturbation no:    6 converged in    0 steps.
+
+ Process perturbation number                     7
+      Perturbation no:    7 converged in    4 steps.
+
+ Process perturbation number                     8
+      Perturbation no:    8 converged in    4 steps.
+
+ Process perturbation number                     9
+      Perturbation no:    9 converged in    0 steps.
+
+ Process perturbation number                    10
+      Perturbation no:   10 converged in    2 steps.
+
+ Process perturbation number                    11
+      Perturbation no:   11 converged in    2 steps.
+
+ Process perturbation number                    12
+      Perturbation no:   12 converged in    0 steps.
+
+
+      ************************************
+      *                                  *
+      * Harmonic frequencies in cm-1     *
+      * Intensities in km/mole           *
+      *                                  *
+      * No correction due to curvilinear *
+      * representations has been done    *
+      *                                  *
+      ************************************
+
+
+    Symmetry a  
+   ==============
+
+                        1         2         3         4         5         6
+
+     Frequency:         0.00      0.01      0.01      0.76      2.72      2.99                                          
+
+     Intensity:    0.377E-13 0.893E-16 0.319E-07 0.171E+03 0.656E+02 0.288E-14
+
+     H1         x   -0.00000   0.00002   0.57734   0.00000   0.42179   0.00000
+     H1         y    0.00000   0.57735  -0.00005  -0.00000   0.56628   0.00000
+     H1         z    0.57735   0.00000  -0.00000   0.70432  -0.00000  -0.70711
+     O2         x   -0.00000   0.00002   0.57737   0.00000  -0.05315  -0.00000
+     O2         y    0.00000   0.57735  -0.00002  -0.00000   0.00000   0.00000
+     O2         z    0.57735   0.00000  -0.00000  -0.08876  -0.00000  -0.00000
+     H3         x   -0.00000   0.00002   0.57734   0.00000   0.42179   0.00000
+     H3         y    0.00000   0.57735   0.00001   0.00000  -0.56628  -0.00000
+     H3         z    0.57735   0.00000  -0.00000   0.70432   0.00000   0.70711
+
+
+                        7         8         9
+
+     Frequency:      2170.05   4140.00   4391.06                                                                        
+
+     Intensity:    0.724E+01 0.443E+02 0.300E+02
+
+     H1         x    0.44802   0.57029   0.54052
+     H1         y    0.54491  -0.41641  -0.45334
+     H1         z    0.00000   0.00000   0.00000
+     O2         x    0.00000  -0.00000  -0.06812
+     O2         y   -0.06867   0.05248  -0.00000
+     O2         z    0.00000  -0.00000  -0.00000
+     H3         x   -0.44802  -0.57029   0.54052
+     H3         y    0.54491  -0.41641   0.45334
+     H3         z   -0.00000  -0.00000   0.00000
+
+
+++ Principal components of the normal modes
+   ----------------------------------------
+
+   (Only contributions larger than 0.50 times the maximum are printed)
+
+
+      Mode      1
+        Frequency:            0.00 cm-1
+      ---------------------------------
+        Tz                       1.0000
+      ---------------------------------
+
+      Mode      2
+        Frequency:            0.01 cm-1
+      ---------------------------------
+        Ty                       1.0000
+      ---------------------------------
+
+      Mode      3
+        Frequency:            0.01 cm-1
+      ---------------------------------
+        Tx                       1.0000
+      ---------------------------------
+
+      Mode      4
+        Frequency:            0.76 cm-1
+      ---------------------------------
+        Ryz                     -1.0000
+      ---------------------------------
+
+      Mode      5
+        Frequency:            2.72 cm-1
+      ---------------------------------
+        Rxy                      1.0000
+      ---------------------------------
+
+      Mode      6
+        Frequency:            2.99 cm-1
+      ---------------------------------
+        Rzx                      1.0000
+      ---------------------------------
+
+      Mode      7
+        Frequency:         2170.05 cm-1
+      ---------------------------------
+        Angle H1 O2 H3           1.0000
+      ---------------------------------
+
+      Mode      8
+        Frequency:         4140.00 cm-1
+      ---------------------------------
+        Bond O2 H1               1.0000
+        Bond H3 O2               1.0000
+      ---------------------------------
+
+      Mode      9
+        Frequency:         4391.06 cm-1
+      ---------------------------------
+        Bond H3 O2              -1.0000
+        Bond O2 H1               1.0000
+      ---------------------------------
+--
+
+++ Thermochemistry
+
+ *********************
+ *                   *
+ *  THERMOCHEMISTRY  *
+ *                   *
+ *********************
+
+ Mass-centered Coordinates (Angstrom):
+ ***********************************************************
+ Label   N         X           Y           Z          Mass  
+ -----------------------------------------------------------
+ H1        1     0.000000   -0.564646    0.758081      1.00782
+ O2        8     0.000000    0.071156    0.000000     15.99491
+ H3        1     0.000000   -0.564646   -0.758081      1.00782
+ -----------------------------------------------------------
+ Molecular mass:   18.010565
+ Rotational Constants (cm-1):    8.9573   14.5529   23.2961
+ Rotational Constants (GHz) :  268.5340  436.2855  698.3988
+ Rotational temperatures (K):   12.8876   20.9384   33.5178
+ Rotational Symmetry factor:  1
+ Vibrational temperature (K): 
+   3122.21  5956.54  6317.76
+ Number of trans. and rot. degrees of freedom:  6
+ ZPVE                15.298 kcal/mol      0.024379 au.
+ ZPVE corrected energy                  -74.941522 au.
+
+ *****************************************************
+ Temperature =     0.00 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.100000D+01        0.000
+ Rotational            0.100000D+01        2.981
+ Vibrational           0.100000D+01        0.000
+ TOTAL                 0.100000D+01        2.981
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        0.000 kcal/mol      0.000000 au.
+ Rotational           0.000 kcal/mol      0.000000 au.
+ Vibrational         15.298 kcal/mol      0.024379 au.
+ TOTAL               15.298 kcal/mol      0.024379 au.
+
+ Thermal contributions to
+ ENTHALPY            15.298 kcal/mol      0.024379 au.
+ GIBBS FREE ENERGY   15.298 kcal/mol      0.024379 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.941522 au.
+ ENTHALPY                               -74.941522 au.
+ GIBBS FREE ENERGY                      -74.941522 au.
+ -----------------------------------------------------
+
+ *****************************************************
+ Temperature =   100.00 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.454250D+27       29.182
+ Rotational            0.186372D+02        8.794
+ Vibrational           0.369085D-33        0.000
+ TOTAL                 0.312465D-05       37.975
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        0.298 kcal/mol      0.000475 au.
+ Rotational           0.298 kcal/mol      0.000475 au.
+ Vibrational         15.298 kcal/mol      0.024379 au.
+ TOTAL               15.894 kcal/mol      0.025329 au.
+
+ Thermal contributions to
+ ENTHALPY            16.093 kcal/mol      0.025646 au.
+ GIBBS FREE ENERGY   12.295 kcal/mol      0.019594 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.940572 au.
+ ENTHALPY                               -74.940256 au.
+ GIBBS FREE ENERGY                      -74.946307 au.
+ -----------------------------------------------------
+
+ *****************************************************
+ Temperature =   273.15 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.205067D+28       34.174
+ Rotational            0.841360D+02       11.789
+ Vibrational           0.575779D-12        0.000
+ TOTAL                 0.993424D+17       45.963
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        0.814 kcal/mol      0.001298 au.
+ Rotational           0.814 kcal/mol      0.001298 au.
+ Vibrational         15.298 kcal/mol      0.024379 au.
+ TOTAL               16.926 kcal/mol      0.026974 au.
+
+ Thermal contributions to
+ ENTHALPY            17.469 kcal/mol      0.027839 au.
+ GIBBS FREE ENERGY    4.915 kcal/mol      0.007832 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.938927 au.
+ ENTHALPY                               -74.938062 au.
+ GIBBS FREE ENERGY                      -74.958069 au.
+ -----------------------------------------------------
+
+ *****************************************************
+ Temperature =   298.15 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.233855D+28       34.609
+ Rotational            0.959472D+02       12.050
+ Vibrational           0.611746D-11        0.001
+ TOTAL                 0.137262D+19       46.659
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        0.889 kcal/mol      0.001416 au.
+ Rotational           0.889 kcal/mol      0.001416 au.
+ Vibrational         15.298 kcal/mol      0.024379 au.
+ TOTAL               17.076 kcal/mol      0.027212 au.
+
+ Thermal contributions to
+ ENTHALPY            17.668 kcal/mol      0.028156 au.
+ GIBBS FREE ENERGY    3.757 kcal/mol      0.005987 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.938689 au.
+ ENTHALPY                               -74.937745 au.
+ GIBBS FREE ENERGY                      -74.959915 au.
+ -----------------------------------------------------
+
+ *****************************************************
+ Temperature =   323.15 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.263877D+28       35.009
+ Rotational            0.108265D+03       12.290
+ Vibrational           0.450918D-10        0.001
+ TOTAL                 0.128820D+20       47.300
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        0.963 kcal/mol      0.001535 au.
+ Rotational           0.963 kcal/mol      0.001535 au.
+ Vibrational         15.298 kcal/mol      0.024380 au.
+ TOTAL               17.225 kcal/mol      0.027450 au.
+
+ Thermal contributions to
+ ENTHALPY            17.867 kcal/mol      0.028473 au.
+ GIBBS FREE ENERGY    2.582 kcal/mol      0.004115 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.938452 au.
+ ENTHALPY                               -74.937428 au.
+ GIBBS FREE ENERGY                      -74.961787 au.
+ -----------------------------------------------------
+
+ *****************************************************
+ Temperature =   373.15 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.327431D+28       35.724
+ Rotational            0.134340D+03       12.719
+ Vibrational           0.109766D-08        0.004
+ TOTAL                 0.482828D+21       48.447
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        1.112 kcal/mol      0.001773 au.
+ Rotational           1.112 kcal/mol      0.001773 au.
+ Vibrational         15.299 kcal/mol      0.024381 au.
+ TOTAL               17.524 kcal/mol      0.027926 au.
+
+ Thermal contributions to
+ ENTHALPY            18.266 kcal/mol      0.029108 au.
+ GIBBS FREE ENERGY    0.188 kcal/mol      0.000299 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.937975 au.
+ ENTHALPY                               -74.936793 au.
+ GIBBS FREE ENERGY                      -74.965602 au.
+ -----------------------------------------------------
+
+ *****************************************************
+ Temperature =   473.15 Kelvin, Pressure =   1.00 atm
+ -----------------------------------------------------
+ Molecular Partition Function and Molar Entropy:
+                        q/V (M**-3)    S(kcal/mol*K)
+ Electronic            0.100000D+01        0.000
+ Translational         0.467512D+28       36.903
+ Rotational            0.191813D+03       13.427
+ Vibrational           0.860150D-07        0.021
+ TOTAL                 0.771340D+23       50.350
+
+ Thermal contributions to INTERNAL ENERGY:
+ Electronic           0.000 kcal/mol      0.000000 au.
+ Translational        1.410 kcal/mol      0.002248 au.
+ Rotational           1.410 kcal/mol      0.002248 au.
+ Vibrational         15.307 kcal/mol      0.024393 au.
+ TOTAL               18.127 kcal/mol      0.028888 au.
+
+ Thermal contributions to
+ ENTHALPY            19.068 kcal/mol      0.030386 au.
+ GIBBS FREE ENERGY   -4.756 kcal/mol     -0.007579 au.
+
+ Sum of energy and thermal contributions
+ INTERNAL ENERGY                        -74.937014 au.
+ ENTHALPY                               -74.935515 au.
+ GIBBS FREE ENERGY                      -74.973480 au.
+ -----------------------------------------------------
+--
+
+
+ ************************************
+ *                                  *
+ *       Polarizabilities           *
+ *                                  *
+ ************************************
+
+
+
+        5.5080587651796282
+        0.0000000000000027      2.5659106201718491
+       -0.0000000000000000     -0.0000000000000000      0.0400610200708430
+
+++    Isotopic shifts:
+      ----------------
+
+
+
+ ****************************************
+ *                                      *
+ * Isotope shifted frequencies in cm-1  *
+ *                                      *
+ ****************************************
+
+
+  Single substitutions:
+  -----------------------
+
+ Masses:
+ =======
+   2  16   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.01      0.01      0.64      2.25      2.60                                               
+
+
+                         7         8         9
+
+            Freq.    1900.87   3090.21   4276.28                                                                             
+
+
+ Masses:
+ =======
+   3  16   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.00      0.01      0.56      1.99      2.46                                               
+
+
+                         7         8         9
+
+            Freq.    1801.89   2594.32   4272.12                                                                             
+
+
+ Masses:
+ =======
+   1  15   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.01      0.01      0.76      2.72      2.99                                               
+
+
+                         7         8         9
+
+            Freq.    2175.04   4145.75   4401.05                                                                             
+
+
+ Masses:
+ =======
+   1  17   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.01      0.01      0.76      2.71      2.99                                               
+
+
+                         7         8         9
+
+            Freq.    2165.54   4134.87   4382.12                                                                             
+
+
+ Masses:
+ =======
+   1  18   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.00      0.01      0.76      2.71      2.99                                               
+
+
+                         7         8         9
+
+            Freq.    2161.53   4130.34   4374.19                                                                             
+
+
+ Masses:
+ =======
+   1  16   2
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.01      0.01      0.64      2.25      2.60                                               
+
+
+                         7         8         9
+
+            Freq.    1900.87   3090.21   4276.28                                                                             
+
+
+ Masses:
+ =======
+   1  16   3
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.00      0.01      0.56      1.99      2.46                                               
+
+
+                         7         8         9
+
+            Freq.    1801.89   2594.32   4272.12                                                                             
+
+
+
+  Full substitutions:
+  -----------------------
+
+ Masses:
+ =======
+   2  16   2
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.00      0.01      0.57      1.96      2.12                                               
+
+
+                         7         8         9
+
+            Freq.    1584.83   2990.84   3211.18                                                                             
+
+
+ Masses:
+ =======
+   3  16   3
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.00      0.01      0.49      1.63      1.73                                               
+
+
+                         7         8         9
+
+            Freq.    1330.10   2496.01   2706.90                                                                             
+
+
+ Masses:
+ =======
+   1  15   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.01      0.01      0.76      2.72      2.99                                               
+
+
+                         7         8         9
+
+            Freq.    2175.04   4145.75   4401.05                                                                             
+
+
+ Masses:
+ =======
+   1  17   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.01      0.01      0.76      2.71      2.99                                               
+
+
+                         7         8         9
+
+            Freq.    2165.54   4134.87   4382.12                                                                             
+
+
+ Masses:
+ =======
+   1  18   1
+
+
+ Frequencies:
+ ============
+                         1         2         3         4         5         6
+
+            Freq.       0.00      0.00      0.01      0.76      2.71      2.99                                               
+
+
+                         7         8         9
+
+            Freq.    2161.53   4130.34   4374.19                                                                             
+
+
+--
+
+
+      The response parameters are written to the file RESP.
+--- Stop Module:  mclr at Tue Apr 17 15:16:23 2018 /rc=0 ---
+--- Stop Module:  auto at Tue Apr 17 15:16:23 2018 /rc=0 ---
+--- Module auto spent 8 seconds 

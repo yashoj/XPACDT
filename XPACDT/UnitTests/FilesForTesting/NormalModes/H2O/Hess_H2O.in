@@ -1,0 +1,25 @@
+&GATEWAY
+ TITLE = TBT Hessian Sampling 
+ COORD
+  3
+ Angstrom 
+ H     0.356115     0.0     0.0
+ o     0.0          1.0     0.0 
+ H    -0.356115     0.0     0.0
+ BASIS SET = STO-3G
+ NOMOVE
+ Group = NoSym
+>>>  Export  MOLCAS_MAXITER=400
+>>>  Do  while
+
+ &SEWARD
+ &SCF;  Title="TBT  minimum  optimization"
+ &SLAPAF
+
+>>>  EndDo
+
+&MCKINLEY
+Perturbation
+Hessian
+ShowHessian
+

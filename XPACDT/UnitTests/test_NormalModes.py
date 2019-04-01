@@ -29,6 +29,8 @@
 #
 #  **************************************************************************
 
+from molmod.periodic import periodic
+from molmod import centimeter, lightspeed
 import numpy as np
 import unittest
 
@@ -39,9 +41,9 @@ class NormalModesTest(unittest.TestCase):
 
     def test_get_normal_modes(self):
         hessian = np.loadtxt("FilesForTesting/NormalModes/H2O/hess")
-        to_cm = 219474.63
-        mh = 1.007825 * 1822.8885300626
-        mo = 15.994915 * 1822.8885300626
+        to_cm = centimeter / lightspeed / 2.0 / np.pi
+        mh = periodic['H'].mass
+        mo = periodic['O'].mass
         mass = np.array([mh]*3 + [mo]*3 + [mh]*3)
 
         # References obtained with Molcas
@@ -50,7 +52,7 @@ class NormalModesTest(unittest.TestCase):
 
         omega, mode_masses, vec, cartesian = nm.get_normal_modes(hessian, mass)
 
-        np.testing.assert_allclose(omega*to_cm, omega_ref, atol=1e-3)
+        np.testing.assert_allclose(omega*to_cm, omega_ref, atol=1e0)
         for c, c_ref in zip(cartesian.T, cartesian_ref.T):
             self.assertTrue(
                     (abs(c-c_ref) < 1e-3).all() or (abs(c+c_ref) < 1e-3).all())
@@ -59,8 +61,8 @@ class NormalModesTest(unittest.TestCase):
 
     def test_transform_to_cartesian(self):
         hessian = np.loadtxt("FilesForTesting/NormalModes/H2O/hess")
-        mh = 1.007825 * 1822.8885300626
-        mo = 15.994915 * 1822.8885300626
+        mh = periodic['H'].mass
+        mo = periodic['O'].mass
         mass = np.array([mh]*3 + [mo]*3 + [mh]*3)
 
         omega, mode_masses, vec, cartesian = nm.get_normal_modes(hessian, mass)
@@ -70,9 +72,9 @@ class NormalModesTest(unittest.TestCase):
         # TODO: put ref to file?
         x_ref = np.array([
                 [1.4326, 0.2294, 0.0000+0.5774, 0.0000, 1.4309, 0.0000+0.5774, -1.4326, 0.2294, 0.0000+0.5774],
-                [1.4326-0.0001, 0.2294-0.5774, 0.0000, 0.0000-0.0001, 1.4309-0.5774, 0.0000, -1.4326-0.0001, 0.2294-0.5774, 0.0000],
+                [1.4326+0.0001, 0.2294+0.5774, 0.0000, 0.0000+0.0001, 1.4309+0.5774, 0.0000, -1.4326+0.0001, 0.2294+0.5774, 0.0000],
                 [1.4326+0.5774, 0.2294-0.0001, 0.0000, 0.0000+0.5774, 1.4309-0.0001, 0.0000, -1.4326+0.5774, 0.2294-0.0001, 0.0000],
-                [1.4326, 0.2294, 0.0000+0.7043, 0.0000, 1.4309, 0.0000-0.0888, -1.4326, 0.2294, 0.0000+0.7043],
+                [1.4326, 0.2294, 0.0000-0.7043, 0.0000, 1.4309, 0.0000+0.0888, -1.4326, 0.2294, 0.0000-0.7043],
                 [1.4326+0.4218, 0.2294+0.5663, 0.0000, 0.0000-0.0531, 1.4309, 0.0000, -1.4326+0.4218, 0.2294-0.5663, 0.0000],
                 [1.4326, 0.2294, 0.0000+0.7071, 0.0000, 1.4309, 0.0000, -1.4326, 0.2294, 0.0000-0.7071],
                 [1.4326+0.4480, 0.2294+0.5449, 0.0000, 0.0000, 1.4309-0.0687, 0.0000, -1.4326-0.4480, 0.2294+0.5449, 0.0000],
@@ -80,9 +82,9 @@ class NormalModesTest(unittest.TestCase):
                 [1.4326-0.5405, 0.2294+0.4533, 0.0000, 0.0000+0.0681, 1.4309, 0.0000, -1.4326-0.5405, 0.2294-0.4533, 0.0000]])
         p_ref = np.array([
                 [0.0000, 0.0000, 0.0000+0.5774, 0.0000, 0.0000, 0.0000+0.5774, -0.0000, 0.0000, 0.0000+0.5774],
-                [0.0000-0.0001, 0.0000-0.5774, 0.0000, 0.0000-0.0001, 0.0000-0.5774, 0.0000, -0.0000-0.0001, 0.0000-0.5774, 0.0000],
+                [0.0000+0.0001, 0.0000+0.5774, 0.0000, 0.0000+0.0001, 0.0000+0.5774, 0.0000, -0.0000+0.0001, 0.0000+0.5774, 0.0000],
                 [0.0000+0.5774, 0.0000-0.0001, 0.0000, 0.0000+0.5774, 0.0000-0.0001, 0.0000, -0.0000+0.5774, 0.0000-0.0001, 0.0000],
-                [0.0000, 0.0000, 0.0000+0.7043, 0.0000, 0.0000, 0.0000-0.0888, -0.0000, 0.0000, 0.0000+0.7043],
+                [0.0000, 0.0000, 0.0000-0.7043, 0.0000, 0.0000, 0.0000+0.0888, -0.0000, 0.0000, 0.0000-0.7043],
                 [0.0000+0.4218, 0.0000+0.5663, 0.0000, 0.0000-0.0531, 0.0000, 0.0000, -0.0000+0.4218, 0.0000-0.5663, 0.0000],
                 [0.0000, 0.0000, 0.0000+0.7071, 0.0000, 0.0000, 0.0000, -0.0000, 0.0000, 0.0000-0.7071],
                 [0.0000+0.4480, 0.0000+0.5449, 0.0000, 0.0000, 0.0000-0.0687, 0.0000, -0.0000-0.4480, 0.0000+0.5449, 0.0000],
@@ -95,8 +97,8 @@ class NormalModesTest(unittest.TestCase):
             p_nm[i] = 1.0
 
             x, p = nm.transform_to_cartesian(x_nm, p_nm, x0, cartesian)
-            np.testing.assert_allclose(x, x_ref[i], atol=1e-4)
-            np.testing.assert_allclose(p, p_ref[i], atol=1e-4)
+            np.testing.assert_allclose(x, x_ref[i], atol=1e-2)
+            np.testing.assert_allclose(p, p_ref[i], atol=1e-2)
 
         x_nm = np.eye(9)
         p_nm = np.eye(9)
@@ -106,6 +108,11 @@ class NormalModesTest(unittest.TestCase):
         np.testing.assert_allclose(p, p_ref, atol=1e-4)
 
         return
+
+# TODO: not tested yet due to moving it around
+    def test_get_sampling_modes(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
 
 
 if __name__ == "__main__":

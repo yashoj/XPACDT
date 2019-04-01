@@ -1,3 +1,4 @@
+
 #  **************************************************************************
 #
 #  XPACDT, eXtended PolyAtomic Chemical Dynamics Toolkit
@@ -78,7 +79,6 @@ def transform_to_cartesian(x, p, x0, normal_modes):
     Transform from normal mode coordinates and momenta to cartesian
     coordinates and momenta.
 
-    TODO: check broadcasting
     Parameters
     ----------
     x : ndarray of floats
@@ -100,3 +100,62 @@ def transform_to_cartesian(x, p, x0, normal_modes):
     """
 
     return x0 + np.dot(normal_modes, x).T, np.dot(normal_modes, p).T
+
+
+def get_sampling_modes(system, parameters):
+    """
+    Obtain all information required for the normal modes to be sampled. The
+    required Hessian is calculated directly from the given potential and then
+    normal modes are obtained. Only information on the normal modes that should
+    be sampled as specified in the input file are returned.
+
+    TODO: Option to read Hessian from file!
+    TODO: Option to optimize geometry before Hessian calculation.
+
+    The input file can give the modes to be sampled by specifying the 'modes'
+    keyword in the 'sampling' section. If
+        'linear' is given, the first 5 modes are not sampled.
+        'nonlinear' is given, the first 6 modes are not sampled.
+        a list of integers is given, these modes are sampled.
+        nothing is given, all modes are sampled.
+
+    Parameters
+    ----------
+    system : XPACDT.Dynamics.System
+        System that defines the initial geometry and the potential.
+    parameters : XPACDT.Input.Inputfile
+        XPACDT representation of the given input file.
+    Returns
+    -------
+    omega : ndarray of floats
+        Normal mode frequencies in au.
+    nm_masses : ndarray of floats
+        Normal mode masses in au.
+    nm_cartesian : two-dimensional ndarray of floats, shape(#dof, #modes)
+        Transformation matrix from the normal modes that should be sampled to
+        the full cartesian coordinates.
+    """
+
+    hessian = system.pes.get_Hessian(system.nuclei.positions[:, 0])
+
+    omega, nm_masses, normal_modes, nm_cartesian = \
+        get_normal_modes(hessian, system.masses)
+
+    # get modes to be sampled from input. This can be
+    # - nothing given - sample all modes
+    # - linear - linear system, so remove first 5 modes
+    # - nonlinear - not a linear system, so remove first 6
+    # - a list of numbers - only sample the given ones
+    modes = parameters.get_section("sampling").get("modes")
+    if modes is None or modes == '':
+        modelist = range(system.n_dof)
+    elif modes == 'linear':
+        modelist = range(5, system.n_dof)
+    elif modes == 'nonlinear':
+        modelist = range(6, system.n_dof)
+    else:
+        modelist = [int(i) for i in modes.split()]
+
+    assert(len(modelist) > 0), "No modes selected for sampling!"
+
+    return omega[modelist], nm_masses[modelist], nm_cartesian[:, modelist]

@@ -28,6 +28,7 @@
 #  **************************************************************************
 
 from io import StringIO
+from molmod.periodic import periodic
 import numpy as np
 import os
 import re
@@ -146,16 +147,15 @@ class Inputfile(object):
 
         d = StringIO(values)
         try:
+            # TODO write a small wrapper for isotope masses!
             mc = np.loadtxt(d, ndmin=2, converters={0: lambda s:
-                            self.periodic_table[str(s)[2]].get("atomic_mass")})
-        except KeyError as e:
-            sys.stderr.write("Unknwon atomic symbol given: " + str(e) + "\n")
-            raise e
+                            periodic[str(s)[2]].mass})
+        except AttributeError as e:
+            raise type(e)(str(e) + "\nXPACDT: Unknwon atomic symbol given!")
         except ValueError as e:
-            sys.stderr.write("Too few/many coordinates given. Please check the"
-                             " error forthe line number with the first "
-                             "inconsistency." + str(e) + "\n")
-            raise e
+            raise type(e)(str(e) + "\nXPACDT: Too few/many coordinates given. "
+                                   "Please check the error for the line "
+                                   "number with the first inconsistency.")
 
         self._masses = mc[:, 0]
         self._coordinates = mc[:, 1:]
@@ -185,10 +185,9 @@ class Inputfile(object):
         try:
             mc = np.loadtxt(d, ndmin=2)
         except ValueError as e:
-            sys.stderr.write("Too few/many beads given. Please check the error"
-                             " for the line number with the first"
-                             " inconsistency." + str(e) + "\n")
-            raise e
+            raise type(e)(str(e) + "\nXPACDT: Too few/many beads given. "
+                                   "Please check the error for the line "
+                                   "number with the first inconsistency.")
 
         self._masses = mc[:, 0]
         self._coordinates = mc[:, 1:]

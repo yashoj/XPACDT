@@ -48,9 +48,6 @@ class Nuclei(object):
     momenta : two-dimensional ndarray of floats
         The momenta of all beads in the system. The first axis is the degrees
         of freedom and the second axis the beads.
-    propagator : VelocityVerlet object, optional
-        The propagator used to integrate the equations of motion for this
-        system. Default: None.
 
     # TODO: Do we need those two???
     xyz_atoms : bool, optional
@@ -70,7 +67,7 @@ class Nuclei(object):
     """
 
     def __init__(self, degrees_of_freedom, coordinates, momenta,
-                 propagator=None, xyz_atoms=False, n_beads=[1], **kwargs):
+                 xyz_atoms=False, n_beads=[1], **kwargs):
         self.n_dof = degrees_of_freedom
 
         if xyz_atoms:
@@ -85,7 +82,7 @@ class Nuclei(object):
 
         self.log = []
 
-        self.__propagator = propagator
+        self.__propagator = None
         return
 
     @property
@@ -125,6 +122,15 @@ beads given."
     @positions.setter
     def positions(self, a):
         self.__positions = a.copy()
+
+    @property
+    def propagator(self):
+        """ The propagator used to advance the nuclei in time. """
+        return self.__propagator
+
+    @propagator.setter
+    def propagator(self, p):
+        self.__propagator = p
 
     @property
     def x_centroid(self):

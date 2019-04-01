@@ -41,6 +41,7 @@ class SystemTest(unittest.TestCase):
 #        self.input = infile.Inputfile("input.in")
 
     def dummyTest(self):
+        raise NotImplementedError("Please implement a test here!!")
         pass
 
 

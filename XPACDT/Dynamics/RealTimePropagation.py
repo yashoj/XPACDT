@@ -38,11 +38,6 @@ import pickle
 def propagate(system, parameters):
     """ Propagate the system."""
 
-    picklefile_name = parameters.get_section('system').\
-        get('picklefile', 'pickle.dat')
-    if parameters.get_section('system').get('restart') is not None:
-        system = pickle.load(open(picklefile_name, 'rb'))
-
     time_end = float(parameters.get_section('propagation').get('time_end'))
     timestep_output = parameters.get_section('propagation').get('time_output')
     if timestep_output is not None:

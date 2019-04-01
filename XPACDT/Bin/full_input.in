@@ -1,35 +1,85 @@
-$system		# general parameters
-dof = 4		# the number of degrees of freedom
-job = sample	# The job type (possible: sample, propagate)
-Interface = OneDPolynomial   # the interface to the potential to be used
-	    		     # (possible: OneDPolynomial)
+##############################################################################
+# This is supposed to be a full documentation of possible input parameters! ##
+# More comments go here ######################################################
+##############################################################################
+
+$system                     # general parameters
+
+dof = 4                     # the number of degrees of freedom
+job = sample	                # The job type (possible: sample, propagate)
+Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
+folder = test               # the folder for the trajectories
+
+# optional:
+picklefile = NameHere.dat   # optional name of pickle file - else: pickle.dat
+time = 0 fs                 # the current time of the system in either fs or au
+# override or add (for sampling with existing folder)
 $end
 
+##############################################################################
+
 $OneDPolynomial # must match the interface specified; specific to each interface
+
 a = 0 0 0.5
 x0 = 0
 $end
 
+##############################################################################
+
 $rpmd
+
 beads = 
 beta = 
 $end
 
-$propagation	# propagator input
-dt = 1.0 au	# time step used
+##############################################################################
+
+$sampling               # sampling input
+
+method = Wigner         # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
+samples = 1000          # number of samples to be collected
+
+# optional:
+modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty)
+temperature = 300       # in Kelvin
+quantum_numbers = 0 0 2 # the quantum number used in Quasiclassical sampling for each mode
 $end
 
+##############################################################################
 
-$coordinates	# coordinates given here
-type = mass-value # coordinate format (possible: mass-value, xyz)
+$propagator             # nuclei propagator input
+
+method = VelocityVerlet # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
+timestep = 0.01 fs      # timestep in fs or au
+
+# optional:
+# TODO
+$end
+
+##############################################################################
+
+$propagation	    # propagation input
+
+dt = 1.0 au     # time step used
+$end
+
+##############################################################################
+
+$coordinates	           # coordinates given here
+
+type = mass-value      # coordinate format (possible: mass-value, xyz)
 1.0 2.0 3.0
 2.0 1.0 4.0
 $end
 
+##############################################################################
 
-$momenta	# momenta, must be the same ordering as coordinates
+$momenta               # momenta, must be the same ordering as coordinates
+
 1.0 2.0 3.0
 4.0 5.0 6.0
 $end
+
+##############################################################################
 
 ### more comments!!

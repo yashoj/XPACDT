@@ -27,6 +27,7 @@
 #
 #  **************************************************************************
 
+from molmod.units import parse_unit
 import numpy as np
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
@@ -55,20 +56,25 @@ class VelocityVerlet(object):
         Inverse temperature for ring polymer springs in a.u.
     """
 
-    def __init__(self, dt, potential, mass, **kwargs):
+    def __init__(self, potential, mass, **kwargs):
         # TODO: basic argument parsing here
 
         assert (isinstance(potential, template.Interface)), \
             "potential not derived from InterfaceTemplate!"
-        assert (dt > 0), "Timestep 0 or less."
+        assert ('timestep' in kwargs), "No timestep given for propagator."
 
-        # required
-        self.timestep = dt
         self.potential = potential
         self.mass = mass
 
+        dt_string = kwargs.get("timestep").split()
+        self.timestep = float(dt_string[0]) * parse_unit(dt_string[1])
+
         # optional as keywords
-        self.beta = kwargs.get('beta', None)
+        if 'beta' in kwargs:
+            self.beta = kwargs.get('beta')
+        else:
+            self.__beta = -1.0
+
         self.__thermostat = None
         self.__constraints = None
 

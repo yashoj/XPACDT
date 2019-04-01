@@ -37,20 +37,20 @@ class OneDPolynomial(itemplate.Interface):
     def __init__(self, **kwargs):
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))
-        except ValueError:
-            print("Parameter 'x0' for polynomials not convertable to floats."
-                  " x0 is " + kwargs.get('x0'))
-            raise
+        except ValueError as e:
+            raise type(e)(str(e) + "\nXPACDT: Parameter 'x0' for polynomials "
+                                   "not convertable to floats. x0 is "
+                                   + kwargs.get('x0'))
 
         assert (isinstance(kwargs.get('a'), str)), \
             "Parameters 'a' for polynomials not given or not given as " \
             "string."
         try:
             self.__as = [float(f) for f in kwargs.get('a').split()]
-        except ValueError:
-            print("Parameters 'a' for polynomials not convertable to floats."
-                  " a is " + kwargs.get('a'))
-            raise
+        except ValueError as e:
+            raise type(e)(str(e) + "\nXPACDT: Parameters 'a' for polynomials "
+                                   "not convertable to floats."
+                                   " a is " + kwargs.get('a'))
 
         itemplate.Interface.__init__(self, "OneDPolynomial")
 

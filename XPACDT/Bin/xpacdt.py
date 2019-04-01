@@ -37,8 +37,11 @@ from os.path import abspath
 import sys
 
 import XPACDT.Dynamics.RealTimePropagation as rt
+import XPACDT.Dynamics.Sampling as sampling
 import XPACDT.Dynamics.System as xSystem
 import XPACDT.Dynamics.VelocityVerlet as vv
+import XPACDT.Dynamics.WignerSampling as wigner
+
 import XPACDT.Input.Inputfile as infile
 
 import XPACDT.Interfaces.OneDPolynomial as oneDP
@@ -65,24 +68,28 @@ def start():
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
                         required=True, help=iHelp)
 
-# TODO: Add more command line arguments as fit
-
+    # TODO: Add more command line arguments as fit
     args = parser.parse_args()
 
     # Get input file
     print("The inputfile '" + args.InputFile + "' is read! \n")
     parameters = infile.Inputfile(args.InputFile)
 
-# TODO: Main code goes here
+    # TODO: here: either create of read from picle file!!
+    # TODO: howto exactly handle the different parameters for that
+    # i.e. setup vs. override vs reread...
     system = xSystem.System(parameters)
 
+    # Call approriate module
     job = parameters.get_section("system").get("job")
     if job == "sample":
-        system.sample()
+        sampling.sample(system, parameters)
     elif job == "propagate":
         rt.propagate(system, parameters)
+    elif job == "analyze":
+        raise NotImplementedError("Please implement the analysis stuff here!!")
     else:
-        print("Nothing to be done! Exiting...")
+        raise NotImplementedError("Requested job type not implemented: " + job)
 
 #    # Example usage for potentials
 #    pes = oneDP.OneDPolynomial(**parameters.get_section("OneDPolynomial"))

@@ -28,6 +28,7 @@
 #  **************************************************************************
 
 import copy
+from molmod.units import parse_unit
 import sys
 
 import XPACDT.Dynamics.VelocityVerlet as vv
@@ -36,8 +37,7 @@ import XPACDT.Dynamics.Nuclei as nuclei
 
 class System(object):
     """This class is the main representation of the system treated with XPACDT.
-    It sets up the calculation, stores all important objects and runs whatever
-    is needed.
+    It sets up the calculation, stores all important objects.
 
     Parameters
     ----------
@@ -65,24 +65,30 @@ class System(object):
 
     """
 
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, parameters):
+
+        assert('Interface' in parameters.get_section("system")), "Interface " \
+            "not specified!"
+        assert('dof' in parameters.get_section("system")), "Number of " \
+            "degrees of freedom not specified!"
+
+        self.n_dof = parameters.get_section("system").get("dof")
+        time_string = parameters.get_section("system").get("time", "0 fs")
+        self.time = float(time_string[0]) * parse_unit(time_string[1])
 
         # Set up potential
         pes_name = parameters.get_section("system").get("Interface", None)
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
                              pes_name)(**parameters.get_section(pes_name))
 
-        self.n_dof = parameters.get_section("system").get("dof")
-
         # TODO: init nuclei
         self._init_nuclei(parameters)
         # TOOD: init electrons
         self._init_electrons(parameters)
 
-        self.time = kwargs.get('time', 0.0)
-        self.log(init=True)
+        self.__parameters = parameters
 
-        pass
+        self.log(init=True)
 
     @property
     def n_dof(self):
@@ -104,9 +110,19 @@ class System(object):
         self.__time = f
 
     @property
+    def parameters(self):
+        """XPACDT.Input.Inputfile : The parameters from the input file."""
+        return self.__parameters
+
+    @property
     def nuclei(self):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
+
+    @property
+    def pes(self):
+        """InterfaceTemplate : Potential energy interface of the system."""
+        return self.__pes
 
     def _init_nuclei(self, parameters):
         """ Function to set up the nuclei of a system including all associated
@@ -119,7 +135,7 @@ class System(object):
         """
 
         # coordinates, masses from input - reshape and test some consistency
-        masses = parameters._masses
+        self.masses = parameters._masses
         if parameters._c_type == 'mass-value':
             coordinates = parameters._coordinates.reshape((self.n_dof, -1))
         elif parameters._c_type == 'xyz':
@@ -127,23 +143,28 @@ class System(object):
 
         try:
             momenta = parameters._momenta.reshape(coordinates.shape)
-        except ValueError:
-            sys.stderr.write("Number of given momenta and coordinates "
-                             "does not match! \n")
-            sys.exit(-1)
-
-        # set up propagator
-        p = parameters.get_section("propagation")
-        dt = float(p.get("timestep_nuclei").split()[0])  # TODO: unit conversion here
-        kwargs = {}
-        if parameters.get_section("rpmd"):
-            kwargs["beta"] = float(parameters.get_section("rpmd").get("beta"))
-        propagator = vv.VelocityVerlet(dt, self.__pes, masses, **kwargs)
+        except ValueError as e:
+            raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+                          "coordinates does not match!")
 
         self.__nuclei = nuclei.Nuclei(self.n_dof, coordinates, momenta,
-                                      propagator=propagator,
                                       n_beads=[coordinates.shape[1]])
-        print(self.__nuclei.n_beads)
+
+        # set up propagator and attach
+        if parameters.get_section('propagator') is not None:
+            prop_parameters = parameters.get_section('propagator')
+            if parameters.get_section("rpmd"):
+                assert('beta' in parameters.get_section("rpmd")), "No beta " \
+                        "given for RPMD."
+                prop_parameters['beta'] = parameters.get_section("rpmd")
+
+            method = prop_parameters.get('method')
+            __import__("XPACDT.Dynamics." + method)
+            propagator = getattr(sys.modules["XPACDT.Dynamics." + method],
+                                 method)(self.__pes, self.masses,
+                                         **prop_parameters)
+
+            self.__nuclei.propagator = propagator
 
     def _init_electrons(self, parameters):
         """ Function to set up the electrons of a system including all

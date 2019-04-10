@@ -96,8 +96,7 @@ def start():
 
     # read from pickle file if exists
     name_folder = parameters.get('system').get('folder')
-    name_file = parameters.get('system').\
-        get('picklefile', 'pickle.dat')
+    name_file = parameters.get('system').get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
@@ -105,6 +104,7 @@ def start():
     else:
         system = xSystem.System(parameters)
 
+    # Run job
     if job == "sample":
         sampling.sample(system, parameters)
     elif job == "propagate":

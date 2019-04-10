@@ -84,8 +84,8 @@ class System(object):
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
                              pes_name)(**parameters.get(pes_name))
 
-        # TODO: init nuclei
-        self._init_nuclei(parameters)
+        # Set up nuclei
+        self.__nuclei = nuclei.Nuclei(self.n_dof, parameters, self.pes)
         # TOOD: init electrons
         self._init_electrons(parameters)
 
@@ -126,57 +126,6 @@ class System(object):
     def pes(self):
         """InterfaceTemplate : Potential energy interface of the system."""
         return self.__pes
-
-    def _init_nuclei(self, parameters):
-        """ Function to set up the nuclei of a system including all associated
-        objects like propagators.
-
-        Parameters
-        ----------
-        parameters : XPACDT input file
-            Dictonary-like presentation of the input file.
-        """
-
-        # coordinates, masses from input - reshape and test some consistency
-        # TODO: This should be put into Inputfile.py!
-        self.masses = parameters.masses
-        if parameters._c_type == 'mass-value':
-            coordinates = parameters.coordinates.reshape((self.n_dof, -1))
-        elif parameters._c_type == 'xyz':
-            coordinates = parameters.coordinates.T.reshape((self.n_dof, -1))
-
-        try:
-            momenta = parameters._momenta.reshape(coordinates.shape)
-        except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
-                          "coordinates does not match!")
-
-        self.__nuclei = nuclei.Nuclei(self.n_dof, coordinates, momenta, self.pes, 
-                                      n_beads=[coordinates.shape[1]])
-
-        self.attach_nuclei_propagator(parameters)
-
-### TODO: refactor so that the nuclei have the masses and pes and create their
-# own propagator as needed; i.e. this functions goes into the nuclei
-    def attach_nuclei_propagator(self, parameters):
-        # set up propagator and attach
-        if 'propagator' in parameters:
-            prop_parameters = parameters.get('propagator')
-            if 'rpmd' in parameters:
-                assert('beta' in parameters.get("rpmd")), "No beta " \
-                        "given for RPMD."
-                prop_parameters['beta'] = parameters.get("rpmd").get('beta')
-
-            method = prop_parameters.get('method')
-            __import__("XPACDT.Dynamics." + method)
-            propagator = getattr(sys.modules["XPACDT.Dynamics." + method],
-                                 method)(self.__pes, self.masses,
-                                         **prop_parameters)
-
-            if 'thermostat' in parameters:
-                propagator.attach_thermostat(parameters, self.masses)
-
-            self.__nuclei.propagator = propagator
 
     def _init_electrons(self, parameters):
         """ Function to set up the electrons of a system including all

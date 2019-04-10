@@ -28,6 +28,7 @@
 #  **************************************************************************
 
 import numpy as np
+import sys
 # import scipy as sp
 
 # TODO: Design decision - how to roder R, P, etc. beads x DOF or DOF x beads
@@ -42,12 +43,9 @@ class Nuclei(object):
     -----------
     degrees_of_freedom : int
         The number of nuclear degrees of freedom present.
-    coordinate : two-dimensional ndarray of floats
-        The positions of all beads in the system. The first axis is the degrees
-        of freedom and the second axis the beads.
-    momenta : two-dimensional ndarray of floats
-        The momenta of all beads in the system. The first axis is the degrees
-        of freedom and the second axis the beads.
+    parameters : XPACDT.Input.Inputfile
+    pes : XPACDT.Interfaces.InterfaceTemplate
+
 
     # TODO: Do we need those two???
     xyz_atoms : bool, optional
@@ -66,22 +64,48 @@ class Nuclei(object):
     momenta
     """
 
-    def __init__(self, degrees_of_freedom, coordinates, momenta, pes,
-                 xyz_atoms=False, n_beads=[1], **kwargs):
-        self.n_dof = degrees_of_freedom
+    def __init__(self, degrees_of_freedom, parameters, pes):
 
-        if xyz_atoms:
+        self.n_dof = degrees_of_freedom
+        self.pes = pes
+
+        # coordinates, masses from input - reshape and test some consistency
+        # TODO: This should be put into Inputfile.py!
+        self.masses = parameters.masses
+        if parameters._c_type == 'mass-value':
+            self.positions = parameters.coordinates.reshape((self.n_dof, -1))
+        elif parameters._c_type == 'xyz':
+            self.positions = parameters.coordinates.T.reshape((self.n_dof, -1))
+
             assert ((self.n_dof % 3) == 0), "Assumed atoms, but number of \
  deegrees of freedom not a multiple of 3."
             self.n_atoms = self.n_dof / 3
 
-        self.n_beads = n_beads
+        self.n_beads = [self.positions.shape[1]]
 
-        self.positions = coordinates
-        self.momenta = momenta
-        self.pes = pes
+        try:
+            self.momenta = parameters._momenta.reshape(self.positions.shape)
+        except ValueError as e:
+            raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+                          "coordinates does not match!")
 
-        self.__propagator = None
+        # set up propagator and attach
+        if 'propagator' in parameters:
+            prop_parameters = parameters.get('propagator')
+            if 'rpmd' in parameters:
+                assert('beta' in parameters.get("rpmd")), "No beta " \
+                        "given for RPMD."
+                prop_parameters['beta'] = parameters.get("rpmd").get('beta')
+
+            method = prop_parameters.get('method')
+            __import__("XPACDT.Dynamics." + method)
+            self.propagator = getattr(sys.modules["XPACDT.Dynamics." + method],
+                                 method)(self.pes, self.masses,
+                                         **prop_parameters)
+
+            if 'thermostat' in parameters:
+                self.propagator.attach_thermostat(parameters, self.masses)
+
         return
 
     @property
@@ -135,6 +159,16 @@ beads given."
     def x_centroid(self):
         """ Array of floats : The centroid of each coordinate. """
         return np.mean(self.positions, axis=1)
+
+    @property
+    def masses(self):
+        """one-dimensional ndarray of floats : The masses of each degree of
+        freedom in au."""
+        return self.__masses
+
+    @masses.setter
+    def masses(self, a):
+        self.__masses = a.copy()
 
     @property
     def momenta(self):

@@ -66,7 +66,7 @@ class Nuclei(object):
     momenta
     """
 
-    def __init__(self, degrees_of_freedom, coordinates, momenta,
+    def __init__(self, degrees_of_freedom, coordinates, momenta, pes,
                  xyz_atoms=False, n_beads=[1], **kwargs):
         self.n_dof = degrees_of_freedom
 
@@ -79,8 +79,7 @@ class Nuclei(object):
 
         self.positions = coordinates
         self.momenta = momenta
-
-        self.log = []
+        self.pes = pes
 
         self.__propagator = None
         return
@@ -153,6 +152,31 @@ beads given."
         """ Array of floats : The centroid of each momentum. """
         return np.mean(self.momenta, axis=1)
 
+    @property
+    def energy(self):
+        """ float : Total energy of the nuclei including the spring term.
+        i.e. \frac{1}{n}(\sum_i \sum_j (p^2_ij)(2m_j)) + SPINGS + V). TODO:
+        write out properly."""
+        return self.kinetic_energy + self.spring_energy + self.potential_energy
+
+    @property
+    def kinetic_energy(self):
+        """ float TODO, incorrect currently! Need to be changed when
+        refactoring."""
+        return 0.5*np.sum(self.momenta * self.momenta)
+
+    @property
+    def spring_energy(self):
+        """ floatTODO, incorrect currently! Need to be changed when
+        refactoring."""
+        return 0.0
+
+    @property
+    def potential_energy(self):
+        """ floatTODO, incorrect currently! Need to be changed when
+        refactoring."""
+        return self.pes.energy(self.positions)
+
     def propagate(self, time):
         """ This functions advances the positions and momenta of the nuclei
         for a given time using the proapgator assigned.
@@ -165,7 +189,5 @@ beads given."
 
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta, time)
-
-        self.log.append(self.positions.copy())
 
         return

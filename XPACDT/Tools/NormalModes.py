@@ -1,4 +1,3 @@
-
 #  **************************************************************************
 #
 #  XPACDT, eXtended PolyAtomic Chemical Dynamics Toolkit
@@ -27,6 +26,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #  **************************************************************************
+
+
+"""This module handles normal modes of a given system (e.g. a molecule). """
 
 import numpy as np
 
@@ -146,7 +148,7 @@ def get_sampling_modes(system, parameters):
     # - linear - linear system, so remove first 5 modes
     # - nonlinear - not a linear system, so remove first 6
     # - a list of numbers - only sample the given ones
-    modes = parameters.get_section("sampling").get("modes")
+    modes = parameters.get("sampling").get("modes")
     if modes is None or modes == '':
         modelist = range(system.n_dof)
     elif modes == 'linear':

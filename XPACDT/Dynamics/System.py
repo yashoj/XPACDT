@@ -27,11 +27,13 @@
 #
 #  **************************************************************************
 
+""" Module that defines the physical system treated in XPACDT. This is the
+core of XPACDT."""
+
 import copy
 from molmod.units import parse_unit
 import sys
 
-import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.Dynamics.Nuclei as nuclei
 
 
@@ -67,19 +69,20 @@ class System(object):
 
     def __init__(self, parameters):
 
-        assert('Interface' in parameters.get_section("system")), "Interface " \
+        assert('Interface' in parameters.get("system")), "Interface " \
             "not specified!"
-        assert('dof' in parameters.get_section("system")), "Number of " \
+        assert('dof' in parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 
-        self.n_dof = parameters.get_section("system").get("dof")
-        time_string = parameters.get_section("system").get("time", "0 fs")
+        self.n_dof = parameters.get("system").get("dof")
+        time_string = parameters.get("system").get("time", "0 fs").split()
         self.time = float(time_string[0]) * parse_unit(time_string[1])
 
         # Set up potential
-        pes_name = parameters.get_section("system").get("Interface", None)
+        pes_name = parameters.get("system").get("Interface", None)
+        __import__("XPACDT.Interfaces." + pes_name)
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(**parameters.get_section(pes_name))
+                             pes_name)(**parameters.get(pes_name))
 
         # TODO: init nuclei
         self._init_nuclei(parameters)
@@ -135,11 +138,12 @@ class System(object):
         """
 
         # coordinates, masses from input - reshape and test some consistency
-        self.masses = parameters._masses
+        # TODO: This should be put into Inputfile.py!
+        self.masses = parameters.masses
         if parameters._c_type == 'mass-value':
-            coordinates = parameters._coordinates.reshape((self.n_dof, -1))
+            coordinates = parameters.coordinates.reshape((self.n_dof, -1))
         elif parameters._c_type == 'xyz':
-            coordinates = parameters._coordinates.T.reshape((self.n_dof, -1))
+            coordinates = parameters.coordinates.T.reshape((self.n_dof, -1))
 
         try:
             momenta = parameters._momenta.reshape(coordinates.shape)
@@ -147,22 +151,30 @@ class System(object):
             raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
                           "coordinates does not match!")
 
-        self.__nuclei = nuclei.Nuclei(self.n_dof, coordinates, momenta,
+        self.__nuclei = nuclei.Nuclei(self.n_dof, coordinates, momenta, self.pes, 
                                       n_beads=[coordinates.shape[1]])
 
+        self.attach_nuclei_propagator(parameters)
+
+### TODO: refactor so that the nuclei have the masses and pes and create their
+# own propagator as needed; i.e. this functions goes into the nuclei
+    def attach_nuclei_propagator(self, parameters):
         # set up propagator and attach
-        if parameters.get_section('propagator') is not None:
-            prop_parameters = parameters.get_section('propagator')
-            if parameters.get_section("rpmd"):
-                assert('beta' in parameters.get_section("rpmd")), "No beta " \
+        if 'propagator' in parameters:
+            prop_parameters = parameters.get('propagator')
+            if 'rpmd' in parameters:
+                assert('beta' in parameters.get("rpmd")), "No beta " \
                         "given for RPMD."
-                prop_parameters['beta'] = parameters.get_section("rpmd")
+                prop_parameters['beta'] = parameters.get("rpmd").get('beta')
 
             method = prop_parameters.get('method')
             __import__("XPACDT.Dynamics." + method)
             propagator = getattr(sys.modules["XPACDT.Dynamics." + method],
                                  method)(self.__pes, self.masses,
                                          **prop_parameters)
+
+            if 'thermostat' in parameters:
+                propagator.attach_thermostat(parameters, self.masses)
 
             self.__nuclei.propagator = propagator
 
@@ -188,7 +200,19 @@ class System(object):
         self.time += time
         self.log()
 
+    def reset(self):
+        """ Reset to original values. """
+        self.time = self._log[0][0]
+        self.nucei = copy.deepcopy(self._log[0][1])
+
+    def clear_log(self):
+        """ Set the current state as initial state and clear everything else."""
+        self.time = self._log[0][0]
+        self.nucei = copy.deepcopy(self._log[-1][1])
+        self.log(True)
+
     def log(self, init=False):
+        """ Log the system state. """
         if init:
             self._log = []
         self._log.append([self.time, copy.deepcopy(self.nuclei)])

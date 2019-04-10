@@ -27,6 +27,9 @@
 #
 #  **************************************************************************
 
+""" This module defines all required routines to generate an initial set of
+systems for real-time propagation."""
+
 import glob
 import os
 import pickle
@@ -59,16 +62,16 @@ def sample(system, parameters):
         XPACDT representation of the given input file.
     """
 
-    assert('folder' in parameters.get_section('system')), "No folder for " \
+    assert('folder' in parameters.get('system')), "No folder for " \
         "trajectories given."
-    assert('method' in parameters.get_section('sampling')), "No sampling " \
+    assert('method' in parameters.get('sampling')), "No sampling " \
         "method specified."
-    assert('samples' in parameters.get_section('sampling')), "Number of " \
+    assert('samples' in parameters.get('sampling')), "Number of " \
         "samples required not given."
 
     # Create or handle trajectory folder.
     folder_shift = 0
-    name_folder = parameters.get_section('system').get('folder')
+    name_folder = parameters.get('system').get('folder')
     if not os.path.isdir(name_folder):
         try:
             os.mkdir(name_folder)
@@ -78,11 +81,11 @@ def sample(system, parameters):
     else:
         trj_folders = glob.glob(os.path.join(name_folder, 'trj_*'))
 
-        if 'override' in parameters.get_section('system'):
+        if 'override' in parameters.get('system'):
             for folder in trj_folders:
                 shutil.rmtree(folder)
 
-        elif 'add' in parameters.get_section('system'):
+        elif 'add' in parameters.get('system'):
             for folder in trj_folders:
 
                 try:
@@ -100,7 +103,7 @@ def sample(system, parameters):
                                "trajectories is given.")
 
     # Run sampling method
-    method = parameters.get_section('sampling').get('method')
+    method = parameters.get('sampling').get('method')
     __import__("XPACDT.Dynamics." + method + "Sampling")
     systems = getattr(sys.modules["XPACDT.Dynamics." + method + "Sampling"],
                       "do_" + method + "_sampling")(system, parameters)
@@ -112,7 +115,7 @@ def sample(system, parameters):
         trj_folder = os.path.join(name_folder,
                                   'trj_{0:07}'.format(i+folder_shift))
         os.mkdir(trj_folder)
-        file_name =  parameters.get_section('system').get('picklefile', 'pickle.dat')
+        file_name = parameters.get('system').get('picklefile', 'pickle.dat')
         pickle.dump(s, open(os.path.join(trj_folder, file_name), 'wb'), -1)
 
 # TODO: maybe do some anaylis here!!

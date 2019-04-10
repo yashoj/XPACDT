@@ -29,22 +29,33 @@
 #
 #  **************************************************************************
 
+import numpy as np
 import unittest
 
 import XPACDT.Dynamics.FixedSampling as fixed
-
-# TODO: How to properly test? Use some seeding for random number generator!?
+import XPACDT.Dynamics.System as xSystem
+import XPACDT.Input.Inputfile as infile
 
 
 class FixedSamplingTest(unittest.TestCase):
 
-#    def setUp(self):
-#        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
+    def setUp(self):
+        self.parameters = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_fixed.in"})
+        self.system = xSystem.System(self.parameters)
 
-    def dummyTest(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+    def test_do_Fixed_sampling(self):
+        coordinate_ref = np.array([[2.0], [1.0], [4.0], [-2.0]])
+        momenta_ref = np.array([[-1.0], [0.1], [2.0], [1.25]])
+        samples = fixed.do_Fixed_sampling(self.system, self.parameters)
+
+        self.assertEqual(len(samples), 1000)
+        for s in samples:
+            self.assertEqual(s.nuclei.n_dof, 4)
+            np.testing.assert_allclose(s.nuclei.positions, coordinate_ref,
+                                       rtol=1e-7)
+            np.testing.assert_allclose(s.nuclei.momenta, momenta_ref,
+                                       rtol=1e-7)
+            # TODO: more attributes to be checked?
 
 
 if __name__ == "__main__":

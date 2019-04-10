@@ -59,7 +59,7 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
         A list of systems located at the sampled phase-space points.
     """
 
-    assert('samples' in parameters.get_section('sampling')), "Number of " \
+    assert('samples' in parameters.get('sampling')), "Number of " \
         "samples required not given."
 
     x0 = system.nuclei.positions[:, 0]
@@ -70,16 +70,16 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
     sigma_p = np.sqrt((omega * nm_masses) / (2.0))
 
     # Add a thermal scaling if a thermal distribution is required
-    if "temperature" in parameters.get_section("sampling"):
-        temperature = float(parameters.get_section("sampling").
-                            get('temperature'))
+    if "temperature" in parameters.get("sampling"):
+        temperature = float(parameters.get("sampling").
+                            get('temperature').split()[0])
         beta = 1.0 / (temperature * const.boltzmann)
         thermal_factor = np.sqrt(1.0 / np.tanh(beta * omega / 2.0))
 
         sigma_x *= thermal_factor
         sigma_p *= thermal_factor
 
-    n_sample = int(parameters.get_section("sampling").get('samples'))
+    n_sample = int(parameters.get("sampling").get('samples'))
 
     # Draw from normal distribution
     x_normal_modes = np.random.normal(np.zeros_like(sigma_x), sigma_x,
@@ -98,5 +98,6 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.positions = x.reshape(1, -1)
         systems[-1].nuclei.momenta = p.reshape(1, -1)
+        systems[-1].log(init=True)
 
     return systems

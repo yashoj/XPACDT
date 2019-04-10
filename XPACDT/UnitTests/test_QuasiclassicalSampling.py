@@ -29,22 +29,46 @@
 #
 #  **************************************************************************
 
+import numpy as np
+import random
 import unittest
 
 import XPACDT.Dynamics.QuasiclassicalSampling as qcs
+import XPACDT.Dynamics.System as xSystem
+import XPACDT.Input.Inputfile as infile
 
-# TODO: How to properly test? Use some seeding for random number generator!?
+# TODO: How to properly test? Use some seeding for random number generator
+# and obtain actual values to compare to?
+# TODO: Use other PES once available!
 
 
 class QuasiclassicalSamplingTest(unittest.TestCase):
 
-#    def setUp(self):
-#        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
+    def setUp(self):
+        seed = 0
+        random.seed(seed)
+        np.random.seed(seed)
+
+        self.parameters0 = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_quasiclassical_0.in"})
+        self.system0 = xSystem.System(self.parameters0)
+
+        self.parameters2 = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_quasiclassical_2.in"})
+        self.system2 = xSystem.System(self.parameters2)
 
     def test_do_Quasiclassical_sampling(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        samples = qcs.do_Quasiclassical_sampling(self.system0, self.parameters0)
+
+        self.assertEqual(len(samples), 1000)
+        for s in samples:
+            self.assertEqual(s.nuclei.n_dof, 1)
+            self.assertAlmostEqual(0.5, s.nuclei.energy)
+
+        samples = qcs.do_Quasiclassical_sampling(self.system2, self.parameters2)
+
+        self.assertEqual(len(samples), 1000)
+        for s in samples:
+            self.assertEqual(s.nuclei.n_dof, 1)
+            self.assertAlmostEqual(2.5, s.nuclei.energy)
 
 
 if __name__ == "__main__":

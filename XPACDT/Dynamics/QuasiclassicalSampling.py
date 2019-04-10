@@ -60,8 +60,8 @@ def do_Quasiclassical_sampling(system, parameters):
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
 
     # Get the quantum numbers or set to 0
-    if 'quantum_numbers' in parameters.get_section("sampling"):
-        qn_string = parameters.get_section("sampling").get("quantum_numbers")
+    if 'quantum_numbers' in parameters.get("sampling"):
+        qn_string = parameters.get("sampling").get("quantum_numbers")
         quantum_numbers = np.array([float(i) for i in qn_string.split()])
     else:
         quantum_numbers = np.zeros_like(omega)
@@ -71,7 +71,7 @@ def do_Quasiclassical_sampling(system, parameters):
     factor_p = factor * np.sqrt((omega * nm_masses))
 
     # Draw from random angle distribution
-    n_sample = int(parameters.get_section("sampling").get('samples'))
+    n_sample = int(parameters.get("sampling").get('samples'))
     angles = 2.0 * np.pi * np.random.random(n_sample)
     x_normal_modes = np.outer(factor_x, np.sin(angles))
     p_normal_modes = np.outer(factor_p, np.cos(angles))
@@ -87,5 +87,6 @@ def do_Quasiclassical_sampling(system, parameters):
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.positions = x.reshape(1, -1)
         systems[-1].nuclei.momenta = p.reshape(1, -1)
+        systems[-1].log(init=True)
 
     return systems

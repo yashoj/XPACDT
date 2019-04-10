@@ -27,6 +27,9 @@
 #
 #  **************************************************************************
 
+""" Very basic sampling using just one set of coordinates and momenta that
+are replicated. """
+
 import copy
 
 
@@ -49,7 +52,7 @@ def do_Fixed_sampling(system, parameters):
     """
 
     systems = []
-    n_sample = int(parameters.get_section("sampling").get('samples'))
+    n_sample = int(parameters.get("sampling").get('samples'))
     for i in range(n_sample):
         systems.append(copy.deepcopy(system))
 

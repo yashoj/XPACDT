@@ -27,8 +27,11 @@
 #
 #  **************************************************************************
 
+"""Implementation of the velocity verlet propagator."""
+
 from molmod.units import parse_unit
 import numpy as np
+import sys
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Interfaces.InterfaceTemplate as template
@@ -71,7 +74,7 @@ class VelocityVerlet(object):
 
         # optional as keywords
         if 'beta' in kwargs:
-            self.beta = kwargs.get('beta')
+            self.beta = float(kwargs.get('beta'))
         else:
             self.__beta = -1.0
 
@@ -123,35 +126,54 @@ class VelocityVerlet(object):
         "derived from InterfaceTemplate!"
         self.__potential = p
 
+    @property
+    def thermostat(self):
+        """ The thermostat used in the propagation."""
+        return self.__thermostat
+
+    @thermostat.setter
+    def thermostat(self, t):
+        self.__thermostat = t
+
+    def attach_thermostat(self, parameters, masses):
+        thermo_parameters = parameters.get('thermostat')
+        assert('method' in thermo_parameters), "No thermostat method given."
+
+        method = thermo_parameters.get('method')
+        __import__("XPACDT.Dynamics." + method)
+        self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method], method)(parameters, masses)
+
     def propagate(self, R, P, time):
         # TODO: possibly step size control here.
         # TODO: possibly multiple-timestepping here
 
         Rt, Pt = R.copy(), P.copy()
-        for j in range(int(time // self.timestep)):
+        # howto handle time not a multiple of timestep?
+        n_steps = int((time + 1e-8) // self.timestep)
+        for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)
             Rt, Pt = Rn.copy(), Pn.copy()
 
-        if time % self.timestep != 0.0:
-            Rn, Pn = self._step(Rt, Pt)
-
+        if self.thermostat is not None:
+            self.thermostat.apply(Rn, Pn, 0)
         return Rn, Pn
 
     def _step(self, R, P):
-        # TODO: termostat 1
 
         pt2 = self._velocity_step(P, R)
+        if self.thermostat is not None:
+            self.thermostat.apply(R, P, 1)
+
         # TODO: constraints 1
 
         rt, pt = self._verlet_step(R, pt2)
         # TODO: constraints 2
-
-        # TODO: thermostat 2
+        if self.thermostat is not None:
+            self.thermostat.apply(rt, pt, 2)
 
         pt = self._velocity_step(pt, rt)
-
-        # TODO: thermostat 2
-
+        if self.thermostat is not None:
+            self.thermostat.apply(rt, pt, 3)
         # TODO constraints 3
 
         return rt, pt

@@ -27,13 +27,17 @@
 #
 #  **************************************************************************
 
+"""This is a template for creating and unifying classes that represent a
+potential in the simulations."""
+
 import numpy as np
 from scipy.optimize import minimize
+
 # TODO: what to store
 # TODO: which general functions to implement.
 
 
-class Interface(object):
+class Interface:
     """
     This is a template for creating and unifying classes that give potential
     energies, gradients and couplings that are required for the dynamics.
@@ -51,37 +55,45 @@ class Interface(object):
 
     def __init__(self, name, **kwargs):
         self.__name = name
-        self._oldR = None
-        self._oldP = None
-        self._oldS = None
+
+        self._old_R = None
+        self._old_P = None
+        self._old_S = None
+        self._energy = None
+        self._gradient = None
+
         self.__SAVE_THRESHOLD = 1e-8
 
     @property
     def name(self):
-        """ The name of the specific interface implementation."""
+        """str : The name of the specific interface implementation."""
         return self.__name
 
     @property
     def SAVE_THESHOLD(self):
-        """ Theshold for using saved variables. """
+        """float : Theshold for decision of using saved variables vs.
+        recomputing properties."""
         return self.__SAVE_THRESHOLD
 
     @property
     def STEPSIZE(self):
-        """ Step size for numerical derivatives. """
+        """float : Step size for numerical derivatives in au."""
         return 1e-4
 
     def _calculate(self, R, P, S=None):
-        """
-        Calculate the energy, gradient and possibly couplings at the current
+        """Calculate the energy, gradient and possibly couplings at the current
         geometry.
 
         Parameters
         ----------
-        R : array of arrays of floats
-            The (ring-polymer) positions representing the system in bohr.
-        P : array of arrays of floats
-            The (ring-polymer) momenta representing the system in a.u.
+        R : two-dimensional ndarray of floats
+            The (ring-polymer) positions representing the system in au. The
+            first index represents the degrees of freedom, the second one the
+            beads.
+        P : two-dimensional ndarray of floats
+            The (ring-polymer) momenta representing the system in au. The
+            first index represents the degrees of freedom, the second one the
+            beads.
         S : integer, default None
             The current state of the system.
 
@@ -93,18 +105,21 @@ class Interface(object):
         raise NotImplementedError
 
     def _changed(self, R, P, S=None):
-        """
-        Check if we need to recalculate the potential, gradients or couplings
-        due to changed positions, etc.
+        """Check if we need to recalculate the potential, gradients or
+        couplings due to changed positions, etc.
         Currently, this only tests a change in position and this needs to be
         improved.
 
         Parameters
         ----------
-        R : array of arrays of floats
-            The (ring-polymer) positions representing the system in bohr.
-        P : array of arrays of floats
-            The (ring-polymer) momenta representing the system in a.u.
+        R : two-dimensional ndarray of floats
+            The (ring-polymer) positions representing the system in au. The
+            first index represents the degrees of freedom, the second one the
+            beads.
+        P : two-dimensional ndarray of floats
+            The (ring-polymer) momenta representing the system in au. The
+            first index represents the degrees of freedom, the second one the
+            beads.
         S : integer, default None
             The current state of the system.
 
@@ -121,18 +136,17 @@ class Interface(object):
             assert (P.ndim == 2), "Momentum array not two-dimensional!"
             assert (P.dtype == 'float64'), "Momentum array not real!"
 
-        if self._oldR is None:
-            self._oldR = R.copy()
+        if self._old_R is None:
+            self._old_R = R.copy()
             return True
-        if (abs(R - self._oldR) < self.SAVE_THESHOLD).all():
+        if (abs(R - self._old_R) < self.SAVE_THESHOLD).all():
             return False
         else:
-            self._oldR = R.copy()
+            self._old_R = R.copy()
             return True
 
     def energy(self, R, S=None):
-        """
-        Obtain energy of the system in the current state.
+        """Obtain energy of the system in the current state.
 
         Parameters
         ----------
@@ -155,8 +169,7 @@ class Interface(object):
             return self._energy[S]
 
     def gradient(self, R, S=None):
-        """
-        Obtain gradient of the system in the current state.
+        """Obtain gradient of the system in the current state.
 
         Parameters
         ----------
@@ -187,9 +200,8 @@ class Interface(object):
 #        return self._coupling
 
     def _energy_wrapper(self, R, S=0):
-        """
-        Wrapper function to do call energy with a one-dimensional array. This
-        should only be used for directly accessing the PES and not for any
+        """Wrapper function to do call energy with a one-dimensional array.
+        This should only be used for directly accessing the PES and not for any
         dynamics calculation!.
 
         Parameters
@@ -203,12 +215,11 @@ class Interface(object):
         -------
         The energy at the given geometry in hartree.
         """
-        return self.energy(np.array([R]))[S]
+        return self.energy(np.array([R]), S)
 
     def _gradient_wrapper(self, R, S=0):
-        """
-        Wrapper function to do call gradient with a one-dimensional array. This
-        should only be used for directly accessing the PES and not for any
+        """Wrapper function to do call gradient with a one-dimensional array.
+        This should only be used for directly accessing the PES and not for any
         dynamics calculation!.
 
         Parameters
@@ -222,11 +233,10 @@ class Interface(object):
         -------
         The gradient at the given geometry in hartree/bohr.
         """
-        return self.gradient(np.array([R]))[S]
+        return self.gradient(np.array([R]), S)
 
     def minimize(self, R0):
-        """
-        Find the potential minimum employing the Newton-CG method
+        """Find the potential minimum employing the Newton-CG method
         as implemented in Scipy.
 
         Parameters
@@ -258,15 +268,10 @@ class Interface(object):
         """ Find the transition state. """
         raise NotImplementedError
 
-    def normal_modes(self, R):
-        """ Obain normal modes at given geometry. """
-        raise NotImplementedError
-
     def plot_1D(self, R, i, start, end, step, relax=False, S=0):
-        """
-        Generate data to plot a potential energy surface along one dimension.
-        The other degrees of freedom can either kept fix or can be optimized.
-        The results are writte to a file called 'pes_1d.dat' or
+        """Generate data to plot a potential energy surface along one
+        dimension. The other degrees of freedom can either kept fix or can be
+        optimized. The results are writte to a file called 'pes_1d.dat' or
         'pes_1d_opti.dat'. The file is formatted as follows. The first column
         gives the points along the scanned coordinate. The second column the
         energy. If relax is True then the full optimized geometry is given
@@ -330,13 +335,10 @@ class Interface(object):
             pes = np.hstack((pes, np.array(R_optimized)))
         np.savetxt('pes_1d' + ('_opti' if relax else '') + '.dat', pes)
 
-        return
-
     def plot_2D(self, R, i, j, starts, ends, steps, relax=False):
-        """
-        Generate data to plot a potential energy surface along two dimensions.
-        The other degrees of freedom can either kept fix or can be optimized.
-        The results are writte to a file called 'pes_2d.dat' or
+        """Generate data to plot a potential energy surface along two
+        dimensions. The other degrees of freedom can either kept fix or can be
+        optimized. The results are writte to a file called 'pes_2d.dat' or
         'pes_2d_opti.dat'. The file is formatted as follows. The first and
         second column give the points along the scanned coordinates. The third
         column the energy. If relax is True then the full optimized geometry is
@@ -345,7 +347,7 @@ class Interface(object):
         coordinate, an additional newline is given.
 
         TODO: Implement the use of a certain excited state.
-                TODO: add variable file name
+        TODO: add variable file name
 
         Parameters
         ----------
@@ -421,12 +423,10 @@ class Interface(object):
             if (k+1) % len(x) == 0:
                 outfile.write('\n')
 
-        return
-
     def get_Hessian(self, R):
-        """
-        Calculate the Hessian at a given geometry R. The Hessian is calculated
-        using numerical differentiation of the gradients.
+        """Calculate the Hessian at a given geometry R. The Hessian is
+        calculated using numerical differentiation of the gradients.
+        Currently, only central differences of the gradients is implemented.
 
         Parameters
         ----------

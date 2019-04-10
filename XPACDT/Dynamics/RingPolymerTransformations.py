@@ -27,6 +27,10 @@
 #
 #  **************************************************************************
 
+""" This module defines transformations of ring polymer coordinates or
+momenta to and from normal modes.
+"""
+
 import itertools
 import numpy as np
 import scipy.fftpack as fft

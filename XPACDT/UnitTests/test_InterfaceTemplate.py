@@ -67,7 +67,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         # initial storage
         R = np.random.rand(12).reshape(4, 3)
         self.assertTrue(self.interface._changed(R, None))
-        self.assertTrue(np.alltrue(self.interface._oldR == R))
+        self.assertTrue(np.alltrue(self.interface._old_R == R))
 
         # not changed
         self.assertFalse(self.interface._changed(R, None))
@@ -75,29 +75,29 @@ class InterfaceTemplateTest(unittest.TestCase):
         # changed
         R = np.random.rand(12).reshape(4, 3)
         self.assertTrue(self.interface._changed(R, None))
-        self.assertTrue(np.alltrue(self.interface._oldR == R))
+        self.assertTrue(np.alltrue(self.interface._old_R == R))
 
         return
 
-    def test_minimize(self):
-        # TODO: howto exactly test
-        raise NotImplementedError("Please implement a test here!!")
-        pass
-
-    def test_plot1d(self):
-        # TODO: howto exactly test
-        raise NotImplementedError("Please implement a test here!!")
-        pass
-
-    def test_plot2d(self):
-        # TODO: howto exactly test
-        raise NotImplementedError("Please implement a test here!!")
-        pass
-
-    def test_get_Hessian(self):
-        # TODO: howto exactly test
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+#    def test_minimize(self):
+#        # TODO: howto exactly test
+#        raise NotImplementedError("Please implement a test here!!")
+#        pass
+#
+#    def test_plot1d(self):
+#        # TODO: howto exactly test
+#        raise NotImplementedError("Please implement a test here!!")
+#        pass
+#
+#    def test_plot2d(self):
+#        # TODO: howto exactly test
+#        raise NotImplementedError("Please implement a test here!!")
+#        pass
+#
+#    def test_get_Hessian(self):
+#        # TODO: howto exactly test
+#        raise NotImplementedError("Please implement a test here!!")
+#        pass
 
 
 if __name__ == "__main__":

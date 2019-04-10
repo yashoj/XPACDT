@@ -27,13 +27,27 @@
 #
 #  **************************************************************************
 
+""" This module represents a one dimensional polynomial potential."""
+
 import numpy as np
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
 
 class OneDPolynomial(itemplate.Interface):
+    """
+    One-dimensional polynomial potential of the form:
+    V(x) = \sum_{i=0}^{N} a_i (x-x_0)^i.
 
+    Other Parameters
+    ----------------
+    x0 : float or string of float
+        Equilibrium position of the polynomial.
+    a : string containing several floats
+        The expansion coefficients for the polynomial in ascending order. The
+        expansion length is determined by the number of given coefficients
+        here.
+    """
     def __init__(self, **kwargs):
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))
@@ -84,10 +98,10 @@ class OneDPolynomial(itemplate.Interface):
         assert (isinstance(R, np.ndarray)), "R not a numpy array!"
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
-        if P is not None:
-            assert (isinstance(P, np.ndarray)), "P not a numpy array!"
-            assert (P.ndim == 2), "Momentum array not two-dimensional!"
-            assert (P.dtype == 'float64'), "Momentum array not real!"
+#        if P is not None:
+#            assert (isinstance(P, np.ndarray)), "P not a numpy array!"
+#            assert (P.ndim == 2), "Momentum array not two-dimensional!"
+#            assert (P.dtype == 'float64'), "Momentum array not real!"
 
         n = R.shape[1]
 

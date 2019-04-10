@@ -29,6 +29,11 @@
 #
 #  **************************************************************************
 
+""" This module defines all required routines to propagate a given system in
+real time."""
+
+from molmod.units import parse_unit
+import os
 import pickle
 
 # import XPACDT.Dynamics.System as xSystem
@@ -36,19 +41,59 @@ import pickle
 
 
 def propagate(system, parameters):
-    """ Propagate the system."""
+    """ Propagate the system as given in the input file. The system state is
+    saved in a pickle file.
 
-    time_end = float(parameters.get_section('propagation').get('time_end'))
-    timestep_output = parameters.get_section('propagation').get('time_output')
+    TODO: Talk more about
+    possibilities for given things in the input file.
+
+    Parameters
+    ----------
+    system : XPACDT.Dynamics.System
+        System that defines the initial geometry and the potential.
+    parameters : XPACDT.Input.Inputfile
+        XPACDT representation of the given input file.
+    """
+
+    # TODO: put time parsing into function?!
+
+    prop_parameters = parameters.get('propagator')
+    sys_parameters = parameters.get('system')
+
+    assert('time_end' in prop_parameters), "No endtime " \
+        "given for the propagation."
+    assert('timestep' in prop_parameters), "No " \
+        "timestep given for the propagation."
+
+    if 'continue' not in sys_parameters:
+        system.reset()
+
+        # set initial time
+        time_string = prop_parameters.get('time_start', '0.0 fs').split()
+        system.time = float(time_string[0]) * parse_unit(time_string[1])
+
+    # Set desired propagator
+    system.attach_nuclei_propagator(parameters)
+
+    # Obtain times for propagation and output
+    time_string = prop_parameters.get('time_end').split()
+    time_end = float(time_string[0]) * parse_unit(time_string[1])
+
+    timestep_output = prop_parameters.get('time_output')
     if timestep_output is not None:
-        timestep_output = float(timestep_output)
+        time_string = timestep_output.split()
+        timestep_output = float(time_string[0]) * parse_unit(time_string[1])
     else:
-        timestep_output = float(parameters.get_section('propagation').
-                                get('timestep_nuclei'))
+        timestep_output = system.nuclei.propagator.timestep
 
-    print(system.time, system.nuclei.x_centroid[0])
+    # set up pickle file
+    name_folder = sys_parameters.get('folder')
+    name_file = sys_parameters.get('picklefile', 'pickle.dat')
+    path_file = os.path.join(name_folder, name_file)
     while(system.time < time_end):
         system.step(timestep_output)
-        print(system.time, system.nuclei.x_centroid[0])
 
-    pickle.dump(system, open(picklefile_name, 'wb'), -1)
+        if 'intermediate_write' in sys_parameters:
+            pickle.dump(system, open(path_file, 'wb'), -1)
+
+    pickle.dump(system, open(path_file, 'wb'), -1)

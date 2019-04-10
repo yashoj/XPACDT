@@ -5,8 +5,9 @@
 
 $system                     # general parameters
 
+seed = 0                    # Seed for random number generator
 dof = 4                     # the number of degrees of freedom
-job = sample	                # The job type (possible: sample, propagate)
+job = sample	                # The job type (possible: sample, propagate, analyze)
 Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
 folder = test               # the folder for the trajectories
 
@@ -14,6 +15,8 @@ folder = test               # the folder for the trajectories
 picklefile = NameHere.dat   # optional name of pickle file - else: pickle.dat
 time = 0 fs                 # the current time of the system in either fs or au
 # override or add (for sampling with existing folder)
+# continue (for continueing a propagation)
+# intermediate_write (for writing the pickle file every output timestep)
 $end
 
 ##############################################################################
@@ -26,30 +29,40 @@ $end
 
 ##############################################################################
 
-$rpmd
+$rpmd                       # RPMD input
 
-beads = 
-beta = 
+beads = 4                   # Number of beads used; TODO: different numbers
+beta = 8.0                  # Beta used for the springs
+$end
+
+##############################################################################
+
+$thermostat                 # thermostat input
+
+method = MassiveAndersen    # Thermostat method (possible: MassiveAndersen; desired:...)
+time = 100 fs               # timescale for thermostattting
 $end
 
 ##############################################################################
 
 $sampling               # sampling input
 
-method = Wigner         # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
+method = Wigner         # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed, Thermostatted)
 samples = 1000          # number of samples to be collected
 
 # optional:
 modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty)
-temperature = 300       # in Kelvin
 quantum_numbers = 0 0 2 # the quantum number used in Quasiclassical sampling for each mode
+temperature = 300       # in Kelvin
+time = 10 fs            # time between samples in fs or au
+
 $end
 
 ##############################################################################
 
 $propagator             # nuclei propagator input
 
-method = VelocityVerlet # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
+method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
 timestep = 0.01 fs      # timestep in fs or au
 
 # optional:

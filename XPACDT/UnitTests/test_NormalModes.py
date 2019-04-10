@@ -111,6 +111,7 @@ class NormalModesTest(unittest.TestCase):
 
 # TODO: not tested yet due to moving it around
     def test_get_sampling_modes(self):
+        
         raise NotImplementedError("Please implement a test here!!")
         pass
 

@@ -86,11 +86,11 @@ class System(object):
 
         # Set up nuclei
         self.__nuclei = nuclei.Nuclei(self.n_dof, parameters, self.pes)
-        # TOOD: init electrons
+
+        # TOOD: Set up electrons
         self._init_electrons(parameters)
 
         self.__parameters = parameters
-
         self.log(init=True)
 
     @property

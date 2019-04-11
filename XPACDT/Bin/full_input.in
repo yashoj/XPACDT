@@ -7,13 +7,14 @@ $system                     # general parameters
 
 seed = 0                    # Seed for random number generator
 dof = 4                     # the number of degrees of freedom
-job = sample	                # The job type (possible: sample, propagate, analyze)
+job = sample	                # The job type (possible: sample, propagate, analyze, plot)
 Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
 folder = test               # the folder for the trajectories
 
 # optional:
 picklefile = NameHere.dat   # optional name of pickle file - else: pickle.dat
 time = 0 fs                 # the current time of the system in either fs or au
+
 # override or add (for sampling with existing folder)
 # continue (for continueing a propagation)
 # intermediate_write (for writing the pickle file every output timestep)

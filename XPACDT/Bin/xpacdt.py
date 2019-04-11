@@ -93,6 +93,11 @@ def start():
     if job == "analyze":
         analysis.do_analysis(parameters)
         return
+    elif job == "plot":
+        #    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
+        #    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, True)
+        raise NotImplementedError("Plotting of PES needs to be implemented!")
+        return
 
     # read from pickle file if exists
     name_folder = parameters.get('system').get('folder')
@@ -112,33 +117,6 @@ def start():
     else:
         raise NotImplementedError("Requested job type not implemented: " + job)
 
-#    # Example usage for potentials
-#    pes = oneDP.OneDPolynomial(**parameters.get("OneDPolynomial"))
-#    print(isinstance(pes, oneDP.OneDPolynomial))
-#    print(isinstance(pes, template.Interface))
-#    print(pes.name)
-#    print(pes.energy(np.array([[0.0]])))
-#    print(pes.energy(np.array([[0.0]])))
-#    print(pes.energy(np.array([[1.0]])))
-#    print(pes.minimize(np.array([0.1])))
-#
-#    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
-#    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, True)
-#
-#    # Example usage for propagator - not meant to be used like this later!!
-#    propagator = vv.VelocityVerlet(0.0001, pes, np.array([1.0]), **{'beta': 8.0})
-#    r = np.random.rand(4).reshape(1, 4) + 1.0
-#    p = np.array([[0.0]*4])
-#    print(r, p)
-#    outfile = open("/tmp/blah.dat", 'w')
-#    for i in range(101):
-#        outfile.write(str(i*0.1) + " ")
-#        outfile.write(str(np.mean(r[0])) + " ")
-#        outfile.write(str(np.mean(p[0])) + " ")
-#        outfile.write("\n")
-#        r, p = propagator.propagate(r, p, 0.1)
-#    outfile.close()
-#    pass
     return
 
 

@@ -31,28 +31,75 @@ import os
 import pickle
 import numpy as np
 
-### this is all horrible!! Just testing some basic C_xx for simple systems
+import XPACDT.Tools.Bootstrap as bootstrap
 
-def do_analysis(parameters):
-    dirs = get_directory_list(parameters.get('system').get('folder'))
-    file_name = parameters.get('system').get('picklefile', 'pickle.dat')
-    cxxs = []
-    for folder_name in dirs:
-        path_file = os.path.join(folder_name, file_name)
-        if os.path.isfile(path_file):
-            system = pickle.load(open(path_file, 'rb'))
-            
-        x0 = system._log[0][1].x_centroid[0]
-        cxxs.append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
-        
-    cxx = np.average(cxxs, axis=0)
-    np.savetxt('cxx.dat', cxx)
+# this is all horrible!! Just testing some basic C_xx for simple systems
 
-def get_directory_list(folder='./'):
+
+def do_analysis(parameters, systems=None):
+
+    if systems is None:
+        file_name = parameters.get('system').get('picklefile', 'pickle.dat')
+        dirs = get_directory_list(parameters.get('system').get('folder'), file_name)[0:5000]
+    else:
+        dirs = None
+        file_name = None
+
+
+
+    t_old = None
+    for system in get_systems(dirs, file_name, systems):
+
+        # do different stuff for each command
+        for key, command in parameters.commands.items():
+            times = apply_command(command, system)
+
+            # time consistency check
+            if t_old is not None and not times == t_old:
+                # TODO more info on which traj, what command
+                raise RuntimeError("The time in the trajectories is not aligned!")
+            t_old = times.copy()
+#
+##        
+##        cxxs.append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
+##        sys_time = [log[0] for log in system._log]
+##            pass 
+#
+            # todo: structure better
+    for  key, command in parameters.commands.items():
+#        print(np.array(command['results']).T)
+        mm = [bootstrap.bootstrap(data, np.mean) for data in np.array(command['results']).T]
+#        m, s = bootstrap.bootstrap(np.array(command['results']), np.mean)
+        print(np.array(mm).reshape(-1,2))#$, s)
+        # bootstrap
+        np.savetxt('cxx.dat',np.array(mm).reshape(-1,2))
+        # print to file
+
+def apply_command(command, system):
+    # todo actualy implement commands
+    x0 = system._log[0][1].x_centroid[0]
+    command['results'].append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
+    return [log[0] for log in system._log]
+
+
+def get_directory_list(folder='./', file_name=None):
+    """ Get trj_ subfolders in a given folder. Condition that file needs to be there"""
     allEntries = os.listdir(folder)
     dirs = []
     for entry in allEntries:
-        if entry[0:4] == 'trj_' and os.path.isdir(folder + entry):
-            dirs.append(folder + entry)
+        path = os.path.join(folder, entry)
+        if entry[0:4] == 'trj_' and os.path.isdir(path):
+            if file_name is None or os.path.isfile(os.path.join(path, file_name)):
+                dirs.append(path)
     dirs.sort()
     return dirs
+
+
+def get_systems(dirs, file_name, systems):
+    if dirs is not None:
+        return (pickle.load(open(os.path.join(folder_name, file_name), 'rb'))
+                for folder_name in dirs)
+    elif systems is not None:
+        return (system for system in systems)
+    else:
+        raise RuntimeError("Neither dirs nor systems given!")

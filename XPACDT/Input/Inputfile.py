@@ -72,6 +72,19 @@ class Inputfile(collections.MutableMapping):
             self._intext = infile.read()
 
         self._parse_file()
+        self.commands = {k: self[k] for k in self.keys() if 'command' in k}
+        for key in self.commands:
+            self.commands[key]['results'] = []
+
+    @property
+    def commands(self):
+        """dict : Contains all input sections for 'commands' used in
+        the analysis."""
+        return self.__commands
+
+    @commands.setter
+    def commands(self, d):
+        self.__commands = d
 
     @property
     def masses(self):

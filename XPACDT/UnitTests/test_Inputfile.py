@@ -59,6 +59,8 @@ class InputfileTest(unittest.TestCase):
         parameters = infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_works.in"})
         self.assertDictEqual(input_reference, parameters.store)
 
+        # TODO: add a test for 'commands'
+
         return
 
     def test_parse_values(self):

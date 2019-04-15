@@ -40,12 +40,10 @@ def do_analysis(parameters, systems=None):
 
     if systems is None:
         file_name = parameters.get('system').get('picklefile', 'pickle.dat')
-        dirs = get_directory_list(parameters.get('system').get('folder'), file_name)[0:5000]
+        dirs = get_directory_list(parameters.get('system').get('folder'), file_name)
     else:
         dirs = None
         file_name = None
-
-
 
     t_old = None
     for system in get_systems(dirs, file_name, systems):
@@ -56,30 +54,26 @@ def do_analysis(parameters, systems=None):
 
             # time consistency check
             if t_old is not None and not times == t_old:
-                # TODO more info on which traj, what command
-                raise RuntimeError("The time in the trajectories is not aligned!")
+                # TODO more info on which traj - how to do that?
+                raise RuntimeError("The time in the trajectories is not "
+                                   "aligned for command: " + key)
             t_old = times.copy()
-#
-##        
-##        cxxs.append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
-##        sys_time = [log[0] for log in system._log]
-##            pass 
-#
-            # todo: structure better
+
+    # todo: structure better for results
     for  key, command in parameters.commands.items():
-#        print(np.array(command['results']).T)
-        mm = [bootstrap.bootstrap(data, np.mean) for data in np.array(command['results']).T]
-#        m, s = bootstrap.bootstrap(np.array(command['results']), np.mean)
-        print(np.array(mm).reshape(-1,2))#$, s)
         # bootstrap
+        mm = [bootstrap.bootstrap(data, np.mean) for data in np.array(command['results']).T]
+
+        # TODO: use file from input, add time
+        # variable format....
         np.savetxt('cxx.dat',np.array(mm).reshape(-1,2))
-        # print to file
+
 
 def apply_command(command, system):
     # todo actualy implement commands
     x0 = system._log[0][1].x_centroid[0]
     command['results'].append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
-    return [log[0] for log in system._log]
+    return np.random.rand(10).tolist() #[log[0] for log in system._log]
 
 
 def get_directory_list(folder='./', file_name=None):

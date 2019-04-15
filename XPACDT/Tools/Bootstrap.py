@@ -32,6 +32,7 @@
 import numpy as np
 
 
+# TODO: how can I use broadcasting here...
 def bootstrap(data, function, n_bootstrap=1000):
     """
 

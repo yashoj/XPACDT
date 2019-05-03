@@ -73,7 +73,7 @@ def propagate(system, parameters):
         system.time = float(time_string[0]) * parse_unit(time_string[1])
 
     # Set desired propagator
-    system.attach_nuclei_propagator(parameters)
+    system.nuclei.attach_propagator(parameters)
 
     # Obtain times for propagation and output
     time_string = prop_parameters.get('time_end').split()

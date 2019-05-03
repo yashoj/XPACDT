@@ -91,20 +91,7 @@ class Nuclei(object):
 
         # set up propagator and attach
         if 'propagator' in parameters:
-            prop_parameters = parameters.get('propagator')
-            if 'rpmd' in parameters:
-                assert('beta' in parameters.get("rpmd")), "No beta " \
-                        "given for RPMD."
-                prop_parameters['beta'] = parameters.get("rpmd").get('beta')
-
-            method = prop_parameters.get('method')
-            __import__("XPACDT.Dynamics." + method)
-            self.propagator = getattr(sys.modules["XPACDT.Dynamics." + method],
-                                 method)(self.pes, self.masses,
-                                         **prop_parameters)
-
-            if 'thermostat' in parameters:
-                self.propagator.attach_thermostat(parameters, self.masses)
+            self.attach_propagator(parameters)
 
         return
 
@@ -225,3 +212,19 @@ beads given."
             self.__propagator.propagate(self.positions, self.momenta, time)
 
         return
+
+    def attach_propagator(self, parameters):
+        prop_parameters = parameters.get('propagator')
+        if 'rpmd' in parameters:
+            assert('beta' in parameters.get("rpmd")), "No beta " \
+                    "given for RPMD."
+            prop_parameters['beta'] = parameters.get("rpmd").get('beta')
+
+        method = prop_parameters.get('method')
+        __import__("XPACDT.Dynamics." + method)
+        self.propagator = getattr(sys.modules["XPACDT.Dynamics." + method],
+                                  method)(self.pes, self.masses,
+                                          **prop_parameters)
+
+        if 'thermostat' in parameters:
+            self.propagator.attach_thermostat(parameters, self.masses)

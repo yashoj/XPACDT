@@ -31,16 +31,27 @@ import os
 import pickle
 import numpy as np
 
-import XPACDT.Tools.Bootstrap as bootstrap
+import XPACDT.Tools.Bootstrap as bs
 
 # this is all horrible!! Just testing some basic C_xx for simple systems
 
 
 def do_analysis(parameters, systems=None):
+    """Run a full analysis. TODO: details here
 
+    Parameters
+    ----------
+    parameters : XPACDT.Infputfile
+        Input file defining all parameters for the analysis.
+    systems : list of XPACDT.Systems, optional, default: None
+        A list of systems to perform the analysis on. If not given, then the
+        systems are read from file.
+    """
+
+    folder = parameters.get('system').get('folder')
     if systems is None:
         file_name = parameters.get('system').get('picklefile', 'pickle.dat')
-        dirs = get_directory_list(parameters.get('system').get('folder'), file_name)
+        dirs = get_directory_list(folder, file_name)
     else:
         dirs = None
         file_name = None
@@ -60,36 +71,84 @@ def do_analysis(parameters, systems=None):
             t_old = times.copy()
 
     # todo: structure better for results
-    for  key, command in parameters.commands.items():
-        # bootstrap
-        mm = [bootstrap.bootstrap(data, np.mean) for data in np.array(command['results']).T]
+    for key, command in parameters.commands.items():
+        # Set up function to combine data...
+        func = np.mean
+        if 'value' in command:
+            if command['value'] == 'mean':
+                func = np.mean
+            elif command['value'] == 'std':
+                func = np.std
+            elif 'percentile' in command['value']:
+                pe = float(command['value'].split()[1])
+                func = (lambda x: np.nanpercentile(x, pe))
+            elif 'histogram' in command['value']:
+                # TODO set up bins through input
+                func = (lambda x: np.histogram(x, bins=4, range=(-3.0, 3.0),
+                                               density=True)[0])
 
-        # TODO: use file from input, add time
-        # variable format....
-        np.savetxt('cxx.dat',np.array(mm).reshape(-1,2))
+        # bootstrap
+        final_data = [bs.bootstrap(data, func)
+                      for data in np.array(command['results']).T]
+
+        # Output in different formats:
+        # time: One line per timestep, all values and errors in that line
+        # value: One line per value (with error), all times in that line
+        file_output = os.path.join(folder, key + '.dat')
+        if command['format'] == 'time':
+            number_times = len(times)
+            np.savetxt(file_output, np.c_[times, np.array(final_data).
+                                          reshape((number_times, -1))])
+        elif command['format'] == 'value':
+            # TODO: add values in front! (instead of time)
+            number_values = len(final_data[0][0])
+            np.savetxt(file_output, np.c_[times, np.array(final_data).
+                                          reshape((-1, number_values)).T])
 
 
 def apply_command(command, system):
     # todo actualy implement commands
     x0 = system._log[0][1].x_centroid[0]
     command['results'].append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
-    return np.random.rand(10).tolist() #[log[0] for log in system._log]
+    return [log[0] for log in system._log]
 
 
 def get_directory_list(folder='./', file_name=None):
-    """ Get trj_ subfolders in a given folder. Condition that file needs to be there"""
+    """ Get trj_ subfolders in a given folder. Condition that file
+    needs to be there"""
     allEntries = os.listdir(folder)
     dirs = []
     for entry in allEntries:
         path = os.path.join(folder, entry)
         if entry[0:4] == 'trj_' and os.path.isdir(path):
-            if file_name is None or os.path.isfile(os.path.join(path, file_name)):
+            if file_name is None or os.path.isfile(os.path.join(path,
+                                                                file_name)):
                 dirs.append(path)
     dirs.sort()
     return dirs
 
 
 def get_systems(dirs, file_name, systems):
+    """Obtain an iterator over all systems to sweep through them in the
+    analysis.
+    The systems are either given as a list of systems or read from pickle
+    files in the given list of folders.
+
+    Parameters
+    ----------
+    dirs : list of strings
+        Directories to read the pickle files from.
+    file_name : String
+        Name of the pickle files to be read.
+    systems: list of XPACDT.System
+        A list of systems to perform the analysis on. If not given, then the
+        systems are read from file.
+
+    Returns
+    -------
+    Iterator over all sytems.
+    """
+
     if dirs is not None:
         return (pickle.load(open(os.path.join(folder_name, file_name), 'rb'))
                 for folder_name in dirs)

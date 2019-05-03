@@ -47,9 +47,8 @@ def bootstrap(data, function, n_bootstrap=1000):
         Number of bootstrapping resamples to take. Default: 1000
 
     Returns:
-        ndarrays with the mean value of the function results and corresponding error.
-
-### lambda y: np.histogram(y, bins=30, range=(-3.0,3.0), density=True)[0]
+        ndarrays with the mean value of the function results and corresponding
+        error.
     """
 
     nsamples = len(data)

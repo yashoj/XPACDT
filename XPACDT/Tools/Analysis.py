@@ -33,7 +33,10 @@ import numpy as np
 
 import XPACDT.Tools.Bootstrap as bs
 
+"""Module to perform analysis on a set of XPACDT.Systems
+TODO: A lot of basic docu here.
 # this is all horrible!! Just testing some basic C_xx for simple systems
+"""
 
 
 def do_analysis(parameters, systems=None):
@@ -74,6 +77,7 @@ def do_analysis(parameters, systems=None):
     for key, command in parameters.commands.items():
         # Set up function to combine data...
         func = np.mean
+        bins = None
         if 'value' in command:
             if command['value'] == 'mean':
                 func = np.mean
@@ -83,14 +87,20 @@ def do_analysis(parameters, systems=None):
                 pe = float(command['value'].split()[1])
                 func = (lambda x: np.nanpercentile(x, pe))
             elif 'histogram' in command['value']:
-                # TODO set up bins through input
-                func = (lambda x: np.histogram(x, bins=4, range=(-3.0, 3.0),
-                                               density=True)[0])
+                # TODO other setup possibilities
+                values = command['value'].split()
+                edges = np.linspace(float(values[1]), float(values[2]),
+                                    int(values[3])+1)
+                lower = np.resize(edges, len(edges)-1)
+                bins = lower + 0.5*np.diff(edges)
+
+                func = (lambda x: np.histogram(x, bins=edges, density=True)[0])
 
         # bootstrap
         final_data = [bs.bootstrap(data, func)
                       for data in np.array(command['results']).T]
 
+        # TODO: Output a lot of info in comments!!
         # Output in different formats:
         # time: One line per timestep, all values and errors in that line
         # value: One line per value (with error), all times in that line
@@ -102,7 +112,9 @@ def do_analysis(parameters, systems=None):
         elif command['format'] == 'value':
             # TODO: add values in front! (instead of time)
             number_values = len(final_data[0][0])
-            np.savetxt(file_output, np.c_[times, np.array(final_data).
+            if bins is None:
+                bins = np.zeros(number_values)
+            np.savetxt(file_output, np.c_[bins, np.array(final_data).
                                           reshape((-1, number_values)).T])
 
 
@@ -114,8 +126,23 @@ def apply_command(command, system):
 
 
 def get_directory_list(folder='./', file_name=None):
-    """ Get trj_ subfolders in a given folder. Condition that file
-    needs to be there"""
+    """ Get trj_ subfolders in a given folder. If a file name is given, only
+    trj_ subfolders are returned that contain a file with that name. The
+    returned list is sorted.
+
+    Parameters
+    ----------
+    folder : string, optional, default: './'
+        Folder to search for trj_ subfolders.
+    file_name : string, optional, default: None
+        If given, only trj_ subfolders are returned that contain a file with
+        that name.
+
+    Returns
+    -------
+    dirs : list of string
+        Sorted list of trj_ subfolders.
+    """
     allEntries = os.listdir(folder)
     dirs = []
     for entry in allEntries:

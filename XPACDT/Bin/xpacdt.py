@@ -29,12 +29,12 @@
 #
 #  **************************************************************************
 
-"""XPACDT main executable. Please refer to the gneral documentation.
+"""XPACDT main executable. Please refer to the general documentation.
 """
 
 import argparse
 import git
-from inspect import getsourcefile
+import inspect
 import numpy as np
 import os
 import pickle
@@ -53,7 +53,7 @@ def start():
     """Start any XPACDT calculation."""
 
     # Save version used for later reference
-    current_path = os.path.abspath(getsourcefile(lambda: 0))
+    current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
     repo = git.Repo(path=current_path, search_parent_directories=True)
     version_file = open('.version', 'w')
     version_file.write("Branch: " + repo.active_branch.name + " \n")
@@ -75,17 +75,17 @@ def start():
 
     # Get input file
     print("The inputfile '" + args.InputFile + "' is read! \n")
-    parameters = infile.Inputfile(args.InputFile)
+    input_parameters = infile.Inputfile(args.InputFile)
 
     # Initialize random number generators
-    seed = int(parameters.get('system').get('seed', time.time()))
+    seed = int(input_parameters.get('system').get('seed', time.time()))
     random.seed(seed)
     np.random.seed(seed)
 
-    # Analysis needs to be called right away
-    job = parameters.get("system").get("job")
+    # Analysis or plotting should be called right away
+    job = input_parameters.get("system").get("job")
     if job == "analyze":
-        analysis.do_analysis(parameters)
+        analysis.do_analysis(input_parameters)
         return
     elif job == "plot":
         #    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
@@ -94,20 +94,20 @@ def start():
         return
 
     # read from pickle file if exists
-    name_folder = parameters.get('system').get('folder')
-    name_file = parameters.get('system').get('picklefile', 'pickle.dat')
+    name_folder = input_parameters.get('system').get('folder')
+    name_file = input_parameters.get('system').get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
         system = pickle.load(open(path_file, 'rb'))
     else:
-        system = xSystem.System(parameters)
+        system = xSystem.System(input_parameters)
 
     # Run job
     if job == "sample":
-        sampling.sample(system, parameters)
+        sampling.sample(system, input_parameters)
     elif job == "propagate":
-        rt.propagate(system, parameters)
+        rt.propagate(system, input_parameters)
     else:
         raise NotImplementedError("Requested job type not implemented: " + job)
 

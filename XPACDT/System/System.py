@@ -38,12 +38,13 @@ import XPACDT.System.Nuclei as nuclei
 
 
 class System(object):
-    """This class is the main representation of the system treated with XPACDT.
-    It sets up the calculation, stores all important objects.
+    """This class is the main class representing the system state. It stores
+    all important objects.
 
     Parameters
     ----------
-
+    input_parameters : XPACDT.Inputfile
+        Represents all the input for the simulation.
 
 ### TODO: stuff we need:
     - number of dof

@@ -6,9 +6,12 @@ Subpackages
 
 .. toctree::
 
+    XPACDT.Bin
     XPACDT.Dynamics
     XPACDT.Input
     XPACDT.Interfaces
+    XPACDT.Sampling
+    XPACDT.System
     XPACDT.Tools
     XPACDT.UnitTests
 

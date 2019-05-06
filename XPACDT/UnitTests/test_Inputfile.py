@@ -39,30 +39,30 @@ class InputfileTest(unittest.TestCase):
 
     def test_creation(self):
         with self.assertRaises(FileNotFoundError):
-            infile.Inputfile(**{'filename': "input.in"})
+            infile.Inputfile("input.in")
 
-        infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_empty.in"})
+        infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
 
         return
 
     def test_parse_file(self):
         with self.assertRaises(IOError):
-            infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_doubleKey.in"})
+            infile.Inputfile("FilesForTesting/InputfileTest/input_doubleKey.in")
 
         with self.assertRaises(IOError):
-            infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_doubleEqual.in"})
+            infile.Inputfile("FilesForTesting/InputfileTest/input_doubleEqual.in")
 
         input_reference = {"system": {"miep": "muh", "blah": "", "blubb": ""},
                            "trajectory": {"blubb": "1.3 fs"},
                            "pes": {"blibb": "1.3 fs", "hot": "",
                                    "temp": "300 K"}}
-        parameters = infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_works.in"})
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_works.in")
         self.assertDictEqual(input_reference, parameters.store)
 
         return
 
     def test_parse_values(self):
-        parameters = infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_empty.in"})
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
 
         key_value_reference = {"miep": "kuh"}
         key_value = parameters._parse_values("miep = kuh")
@@ -82,7 +82,7 @@ class InputfileTest(unittest.TestCase):
         return
 
     def test_parse_xyz(self):
-        parameters = infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_empty.in"})
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
 
         mass_ref = np.array([1837.362363054474, 34631.97313115233])
         coordinate_ref = np.array([[1.0, 2.0, 3.0], [2.0, 1.0, 4.0]])
@@ -120,7 +120,7 @@ class InputfileTest(unittest.TestCase):
         pass
 
     def test_parse_mass_value(self):
-        parameters = infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_empty.in"})
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
 
         mass_ref = np.array([1837.3624, 34631.9731])
         coordinate_ref = np.array([[1.0, 2.0, 3.0], [2.0, 1.0, 4.0]])
@@ -142,7 +142,7 @@ class InputfileTest(unittest.TestCase):
         section1_reference = {"miep": "muh", "blah": "", "blubb": ""}
         section2_reference = {"blubb": "1.3 fs"}
         section3_reference = {"blibb": "1.3 fs", "hot": "", "temp": "300 K"}
-        parameters = infile.Inputfile(**{'filename': "FilesForTesting/InputfileTest/input_works.in"})
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_works.in")
         self.assertDictEqual(section1_reference, parameters.get("system"))
         self.assertDictEqual(section2_reference, parameters.get("trajectory"))
         self.assertDictEqual(section3_reference, parameters.get("pes"))

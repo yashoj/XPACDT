@@ -49,21 +49,19 @@ class Inputfile(collections.MutableMapping):
     inherits from the MutableMapping Abstract Base Class defined in the
     collections module.
 
-    Other Parameters
+    Parameters
     ----------
-    filename : str
+    inputgile: str
         Filename of the input file.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, inputfile):
 
         self.store = dict()
         self.__masses = None
         self.__coordinates = None
 
-        assert('filename' in kwargs), "No filename given to Inputfile!"
-
-        self._filename = kwargs.get('filename')
+        self._filename = inputfile
         if not os.path.isfile(self._filename):
             raise FileNotFoundError(ENOENT, "Input file does not exist!",
                                     self._filename)

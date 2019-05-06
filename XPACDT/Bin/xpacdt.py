@@ -81,7 +81,7 @@ def start():
 
     # Get input file
     print("The inputfile '" + args.InputFile + "' is read! \n")
-    parameters = infile.Inputfile(**{'filename': args.InputFile})
+    parameters = infile.Inputfile(args.InputFile)
 
     # Initialize random number generators
     seed = int(parameters.get('system').get('seed', time.time()))

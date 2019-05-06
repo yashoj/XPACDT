@@ -34,7 +34,7 @@ import copy
 from molmod.units import parse_unit
 import sys
 
-import XPACDT.Dynamics.Nuclei as nuclei
+import XPACDT.System.Nuclei as nuclei
 
 
 class System(object):

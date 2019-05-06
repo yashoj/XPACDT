@@ -39,20 +39,14 @@ import numpy as np
 import os
 import pickle
 import random
-# import sys
 import time
 
 import XPACDT.Dynamics.RealTimePropagation as rt
-import XPACDT.Dynamics.Sampling as sampling
+import XPACDT.Sampling.Sampling as sampling
 import XPACDT.Tools.Analysis as analysis
-import XPACDT.Dynamics.System as xSystem
-# import XPACDT.Dynamics.VelocityVerlet as vv
-# import XPACDT.Dynamics.WignerSampling as wigner
+import XPACDT.System.System as xSystem
 
 import XPACDT.Input.Inputfile as infile
-
-# import XPACDT.Interfaces.OneDPolynomial as oneDP
-# import XPACDT.Interfaces.InterfaceTemplate as template
 
 
 def start():

@@ -37,7 +37,7 @@ $end
 
 ##############################################################################
 
-$propagator             # nuclei propagator input
+$nuclei_propagator             # nuclei propagator input
 
 method = VelocityVerlet # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
 timestep = 0.01 fs      # timestep in fs or au

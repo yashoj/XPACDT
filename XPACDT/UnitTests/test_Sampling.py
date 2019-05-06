@@ -31,7 +31,7 @@
 
 import unittest
 
-import XPACDT.Dynamics.Sampling as sampling
+import XPACDT.Sampling.Sampling as sampling
 
 # TODO: How would a good test look like?
 # TODO: Obtaining the normal modes only makes sense if we have more potentials

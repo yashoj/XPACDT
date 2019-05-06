@@ -36,9 +36,6 @@ from molmod.units import parse_unit
 import os
 import pickle
 
-# import XPACDT.Dynamics.System as xSystem
-# import XPACDT.Input.Inputfile as infile
-
 
 def propagate(system, parameters):
     """ Propagate the system as given in the input file. The system state is

@@ -37,6 +37,7 @@ import scipy.fftpack as fft
 import math
 
 # TODO: Check if numpy.fft is better; the reordering is super slow!
+# TODO: Alternative: Code up matrix...
 
 
 def to_RingPolymer_normalModes(X, i=None):

@@ -33,8 +33,8 @@ import numpy as np
 import random
 import unittest
 
-import XPACDT.Dynamics.QuasiclassicalSampling as qcs
-import XPACDT.Dynamics.System as xSystem
+import XPACDT.Sampling.QuasiclassicalSampling as qcs
+import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
 
 # TODO: How to properly test? Use some seeding for random number generator
@@ -49,10 +49,10 @@ class QuasiclassicalSamplingTest(unittest.TestCase):
         random.seed(seed)
         np.random.seed(seed)
 
-        self.parameters0 = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_quasiclassical_0.in"})
+        self.parameters0 = infile.Inputfile("FilesForTesting/SamplingTest/input_quasiclassical_0.in")
         self.system0 = xSystem.System(self.parameters0)
 
-        self.parameters2 = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_quasiclassical_2.in"})
+        self.parameters2 = infile.Inputfile("FilesForTesting/SamplingTest/input_quasiclassical_2.in")
         self.system2 = xSystem.System(self.parameters2)
 
     def test_do_Quasiclassical_sampling(self):

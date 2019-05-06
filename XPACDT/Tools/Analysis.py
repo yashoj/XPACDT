@@ -91,8 +91,7 @@ def do_analysis(parameters, systems=None):
                 values = command['value'].split()
                 edges = np.linspace(float(values[1]), float(values[2]),
                                     int(values[3])+1)
-                lower = np.resize(edges, len(edges)-1)
-                bins = lower + 0.5*np.diff(edges)
+                bins = edges[:-1] + 0.5*np.diff(edges)
 
                 func = (lambda x: np.histogram(x, bins=edges, density=True)[0])
 

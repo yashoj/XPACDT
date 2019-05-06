@@ -57,7 +57,7 @@ def propagate(system, parameters):
 
     # TODO: put time parsing into function?!
 
-    prop_parameters = parameters.get('propagator')
+    prop_parameters = parameters.get('propagation')
     sys_parameters = parameters.get('system')
 
     assert('time_end' in prop_parameters), "No endtime " \
@@ -73,7 +73,7 @@ def propagate(system, parameters):
         system.time = float(time_string[0]) * parse_unit(time_string[1])
 
     # Set desired propagator
-    system.attach_nuclei_propagator(parameters)
+    system.nuclei.attach_nuclei_propagator(parameters)
 
     # Obtain times for propagation and output
     time_string = prop_parameters.get('time_end').split()

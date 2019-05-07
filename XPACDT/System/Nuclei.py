@@ -68,22 +68,25 @@ class Nuclei(object):
         # coordinates, masses from input - reshape and test some consistency
         # TODO: This should be put into Inputfile.py!
         self.masses = parameters.masses
-        if parameters._c_type == 'mass-value':
-            self.positions = parameters.coordinates.reshape((self.n_dof, -1))
-        elif parameters._c_type == 'xyz':
-            self.positions = parameters.coordinates.T.reshape((self.n_dof, -1))
+        self.positions = parameters.coordinates
+        self.momenta = parameters._momenta
 
-            assert ((self.n_dof % 3) == 0), "Assumed atoms, but number of \
- degrees of freedom not a multiple of 3."
-            self.n_atoms = self.n_dof / 3
+#        if parameters._c_type == 'mass-value':
+#            self.positions = parameters.coordinates.reshape((self.n_dof, -1))
+#        elif parameters._c_type == 'xyz':
+#            self.positions = parameters.coordinates.T.reshape((self.n_dof, -1))
+#
+#            assert ((self.n_dof % 3) == 0), "Assumed atoms, but number of \
+# degrees of freedom not a multiple of 3."
+#            self.n_atoms = self.n_dof / 3
 
         self.n_beads = [self.positions.shape[1]]
 
-        try:
-            self.momenta = parameters._momenta.reshape(self.positions.shape)
-        except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
-                          "coordinates does not match!")
+#        try:
+#            self.momenta = parameters._momenta.reshape(self.positions.shape)
+#        except ValueError as e:
+#            raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+#                          "coordinates does not match!")
 
         # set up propagator and attach
         if 'nuclei_propagator' in parameters:

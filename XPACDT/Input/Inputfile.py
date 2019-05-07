@@ -51,7 +51,7 @@ class Inputfile(collections.MutableMapping):
 
     Parameters
     ----------
-    inputgile: str
+    inputfile: str
         Filename of the input file.
     """
 
@@ -70,10 +70,12 @@ class Inputfile(collections.MutableMapping):
             self._intext = infile.read()
 
         self._parse_file()
+        if self.coorindates is not None:
+            self.__format_coordinates()
 
     @property
     def masses(self):
-        """ndarray : Array containing the masses of each degree of
+        """ndarray of floats: Array containing the masses of each degree of
         freedom in au."""
         return self.__masses
 
@@ -83,10 +85,13 @@ class Inputfile(collections.MutableMapping):
 
     @property
     def coordinates(self):
-        """two-dimensional ndarray : Array containing the coordinates of
-        each degree of freedom in au. The ordering is defined by the type
-        of coordinates given.
-        TODO: be more specific here or implement standard ordering!"""
+        """two-dimensional ndarray of floats: Array containing the coordinates
+        of each degree of freedom in au. The first axis is the degrees of
+        freedom and the second axis the beads."""
+
+        # assure correct format.
+        if self._ctype != 'xpacdt':
+            self.__format_coordinates()
         return self.__coordinates
 
     @coordinates.setter
@@ -253,3 +258,18 @@ class Inputfile(collections.MutableMapping):
                               + key_value_pair)
 
         return value_dict
+
+    def __format_coordinates(self):
+        """ Reformat positions to match the desired format, i.e.,  The first
+        axis is the degrees of freedom and the second axis the beads."""
+
+        if self._c_type == 'mass-value':
+            self.coordinates = self.coordinates.reshape((self.n_dof, -1))
+            if self._momenta is not None:
+                self._momenta = self._momenta.reshape(self.coordinates.shape)
+            self._c_type = 'xpacdt'
+        elif self._c_type == 'xyz':
+            self.positions = self.positions.T.reshape((self.n_dof, -1))
+            if self._momenta is not None:
+                self._momenta = self._momenta.T.reshape(self.coordinates.shape)
+            self._c_type = 'xpacdt'

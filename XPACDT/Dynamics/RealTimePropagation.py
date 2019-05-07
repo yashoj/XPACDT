@@ -37,7 +37,7 @@ import os
 import pickle
 
 
-def propagate(system, parameters):
+def propagate(system, input_parameters):
     """ Propagate the system as given in the input file. The system state is
     saved in a pickle file.
 
@@ -48,14 +48,14 @@ def propagate(system, parameters):
     ----------
     system : XPACDT.Dynamics.System
         System that defines the initial geometry and the potential.
-    parameters : XPACDT.Input.Inputfile
+    input_parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
     """
 
     # TODO: put time parsing into function?!
 
-    prop_parameters = parameters.get('propagation')
-    sys_parameters = parameters.get('system')
+    prop_parameters = input_parameters.get('propagation')
+    sys_parameters = input_parameters.get('system')
 
     assert('time_end' in prop_parameters), "No endtime " \
         "given for the propagation."
@@ -70,7 +70,7 @@ def propagate(system, parameters):
         system.time = float(time_string[0]) * parse_unit(time_string[1])
 
     # Set desired propagator
-    system.nuclei.attach_nuclei_propagator(parameters)
+    system.nuclei.attach_nuclei_propagator(input_parameters)
 
     # Obtain times for propagation and output
     time_string = prop_parameters.get('time_end').split()

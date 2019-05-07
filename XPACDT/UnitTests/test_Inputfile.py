@@ -83,22 +83,23 @@ class InputfileTest(unittest.TestCase):
 
     def test_parse_xyz(self):
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
+        parameters['system'] = {'dof': '6'}
 
         mass_ref = np.array([1837.362363054474, 34631.97313115233])
-        coordinate_ref = np.array([[1.0, 2.0, 3.0], [2.0, 1.0, 4.0]])
+        coordinate_ref = np.array([[1.0], [2.0], [3.0], [2.0], [1.0], [4.0]])
         input_string = "H 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
 
         parameters._parse_xyz(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-
-        parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-                                   rtol=1e-7)
 
+
+#        parameters._parse_xyz(input_string)
+#        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+#        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
+#                                   rtol=1e-7)
 
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \
@@ -121,6 +122,7 @@ class InputfileTest(unittest.TestCase):
 
     def test_parse_mass_value(self):
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
+        parameters['system'] = {'dof': '2'}
 
         mass_ref = np.array([1837.3624, 34631.9731])
         coordinate_ref = np.array([[1.0, 2.0, 3.0], [2.0, 1.0, 4.0]])

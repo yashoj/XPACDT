@@ -130,7 +130,7 @@ class System(object):
         """InterfaceTemplate : Potential energy interface of the system."""
         return self.__pes
 
-    def _init_electrons(self):
+    def _init_electrons(self, parameters):
         """ Function to set up the electrons of a system including all
         associated objects like propagators. Not yet implemented.
         """

@@ -58,6 +58,7 @@ class Inputfile(collections.MutableMapping):
     def __init__(self, inputfile):
 
         self.store = dict()
+        self._momenta = None
         self.__masses = None
         self.__coordinates = None
 
@@ -70,7 +71,7 @@ class Inputfile(collections.MutableMapping):
             self._intext = infile.read()
 
         self._parse_file()
-        if self.coorindates is not None:
+        if self.__coordinates is not None:
             self.__format_coordinates()
 
     @property
@@ -90,7 +91,7 @@ class Inputfile(collections.MutableMapping):
         freedom and the second axis the beads."""
 
         # assure correct format.
-        if self._ctype != 'xpacdt':
+        if self._c_type != 'xpacdt':
             self.__format_coordinates()
         return self.__coordinates
 
@@ -180,6 +181,7 @@ class Inputfile(collections.MutableMapping):
             String representation of the input.
         """
 
+        self._c_type = "xyz"
         d = StringIO(values)
         try:
             # TODO write a small wrapper for isotope masses!
@@ -193,7 +195,7 @@ class Inputfile(collections.MutableMapping):
                                    "number with the first inconsistency.")
 
         self.masses = mc[:, 0]
-        self.coordinates = mc[:, 1:]
+        self.__coordinates = mc[:, 1:]
 
     def _parse_mass_value(self, values):
         """
@@ -214,6 +216,7 @@ class Inputfile(collections.MutableMapping):
             String representation of the input.
         """
 
+        self._c_type = "mass-value"
         d = StringIO(values)
         try:
             mc = np.loadtxt(d, ndmin=2)
@@ -223,7 +226,7 @@ class Inputfile(collections.MutableMapping):
                                    "number with the first inconsistency.")
 
         self.masses = mc[:, 0]
-        self.coordinates = mc[:, 1:]
+        self.__coordinates = mc[:, 1:]
 
     def _parse_values(self, values):
         """
@@ -263,13 +266,17 @@ class Inputfile(collections.MutableMapping):
         """ Reformat positions to match the desired format, i.e.,  The first
         axis is the degrees of freedom and the second axis the beads."""
 
+        n_dof = int(self.get('system').get('dof'))
         if self._c_type == 'mass-value':
-            self.coordinates = self.coordinates.reshape((self.n_dof, -1))
+            self.__coordinates = self.__coordinates.reshape((n_dof, -1))
             if self._momenta is not None:
-                self._momenta = self._momenta.reshape(self.coordinates.shape)
+                self._momenta = self._momenta.reshape(self.__coordinates.shape)
             self._c_type = 'xpacdt'
         elif self._c_type == 'xyz':
-            self.positions = self.positions.T.reshape((self.n_dof, -1))
+            self.__coordinates = self.__coordinates.reshape((n_dof, -1))
+#            self.masses = self.masses[::self.__coordinates.shape[1]]
             if self._momenta is not None:
-                self._momenta = self._momenta.T.reshape(self.coordinates.shape)
+                self._momenta = self._momenta.reshape(self.__coordinates.shape)
             self._c_type = 'xpacdt'
+            if self.__coordinates.shape[1] != 1:
+                raise RuntimeError("No beads in xyz implemented yet.")

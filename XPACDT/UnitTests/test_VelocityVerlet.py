@@ -172,19 +172,24 @@ class VelocityVerletTest(unittest.TestCase):
 
         return
 
-    def test_get_propagation_matrix(self):
+    def test_set_propagation_matrix(self):
         propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]),
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         classical_ref = np.array([[[[1.0, 0.0], [0.1, 1.0]]]])
-        classical_pm = propagator._get_propagation_matrix(1)
+        propagator._set_propagation_matrix(1)
+        classical_pm = propagator.propagation_matrix
         np.testing.assert_allclose(classical_pm, classical_ref, rtol=1e-7)
+
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]),
+                                       **{'beta': 8.0, 'timestep': '0.2 au'})
 
         four_beads_ref = np.array([[[[1.0, 0.0], [0.1, 1.0]],
                                    [[0.9900, -0.19933], [0.099667, 0.9900]],
                                    [[0.9801, -0.3973], [0.09933, 0.9801]],
                                    [[0.9900, -0.19933], [0.099667, 0.9900]]]])
-        four_beads_pm = propagator._get_propagation_matrix(4)
+        propagator._set_propagation_matrix(4)
+        four_beads_pm = propagator.propagation_matrix
         np.testing.assert_allclose(four_beads_pm, four_beads_ref, rtol=1e-4)
 
         return

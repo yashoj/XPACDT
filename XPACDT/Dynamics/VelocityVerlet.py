@@ -54,7 +54,8 @@ class VelocityVerlet(object):
     mass : array of floats
         Masses of the system in au.
 
-    # TODO: Howto docu keyword arguments?
+    Other Parameters
+    ----------------
     beta : float, optional, default None
         Inverse temperature for ring polymer springs in a.u.
     """
@@ -135,15 +136,48 @@ class VelocityVerlet(object):
     def thermostat(self, t):
         self.__thermostat = t
 
-    def attach_thermostat(self, parameters, masses):
-        thermo_parameters = parameters.get('thermostat')
+    def attach_thermostat(self, input_parameters, masses):
+        """ Create a thermostat and attach it to the propagator.
+
+        Parameters
+        ----------
+        input_parameters : XPACDT.Inputfile
+            Represents all the input parameters for the simulation given in the
+            input file.
+        masses : ndarray of floats
+            The mass of each degree of freedom in au.
+        """
+        thermo_parameters = input_parameters.get('thermostat')
         assert('method' in thermo_parameters), "No thermostat method given."
 
         method = thermo_parameters.get('method')
         __import__("XPACDT.Dynamics." + method)
-        self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method], method)(parameters, masses)
+        self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
+                                  method)(input_parameters, masses)
 
     def propagate(self, R, P, time):
+        """ Advance the given position and momenta for a given time.
+
+        Parameters
+        ----------
+        R : two-dimensional ndarray of floats
+            The positions of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        P : two-dimensional ndarray of floats
+            The momenta of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        time : float
+            The amount of time to advance in au.
+
+        Returns
+        -------
+        R : two-dimensional ndarray of floats
+            The positions of all beads after advancing in time. The first
+            axis is the degrees of freedom and the second axis the beads.
+        P : two-dimensional ndarray of floats
+            The momenta of all beads after advancing in time. The first axis is
+            the degrees of freedom and the second axis the beads.
+        """
         # TODO: possibly step size control here.
         # TODO: possibly multiple-timestepping here
 
@@ -159,7 +193,8 @@ class VelocityVerlet(object):
         return Rn, Pn
 
     def _step(self, R, P):
-
+        """ One velocity_verlet step in time.
+        """
         pt2 = self._velocity_step(P, R)
         if self.thermostat is not None:
             self.thermostat.apply(R, P, 1)

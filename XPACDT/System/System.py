@@ -44,7 +44,8 @@ class System(object):
     Parameters
     ----------
     input_parameters : XPACDT.Inputfile
-        Represents all the input for the simulation.
+        Represents all the input parameters for the simulation given in the
+        input file.
 
 ### TODO: stuff we need:
     - number of dof
@@ -68,30 +69,31 @@ class System(object):
 
     """
 
-    def __init__(self, parameters):
+    def __init__(self, input_parameters):
 
-        assert('Interface' in parameters.get("system")), "Interface " \
+        self.__parameters = input_parameters
+
+        assert('Interface' in self.parameters.get("system")), "Interface " \
             "not specified!"
-        assert('dof' in parameters.get("system")), "Number of " \
+        assert('dof' in self.parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 
-        self.n_dof = parameters.get("system").get("dof")
-        time_string = parameters.get("system").get("time", "0 fs").split()
+        self.n_dof = self.parameters.get("system").get("dof")
+        time_string = self.parameters.get("system").get("time", "0 fs").split()
         self.time = float(time_string[0]) * parse_unit(time_string[1])
 
         # Set up potential
-        pes_name = parameters.get("system").get("Interface", None)
+        pes_name = self.parameters.get("system").get("Interface", None)
         __import__("XPACDT.Interfaces." + pes_name)
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(**parameters.get(pes_name))
+                             pes_name)(**self.parameters.get(pes_name))
 
         # Set up nuclei
-        self.__nuclei = nuclei.Nuclei(self.n_dof, parameters, self.pes)
+        self.__nuclei = nuclei.Nuclei(self.n_dof, self.parameters, self.pes)
 
         # TOOD: Set up electrons
-        self._init_electrons(parameters)
+        self._init_electrons(self.parameters)
 
-        self.__parameters = parameters
         self.log(init=True)
 
     @property
@@ -128,20 +130,22 @@ class System(object):
         """InterfaceTemplate : Potential energy interface of the system."""
         return self.__pes
 
-    def _init_electrons(self, parameters):
+    def _init_electrons(self):
         """ Function to set up the electrons of a system including all
         associated objects like propagators. Not yet implemented.
-
-        Parameters
-        ----------
-        parameters : XPACDT input file
-            Dictonary-like presentation of the input file.
         """
 
         self.__electrons = None
 
     def step(self, time):
-        """ Step in time."""
+        """ Step the whole system forwar in time. Also keep a log of the
+        system state at these times.
+
+        Parameters
+        ----------
+        time : float
+            Time to advance the system in au.
+        """
         # TODO: more advanced here.
         # TODO: add electrons
         # TODO: add logging
@@ -151,18 +155,31 @@ class System(object):
         self.log()
 
     def reset(self):
-        """ Reset to original values. """
+        """ Reset the system state to its original values. """
+
         self.time = self._log[0][0]
         self.nucei = copy.deepcopy(self._log[0][1])
 
     def clear_log(self):
-        """ Set the current state as initial state and clear everything else."""
+        """ Set the current system state as initial state and clear everything
+        else in the log."""
+
         self.time = self._log[0][0]
         self.nucei = copy.deepcopy(self._log[-1][1])
         self.log(True)
 
     def log(self, init=False):
-        """ Log the system state. """
+        """ Log the system state. Currently this logs the system time, the
+        nuclei object.
+
+        Parameters
+        ----------
+        initi : bool, optional
+            If the log has to be initialized or not. Default False.
+        """
+
         if init:
             self._log = []
         self._log.append([self.time, copy.deepcopy(self.nuclei)])
+
+        # TODO: remove certain parts to not consume too much memory

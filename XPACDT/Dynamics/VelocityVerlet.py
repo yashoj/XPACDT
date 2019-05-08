@@ -191,7 +191,7 @@ class VelocityVerlet(object):
         # TODO: possibly multiple-timestepping here
 
         Rt, Pt = R.copy(), P.copy()
-        # howto handle time not a multiple of timestep?
+        # TODO: handle time not a multiple of timestep? What's the best way?
         n_steps = int((time + 1e-8) // self.timestep)
         for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)
@@ -293,12 +293,19 @@ class VelocityVerlet(object):
         n_beads = R.shape[1]
         self._set_propagation_matrix(n_beads)
 
+        # three-dimensional array; For each physical degree of freedom and
+        # each ring polymer bead the normal mode position and momentum is
+        # stored.
         nms = np.array([list(zip(p, r)) for r, p in zip(rnm, pnm)])
         rnm_t = np.zeros(rnm.shape)
         pnm_t = np.zeros(rnm.shape)
 
+        # iteration over all physical degrees of freedom
         for k, nm in enumerate(nms):
 
+            # broadcast multiply matrices sitting in the last two dimensions;
+            # here: broadcast over all beads, multiply the 2x2 propagation
+            # matrix with the (p_kj, q_kj) vector
             tt = np.matmul(self.propagation_matrix[k],
                            np.expand_dims(nm, axis=2))[:, :, 0]
 
@@ -309,8 +316,18 @@ class VelocityVerlet(object):
             RPtrafo.from_RingPolymer_normalModes(pnm_t)
 
     def _set_propagation_matrix(self, n):
-        """Set the propagation matrix for the momenta and internal ring
-        polymer coordinates. TODO more docu and example.
+        """Set the propagation matrices for the momenta and internal ring
+        polymer coordinates. It is an array of arrays of two-dimensional
+        arrays. The first dimension is the physical degrees of freedom, the
+        second one the ring polymer beads.
+
+        For a given degree of freedom j (with mass m_j) and a given ring
+        polymer normal mode k (with frequency w_k) the propagation matrix
+        is a 2x2 matrix and reads:
+            (  cos(w_k * dt)                 , -m_j * w_k * sin(w_k * dt)  )
+            (  1/(m_j * w_k) * sin(w_k * dt) , cos(w_k * dt)               )
+
+        See also: https://aip.scitation.org/doi/10.1063/1.3489925
 
         Parameters
         ----------

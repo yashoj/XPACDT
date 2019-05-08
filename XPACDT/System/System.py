@@ -63,7 +63,7 @@ class System(object):
       -> expansion coefficients
     - -> electron dynamics part
 
-    - restrictions
+    - constraints
     - pes where
 
 
@@ -82,7 +82,7 @@ class System(object):
         time_string = self.parameters.get("system").get("time", "0 fs").split()
         self.time = float(time_string[0]) * parse_unit(time_string[1])
 
-        # Set up potential
+        # Set up potential interface
         pes_name = self.parameters.get("system").get("Interface", None)
         __import__("XPACDT.Interfaces." + pes_name)
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],

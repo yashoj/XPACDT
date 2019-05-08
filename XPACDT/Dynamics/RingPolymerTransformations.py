@@ -47,15 +47,19 @@ def to_RingPolymer_normalModes(X, i=None):
 
     Parameters
     ----------
-    X : array of arrays of float
-        'normal' representation or the ring polymer.
+    X : two-dimensinoal array of floats.
+        'normal' representation or the ring polymer coordinates or momenta.
+        The first axis is the physical degrees of freedom, the second one the
+        beads.
     i : integer, optional, default None
         Only do transformation in i-th degree of freedom.
 
     Returns
     -------
-    NM : array of arrays of float
-        Normal mode representation of the ring-polymer.
+    NM : two-dimensinoal array of floats.
+        Normal mode representation of the ring polymer coordinates or momenta.
+        The first axis is the physical degrees of freedom, the second one the
+        beads.
     """
 
     assert (isinstance(X, np.ndarray)), "X not a numpy array!"
@@ -71,8 +75,8 @@ def to_RingPolymer_normalModes(X, i=None):
     if i is not None:
         NM[i] = _1d_to_nm(X[i], n_beads)
     else:
-        for k, x in enumerate(X):
-            NM[k] = _1d_to_nm(x, n_beads)
+        for k, x_k in enumerate(X):
+            NM[k] = _1d_to_nm(x_k, n_beads)
 
     return NM
 
@@ -83,15 +87,19 @@ def from_RingPolymer_normalModes(NM, i=None):
 
     Parameters
     ----------
-    NM : array of arrays of float
-        Normal mode representation or the ring polymer.
+    NM : two-dimensinoal array of float
+        Normal mode representation or the ring polymer coordinates or momenta.
+        The first axis is the physical degrees of freedom, the second one the
+        beads.
     i : integer, optional, default None
         Only do transformation in i-th degree of freedom.
 
     Returns
     -------
     X : array of arrays of float
-        'normal' representation of the ring-polymer.
+        'normal' representation of the ring polymer coordinates or momenta.
+        The first axis is the physical degrees of freedom, the second one the
+        beads.
     """
 
     assert (isinstance(NM, np.ndarray)), "NM not a numpy array!"
@@ -127,7 +135,7 @@ def _1d_to_nm(x, n):
     Returns
     -------
     array of floats
-        Normal mode representation of the ring-polymer in one dimension.
+        Normal mode representation of the ring polymer in one dimension.
     """
 
     assert (n == 1 or n % 2 == 0), "Number of beads not 1 or even!"
@@ -157,7 +165,7 @@ def _1d_from_nm(nm, n):
     Returns
     -------
     array of floats
-        'normal' representation of the ring-polymer in one dimension.
+        'normal' representation of the ring polymer in one dimension.
     """
 
     assert (n == 1 or n % 2 == 0), "Number of beads not 1 or even!"

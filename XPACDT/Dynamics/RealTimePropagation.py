@@ -90,6 +90,7 @@ def propagate(system, input_parameters):
     while(system.time < time_end):
         system.step(timestep_output)
 
+        # TODO: Learn how to append in pickle and maybe do that
         if 'intermediate_write' in sys_parameters:
             pickle.dump(system, open(path_file, 'wb'), -1)
 

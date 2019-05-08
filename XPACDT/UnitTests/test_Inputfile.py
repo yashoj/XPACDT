@@ -95,11 +95,33 @@ class InputfileTest(unittest.TestCase):
                                    rtol=1e-7)
         np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
 
+        # with two beads
+        coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1], [2.0, 2.1], [1.0, 1.1], [4.0, 4.1]])
+        input_string = "H 1.0 2.0 3.0 \n" \
+            + "H 1.1 2.1 3.1 \n" \
+            + "F 2.0 1.0 4.0 \n" \
+            + "F 2.1 1.1 4.1 \n"
 
-#        parameters._parse_xyz(input_string)
-#        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-#        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-#                                   rtol=1e-7)
+        parameters._parse_xyz(input_string)
+        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
+                                   rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+
+        # with four beads
+        coordinate_ref = np.array([[1.0, 1.1, 1.2, 1.3], [2.0, 2.1, 2.2, 2.3], [3.0, 3.1, 3.2, 3.3], [2.4, 2.5, 2.6, 2.7], [1.4, 1.5, 1.6, 1.7], [4.0, 4.1, 4.2, 4.3]])
+        input_string = "H 1.0 2.0 3.0 \n" \
+            + "H 1.1 2.1 3.1 \n" \
+            + "H 1.2 2.2 3.2 \n" \
+            + "H 1.3 2.3 3.3 \n" \
+            + "F 2.4 1.4 4.0 \n" \
+            + "F 2.5 1.5 4.1 \n" \
+            + "F 2.6 1.6 4.2 \n" \
+            + "F 2.7 1.7 4.3 \n"
+
+        parameters._parse_xyz(input_string)
+        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
+                                   rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
 
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \

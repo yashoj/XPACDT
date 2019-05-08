@@ -58,7 +58,7 @@ class Inputfile(collections.MutableMapping):
     def __init__(self, inputfile):
 
         self.store = dict()
-        self._momenta = None
+        self.__momenta = None
         self.__masses = None
         self.__coordinates = None
 
@@ -95,9 +95,16 @@ class Inputfile(collections.MutableMapping):
             self.__format_coordinates()
         return self.__coordinates
 
-    @coordinates.setter
-    def coordinates(self, c):
-        self.__coordinates = c
+    @property
+    def momenta(self):
+        """two-dimensional ndarray of floats: Array containing the momenta
+        of each degree of freedom in au. The first axis is the degrees of
+        freedom and the second axis the beads."""
+
+        # assure correct format.
+        if self._c_type != 'xpacdt':
+            self.__format_coordinates()
+        return self.__momenta
 
 # TODO: Do we need to document these basic functions of the interface?
     def __getitem__(self, key):
@@ -152,7 +159,7 @@ class Inputfile(collections.MutableMapping):
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self._momenta = np.loadtxt(d)
+                self.__momenta = np.loadtxt(d)
             else:
                 match = re.search("\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
                 keyword = match.group(1)
@@ -264,19 +271,47 @@ class Inputfile(collections.MutableMapping):
 
     def __format_coordinates(self):
         """ Reformat positions to match the desired format, i.e.,  The first
-        axis is the degrees of freedom and the second axis the beads."""
+        axis is the degrees of freedom and the second axis the beads. If
+        momenta are present we also reformat those. """
 
         n_dof = int(self.get('system').get('dof'))
+
         if self._c_type == 'mass-value':
             self.__coordinates = self.__coordinates.reshape((n_dof, -1))
-            if self._momenta is not None:
-                self._momenta = self._momenta.reshape(self.__coordinates.shape)
+
+            try:
+                self.__momenta = self.__momenta.reshape(self.__coordinates.shape)
+
+            # No momenta set
+            except AttributeError:
+                pass
+            # Wrong number of momenta given
+            except ValueError as e:
+                raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+                                       "coordinates does not match!")
+
             self._c_type = 'xpacdt'
+
         elif self._c_type == 'xyz':
-            self.__coordinates = self.__coordinates.reshape((n_dof, -1))
-#            self.masses = self.masses[::self.__coordinates.shape[1]]
-            if self._momenta is not None:
-                self._momenta = self._momenta.reshape(self.__coordinates.shape)
+            n_beads = self.__coordinates.size // n_dof
+
+            # reordering; keep account of multiple beads
+            self.masses = self.masses[::n_beads]
+            self.__coordinates = np.array([self.__coordinates[i::n_beads]
+                                           for i in range(n_beads)])\
+                .flatten().reshape((n_dof, -1), order='F')
+
+            try:
+                self.__momenta = np.array([self.__momenta[i::n_beads]
+                                           for i in range(n_beads)])\
+                    .flatten().reshape(self.__coordinates.shape, order='F')
+
+            # No momenta set
+            except (AttributeError, TypeError):
+                pass
+            # Wrong number of momenta given
+            except ValueError as e:
+                raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+                                       "coordinates does not match!")
+
             self._c_type = 'xpacdt'
-            if self.__coordinates.shape[1] != 1:
-                raise RuntimeError("No beads in xyz implemented yet.")

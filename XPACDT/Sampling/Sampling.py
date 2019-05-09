@@ -104,7 +104,7 @@ def sample(system, parameters):
 
     # Run sampling method
     method = parameters.get('sampling').get('method')
-    __import__("XPACDT.Dynamics." + method + "Sampling")
+    __import__("XPACDT.Sampling." + method + "Sampling")
     systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
                       "do_" + method + "_sampling")(system, parameters)
 

@@ -74,7 +74,7 @@ class Nuclei(object):
 
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
-            self.attach_propagator(input_parameters)
+            self.attach_nuclei_propagator(input_parameters)
 
         return
 
@@ -181,7 +181,7 @@ beads given."
         refactoring."""
         return self.pes.energy(self.positions)
 
-    def attach_propagator(self, parameters):
+    def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If
         required, a thermostatt is added to the propagator as well.
 

@@ -157,15 +157,15 @@ class System(object):
     def reset(self):
         """ Reset the system state to its original values. """
 
-        self.time = self._log[0][0]
-        self.nucei = copy.deepcopy(self._log[0][1])
+        self.time = self._log[0]['time']
+        self.nucei = copy.deepcopy(self._log[0]['nuclei'])
 
     def clear_log(self):
         """ Set the current system state as initial state and clear everything
         else in the log."""
 
-        self.time = self._log[0][0]
-        self.nucei = copy.deepcopy(self._log[-1][1])
+        self.time = self._log[0]['time']
+        self.nucei = copy.deepcopy(self._log[-1]['nuclei'])
         self.log(True)
 
     def log(self, init=False):
@@ -180,6 +180,6 @@ class System(object):
 
         if init:
             self._log = []
-        self._log.append([self.time, copy.deepcopy(self.nuclei)])
+        self._log.append({'time': self.time, 'nuclei': copy.deepcopy(self.nuclei)})
 
         # TODO: remove certain parts to not consume too much memory

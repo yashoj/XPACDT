@@ -59,8 +59,6 @@ def propagate(system, input_parameters):
 
     assert('time_end' in prop_parameters), "No endtime " \
         "given for the propagation."
-    assert('timestep' in prop_parameters), "No " \
-        "timestep given for the propagation."
 
     if 'continue' not in sys_parameters:
         system.reset()

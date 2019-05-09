@@ -32,6 +32,7 @@ import pickle
 import numpy as np
 
 import XPACDT.Tools.Bootstrap as bs
+import XPACDT.Tools.Operations as op
 
 """Module to perform analysis on a set of XPACDT.Systems
 TODO: A lot of basic docu here.
@@ -118,10 +119,68 @@ def do_analysis(parameters, systems=None):
 
 
 def apply_command(command, system):
-    # todo actualy implement commands
-    x0 = system._log[0][1].x_centroid[0]
-    command['results'].append(x0*np.array([log[1].x_centroid[0] for log in system._log]))
-    return [log[0] for log in system._log]
+    """ Apply a given command to a given system.
+
+    Parameters
+    ----------
+    command : dict
+        The definition of the command to evaluated as given in the input file.
+    system : XPACDT.System
+        The read in system containing its own log.
+
+    Returns
+    -------
+    list of floats
+        The times for which the command was evaluated, i.e., the times in the
+        log of the system.
+    """
+
+    # Time zero operation for correlation functions, etc.
+    value_0 = 1.0
+    if 'op0' in command:
+        value_0 = apply_operation(command['op0'], system._log[0])
+
+    # Iterate over all times and calculate the full command.
+    # TODO: Implement to only do a subpart of the times. I.e. first, last, ...
+    command['results'].append([value_0 * apply_operation(command['op'], log)
+                               for log in system._log])
+
+    return [log['time'] for log in system._log]
+
+
+def apply_operation(operation, system):
+    """ Apply a given sequence of operation to a given system log given.
+
+    Parameters
+    ----------
+    operation : string
+        The string defining the sequence of operations. Each operation starts
+        with a '+' and an identifyer (e.g., +position, +velocity, ...).
+        Arguments specifying the operation are given after that.
+    system : dict containing the system information (i.e., from the log).
+
+    Returns
+    -------
+    value :
+        The value resulting from the operations.
+    """
+
+    value = 1.0
+    # The split has '' as a first results on something like '+pos'.split('+'),
+    # and we need to ignore that one.
+    for op_string in operation.split('+')[1:]:
+        ops = op_string.split()
+
+        # match the different operations here.
+        if ops[0] == 'id' or ops[0] == 'idendity':
+            value *= 1.0
+        elif ops[0] == 'pos' or ops[0] == 'position':
+            value *= op.position(ops[1:], system)
+        else:
+            raise RuntimeError("XPACDT: The given operation is not"
+                               "implemented. " + ops)
+
+    return value
 
 
 def get_directory_list(folder='./', file_name=None):

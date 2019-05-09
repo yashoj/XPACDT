@@ -35,8 +35,8 @@ import random
 import scipy.stats
 import unittest
 
-import XPACDT.Dynamics.System as xSystem
-import XPACDT.Dynamics.WignerSampling as wigner
+import XPACDT.System.System as xSystem
+import XPACDT.Sampling.WignerSampling as wigner
 import XPACDT.Input.Inputfile as infile
 
 
@@ -47,10 +47,10 @@ class WignerSamplingTest(unittest.TestCase):
         random.seed(seed)
         np.random.seed(seed)
 
-        self.parameters0 = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_Wigner_0.in"})
+        self.parameters0 = infile.Inputfile("FilesForTesting/SamplingTest/input_Wigner_0.in")
         self.system0 = xSystem.System(self.parameters0)
 
-        self.parameters2 = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_Wigner_300K.in"})
+        self.parameters2 = infile.Inputfile("FilesForTesting/SamplingTest/input_Wigner_300K.in")
         self.system2 = xSystem.System(self.parameters2)
 
     def test_do_Wigner_sampling(self):

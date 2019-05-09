@@ -54,7 +54,8 @@ class VelocityVerlet(object):
     mass : array of floats
         Masses of the system in au.
 
-    # TODO: Howto docu keyword arguments?
+    Other Parameters
+    ----------------
     beta : float, optional, default None
         Inverse temperature for ring polymer springs in a.u.
     """
@@ -87,7 +88,7 @@ class VelocityVerlet(object):
 
     @property
     def beta(self):
-        """ Inverse temperature for ring polymer springs in a.u."""
+        """ float : Inverse temperature for ring polymer springs in a.u."""
         return self.__beta
 
     @beta.setter
@@ -97,7 +98,7 @@ class VelocityVerlet(object):
 
     @property
     def timestep(self):
-        """ The timestep of the propagator in a.u."""
+        """ float : The timestep of the propagator in a.u."""
         return self.__timestep
 
     @timestep.setter
@@ -107,7 +108,7 @@ class VelocityVerlet(object):
 
     @property
     def mass(self):
-        """ The masses of the system in a.u."""
+        """ ndarray of floats : The masses of the system in a.u."""
         return self.__mass
 
     @mass.setter
@@ -117,7 +118,7 @@ class VelocityVerlet(object):
 
     @property
     def potential(self):
-        """ The potential used in the propagation."""
+        """ XPACDT.Interface : The potential used in the propagation."""
         return self.__potential
 
     @potential.setter
@@ -125,6 +126,15 @@ class VelocityVerlet(object):
         assert (isinstance(p, template.Interface)), "potential not"
         "derived from InterfaceTemplate!"
         self.__potential = p
+
+    @property
+    def propagation_matrix(self):
+        """ four-dimensional ndarray of floats. For each degree of
+        freedom (first dimension) and each internal ring polymer degree of
+        freedom (second dimension) a matrix for propagating the ring polymer
+        with a timestep and beta.
+        """
+        return self.__propagation_matrix
 
     @property
     def thermostat(self):
@@ -135,20 +145,53 @@ class VelocityVerlet(object):
     def thermostat(self, t):
         self.__thermostat = t
 
-    def attach_thermostat(self, parameters, masses):
-        thermo_parameters = parameters.get('thermostat')
+    def attach_thermostat(self, input_parameters, masses):
+        """ Create a thermostat and attach it to the propagator.
+
+        Parameters
+        ----------
+        input_parameters : XPACDT.Inputfile
+            Represents all the input parameters for the simulation given in the
+            input file.
+        masses : ndarray of floats
+            The mass of each degree of freedom in au.
+        """
+        thermo_parameters = input_parameters.get('thermostat')
         assert('method' in thermo_parameters), "No thermostat method given."
 
         method = thermo_parameters.get('method')
         __import__("XPACDT.Dynamics." + method)
-        self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method], method)(parameters, masses)
+        self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
+                                  method)(input_parameters, masses)
 
     def propagate(self, R, P, time):
+        """ Advance the given position and momenta for a given time.
+
+        Parameters
+        ----------
+        R : two-dimensional ndarray of floats
+            The positions of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        P : two-dimensional ndarray of floats
+            The momenta of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        time : float
+            The amount of time to advance in au.
+
+        Returns
+        -------
+        Rn : two-dimensional ndarray of floats
+             The positions of all beads after advancing in time. The first
+             axis is the degrees of freedom and the second axis the beads.
+        Pn : two-dimensional ndarray of floats
+             The momenta of all beads after advancing in time. The first axis
+             is the degrees of freedom and the second axis the beads.
+        """
         # TODO: possibly step size control here.
         # TODO: possibly multiple-timestepping here
 
         Rt, Pt = R.copy(), P.copy()
-        # howto handle time not a multiple of timestep?
+        # TODO: handle time not a multiple of timestep? What's the best way?
         n_steps = int((time + 1e-8) // self.timestep)
         for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)
@@ -159,7 +202,27 @@ class VelocityVerlet(object):
         return Rn, Pn
 
     def _step(self, R, P):
+        """ One velocity_verlet step with the internal timestep and for the
+        given positions and momenta.
 
+        Parameters
+        ----------
+        R : two-dimensional ndarray of floats
+            The positions of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        P : two-dimensional ndarray of floats
+            The momenta of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+
+        Returns
+        -------
+        rt : two-dimensional ndarray of floats
+             The positions of all beads after advancing in time. The first
+             axis is the degrees of freedom and the second axis the beads.
+        pt : two-dimensional ndarray of floats
+             The momenta of all beads after advancing in time. The first axis
+             is the degrees of freedom and the second axis the beads.
+        """
         pt2 = self._velocity_step(P, R)
         if self.thermostat is not None:
             self.thermostat.apply(R, P, 1)
@@ -179,21 +242,71 @@ class VelocityVerlet(object):
         return rt, pt
 
     def _velocity_step(self, P, R):
+        """ Take a half-timestep for the momenta with the gradient at the given
+        position.
+
+        Parameters
+        ----------
+        P : two-dimensional ndarray of floats
+            The momenta of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        R : two-dimensional ndarray of floats
+            The positions of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+
+        Returns
+        -------
+        two-dimensional ndarray of floats
+        The momenta of all beads after advancing in time. The first axis
+        is the degrees of freedom and the second axis the beads.
+        """
+
         return P - 0.5 * self.timestep * self.potential.gradient(R)
 
     def _verlet_step(self, R, P):
+        """ Take a full timestep for the positions and internal ring-polymer
+        degrees of freedom.
+
+        Parameters
+        ----------
+        P : two-dimensional ndarray of floats
+            The momenta of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+        R : two-dimensional ndarray of floats
+            The positions of all beads. The first axis is the degrees of
+            freedom and the second axis the beads.
+
+        Returns
+        -------
+        rt : two-dimensional ndarray of floats
+             The positions of all beads after advancing in time. The first
+             axis is the degrees of freedom and the second axis the beads.
+        pt : two-dimensional ndarray of floats
+             The momenta of all beads after advancing in time. The first axis
+             is the degrees of freedom and the second axis the beads.
+        """
+
         # TODO: profile and optimize, and generalize to more D; docu properly
         rnm = RPtrafo.to_RingPolymer_normalModes(R)
         pnm = RPtrafo.to_RingPolymer_normalModes(P)
 
         n_beads = R.shape[1]
+        self._set_propagation_matrix(n_beads)
+
+        # three-dimensional array; For each physical degree of freedom and
+        # each ring polymer bead the normal mode position and momentum is
+        # stored.
         nms = np.array([list(zip(p, r)) for r, p in zip(rnm, pnm)])
         rnm_t = np.zeros(rnm.shape)
         pnm_t = np.zeros(rnm.shape)
 
+        # iteration over all physical degrees of freedom
         for k, nm in enumerate(nms):
 
-            tt = np.matmul(self.propagation_matrix(n_beads)[k],
+            # broadcast multiply matrices sitting in the last two dimensions;
+            # here: broadcast over all beads, multiply the 2x2 propagation
+            # matrix with the (p_kj, q_kj) vector
+            tt = np.matmul(self.propagation_matrix[k],
                            np.expand_dims(nm, axis=2))[:, :, 0]
 
             pnm_t[k] = tt[:, 0]
@@ -202,13 +315,34 @@ class VelocityVerlet(object):
         return RPtrafo.from_RingPolymer_normalModes(rnm_t),\
             RPtrafo.from_RingPolymer_normalModes(pnm_t)
 
-    def propagation_matrix(self, n):
-        # TODO: make a property?
-        if self.__propagation_matrix is None:
-            self.__propagation_matrix = self._get_propagation_matrix(n)
-        return self.__propagation_matrix
+    def _set_propagation_matrix(self, n):
+        """Set the propagation matrices for the momenta and internal ring
+        polymer coordinates. It is an array of arrays of two-dimensional
+        arrays. The first dimension is the physical degrees of freedom, the
+        second one the ring polymer beads.
 
-    def _get_propagation_matrix(self, n):
+        For a given degree of freedom j (with mass m_j) and a given ring
+        polymer normal mode k (with frequency w_k) the propagation matrix
+        is a 2x2 matrix and reads:
+            (  cos(w_k * dt)                 , -m_j * w_k * sin(w_k * dt)  )
+            (  1/(m_j * w_k) * sin(w_k * dt) , cos(w_k * dt)               )
+
+        See also: https://aip.scitation.org/doi/10.1063/1.3489925
+
+        Parameters
+        ----------
+        n: int
+            The number of beads in the ring polymer.
+
+        Returns
+        -------
+        Nothing, but self.__propagation matrix is initialized.
+        -------
+        """
+
+        if self.propagation_matrix is not None:
+            return
+
         w = np.array([2.0 * (n / self.beta) * np.sin(k * np.pi / n)
                       for k in range(1, n)])
 
@@ -224,4 +358,4 @@ class VelocityVerlet(object):
                           np.cos(wk * self.timestep)]]))
             ps.append(pm)
 
-        return np.array(ps)
+        self.__propagation_matrix = np.array(ps)

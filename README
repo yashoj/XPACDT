@@ -18,6 +18,9 @@ Installation:
 	- Run the "install" script to generate important environment variables.
 	- Follow the on-screen instructions for permanent setting of the environment variables.
 
+Verifying the code:
+	- To check if everything works correctly, unittests can be run. To do so, lease got to XPACDT/UnitTests and run "python allTests.py".
+
 Help:
 	- Consult the confluence page at: https://confluence.desy.de/display/CDT/XPACDT%3A+eXtended+PolyAtomic+Chemical+Dynamics+Toolkit
 	- Contact Ralph Welsch at ralph.welsch@desy.de

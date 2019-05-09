@@ -49,21 +49,20 @@ class Inputfile(collections.MutableMapping):
     inherits from the MutableMapping Abstract Base Class defined in the
     collections module.
 
-    Other Parameters
+    Parameters
     ----------
-    filename : str
+    inputfile: str
         Filename of the input file.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, inputfile):
 
         self.store = dict()
+        self.__momenta = None
         self.__masses = None
         self.__coordinates = None
 
-        assert('filename' in kwargs), "No filename given to Inputfile!"
-
-        self._filename = kwargs.get('filename')
+        self._filename = inputfile
         if not os.path.isfile(self._filename):
             raise FileNotFoundError(ENOENT, "Input file does not exist!",
                                     self._filename)
@@ -72,6 +71,10 @@ class Inputfile(collections.MutableMapping):
             self._intext = infile.read()
 
         self._parse_file()
+
+        if self.__coordinates is not None:
+            self.__format_coordinates()
+
         self.commands = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:
             self.commands[key]['results'] = []
@@ -88,7 +91,7 @@ class Inputfile(collections.MutableMapping):
 
     @property
     def masses(self):
-        """ndarray : Array containing the masses of each degree of
+        """ndarray of floats: Array containing the masses of each degree of
         freedom in au."""
         return self.__masses
 
@@ -98,15 +101,25 @@ class Inputfile(collections.MutableMapping):
 
     @property
     def coordinates(self):
-        """two-dimensional ndarray : Array containing the coordinates of
-        each degree of freedom in au. The ordering is defined by the type
-        of coordinates given.
-        TODO: be more specific here or implement standard ordering!"""
+        """two-dimensional ndarray of floats: Array containing the coordinates
+        of each degree of freedom in au. The first axis is the degrees of
+        freedom and the second axis the beads."""
+
+        # assure correct format.
+        if self._c_type != 'xpacdt':
+            self.__format_coordinates()
         return self.__coordinates
 
-    @coordinates.setter
-    def coordinates(self, c):
-        self.__coordinates = c
+    @property
+    def momenta(self):
+        """two-dimensional ndarray of floats: Array containing the momenta
+        of each degree of freedom in au. The first axis is the degrees of
+        freedom and the second axis the beads."""
+
+        # assure correct format.
+        if self._c_type != 'xpacdt':
+            self.__format_coordinates()
+        return self.__momenta
 
 # TODO: Do we need to document these basic functions of the interface?
     def __getitem__(self, key):
@@ -161,7 +174,7 @@ class Inputfile(collections.MutableMapping):
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self._momenta = np.loadtxt(d)
+                self.__momenta = np.loadtxt(d)
             else:
                 match = re.search("\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
                 keyword = match.group(1)
@@ -190,6 +203,7 @@ class Inputfile(collections.MutableMapping):
             String representation of the input.
         """
 
+        self._c_type = "xyz"
         d = StringIO(values)
         try:
             # TODO write a small wrapper for isotope masses!
@@ -203,7 +217,7 @@ class Inputfile(collections.MutableMapping):
                                    "number with the first inconsistency.")
 
         self.masses = mc[:, 0]
-        self.coordinates = mc[:, 1:]
+        self.__coordinates = mc[:, 1:]
 
     def _parse_mass_value(self, values):
         """
@@ -224,6 +238,7 @@ class Inputfile(collections.MutableMapping):
             String representation of the input.
         """
 
+        self._c_type = "mass-value"
         d = StringIO(values)
         try:
             mc = np.loadtxt(d, ndmin=2)
@@ -233,7 +248,7 @@ class Inputfile(collections.MutableMapping):
                                    "number with the first inconsistency.")
 
         self.masses = mc[:, 0]
-        self.coordinates = mc[:, 1:]
+        self.__coordinates = mc[:, 1:]
 
     def _parse_values(self, values):
         """
@@ -268,3 +283,50 @@ class Inputfile(collections.MutableMapping):
                               + key_value_pair)
 
         return value_dict
+
+    def __format_coordinates(self):
+        """ Reformat positions to match the desired format, i.e.,  The first
+        axis is the degrees of freedom and the second axis the beads. If
+        momenta are present we also reformat those. """
+
+        n_dof = int(self.get('system').get('dof'))
+
+        if self._c_type == 'mass-value':
+            self.__coordinates = self.__coordinates.reshape((n_dof, -1))
+
+            try:
+                self.__momenta = self.__momenta.reshape(self.__coordinates.shape)
+
+            # No momenta set
+            except AttributeError:
+                pass
+            # Wrong number of momenta given
+            except ValueError as e:
+                raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+                                       "coordinates does not match!")
+
+            self._c_type = 'xpacdt'
+
+        elif self._c_type == 'xyz':
+            n_beads = self.__coordinates.size // n_dof
+
+            # reordering; keep account of multiple beads
+            self.masses = self.masses[::n_beads]
+            self.__coordinates = np.array([self.__coordinates[i::n_beads]
+                                           for i in range(n_beads)])\
+                .flatten().reshape((n_dof, -1), order='F')
+
+            try:
+                self.__momenta = np.array([self.__momenta[i::n_beads]
+                                           for i in range(n_beads)])\
+                    .flatten().reshape(self.__coordinates.shape, order='F')
+
+            # No momenta set
+            except (AttributeError, TypeError):
+                pass
+            # Wrong number of momenta given
+            except ValueError as e:
+                raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
+                                       "coordinates does not match!")
+
+            self._c_type = 'xpacdt'

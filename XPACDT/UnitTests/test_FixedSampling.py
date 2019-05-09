@@ -32,15 +32,15 @@
 import numpy as np
 import unittest
 
-import XPACDT.Dynamics.FixedSampling as fixed
-import XPACDT.Dynamics.System as xSystem
+import XPACDT.Sampling.FixedSampling as fixed
+import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
 
 
 class FixedSamplingTest(unittest.TestCase):
 
     def setUp(self):
-        self.parameters = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_fixed.in"})
+        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_fixed.in")
         self.system = xSystem.System(self.parameters)
 
     def test_do_Fixed_sampling(self):

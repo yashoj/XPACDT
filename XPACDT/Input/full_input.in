@@ -32,7 +32,7 @@ $end
 
 $rpmd                       # RPMD input
 
-beads = 4                   # Number of beads used; TODO: different numbers
+beads = 4                   # Number of beads used; 1 or even numbers; TODO: different numbers
 beta = 8.0                  # Beta used for the springs
 $end
 
@@ -61,7 +61,7 @@ $end
 
 ##############################################################################
 
-$propagator             # nuclei propagator input
+$nuclei_propagator             # nuclei propagator input
 
 method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
 timestep = 0.01 fs      # timestep in fs or au
@@ -74,14 +74,18 @@ $end
 
 $propagation	    # propagation input
 
-dt = 1.0 au     # time step used
+time_end = 1.0 au # end time for propagation
+
+# optional:
+time_start = 1.0 au # start time set for the system
+time_output = 1.0 # time step used for the full system and logging; if not given, the timestep of the nuclei is used
 $end
 
 ##############################################################################
 
 $coordinates	           # coordinates given here
 
-type = mass-value      # coordinate format (possible: mass-value, xyz)
+type = mass-value      # coordinate format (possible: mass-value, xyz); TODO: description here
 1.0 2.0 3.0
 2.0 1.0 4.0
 $end

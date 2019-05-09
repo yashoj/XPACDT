@@ -31,7 +31,7 @@
 
 import unittest
 
-import XPACDT.Dynamics.System as system
+import XPACDT.System.System as system
 
 
 class SystemTest(unittest.TestCase):

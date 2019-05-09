@@ -34,17 +34,21 @@ import molmod.constants as const
 from molmod.units import parse_unit
 import numpy as np
 
-# TODO also some options for only thermostatting internal DOF
+# TODO also some options for only thermostatting internal DOF?
 
 
 class MassiveAndersen(object):
     """Implementation of the massive Andersen thermostat. With a given
     timescale all momenta of the sytem are re-drawn from the Maxwell-Boltzman
     distribution at a given temperature.
+    The Andersen thermostat is described in
+    https://aip.scitation.org/doi/10.1063/1.439486, but for the 'massive'
+    variant, the momenta are not redrawn each timestep but at infrequent
+    steps.
 
     Parameter
     ---------
-    parameters : XPACDT.Input.Inputfile
+    input_parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
     masses : ndarray of floats
         The atomic masses of the current system in au.
@@ -53,13 +57,13 @@ class MassiveAndersen(object):
     ----------------
     Within the inputfile the timescale for resampling and the temperature
     need to be given. Either as 'time' (in fs or au) and 'temperature' (in K)
-    in the thermostat or the sampling sections.
+    in the thermostat section (first priority) or the sampling sections.
     """
-    def __init__(self, parameters, masses):
+    def __init__(self, input_parameters, masses):
         # TODO: basic argument parsing here
 
-        thermo_parameters = parameters.get('thermostat')
-        sampling_parameters = parameters.get('sampling')
+        thermo_parameters = input_parameters.get('thermostat')
+        sampling_parameters = input_parameters.get('sampling')
 
         if 'time' in thermo_parameters:
             timestring = thermo_parameters.get("time").split()
@@ -71,9 +75,11 @@ class MassiveAndersen(object):
         self.time = float(timestring[0]) * parse_unit(timestring[1])
 
         if 'temperature' in thermo_parameters:
-            self.temperature = float(thermo_parameters.get('temperature').split()[0])
+            self.temperature = float(thermo_parameters.
+                                     get('temperature').split()[0])
         elif 'temperature' in sampling_parameters:
-            self.temperature = float(sampling_parameters.get('temperature').split()[0])
+            self.temperature = float(sampling_parameters.
+                                     get('temperature').split()[0])
         else:
             raise RuntimeError("No temperature given for MassiveAndersen!")
 
@@ -108,6 +114,7 @@ class MassiveAndersen(object):
             return
         else:
             n_beads = P.shape[1]
-            sigmas = np.sqrt(np.ones_like(P)*self.mass[:, None] * n_beads / self.beta)
+            sigmas = np.sqrt(np.ones_like(P) * self.mass[:, None] * n_beads
+                             / self.beta)
             P[:, :] = np.random.normal(np.zeros_like(sigmas), sigmas)
         return

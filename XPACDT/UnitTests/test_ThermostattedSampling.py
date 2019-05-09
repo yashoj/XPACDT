@@ -35,8 +35,8 @@ import random
 import scipy.stats
 import unittest
 
-import XPACDT.Dynamics.System as xSystem
-import XPACDT.Dynamics.ThermostattedSampling as thermo
+import XPACDT.System.System as xSystem
+import XPACDT.Sampling.ThermostattedSampling as thermo
 import XPACDT.Input.Inputfile as infile
 
 
@@ -47,7 +47,7 @@ class ThermostattedSamplingTest(unittest.TestCase):
         random.seed(seed)
         np.random.seed(seed)
 
-        self.parameters = infile.Inputfile(**{'filename': "FilesForTesting/SamplingTest/input_Thermo.in"})
+        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_Thermo.in")
         self.system = xSystem.System(self.parameters)
 
     def test_do_Thermostatted_sampling(self):

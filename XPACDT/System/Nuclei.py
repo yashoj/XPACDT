@@ -31,7 +31,6 @@ import numpy as np
 import sys
 # import scipy as sp
 
-# TODO: Design decision - how to roder R, P, etc. beads x DOF or DOF x beads
 # TODO: add more quantities calculated for the nuclei!
 
 
@@ -43,14 +42,11 @@ class Nuclei(object):
     -----------
     degrees_of_freedom : int
         The number of nuclear degrees of freedom present.
-    parameters : XPACDT.Input.Inputfile
+    input_parameters : XPACDT.Input.Inputfile
     pes : XPACDT.Interfaces.InterfaceTemplate
 
 
-    # TODO: Do we need those two???
-    xyz_atoms : bool, optional
-                Whether this is a molecule with xyz-coordinates for each atom.
-                Default: False
+    # TODO: Do we need this or should it be in the input file?
     n_beads : list of int, optional
               The number of beads per degree of freedom. If one element is
               given it is assumed that each degree of freedom has that many
@@ -64,34 +60,21 @@ class Nuclei(object):
     momenta
     """
 
-    def __init__(self, degrees_of_freedom, parameters, pes):
+    def __init__(self, degrees_of_freedom, input_parameters, pes):
 
         self.n_dof = degrees_of_freedom
         self.pes = pes
 
-        # coordinates, masses from input - reshape and test some consistency
-        # TODO: This should be put into Inputfile.py!
-        self.masses = parameters.masses
-        if parameters._c_type == 'mass-value':
-            self.positions = parameters.coordinates.reshape((self.n_dof, -1))
-        elif parameters._c_type == 'xyz':
-            self.positions = parameters.coordinates.T.reshape((self.n_dof, -1))
-
-            assert ((self.n_dof % 3) == 0), "Assumed atoms, but number of \
- deegrees of freedom not a multiple of 3."
-            self.n_atoms = self.n_dof / 3
+        # coordinates, masses from input
+        self.masses = input_parameters.masses
+        self.positions = input_parameters.coordinates
+        self.momenta = input_parameters.momenta
 
         self.n_beads = [self.positions.shape[1]]
 
-        try:
-            self.momenta = parameters._momenta.reshape(self.positions.shape)
-        except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
-                          "coordinates does not match!")
-
         # set up propagator and attach
-        if 'propagator' in parameters:
-            self.attach_propagator(parameters)
+        if 'nuclei_propagator' in input_parameters:
+            self.attach_propagator(input_parameters)
 
         return
 
@@ -197,6 +180,31 @@ beads given."
         """ floatTODO, incorrect currently! Need to be changed when
         refactoring."""
         return self.pes.energy(self.positions)
+
+    def attach_propagator(self, parameters):
+        """ Create and attach a propagator to this nuclei representation. If
+        required, a thermostatt is added to the propagator as well.
+
+        Parameters
+        ----------
+        parameters: XPACDT.Inputfile
+            The inputfile object containing all input parameters.
+        """
+
+        prop_parameters = parameters.get('nuclei_propagator')
+        if 'rpmd' in parameters:
+            assert('beta' in parameters.get("rpmd")), "No beta " \
+                   "given for RPMD."
+            prop_parameters['beta'] = parameters.get("rpmd").get('beta')
+
+        prop_method = prop_parameters.get('method')
+        __import__("XPACDT.Dynamics." + prop_method)
+        self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
+                                  prop_method)(self.pes, self.masses,
+                                               **prop_parameters)
+
+        if 'thermostat' in parameters:
+            self.propagator.attach_thermostat(parameters, self.masses)
 
     def propagate(self, time):
         """ This functions advances the positions and momenta of the nuclei

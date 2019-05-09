@@ -36,11 +36,8 @@ from molmod.units import parse_unit
 import os
 import pickle
 
-# import XPACDT.Dynamics.System as xSystem
-# import XPACDT.Input.Inputfile as infile
 
-
-def propagate(system, parameters):
+def propagate(system, input_parameters):
     """ Propagate the system as given in the input file. The system state is
     saved in a pickle file.
 
@@ -51,14 +48,14 @@ def propagate(system, parameters):
     ----------
     system : XPACDT.Dynamics.System
         System that defines the initial geometry and the potential.
-    parameters : XPACDT.Input.Inputfile
+    input_parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
     """
 
     # TODO: put time parsing into function?!
 
-    prop_parameters = parameters.get('propagator')
-    sys_parameters = parameters.get('system')
+    prop_parameters = input_parameters.get('propagation')
+    sys_parameters = input_parameters.get('system')
 
     assert('time_end' in prop_parameters), "No endtime " \
         "given for the propagation."
@@ -73,7 +70,7 @@ def propagate(system, parameters):
         system.time = float(time_string[0]) * parse_unit(time_string[1])
 
     # Set desired propagator
-    system.nuclei.attach_propagator(parameters)
+    system.nuclei.attach_nuclei_propagator(input_parameters)
 
     # Obtain times for propagation and output
     time_string = prop_parameters.get('time_end').split()
@@ -93,6 +90,7 @@ def propagate(system, parameters):
     while(system.time < time_end):
         system.step(timestep_output)
 
+        # TODO: Learn how to append in pickle and maybe do that
         if 'intermediate_write' in sys_parameters:
             pickle.dump(system, open(path_file, 'wb'), -1)
 

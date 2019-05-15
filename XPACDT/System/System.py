@@ -143,7 +143,7 @@ class System(object):
 
         Parameters
         ----------
-        time : float
+        time : float # TODO: Find a better name! (maybe: advance_time, propagation_time, ??)
             Time to advance the system in au.
         """
         # TODO: more advanced here.

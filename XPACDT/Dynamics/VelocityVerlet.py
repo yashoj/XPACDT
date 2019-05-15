@@ -164,7 +164,7 @@ class VelocityVerlet(object):
         self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
                                   method)(input_parameters, masses)
 
-    def propagate(self, R, P, time):
+    def propagate(self, R, P, time_propagation):
         """ Advance the given position and momenta for a given time.
 
         Parameters
@@ -175,7 +175,7 @@ class VelocityVerlet(object):
         P : two-dimensional ndarray of floats
             The momenta of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
-        time : float
+        time_propagation : float
             The amount of time to advance in au.
 
         Returns
@@ -192,7 +192,7 @@ class VelocityVerlet(object):
 
         Rt, Pt = R.copy(), P.copy()
         # TODO: handle time not a multiple of timestep? What's the best way?
-        n_steps = int((time + 1e-8) // self.timestep)
+        n_steps = int((time_propagation + 1e-8) // self.timestep)
         for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)
             Rt, Pt = Rn.copy(), Pn.copy()

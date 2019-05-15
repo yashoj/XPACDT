@@ -50,6 +50,7 @@ def do_Thermostatted_sampling(system, parameters):
         "samples required not given."
 
     n_sample = int(parameters.get("sampling").get('samples'))
+    # TODO actualy use sampling time there!!! parse correctly!!!
     sampling_time = system.nuclei.propagator.thermostat.time
     systems = []
     for i in range(n_sample):

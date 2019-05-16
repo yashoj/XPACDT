@@ -34,8 +34,6 @@ import molmod.constants as const
 from molmod.units import parse_unit
 import numpy as np
 
-# TODO also some options for only thermostatting internal DOF?
-
 
 class MassiveAndersen(object):
     """Implementation of the massive Andersen thermostat. With a given
@@ -64,15 +62,6 @@ class MassiveAndersen(object):
 
         thermo_parameters = input_parameters.get('thermostat')
         sampling_parameters = input_parameters.get('sampling')
-
-        if 'time' in thermo_parameters:
-            timestring = thermo_parameters.get("time").split()
-        elif 'time' in sampling_parameters:
-            timestring = sampling_parameters.get("time").split()
-        else:
-            raise RuntimeError("No timescale given for MassiveAndersen!")
-
-        self.time = float(timestring[0]) * parse_unit(timestring[1])
 
         if 'temperature' in thermo_parameters:
             self.temperature = float(thermo_parameters.

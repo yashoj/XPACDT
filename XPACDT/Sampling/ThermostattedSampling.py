@@ -28,6 +28,7 @@
 #  **************************************************************************
 
 import copy
+from molmod.units import parse_unit
 
 
 def do_Thermostatted_sampling(system, parameters):
@@ -46,11 +47,18 @@ def do_Thermostatted_sampling(system, parameters):
     ----------------
     TODO
     """
-    assert('samples' in parameters.get('sampling')), "Number of " \
-        "samples required not given."
 
-    n_sample = int(parameters.get("sampling").get('samples'))
-    sampling_time = system.nuclei.propagator.thermostat.time
+    sample_parameters = parameters.get('sampling')
+    assert('samples' in sample_parameters), "Number of " \
+        "samples required, but not given."
+    assert('time' in sample_parameters), "Time for each sampling run " \
+        "required, but not given."
+
+    n_sample = int(sample_parameters.get('samples'))
+
+    time_string = parameters.get('time', '0.0 fs').split()
+    sampling_time = float(time_string[0]) * parse_unit(time_string[1])
+
     systems = []
     for i in range(n_sample):
         system.step(sampling_time)

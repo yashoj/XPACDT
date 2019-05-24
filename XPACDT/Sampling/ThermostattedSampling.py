@@ -56,7 +56,7 @@ def do_Thermostatted_sampling(system, parameters):
 
     n_sample = int(sample_parameters.get('samples'))
 
-    time_string = parameters.get('time', '0.0 fs').split()
+    time_string = sample_parameters.get('time', '0.0 fs').split()
     sampling_time = float(time_string[0]) * parse_unit(time_string[1])
 
     systems = []

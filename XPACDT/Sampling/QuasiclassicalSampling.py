@@ -85,8 +85,8 @@ def do_Quasiclassical_sampling(system, parameters):
     systems = []
     for x, p in zip(xs, ps):
         systems.append(copy.deepcopy(system))
-        systems[-1].nuclei.positions = x.reshape(1, -1)
-        systems[-1].nuclei.momenta = p.reshape(1, -1)
+        systems[-1].nuclei.positions = x.reshape(-1, 1)
+        systems[-1].nuclei.momenta = p.reshape(-1, 1)
         systems[-1].log(init=True)
 
     return systems

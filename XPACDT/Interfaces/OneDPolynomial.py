@@ -78,7 +78,7 @@ class OneDPolynomial(itemplate.Interface):
         """float : The equilibrium position. Default is x0=0. """
         return self.__x0
 
-    def _calculate(self, R, P=None, S=None):
+    def _calculate_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 

@@ -31,7 +31,7 @@
 potential in the simulations."""
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import minimize as spminimize
 
 # TODO: what to store
 # TODO: which general functions to implement.
@@ -76,11 +76,11 @@ class Interface:
         return self.__SAVE_THRESHOLD
 
     @property
-    def STEPSIZE(self):
+    def DERIVATIVE_STEPSIZE(self):
         """float : Step size for numerical derivatives in au."""
         return 1e-4
 
-    def _calculate(self, R, P, S=None):
+    def _calculate_all(self, R, P, S=None):
         """Calculate the energy, gradient and possibly couplings at the current
         geometry.
 
@@ -151,7 +151,7 @@ class Interface:
         Parameters
         ----------
         R : array of arrays of floats
-            The (ring-polymer) positions representing the system in bohr.
+            The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
 
@@ -161,7 +161,7 @@ class Interface:
         The energy of the system at each bead position in hartree.
         """
         if self._changed(R, None, S):
-            self._calculate(R, None, S)
+            self._calculate_all(R, None, S)
 
         if S is None:
             return self._energy[0]
@@ -174,17 +174,17 @@ class Interface:
         Parameters
         ----------
         R : array of arrays of floats
-            The (ring-polymer) positions representing the system in bohr.
+            The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
 
         Returns
         -------
         array of arrays of floats
-        The gradient of the system at each bead position in hartree/bohr.
+        The gradient of the system at each bead position in hartree/au.
         """
         if self._changed(R, None, S):
-            self._calculate(R, None, S)
+            self._calculate_all(R, None, S)
 
         if S is None:
             return self._gradient[0]
@@ -207,7 +207,7 @@ class Interface:
         Parameters
         ----------
         R : array of floats
-            The positions representing the system in bohr.
+            The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
 
@@ -225,17 +225,17 @@ class Interface:
         Parameters
         ----------
         R : array of floats
-            The positions representing the system in bohr.
+            The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
 
         Returns
         -------
-        The gradient at the given geometry in hartree/bohr.
+        The gradient at the given geometry in hartree/au.
         """
         return self.gradient(np.array([R]), S)
 
-    def minimize(self, R0):
+    def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method
         as implemented in Scipy.
 
@@ -249,13 +249,13 @@ class Interface:
         fun : float
               The minimal potential value in hartree.
         x : array
-           The minimized position in bohr.
+           The minimized position in au.
 
         Raises a RuntimeError if unsuccessful.
         """
 
         self.__SAVE_THRESHOLD = 1e-15
-        results = minimize(self._energy_wrapper, R0, method='Newton-CG',
+        results = spminimize(self._energy_wrapper, R0, method='Newton-CG',
                            jac=self._gradient_wrapper)
 
         if results.success:
@@ -268,7 +268,7 @@ class Interface:
         """ Find the transition state. """
         raise NotImplementedError
 
-    def plot_1D(self, R, i, start, end, step, relax=False, S=0):
+    def plot_1D(self, R, dof_i, start, end, step, relax=False, S=0):
         """Generate data to plot a potential energy surface along one
         dimension. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_1d.dat' or
@@ -285,14 +285,14 @@ class Interface:
         R : array of floats
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
-        i : integer
+        dof_i : integer
             Index of the variable that should change.
         start : float
-            Starting value of the coordinate that is scanned in bohr.
+            Starting value of the coordinate that is scanned in au.
         end : float
-            Ending value of the coordinate that is scanned in bohr.
+            Ending value of the coordinate that is scanned in au.
         step : float
-            Step size used along the scan in bohr.
+            Step size used along the scan in au.
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or relaxed (True)
             along the scan.
@@ -313,11 +313,11 @@ class Interface:
 
         for g in grid:
             if relax:
-                constraint = ({'type': 'eq', 'fun': lambda x: x[i] - g})
+                constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g})
                 R0 = R.copy()
-                R0[i] = g
-                results = minimize(self._energy_wrapper, R0, method='SLSQP',
-                                   constraints=constraint)
+                R0[dof_i] = g
+                results = spminimize(self._energy_wrapper, R0, method='SLSQP',
+                                     constraints=constraint)
 
                 # Store both the optimized energy and coordinates.
                 if results.success:
@@ -327,7 +327,7 @@ class Interface:
                     raise RuntimeError("Minimization of PES failed with "
                                        " message: " + results.message)
             else:
-                R[i] = g
+                R[dof_i] = g
                 e.append([self._energy_wrapper(R)])
 
         pes = np.insert(np.array(e), 0, grid, axis=1)
@@ -335,7 +335,7 @@ class Interface:
             pes = np.hstack((pes, np.array(R_optimized)))
         np.savetxt('pes_1d' + ('_opti' if relax else '') + '.dat', pes)
 
-    def plot_2D(self, R, i, j, starts, ends, steps, relax=False):
+    def plot_2D(self, R, dof_i, dof_j, starts, ends, steps, relax=False):
         """Generate data to plot a potential energy surface along two
         dimensions. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_2d.dat' or
@@ -354,16 +354,16 @@ class Interface:
         R : array of floats
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
-        i : integer
+        dof_i : integer
             Index of the first variable that should change.
-        j : integer
+        dof_j : integer
             Index of the second variable that should change.
         starts : 2 floats
-            Starting values of the coordinates that are scanned in bohr.
+            Starting values of the coordinates that are scanned in au.
         ends : 2 floats
-            Ending values of the coordinates that are scanned in bohr.
+            Ending values of the coordinates that are scanned in au.
         steps : 2 floats
-            Step sizes used along the scan in bohr.
+            Step sizes used along the scan in au.
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or
             relaxed (True) along the scan.
@@ -392,12 +392,12 @@ class Interface:
             for g_y in grid_y:
 
                 if relax:
-                    constraint = ({'type': 'eq', 'fun': lambda x: x[i] - g_x},
-                                  {'type': 'eq', 'fun': lambda x: x[j] - g_y})
+                    constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g_x},
+                                  {'type': 'eq', 'fun': lambda x: x[dof_j] - g_y})
                     R0 = R.copy()
-                    R0[i] = g_x
-                    R0[j] = g_y
-                    results = minimize(self._energy_wrapper, R0,
+                    R0[dof_i] = g_x
+                    R0[dof_j] = g_y
+                    results = spminimize(self._energy_wrapper, R0,
                                        method='SLSQP', constraints=constraint)
 
                     if results.success:
@@ -407,8 +407,8 @@ class Interface:
                         raise RuntimeError("Minimization of PES failed with"
                                            " message: " + results.message)
             else:
-                R[i] = g_x
-                R[j] = g_y
+                R[dof_i] = g_x
+                R[dof_j] = g_y
                 e.append([self._energy_wrapper(R)])
 
         grid = np.dstack((grid_x, grid_y)).reshape(n_grid, -1)
@@ -441,14 +441,19 @@ class Interface:
 
         n = len(R)
         H = np.zeros((n, n))
+        original_R = R.copy()
 
         for i in range(len(R)):
             # TODO: maybe put into some numerics module?
-            R[i] += self.STEPSIZE
+            R[i] += self.DERIVATIVE_STEPSIZE
             grad_plus = self._gradient_wrapper(R)
-            R[i] -= 2.0*self.STEPSIZE
+
+            R = original_R.copy()
+            R[i] -= self.DERIVATIVE_STEPSIZE
             grad_minus = self._gradient_wrapper(R)
-            R[i] += self.STEPSIZE
-            H[i] = (grad_plus - grad_minus) / (2.0 * self.STEPSIZE)
+
+            H[i] = (grad_plus - grad_minus) / (2.0 * self.DERIVATIVE_STEPSIZE)
+
+            R = original_R.copy()
 
         return H

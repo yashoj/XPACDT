@@ -33,12 +33,8 @@ systems for real-time propagation."""
 import glob
 import os
 import pickle
-import re
 import shutil
 import sys
-
-
-REGEXP_FOLDER_NUMBER = re.compile('trj_(\d+)')
 
 
 def sample(system, parameters):
@@ -62,16 +58,21 @@ def sample(system, parameters):
         XPACDT representation of the given input file.
     """
 
-    assert('folder' in parameters.get('system')), "No folder for " \
+    sampling_parameters = parameters.get('sampling')
+    system_parameters = parameters.get('system')
+
+    assert('folder' in system_parameters), "No folder for " \
         "trajectories given."
-    assert('method' in parameters.get('sampling')), "No sampling " \
+    assert('method' in sampling_parameters), "No sampling " \
         "method specified."
-    assert('samples' in parameters.get('sampling')), "Number of " \
+    assert('samples' in sampling_parameters), "Number of " \
         "samples required not given."
 
     # Create or handle trajectory folder.
-    folder_shift = 0
-    name_folder = parameters.get('system').get('folder')
+    n_samples = sampling_parameters.get('samples')
+    n_samples_required = n_samples
+#    folder_shift = 0
+    name_folder = system_parameters.get('folder')
     if not os.path.isdir(name_folder):
         try:
             os.mkdir(name_folder)
@@ -79,43 +80,47 @@ def sample(system, parameters):
             sys.stderr.write("Creation of trajectory folder failed!")
             raise
     else:
-        trj_folders = glob.glob(os.path.join(name_folder, 'trj_*'))
+        # todo: add sort
+        trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*')).sort()
 
-        if 'override' in parameters.get('system'):
-            for folder in trj_folders:
+        if 'override' in system_parameters:
+            for folder in trj_folder_list:
                 shutil.rmtree(folder)
 
-        elif 'add' in parameters.get('system'):
-            for folder in trj_folders:
-
-                try:
-                    folder_number = int(REGEXP_FOLDER_NUMBER.
-                                        search(folder).group(1))
-
-                    if folder_number > folder_shift + 1:
-                        folder_shift = folder_number + 1
-                except AttributeError:
-                    pass
-
+        elif 'add' in system_parameters:
+            n_samples_required -= len(trj_folder_list)
         else:
             raise RuntimeError("The trajectory folder already exists and no "
                                "directive for overriding old data or adding "
                                "trajectories is given.")
 
     # Run sampling method
-    method = parameters.get('sampling').get('method')
+    # TODO: add number of samples as parameter
+    method = sampling_parameters.get('method')
     __import__("XPACDT.Sampling." + method + "Sampling")
-    systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
-                      "do_" + method + "_sampling")(system, parameters)
+    sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
+                              "do_" + method + "_sampling")(system, parameters)
 
     # TODO: Add linear shifts in position or momentum!
 
-    # Save stuff to pickle files.
-    for i, s in enumerate(systems):
-        trj_folder = os.path.join(name_folder,
-                                  'trj_{0:07}'.format(i+folder_shift))
-        os.mkdir(trj_folder)
-        file_name = parameters.get('system').get('picklefile', 'pickle.dat')
-        pickle.dump(s, open(os.path.join(trj_folder, file_name), 'wb'), -1)
+    # Save stuff to pickle files. Iterate over all possible folders
+    shift = 0
+    for i in range(n_samples):
+        trj_folder = os.path.join(name_folder, 'trj_{0:07}'.format(i))
+
+        # Check if this folder already exists;
+        # if not, create and save the next system
+        if not os.path.isdir(trj_folder):
+            try:
+                os.mkdir(trj_folder)
+            except OSError:
+                sys.stderr.write("Creation of trajectory folder "
+                                 + trj_folder + " failed!")
+                raise
+
+            file_name = system_parameters.get('picklefile', 'pickle.dat')
+            pickle.dump(sampled_systems[shift],
+                        open(os.path.join(trj_folder, file_name), 'wb'), -1)
+            shift += 1
 
 # TODO: maybe do some anaylis here!!

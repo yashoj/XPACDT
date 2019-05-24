@@ -143,11 +143,8 @@ def get_sampling_modes(system, parameters):
     omega, nm_masses, normal_modes, nm_cartesian = \
         get_normal_modes(hessian, system.nuclei.masses)
 
-    # get modes to be sampled from input. This can be
-    # - nothing given - sample all modes
-    # - linear - linear system, so remove first 5 modes
-    # - nonlinear - not a linear system, so remove first 6
-    # - a list of numbers - only sample the given ones
+    # get modes to be sampled from input.
+    # For details see the method documentaion.
     modes = parameters.get("sampling").get("modes")
     if modes is None or modes == '':
         modelist = range(system.n_dof)

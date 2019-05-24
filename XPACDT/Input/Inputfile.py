@@ -131,17 +131,17 @@ class Inputfile(collections.MutableMapping):
         sections. Each section then is also an dictonary of set variables.
         """
 
-        no_comment_text = re.sub("#.*?\n", "\n", self._intext)
-        no_newline_text = re.sub("(\n\s*?\n)+", "\n", no_comment_text)
+        no_comment_text = re.sub(r"#.*?\n", "\n", self._intext)
+        no_newline_text = re.sub(r"(\n\s*?\n)+", "\n", no_comment_text)
         # *? is non-greedy; DOTALL matches also newlines
-        section_texts = re.findall("(\$.*?)\$end", no_newline_text,
+        section_texts = re.findall(r"(\$.*?)\$end", no_newline_text,
                                    flags=re.DOTALL | re.IGNORECASE)
         section_texts = [a.strip() for a in section_texts]
 
         for section in section_texts:
             if section[0:12] == "$coordinates":
                 try:
-                    match = re.search("\$(\w+).*?\n.*type.*=\s*(\S+)(.*)",
+                    match = re.search(r"\$(\w+).*?\n.*type.*=\s*(\S+)(.*)",
                                       section, flags=re.DOTALL)
                     keyword = match.group(1)
                     self._c_type = match.group(2)
@@ -161,7 +161,7 @@ class Inputfile(collections.MutableMapping):
                 d = StringIO(section[8:])
                 self.__momenta = np.loadtxt(d)
             else:
-                match = re.search("\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
+                match = re.search(r"\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
                 keyword = match.group(1)
                 values = match.group(2)
 

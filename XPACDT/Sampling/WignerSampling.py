@@ -27,13 +27,17 @@
 #
 #  **************************************************************************
 
+""" Modul that implements Wigner sampling of a system. Details on Wigner
+sampling can be found in TODO: add paper. Please note that Wigner sampling
+only makes sense in a classical calculation and not for RPMD. """
+
 import copy
 import molmod.constants as const
 import numpy as np
 import XPACDT.Tools.NormalModes as nm
 
 
-def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
+def do_Wigner_sampling(system, parameters, hessian=None):
     """
     Perform Wigner sampling of normal modes. Either the ground state or
     a thermal distribution is sampled. A list of systems located at the
@@ -51,7 +55,7 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
         Dictonary-like presentation of the input file.
     hessian : two-dimensional ndarray of floats, optional
         A Hessian for the system the defines the normal modes to be sampled.
-    shift : optional TODO, define - for linear sift of position of momenta??
+        The size of the Hessian is n_dof x n_dof.
 
     Returns
     -------
@@ -96,8 +100,8 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
     systems = []
     for x, p in zip(xs, ps):
         systems.append(copy.deepcopy(system))
-        systems[-1].nuclei.positions = x.reshape(1, -1)
-        systems[-1].nuclei.momenta = p.reshape(1, -1)
+        systems[-1].nuclei.positions = x.reshape(-1, 1)
+        systems[-1].nuclei.momenta = p.reshape(-1, 1)
         systems[-1].log(init=True)
 
     return systems

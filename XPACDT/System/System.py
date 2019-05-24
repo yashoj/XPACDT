@@ -169,8 +169,9 @@ class System(object):
         self.log(True)
 
     def log(self, init=False):
-        """ Log the system state. Currently this logs the system time, the
-        nuclei object.
+        """ Log the system state to a list called _log. Each entry is a
+        dictonary containing the logged quantities. Currently this logs
+        the system time and the nuclei object.
 
         Parameters
         ----------

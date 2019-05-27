@@ -33,7 +33,7 @@ are replicated. """
 import copy
 
 
-def do_Fixed_sampling(system, parameters):
+def do_Fixed_sampling(system, parameters, n_sample):
     """
     Create n_sample times the same system as sampling.
 
@@ -44,6 +44,8 @@ def do_Fixed_sampling(system, parameters):
         and a valid starting geometry.
     parameters : XPACDT input file
         Dictonary-like presentation of the input file.
+    n_sample : int
+        Actual number of samples required.
 
     Returns
     -------
@@ -52,7 +54,6 @@ def do_Fixed_sampling(system, parameters):
     """
 
     systems = []
-    n_sample = int(parameters.get("sampling").get('samples'))
     for i in range(n_sample):
         systems.append(copy.deepcopy(system))
 

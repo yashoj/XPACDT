@@ -34,7 +34,7 @@ import numpy as np
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
 
-class OneDPolynomial(itemplate.Interface):
+class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
     V(x) = \sum_{i=0}^{N} a_i (x-x_0)^i.
@@ -66,7 +66,7 @@ class OneDPolynomial(itemplate.Interface):
                                    "not convertable to floats."
                                    " a is " + kwargs.get('a'))
 
-        itemplate.Interface.__init__(self, "OneDPolynomial")
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial")
 
     @property
     def a(self):

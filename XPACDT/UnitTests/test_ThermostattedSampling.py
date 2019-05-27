@@ -51,7 +51,8 @@ class ThermostattedSamplingTest(unittest.TestCase):
         self.system = xSystem.System(self.parameters)
 
     def test_do_Thermostatted_sampling(self):
-        samples = thermo.do_Thermostatted_sampling(self.system, self.parameters)
+        samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
+                                                   int(self.parameters.get("sampling").get('samples')))
         energies = [s.nuclei.energy for s in samples]
         statistics = scipy.stats.bayes_mvs(energies)
         mean_min, mean_max = statistics[0][1]

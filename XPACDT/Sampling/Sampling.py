@@ -99,7 +99,7 @@ def sample(system, parameters):
     method = sampling_parameters.get('method')
     __import__("XPACDT.Sampling." + method + "Sampling")
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
-                              "do_" + method + "_sampling")(system, parameters)
+                              "do_" + method + "_sampling")(system, parameters, n_samples_required)
 
     # TODO: Add linear shifts in position or momentum!
 

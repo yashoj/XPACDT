@@ -37,7 +37,7 @@ import numpy as np
 import XPACDT.Tools.NormalModes as nm
 
 
-def do_Wigner_sampling(system, parameters, hessian=None):
+def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
     """
     Perform Wigner sampling of normal modes. Either the ground state or
     a thermal distribution is sampled. A list of systems located at the
@@ -53,6 +53,8 @@ def do_Wigner_sampling(system, parameters, hessian=None):
         and a valid starting geometry.
     parameters : XPACDT input file
         Dictonary-like presentation of the input file.
+    n_sample : int
+        Actual number of samples required.
     hessian : two-dimensional ndarray of floats, optional
         A Hessian for the system the defines the normal modes to be sampled.
         The size of the Hessian is n_dof x n_dof.
@@ -82,8 +84,6 @@ def do_Wigner_sampling(system, parameters, hessian=None):
 
         sigma_x *= thermal_factor
         sigma_p *= thermal_factor
-
-    n_sample = int(parameters.get("sampling").get('samples'))
 
     # Draw from normal distribution
     x_normal_modes = np.random.normal(np.zeros_like(sigma_x), sigma_x,

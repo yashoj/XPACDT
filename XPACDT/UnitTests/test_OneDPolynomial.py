@@ -60,44 +60,44 @@ class OneDPolynomialTest(unittest.TestCase):
 
         return
 
-    def test_calculate(self):
+    def test_calculate_all(self):
         pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})
 
         # test the given parameters
         with self.assertRaises(AssertionError):
-            pes._calculate([0.0], None)
+            pes._calculate_all([0.0], None)
 
         with self.assertRaises(AssertionError):
-            pes._calculate(np.array([0.0]), None)
+            pes._calculate_all(np.array([0.0]), None)
 
         with self.assertRaises(AssertionError):
-            pes._calculate(np.array([[[0.0]]]), None)
+            pes._calculate_all(np.array([[[0.0]]]), None)
 
 #        with self.assertRaises(AssertionError):
-#            pes._calculate(np.array([[0.0]]), [0.0])
+#            pes._calculate_all(np.array([[0.0]]), [0.0])
 
 #        with self.assertRaises(AssertionError):
-#            pes._calculate(np.array([[0.0]]), np.array([0.0]))
+#            pes._calculate_all(np.array([[0.0]]), np.array([0.0]))
 
 #        with self.assertRaises(AssertionError):
-#            pes._calculate(np.array([[0.0]]), np.array([[[0.0]]]))
+#            pes._calculate_all(np.array([[0.0]]), np.array([[[0.0]]]))
 
         # test correct potential values and gradients
-        pes._calculate(np.array([[0.0]]), None)
+        pes._calculate_all(np.array([[0.0]]), None)
         self.assertSequenceEqual(pes._energy, [0.0])
         self.assertSequenceEqual(pes._gradient, [[0.0]])
 
         pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
-        pes._calculate(np.array([[-1.0]]), None)
+        pes._calculate_all(np.array([[-1.0]]), None)
         self.assertSequenceEqual(pes._energy, [1.0])
         self.assertSequenceEqual(pes._gradient, [[0.0]])
 
-        pes._calculate(np.array([[1.0]]), None)
+        pes._calculate_all(np.array([[1.0]]), None)
         self.assertSequenceEqual(pes._energy, [1.0+2.0+0.8])
         self.assertSequenceEqual(pes._gradient, [[2.0+1.2]])
 
         # test for multiple beads
-        pes._calculate(np.array([[1.0, -2.0, -1.0]]), None)
+        pes._calculate_all(np.array([[1.0, -2.0, -1.0]]), None)
         self.assertTrue(
                 np.alltrue(pes._energy
                            == np.array([1.0+2.0+0.8, 1.0+0.5-0.1, 1.0])))
@@ -105,14 +105,14 @@ class OneDPolynomialTest(unittest.TestCase):
                 np.alltrue(pes._gradient
                            == np.array([[2.0+1.2, -1.0+0.3, 0.0]])))
 
-    def test_minimize(self):
+    def test_minimize_geom(self):
         # Harmonic oscillator
         pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})
         e_reference = 0.0
         R_reference = np.array([0.0])
 
         R0 = np.array([1.0])
-        e, R = pes.minimize(R0)
+        e, R = pes.minimize_geom(R0)
         np.testing.assert_allclose(e, e_reference)
         np.testing.assert_allclose(R, R_reference)
 
@@ -122,7 +122,7 @@ class OneDPolynomialTest(unittest.TestCase):
         R_reference = np.array([2.0])
 
         R0 = np.array([-10.0])
-        e, R = pes.minimize(R0)
+        e, R = pes.minimize_geom(R0)
         np.testing.assert_allclose(e, e_reference)
         np.testing.assert_allclose(R, R_reference)
 

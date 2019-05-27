@@ -63,7 +63,7 @@ class VelocityVerlet(object):
     def __init__(self, potential, mass, **kwargs):
         # TODO: basic argument parsing here
 
-        assert (isinstance(potential, template.Interface)), \
+        assert (isinstance(potential, template.PotentialInterface)), \
             "potential not derived from InterfaceTemplate!"
         assert ('timestep' in kwargs), "No timestep given for propagator."
 
@@ -123,7 +123,7 @@ class VelocityVerlet(object):
 
     @potential.setter
     def potential(self, p):
-        assert (isinstance(p, template.Interface)), "potential not"
+        assert (isinstance(p, template.PotentialInterface)), "potential not"
         "derived from InterfaceTemplate!"
         self.__potential = p
 

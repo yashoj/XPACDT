@@ -36,7 +36,7 @@ import numpy as np
 def get_normal_modes(Hessian, mass):
     """
     Obtain the normal mode frequencies and mass weighted normal modes of a
-    given Hessian. c.f.
+    given Hessian. c.f., https://gaussian.com/vib/.
 
     TODO: Implement option to project out rotation, translation.
 

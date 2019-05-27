@@ -37,7 +37,7 @@ from scipy.optimize import minimize as spminimize
 # TODO: which general functions to implement.
 
 
-class Interface:
+class PotentialInterface:
     """
     This is a template for creating and unifying classes that give potential
     energies, gradients and couplings that are required for the dynamics.

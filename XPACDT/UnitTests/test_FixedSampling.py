@@ -46,7 +46,8 @@ class FixedSamplingTest(unittest.TestCase):
     def test_do_Fixed_sampling(self):
         coordinate_ref = np.array([[2.0], [1.0], [4.0], [-2.0]])
         momenta_ref = np.array([[-1.0], [0.1], [2.0], [1.25]])
-        samples = fixed.do_Fixed_sampling(self.system, self.parameters)
+        samples = fixed.do_Fixed_sampling(self.system, self.parameters,
+                                          int(self.parameters.get("sampling").get('samples')))
 
         self.assertEqual(len(samples), 1000)
         for s in samples:

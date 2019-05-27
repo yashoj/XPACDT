@@ -31,7 +31,7 @@ import copy
 from molmod.units import parse_unit
 
 
-def do_Thermostatted_sampling(system, parameters):
+def do_Thermostatted_sampling(system, parameters, n_sample):
     """ Perform sampling by running a long, thermostatted trajectory and
     periodically saving the state as a new sample.
 
@@ -42,6 +42,8 @@ def do_Thermostatted_sampling(system, parameters):
         and a valid starting geometry.
     parameters : XPACDT input file
         Dictonary-like presentation of the input file.
+    n_sample : int
+        Actual number of samples required.
 
     Other Parameters
     ----------------
@@ -53,8 +55,6 @@ def do_Thermostatted_sampling(system, parameters):
         "samples required, but not given."
     assert('time' in sample_parameters), "Time for each sampling run " \
         "required, but not given."
-
-    n_sample = int(sample_parameters.get('samples'))
 
     time_string = sample_parameters.get('time', '0.0 fs').split()
     sampling_time = float(time_string[0]) * parse_unit(time_string[1])

@@ -39,7 +39,7 @@ class InterfaceTemplateTest(unittest.TestCase):
 
     def setUp(self):
         # todo create input file here.
-        self.interface = IT.Interface("dummyTemplate")
+        self.interface = IT.PotentialInterface("dummyTemplate")
         return
 
     def test_changed(self):

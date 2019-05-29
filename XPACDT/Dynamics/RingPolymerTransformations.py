@@ -47,7 +47,7 @@ def to_RingPolymer_normalModes(X, i=None):
 
     Parameters
     ----------
-    X : two-dimensinoal array of floats.
+    X : (n_dof, n_beads) ndarray of floats.
         'normal' representation or the ring polymer coordinates or momenta.
         The first axis is the physical degrees of freedom, the second one the
         beads.
@@ -56,7 +56,7 @@ def to_RingPolymer_normalModes(X, i=None):
 
     Returns
     -------
-    NM : two-dimensinoal array of floats.
+    NM : (n_dof, n_beads) ndarray of floats.
         Normal mode representation of the ring polymer coordinates or momenta.
         The first axis is the physical degrees of freedom, the second one the
         beads.
@@ -87,7 +87,7 @@ def from_RingPolymer_normalModes(NM, i=None):
 
     Parameters
     ----------
-    NM : two-dimensinoal array of float
+    NM : (n_dof, n_beads) ndarray of floats
         Normal mode representation or the ring polymer coordinates or momenta.
         The first axis is the physical degrees of freedom, the second one the
         beads.
@@ -96,7 +96,7 @@ def from_RingPolymer_normalModes(NM, i=None):
 
     Returns
     -------
-    X : array of arrays of float
+    X : (n_dof, n_beads) ndarray of floats
         'normal' representation of the ring polymer coordinates or momenta.
         The first axis is the physical degrees of freedom, the second one the
         beads.
@@ -127,14 +127,14 @@ def _1d_to_nm(x, n):
 
     Parameters
     ----------
-    x : array of float
+    x : (n_beads) ndarray of floats
         'normal' representation or the ring polymer in one dimension.
     n : integer
         The number of beads.
 
     Returns
     -------
-    array of floats
+    (n_beads) ndarray of floats
         Normal mode representation of the ring polymer in one dimension.
     """
 
@@ -157,14 +157,14 @@ def _1d_from_nm(nm, n):
 
     Parameters
     ----------
-    nm : array of float
+    nm : (n_beads) ndarray of floats
         Normal mode representation or the ring polymer in one dimension.
     n : integer
         The number of beads.
 
     Returns
     -------
-    array of floats
+    (n_beads) ndarray of floats
         'normal' representation of the ring polymer in one dimension.
     """
 

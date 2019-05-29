@@ -61,7 +61,7 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
 
     Returns
     -------
-    systems : list of XPACDT.Dynamics.System
+    systems : (n_sample) list of XPACDT.Dynamics.System
         A list of systems located at the sampled phase-space points.
     """
 

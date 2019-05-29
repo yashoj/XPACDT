@@ -48,6 +48,11 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
     Other Parameters
     ----------------
     TODO
+
+    Returns
+    -------
+    systems : (n_sample) list of XPACDT.Dynamics.System
+        A list of systems located at the sampled phase-space points.
     """
 
     sample_parameters = parameters.get('sampling')

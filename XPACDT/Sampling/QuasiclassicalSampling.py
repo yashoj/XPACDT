@@ -55,7 +55,7 @@ def do_Quasiclassical_sampling(system, parameters, n_sample):
 
     Returns
     -------
-    systems : list of XPACDT.Dynamics.System
+    systems : (n_sample) list of XPACDT.Dynamics.System
         A list of systems located at the sampled phase-space points.
     """
 

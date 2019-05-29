@@ -86,11 +86,11 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) momenta representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
@@ -112,11 +112,11 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) momenta representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
@@ -150,14 +150,14 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of arrays of floats
+        R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
 
         Returns
         -------
-        array of float
+        (n_beads) ndarray of float
         The energy of the system at each bead position in hartree.
         """
         if self._changed(R, None, S):
@@ -173,14 +173,14 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of arrays of floats
+        R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
 
         Returns
         -------
-        array of arrays of floats
+        (n_dof, n_beads) ndarray of floats
         The gradient of the system at each bead position in hartree/au.
         """
         if self._changed(R, None, S):
@@ -206,13 +206,14 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
 
         Returns
         -------
+        float: 
         The energy at the given geometry in hartree.
         """
         return self.energy(np.array([R]), S)
@@ -224,13 +225,14 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
 
         Returns
         -------
+        (n_dof) ndarray of floats:
         The gradient at the given geometry in hartree/au.
         """
         return self.gradient(np.array([R]), S)
@@ -241,14 +243,14 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R0 : array of floats
+        R0 : (n_dof) ndarray of floats
              The starting position for the minimization.
 
         Returns
         ----------
         fun : float
               The minimal potential value in hartree.
-        x : array
+        x : (n_dof) ndarray of floats
            The minimized position in au.
 
         Raises a RuntimeError if unsuccessful.
@@ -282,7 +284,7 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
         dof_i : integer
@@ -351,7 +353,7 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
         dof_i : integer
@@ -430,12 +432,12 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             Position for which the Hessian is calculated
             .
         Returns
         -------
-        H : array of array of floats
+        H : (n_dof, n_dof) ndarray of floats
             Hessian of the potential at the given geometry.
         """
 

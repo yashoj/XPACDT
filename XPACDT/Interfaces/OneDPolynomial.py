@@ -70,7 +70,8 @@ class OneDPolynomial(itemplate.PotentialInterface):
 
     @property
     def a(self):
-        """ndarray of floats : Expansion coefficients for the polynomial. """
+        """(N) ndarray of floats : Expansion coefficients for the polynomial
+        of degree N-1"""
         return self.__as
 
     @property
@@ -83,10 +84,10 @@ class OneDPolynomial(itemplate.PotentialInterface):
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
-        P : two-dimensional ndarray of floats, optional
+        P : (n_dof, n_beads) ndarray of floats, optional
             The momenta of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads. This is not
             used in this potential and thus defaults to None.
@@ -117,7 +118,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
 
         Parameters:
         -----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
 

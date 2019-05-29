@@ -175,7 +175,7 @@ class System(object):
 
         Parameters
         ----------
-        initi : bool, optional
+        init : bool, optional
             If the log has to be initialized or not. Default False.
         """
 

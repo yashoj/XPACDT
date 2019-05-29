@@ -51,7 +51,7 @@ class VelocityVerlet(object):
         Basic timestep for the propagator in a.u.
     potential : Child of XPACDT.Interfaces.InterfaceTemplate
         Potential function that gives the gradients.
-    mass : array of floats
+    mass : (n_dof) ndarray of floats
         Masses of the system in au.
 
     Other Parameters
@@ -108,7 +108,7 @@ class VelocityVerlet(object):
 
     @property
     def mass(self):
-        """ ndarray of floats : The masses of the system in a.u."""
+        """ (n_dof) ndarray of floats : The masses of the system in a.u."""
         return self.__mass
 
     @mass.setter
@@ -129,7 +129,7 @@ class VelocityVerlet(object):
 
     @property
     def propagation_matrix(self):
-        """ four-dimensional ndarray of floats. For each degree of
+        """ (n_dof, n_beads, 2, 2) ndarray of floats. For each degree of
         freedom (first dimension) and each internal ring polymer degree of
         freedom (second dimension) a matrix for propagating the ring polymer
         with a timestep and beta.
@@ -153,7 +153,7 @@ class VelocityVerlet(object):
         input_parameters : XPACDT.Inputfile
             Represents all the input parameters for the simulation given in the
             input file.
-        masses : ndarray of floats
+        masses : (n_dof) ndarray of floats
             The mass of each degree of freedom in au.
         """
         thermo_parameters = input_parameters.get('thermostat')
@@ -169,10 +169,10 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The momenta of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
         time_propagation : float
@@ -180,10 +180,10 @@ class VelocityVerlet(object):
 
         Returns
         -------
-        Rn : two-dimensional ndarray of floats
+        Rn : (n_dof, n_beads) ndarray of floats
              The positions of all beads after advancing in time. The first
              axis is the degrees of freedom and the second axis the beads.
-        Pn : two-dimensional ndarray of floats
+        Pn : (n_dof, n_beads) ndarray of floats
              The momenta of all beads after advancing in time. The first axis
              is the degrees of freedom and the second axis the beads.
         """
@@ -207,19 +207,19 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The momenta of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
 
         Returns
         -------
-        rt : two-dimensional ndarray of floats
+        rt : (n_dof, n_beads) ndarray of floats
              The positions of all beads after advancing in time. The first
              axis is the degrees of freedom and the second axis the beads.
-        pt : two-dimensional ndarray of floats
+        pt : (n_dof, n_beads) ndarray of floats
              The momenta of all beads after advancing in time. The first axis
              is the degrees of freedom and the second axis the beads.
         """
@@ -247,16 +247,16 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The momenta of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
 
         Returns
         -------
-        two-dimensional ndarray of floats
+        (n_dof, n_beads) ndarray of floats
         The momenta of all beads after advancing in time. The first axis
         is the degrees of freedom and the second axis the beads.
         """
@@ -269,19 +269,19 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The momenta of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads. The first axis is the degrees of
             freedom and the second axis the beads.
 
         Returns
         -------
-        rt : two-dimensional ndarray of floats
+        rt : (n_dof, n_beads) ndarray of floats
              The positions of all beads after advancing in time. The first
              axis is the degrees of freedom and the second axis the beads.
-        pt : two-dimensional ndarray of floats
+        pt : (n_dof, n_beads) ndarray of floats
              The momenta of all beads after advancing in time. The first axis
              is the degrees of freedom and the second axis the beads.
         """

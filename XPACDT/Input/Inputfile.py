@@ -76,8 +76,8 @@ class Inputfile(collections.MutableMapping):
 
     @property
     def masses(self):
-        """ndarray of floats: Array containing the masses of each degree of
-        freedom in au."""
+        """(n_dof) ndarray of floats: Array containing the masses of each
+        degree of freedom in au."""
         return self.__masses
 
     @masses.setter
@@ -86,7 +86,7 @@ class Inputfile(collections.MutableMapping):
 
     @property
     def coordinates(self):
-        """two-dimensional ndarray of floats: Array containing the coordinates
+        """(n_dof, n_beads) ndarray of floats: Array containing the coordinates
         of each degree of freedom in au. The first axis is the degrees of
         freedom and the second axis the beads."""
 
@@ -97,7 +97,7 @@ class Inputfile(collections.MutableMapping):
 
     @property
     def momenta(self):
-        """two-dimensional ndarray of floats: Array containing the momenta
+        """(n_dof, n_beads) ndarray of floats: Array containing the momenta
         of each degree of freedom in au. The first axis is the degrees of
         freedom and the second axis the beads."""
 
@@ -161,7 +161,8 @@ class Inputfile(collections.MutableMapping):
                 d = StringIO(section[8:])
                 self.__momenta = np.loadtxt(d)
             else:
-                match = re.search(r"\$(\w+).*?\n(.*)", section, flags=re.DOTALL)
+                match = re.search(r"\$(\w+).*?\n(.*)", section,
+                                  flags=re.DOTALL)
                 keyword = match.group(1)
                 values = match.group(2)
 

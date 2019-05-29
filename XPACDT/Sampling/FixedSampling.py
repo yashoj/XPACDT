@@ -49,7 +49,7 @@ def do_Fixed_sampling(system, parameters, n_sample):
 
     Returns
     -------
-    systems : list of XPACDT.Dynamics.System
+    systems : (n_sample) list of XPACDT.Dynamics.System
         A list of n_sample copies of the given system.
     """
 

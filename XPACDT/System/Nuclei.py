@@ -107,7 +107,7 @@ beads given."
 
     @property
     def positions(self):
-        """two-dimensional ndarray of floats : The positions of all beads in
+        """(n_dof, n_beads) ndarray of floats : The positions of all beads in
             the system. The first axis is the degrees of freedom and the
             second axis the beads."""
         return self.__positions
@@ -127,12 +127,12 @@ beads given."
 
     @property
     def x_centroid(self):
-        """ Array of floats : The centroid of each coordinate. """
+        """ (n_dof) ndarray of floats : The centroid of each coordinate. """
         return np.mean(self.positions, axis=1)
 
     @property
     def masses(self):
-        """one-dimensional ndarray of floats : The masses of each degree of
+        """(n_dof) ndarray of floats : The masses of each degree of
         freedom in au."""
         return self.__masses
 
@@ -142,7 +142,7 @@ beads given."
 
     @property
     def momenta(self):
-        """two-dimensional ndarray of floats : The momenta of all beads in
+        """(n_dof, n_beads) ndarray of floats : The momenta of all beads in
             the system. The first axis is the degrees of freedom and the
             second axis the beads."""
         return self.__momenta
@@ -153,7 +153,7 @@ beads given."
 
     @property
     def p_centroid(self):
-        """ Array of floats : The centroid of each momentum. """
+        """(n_dof) ndarray of floats : The centroid of each momentum. """
         return np.mean(self.momenta, axis=1)
 
     @property

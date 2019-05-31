@@ -55,9 +55,8 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
         Dictonary-like presentation of the input file.
     n_sample : int
         Actual number of samples required.
-    hessian : two-dimensional ndarray of floats, optional
+    hessian : (n_dof, n_dof) ndarray of floats, optional
         A Hessian for the system the defines the normal modes to be sampled.
-        The size of the Hessian is n_dof x n_dof.
 
     Returns
     -------
@@ -70,6 +69,9 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
 
     x0 = system.nuclei.positions[:, 0]
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
+
+    assert((omega > 0.0).all()), "Negative frequency given for sampling. " \
+                                 + "omega = " + str(omega)
 
     # Get the width of the ground state distribution
     sigma_x = np.sqrt(1.0 / (2.0 * omega * nm_masses))

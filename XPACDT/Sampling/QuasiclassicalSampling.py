@@ -62,6 +62,9 @@ def do_Quasiclassical_sampling(system, parameters, n_sample):
     x0 = system.nuclei.positions[:, 0]
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
 
+    assert((omega > 0.0).all()), "Negative frequency given for sampling. " \
+                                 + "omega = " + str(omega)
+
     # Get the quantum numbers or set to 0
     if 'quantum_numbers' in parameters.get("sampling"):
         qn_string = parameters.get("sampling").get("quantum_numbers")

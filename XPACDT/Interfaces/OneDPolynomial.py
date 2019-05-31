@@ -99,47 +99,19 @@ class OneDPolynomial(itemplate.PotentialInterface):
         assert (isinstance(R, np.ndarray)), "R not a numpy array!"
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
-#        if P is not None:
-#            assert (isinstance(P, np.ndarray)), "P not a numpy array!"
-#            assert (P.ndim == 2), "Momentum array not two-dimensional!"
-#            assert (P.dtype == 'float64'), "Momentum array not real!"
-
-        n = R.shape[1]
-
-        self._energy, self._gradient = self.__polynomial(R)
-        self._energy += np.array([self.a[0]]*n)
-        self._gradient = self._gradient.reshape((-1, n))
-
-        return
-
-    def __polynomial(self, R):
-        """
-        Function to calculate the one-D polynomial that can be vectorized.
-
-        Parameters:
-        -----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads.
-
-        Returns:
-        --------
-        energy : ndarray of floats
-            The potential energy of each bead.
-        gradient : ndarray of floats
-            The gradient along the one dimension of each bead.
-        """
 
         distance = R[0] - self.x0
         power = np.ones_like(distance)
 
-        gradient = np.zeros_like(distance)
-        energy = np.zeros_like(distance)
+        self._gradient = np.zeros_like(distance)
+        self._energy = np.zeros_like(distance) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
-            gradient += float(i+1) * a * power
+            self._gradient += float(i+1) * a * power
 
             power *= distance
-            energy += a * power
+            self._energy += a * power
 
-        return energy, gradient
+        self._gradient.reshape((1, -1))
+
+        return

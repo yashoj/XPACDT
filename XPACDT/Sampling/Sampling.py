@@ -95,7 +95,6 @@ def sample(system, parameters):
                                "trajectories is given.")
 
     # Run sampling method
-    # TODO: add number of samples as parameter
     method = sampling_parameters.get('method')
     __import__("XPACDT.Sampling." + method + "Sampling")
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],

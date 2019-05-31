@@ -256,9 +256,11 @@ class PotentialInterface:
         Raises a RuntimeError if unsuccessful.
         """
 
+        old_thresh = self.__SAVE_THRESHOLD
         self.__SAVE_THRESHOLD = 1e-15
         results = spminimize(self._energy_wrapper, R0, method='Newton-CG',
-                           jac=self._gradient_wrapper)
+                             jac=self._gradient_wrapper)
+        self.__SAVE_THRESHOLD = old_thresh
 
         if results.success:
             return results.fun, results.x

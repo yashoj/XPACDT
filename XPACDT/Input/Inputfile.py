@@ -47,7 +47,7 @@ import re
 class Inputfile(collections.MutableMapping):
     """Basic representation of all the input parameters given to XPACDT. It
     inherits from the MutableMapping Abstract Base Class defined in the
-    collections module.
+    collections module. This makes the Inputfile behave like a dictonary.
 
     Parameters
     ----------

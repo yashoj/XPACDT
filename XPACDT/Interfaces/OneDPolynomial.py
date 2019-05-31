@@ -112,6 +112,6 @@ class OneDPolynomial(itemplate.PotentialInterface):
             power *= distance
             self._energy += a * power
 
-        self._gradient.reshape((1, -1))
+        self._gradient = self._gradient.reshape((1, -1))
 
         return

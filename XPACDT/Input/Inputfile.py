@@ -254,8 +254,8 @@ class Inputfile(collections.MutableMapping):
         """
 
         value_dict = {}
-        for key_value_pair in re.split("\n", values):
-            key_value = re.split("=", key_value_pair)
+        for key_value_pair in re.split(r"\n", values):
+            key_value = re.split(r"=", key_value_pair)
 
             if len(key_value) == 1:
                 value_dict[key_value[0].strip()] = ""

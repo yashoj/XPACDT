@@ -69,7 +69,7 @@ def sample(system, parameters):
         "samples required not given."
 
     # Create or handle trajectory folder.
-    n_samples = sampling_parameters.get('samples')
+    n_samples = int(sampling_parameters.get('samples'))
     n_samples_required = n_samples
 #    folder_shift = 0
     name_folder = system_parameters.get('folder')
@@ -84,8 +84,9 @@ def sample(system, parameters):
         trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*')).sort()
 
         if 'override' in system_parameters:
-            for folder in trj_folder_list:
-                shutil.rmtree(folder)
+            if trj_folder_list is not None:
+                for folder in trj_folder_list:
+                    shutil.rmtree(folder)
 
         elif 'add' in system_parameters:
             n_samples_required -= len(trj_folder_list)

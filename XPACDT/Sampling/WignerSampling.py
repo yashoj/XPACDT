@@ -104,6 +104,6 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.positions = x.reshape(-1, 1)
         systems[-1].nuclei.momenta = p.reshape(-1, 1)
-        systems[-1].log(init=True)
+        systems[-1].do_log(init=True)
 
     return systems

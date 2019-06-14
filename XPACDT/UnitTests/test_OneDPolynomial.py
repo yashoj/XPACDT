@@ -73,28 +73,25 @@ class OneDPolynomialTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             pes._calculate_all(np.array([[[0.0]]]), None)
 
-#        with self.assertRaises(AssertionError):
-#            pes._calculate_all(np.array([[0.0]]), [0.0])
-
-#        with self.assertRaises(AssertionError):
-#            pes._calculate_all(np.array([[0.0]]), np.array([0.0]))
-
-#        with self.assertRaises(AssertionError):
-#            pes._calculate_all(np.array([[0.0]]), np.array([[[0.0]]]))
-
         # test correct potential values and gradients
         pes._calculate_all(np.array([[0.0]]), None)
         self.assertSequenceEqual(pes._energy, [0.0])
         self.assertSequenceEqual(pes._gradient, [[0.0]])
+        self.assertSequenceEqual(pes._energy_centroid, [0.0])
+        self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
 
         pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
         pes._calculate_all(np.array([[-1.0]]), None)
         self.assertSequenceEqual(pes._energy, [1.0])
         self.assertSequenceEqual(pes._gradient, [[0.0]])
+        self.assertSequenceEqual(pes._energy_centroid, [1.0])
+        self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
 
         pes._calculate_all(np.array([[1.0]]), None)
         self.assertSequenceEqual(pes._energy, [1.0+2.0+0.8])
         self.assertSequenceEqual(pes._gradient, [[2.0+1.2]])
+        self.assertSequenceEqual(pes._energy_centroid, [1.0+2.0+0.8])
+        self.assertSequenceEqual(pes._gradient_centroid, [[2.0+1.2]])
 
         # test for multiple beads
         pes._calculate_all(np.array([[1.0, -2.0, -1.0]]), None)
@@ -104,6 +101,9 @@ class OneDPolynomialTest(unittest.TestCase):
         self.assertTrue(
                 np.alltrue(pes._gradient
                            == np.array([[2.0+1.2, -1.0+0.3, 0.0]])))
+
+        np.testing.assert_allclose(pes._energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
+        np.testing.assert_allclose(pes._gradient_centroid, np.array([[0.33333333+0.0333333333]]))
 
     def test_minimize_geom(self):
         # Harmonic oscillator

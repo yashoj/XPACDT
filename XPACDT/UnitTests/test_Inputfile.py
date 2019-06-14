@@ -179,6 +179,10 @@ class InputfileTest(unittest.TestCase):
 
         return
 
+    def test_format_coordinates(self):
+        # Implicity tested in parse modules - not clear how to test separately.
+        return
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(InputfileTest)

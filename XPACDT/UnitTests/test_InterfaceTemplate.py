@@ -79,27 +79,6 @@ class InterfaceTemplateTest(unittest.TestCase):
 
         return
 
-#    def test_minimize(self):
-#        # TODO: howto exactly test
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-#
-#    def test_plot1d(self):
-#        # TODO: howto exactly test
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-#
-#    def test_plot2d(self):
-#        # TODO: howto exactly test
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-#
-#    def test_get_Hessian(self):
-#        # TODO: howto exactly test
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-
-
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(InterfaceTemplateTest)
     unittest.TextTestRunner().run(suite)

@@ -100,18 +100,36 @@ class OneDPolynomial(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
+        # centroid part if more than 1 bead
+        if R.shape[1] > 1:
+            centroid = np.mean(R, axis=1)
+            distance_centroid = centroid[0] - self.x0
+            power_centroid = 1.0
+            self._gradient_centroid = np.zeros_like(distance_centroid)
+            self._energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
+
+        # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
-
         self._gradient = np.zeros_like(distance)
         self._energy = np.zeros_like(distance) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
+            # beads part
             self._gradient += float(i+1) * a * power
-
             power *= distance
             self._energy += a * power
 
+            # centroid part if more than 1 bead
+            if R.shape[1] > 1:
+                self._gradient_centroid += float(i+1) * a * power_centroid
+                power_centroid *= distance_centroid
+                self._energy_centroid += a * power_centroid
+
         self._gradient = self._gradient.reshape((1, -1))
+
+        if R.shape[1] == 1:
+            self._energy_centroid = self._energy
+            self._gradient_centroid = self._gradient
 
         return

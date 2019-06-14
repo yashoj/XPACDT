@@ -181,6 +181,30 @@ beads given."
         refactoring."""
         return self.pes.energy(self.positions)
 
+    def __eq__(self, other):
+        """Test if an object is equal to the current nuclei object. A nuclei
+        object is assumed to be equal to another nuclei object if they have
+        the same number of degrees of freedom, the same number of beads,
+        thesame positions, momenta and masses.
+
+        Parameters:
+        -----------
+        other : any object
+            Object to compare to.
+
+        Returns:
+        -------
+        bool
+            Returns True if both objects have the same number of degrees of
+            freedom, the same number of beads, thesame positions, momenta
+            and masses. False else.
+            """
+        return (self.n_dof == other.n_dof
+                and self.n_beads == other.n_beads
+                and (self.positions == other.positions).all()
+                and (self.momenta == other.momenta).all()
+                and (self.masses == other.masses).all())
+
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If
         required, a thermostatt is added to the propagator as well.

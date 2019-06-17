@@ -75,9 +75,9 @@ sys.stdout.write("For permanent activation add that line to "
                  "your ~/.bashrc, ~/.bash_profile, etc. \n")
 
 sys.stdout.write("\nTo generate the general documentation "
-                 "please execute the following commands: \n"
+                 "please execute the following commands: \n \n"
                  "cd docs \n"
-                 "make html \n"
+                 "make html \n \n"
                  "The documentation can then be accessed using "
                  "a standard browser to open "
                  "'docs/build/html/index.html' \n"

@@ -61,11 +61,9 @@ def propagate(system, input_parameters):
         "given for the propagation."
 
     if 'continue' not in sys_parameters:
-        system.reset()
-
-        # set initial time
+        # set initial time and reset log
         time_string = prop_parameters.get('time_start', '0.0 fs').split()
-        system.time = float(time_string[0]) * parse_unit(time_string[1])
+        system.reset(time=float(time_string[0]) * parse_unit(time_string[1]))
 
     # Set desired propagator
     system.nuclei.attach_nuclei_propagator(input_parameters)

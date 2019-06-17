@@ -140,11 +140,21 @@ class System(object):
         self.time += time
         self.do_log()
 
-    def reset(self):
+    def reset(self, time=None):
         """ Reset the system state to its original values and clear everything
-        else in the log."""
+        else in the log. Optionally, the time can be set to a given value.
 
-        self.time = self.__log[0].get('time')
+        Parameters
+        ----------
+        time : float, optional, default None
+            System time to be set, if given.
+        """
+
+        if time is None:
+            self.time = self.__log[0].get('time')
+        else:
+            self.time = time
+
         self.__nuclei = copy.deepcopy(self.__log[0].get('nuclei'))
         self.do_log(True)
 
@@ -169,6 +179,7 @@ class System(object):
 
         if init:
             self.__log = []
+
         self.__log.append({'time': self.time,
                           'nuclei': copy.deepcopy(self.nuclei)})
 

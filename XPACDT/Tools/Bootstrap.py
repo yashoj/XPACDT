@@ -34,7 +34,7 @@ import numpy as np
 
 # TODO: how can I use broadcasting here...
 def bootstrap(data, function, n_bootstrap=1000):
-    """
+    """Performs a basic bootstrapping analysis of the error.
 
     Parameters
     ----------

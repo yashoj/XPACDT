@@ -87,6 +87,18 @@ def do_analysis(parameters, systems=None):
             elif 'percentile' in command['value']:
                 pe = float(command['value'].split()[1])
                 func = (lambda x: np.nanpercentile(x, pe))
+            elif '2dhistogram' in command['value']:
+                # TODO other setup possibilities
+                values = command['value'].split()
+                edges1 = np.linspace(float(values[1]), float(values[2]),
+                                     int(values[3])+1)
+                bins1 = edges1[:-1] + 0.5*np.diff(edges1)
+
+                edges2 = np.linspace(float(values[4]), float(values[5]),
+                                     int(values[6])+1)
+                bins2 = edges2[:-1] + 0.5*np.diff(edges2)
+
+                func = (lambda x: np.histogram2d(x[:len(x)//2], x[len(x)//2:], bins=(edges1, edges2), density=True)[0])
             elif 'histogram' in command['value']:
                 # TODO other setup possibilities
                 values = command['value'].split()
@@ -100,22 +112,58 @@ def do_analysis(parameters, systems=None):
         final_data = [bs.bootstrap(data, func)
                       for data in np.array(command['results']).T]
 
-        # TODO: Output a lot of info in comments!!
         # Output in different formats:
         # time: One line per timestep, all values and errors in that line
         # value: One line per value (with error), all times in that line
         file_output = os.path.join(folder, key + '.dat')
+
+        header = "## Generated for the following command: \n"
+        for k, v in command.items():
+            if k != 'results':
+                header += "# " + str(k) + " = " + str(v) + " \n"
+
+##2d plotting:
+#unset ztics
+#unset key
+#unset title
+#set contour base
+#set view map
+#unset surface
+
+#do for [a=0:100] {
+#splot 'command3.dat' index a using 1:2:3 w l lw 3.2
+#pause 1
+#} 
+
         if command['format'] == 'time':
-            number_times = len(times)
-            np.savetxt(file_output, np.c_[times, np.array(final_data).
-                                          reshape((number_times, -1))])
+            if '2d' in command:
+                outfile = open(file_output, 'w')
+                outfile.write(header)
+                dd = np.c_[times, np.array(final_data)[:, 0, :]]
+                for data in dd:
+                    outfile.write("# time = " + str(data[0]) + " \n")
+                    for i, b1 in enumerate(bins1):
+                        for j, b2 in enumerate(bins2):
+                            outfile.write(str(b1) + " " + str(b2) + " " + str(data[1+i*len(bins2)+j]) + " \n")
+                        outfile.write("\n")
+                    outfile.write("\n \n")
+            else:
+                number_times = len(times)
+                np.savetxt(file_output, np.c_[times, np.array(final_data).
+                                              reshape((number_times, -1))],
+                           header=header)
         elif command['format'] == 'value':
             # TODO: add values in front! (instead of time)
+            for t in times:
+                header += str(t) + "\t" + str(t) + "\t"
+            header += " \n"
+
             number_values = len(final_data[0][0])
             if bins is None:
                 bins = np.zeros(number_values)
             np.savetxt(file_output, np.c_[bins, np.array(final_data).
-                                          reshape((-1, number_values)).T])
+                                          reshape((-1, number_values)).T],
+                       header=header)
 
 
 def apply_command(command, system):
@@ -144,6 +192,16 @@ def apply_command(command, system):
     # TODO: Implement to only do a subpart of the times. I.e. first, last, ...
     command['results'].append([value_0 * apply_operation(command['op'], log)
                                for log in system._log])
+
+    if '2d' in command:
+        value_0 = 1.0
+        if '2op0' in command:
+            value_0 = apply_operation(command['2op0'], system._log[0])
+
+        # Iterate over all times and calculate the full command.
+        # TODO: Implement to only do a subpart of the times. I.e. first, last, ...
+        command['results'].append([value_0 * apply_operation(command['2op'], log)
+                                   for log in system._log])
 
     return [log['time'] for log in system._log]
 

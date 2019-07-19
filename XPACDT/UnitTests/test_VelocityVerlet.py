@@ -33,16 +33,16 @@ import numpy as np
 import unittest
 
 import XPACDT.Dynamics.VelocityVerlet as vv
-import XPACDT.Interfaces.OneDPolynomial as oneDP
+import XPACDT.System.AdiabaticElectrons as adiabatic
 
 
 class VelocityVerletTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes1D_harmonic = oneDP.OneDPolynomial(**{'a': "0.0 0.0 0.5"})
-        self.pes1D_shifted_harmonic = oneDP.OneDPolynomial(**{'a': "0.0 0.0 0.5", 'x0': '1.0'})
-        self.pes1D_anharmonic = oneDP.OneDPolynomial(**{'a': "0.0 0.0 0.5 0.1 0.01"})
-        self.pes1D_quartic = oneDP.OneDPolynomial(**{'a': "0.0 0.0 0.0 0.0 0.25"})
+        self.pes1D_harmonic = adiabatic.AdiabaticElectrons({'system':{'Interface': 'OneDPolynomial'}, 'OneDPolynomial': {'a': "0.0 0.0 0.5"}})
+        self.pes1D_shifted_harmonic = adiabatic.AdiabaticElectrons({'system':{'Interface': 'OneDPolynomial'}, 'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}})
+        self.pes1D_anharmonic = adiabatic.AdiabaticElectrons({'system':{'Interface': 'OneDPolynomial'}, 'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}})
+        self.pes1D_quartic = adiabatic.AdiabaticElectrons({'system':{'Interface': 'OneDPolynomial'}, 'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}})
 
         # TODO: also multi-D potential for more testing
         return

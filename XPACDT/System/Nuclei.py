@@ -43,27 +43,24 @@ class Nuclei(object):
     degrees_of_freedom : int
         The number of nuclear degrees of freedom present.
     input_parameters : XPACDT.Input.Inputfile
-    pes : XPACDT.Interfaces.InterfaceTemplate
-
-
-    # TODO: Do we need this or should it be in the input file?
-    n_beads : list of int, optional
-              The number of beads per degree of freedom. If one element is
-              given it is assumed that each degree of freedom has that many
-              beads. Default: [1]
+        Representation of the input file.
+    time : float
+        The initial time of the system in au.
 
     Attributes:
     -----------
     n_dof
     n_beads
+    time
     positions
     momenta
+    electrons
     """
 
-    def __init__(self, degrees_of_freedom, input_parameters, pes):
+    def __init__(self, degrees_of_freedom, input_parameters, time):
 
         self.n_dof = degrees_of_freedom
-        self.pes = pes
+        self.time = time
 
         # coordinates, masses from input
         self.masses = input_parameters.masses
@@ -72,11 +69,37 @@ class Nuclei(object):
 
         self.n_beads = [self.positions.shape[1]]
 
+        # Set up electrons
+        self.__init_electrons(input_parameters)
+
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
             self.attach_nuclei_propagator(input_parameters)
 
         return
+
+    @property
+    def electrons(self):
+        """ XPACDT.System.Electrons : The electrons used in the propagation."""
+        return self.__electrons
+
+    @property
+    def propagator(self):
+        """ The propagator used to advance the nuclei in time. """
+        return self.__propagator
+
+    @propagator.setter
+    def propagator(self, p):
+        self.__propagator = p
+
+    @property
+    def time(self):
+        """float : Current time of the system in au."""
+        return self.__time
+
+    @time.setter
+    def time(self, f):
+        self.__time = f
 
     @property
     def n_dof(self):
@@ -106,6 +129,16 @@ beads given."
         # TODO: add check for multiple of twos
 
     @property
+    def masses(self):
+        """(n_dof) ndarray of floats : The masses of each degree of
+        freedom in au."""
+        return self.__masses
+
+    @masses.setter
+    def masses(self, a):
+        self.__masses = a.copy()
+
+    @property
     def positions(self):
         """(n_dof, n_beads) ndarray of floats : The positions of all beads in
             the system. The first axis is the degrees of freedom and the
@@ -117,28 +150,9 @@ beads given."
         self.__positions = a.copy()
 
     @property
-    def propagator(self):
-        """ The propagator used to advance the nuclei in time. """
-        return self.__propagator
-
-    @propagator.setter
-    def propagator(self, p):
-        self.__propagator = p
-
-    @property
     def x_centroid(self):
         """ (n_dof) ndarray of floats : The centroid of each coordinate. """
         return np.mean(self.positions, axis=1)
-
-    @property
-    def masses(self):
-        """(n_dof) ndarray of floats : The masses of each degree of
-        freedom in au."""
-        return self.__masses
-
-    @masses.setter
-    def masses(self, a):
-        self.__masses = a.copy()
 
     @property
     def momenta(self):
@@ -179,7 +193,7 @@ beads given."
     def potential_energy(self):
         """ floatTODO, incorrect currently! Need to be changed when
         refactoring."""
-        return self.pes.energy(self.positions)
+        return self.electrons.energy(self.positions)
 
     def __eq__(self, other):
         """Test if an object is equal to the current nuclei object. A nuclei
@@ -205,6 +219,20 @@ beads given."
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
+    def __init_electrons(self, parameters):
+        """ Initialize the representation of the electrons in the system.
+
+        Parameters
+        ----------
+        parameters: XPACDT.Inputfile
+            The inputfile object containing all input parameters.
+        """
+
+        # TODO: make versatile and not only adiabatic
+        __import__("XPACDT.System.AdiabaticElectrons")
+        self.__electrons = getattr(sys.modules["XPACDT.System.AdiabaticElectrons"],
+                             "AdiabaticElectrons")(parameters)
+
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If
         required, a thermostatt is added to the propagator as well.
@@ -224,23 +252,29 @@ beads given."
         prop_method = prop_parameters.get('method')
         __import__("XPACDT.Dynamics." + prop_method)
         self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
-                                  prop_method)(self.pes, self.masses,
+                                  prop_method)(self.electrons, self.masses,
                                                **prop_parameters)
 
         if 'thermostat' in parameters:
             self.propagator.attach_thermostat(parameters, self.masses)
 
-    def propagate(self, time):
+    def propagate(self, time_propagate):
         """ This functions advances the positions and momenta of the nuclei
-        for a given time using the proapgator assigned.
+        for a given time using the proapgator assigned. The electronic
+        subsystem is advanced for the same time.
 
         Parameters
         ----------
-        time : float
-            The time to advance the nuclei.
+        time_propagate : float
+            The time to advance the nuclei and electrons in au.
         """
 
+        self.electrons.step(time_propagate, **{'first': True})
         self.positions, self.momenta = \
-            self.__propagator.propagate(self.positions, self.momenta, time)
+            self.__propagator.propagate(self.positions, self.momenta,
+                                        time_propagate)
+        self.electrons.step(time_propagate, **{'second': True})
+
+        self.time += time_propagate
 
         return

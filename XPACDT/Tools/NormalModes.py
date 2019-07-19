@@ -139,7 +139,7 @@ def get_sampling_modes(system, parameters):
         the full cartesian coordinates.
     """
 
-    hessian = system.pes.get_Hessian(system.nuclei.positions[:, 0])
+    hessian = system.nuclei.electrons.pes.get_Hessian(system.nuclei.positions[:, 0])
 
     omega, nm_masses, normal_modes, nm_cartesian = \
         get_normal_modes(hessian, system.nuclei.masses)

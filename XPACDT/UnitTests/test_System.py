@@ -46,31 +46,25 @@ class SystemTest(unittest.TestCase):
     def test_do_log(self):
         # initial setup check
         self.assertEqual(len(self.system.log), 1)
-        self.assertEqual(len(self.system.log[0]), 2)
-        self.assertIsInstance(self.system.log[0], dict)
-        self.assertEqual(self.system.log[0].get("time"), 0.0)
-        self.assertEqual(self.system.log[0].get("nuclei"), self.nuclei)
+        self.assertEqual(self.system.log[0].time, 0.0)
+        self.assertEqual(self.system.log[0], self.nuclei)
 
         # do one log
         self.system.do_log()
         self.assertEqual(len(self.system.log), 2)
-        self.assertEqual(len(self.system.log[1]), 2)
-        self.assertIsInstance(self.system.log[1], dict)
-        self.assertEqual(self.system.log[1].get("time"), 0.0)
-        self.assertEqual(self.system.log[1].get("nuclei"), self.nuclei)
+        self.assertEqual(self.system.log[1].time, 0.0)
+        self.assertEqual(self.system.log[1], self.nuclei)
 
         return
 
     def test_clear_log(self):
-        self.system.log.append({'time': 1.0,
-                                'nuclei': copy.deepcopy(self.system.log[0].get('nuclei'))})
-        self.system.log[-1].get('nuclei').positions[0, 0] = 10.0
+        self.system.log.append(copy.deepcopy(self.system.log[0]))
+        self.system.log[-1].time = 1.0
+        self.system.log[-1].positions[0, 0] = 10.0
 
         self.system.clear_log()
         self.assertEqual(len(self.system.log), 1)
-        self.assertEqual(len(self.system.log[0]), 2)
-        self.assertIsInstance(self.system.log[0], dict)
-        self.assertEqual(self.system.log[0].get("time"), 1.0)
+        self.assertEqual(self.system.log[0].time, 1.0)
 
         self.nuclei_ref = copy.deepcopy(self.nuclei)
         self.nuclei_ref.positions[0, 0] = 10.0
@@ -80,15 +74,13 @@ class SystemTest(unittest.TestCase):
         return
 
     def test_reset(self):
-        self.system.log.append({'time': 1.0,
-                                'nuclei': copy.deepcopy(self.system.log[0].get('nuclei'))})
-        self.system.log[-1].get('nuclei').positions[0, 0] = 10.0
+        self.system.log.append(copy.deepcopy(self.system.log[0]))
+        self.system.log[-1].time = 1.0
+        self.system.log[-1].positions[0, 0] = 10.0
 
         self.system.reset()
         self.assertEqual(len(self.system.log), 1)
-        self.assertEqual(len(self.system.log[0]), 2)
-        self.assertIsInstance(self.system.log[0], dict)
-        self.assertEqual(self.system.log[0].get("time"), 0.0)
+        self.assertEqual(self.system.log[0].time, 0.0)
 
         self.nuclei_ref = copy.deepcopy(self.nuclei)
         self.nuclei_ref.positions[0, 0] = 10.0
@@ -106,20 +98,16 @@ class SystemTest(unittest.TestCase):
         self.nuclei_ref = copy.deepcopy(self.nuclei)
         self.nuclei_ref.positions *= 2.0
         self.nuclei_ref.momenta *= 2.0
-        self.assertEqual(self.system.time, 1.0)
+        self.assertEqual(self.system.nuclei.time, 1.0)
         self.assertEqual(len(self.system.log), 2)
         self.assertEqual(self.system.nuclei, self.nuclei_ref)
 
         # check correct logging
-        self.assertEqual(len(self.system.log[0]), 2)
-        self.assertIsInstance(self.system.log[0], dict)
-        self.assertEqual(self.system.log[0].get("time"), 0.0)
-        self.assertEqual(self.system.log[0].get("nuclei"), self.nuclei)
+        self.assertEqual(self.system.log[0].time, 0.0)
+        self.assertEqual(self.system.log[0], self.nuclei)
 
-        self.assertEqual(len(self.system.log[1]), 2)
-        self.assertIsInstance(self.system.log[1], dict)
-        self.assertEqual(self.system.log[1].get("time"), 1.0)
-        self.assertEqual(self.system.log[1].get("nuclei"), self.nuclei_ref)
+        self.assertEqual(self.system.log[1].time, 1.0)
+        self.assertEqual(self.system.log[1], self.nuclei_ref)
 
         return
 

@@ -42,8 +42,8 @@ class NucleiTest(unittest.TestCase):
         self.parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
         self.parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
 
-        self.nuclei_classical = Nuclei.Nuclei(4, self.parameters_classical, None)
-        self.nuclei_rpmd = Nuclei.Nuclei(4, self.parameters_rpmd, None)
+        self.nuclei_classical = Nuclei.Nuclei(4, self.parameters_classical, 0.0)
+        self.nuclei_rpmd = Nuclei.Nuclei(4, self.parameters_rpmd, 0.0)
         pass
 
     def test_propagate(self):

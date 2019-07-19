@@ -47,9 +47,13 @@ def start():
     system = pickle.load(open('pickle.dat', 'rb'))
     R_outfile = open('R.log', 'w')
     P_outfile = open('P.log', 'w')
-    for t, nuc in system._log:
-        R_outfile.write(str(t) + " " + str(nuc.x_centroid[0]) + " \n")
-        P_outfile.write(str(t) + " " + str(nuc.p_centroid[0]) + " \n")
+    print(system._log)
+    for step in system._log:
+        print(step)
+        R_outfile.write(str(step['time']) + " " +
+                        str(step['nuclei'].x_centroid[0]) + " \n")
+        P_outfile.write(str(step['time']) + " " +
+                        str(step['nuclei'].p_centroid[0]) + " \n")
     R_outfile.close()
     P_outfile.close()
 

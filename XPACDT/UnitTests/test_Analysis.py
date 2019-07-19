@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #  **************************************************************************
 #
 #  XPACDT, eXtended PolyAtomic Chemical Dynamics Toolkit
@@ -27,44 +29,22 @@
 #
 #  **************************************************************************
 
-import copy
-from molmod.units import parse_unit
+import unittest
+
+import XPACDT.Tools.Analysis as analysis
 
 
-def do_Thermostatted_sampling(system, parameters):
-    """ Perform sampling by running a long, thermostatted trajectory and
-    periodically saving the state as a new sample.
+class AnalysisTest(unittest.TestCase):
 
-    Parameters
-    ----------
-    system : XPACDT.Dynamics.System
-        A representation of the basic system with potential interface set up
-        and a valid starting geometry.
-    parameters : XPACDT input file
-        Dictonary-like presentation of the input file.
+#    def setUp(self):
+#        # todo create input file here.
+#        self.input = infile.Inputfile("input.in")
 
-    Other Parameters
-    ----------------
-    TODO
-    """
+    def dummyTest(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
 
-    sample_parameters = parameters.get('sampling')
-    assert('samples' in sample_parameters), "Number of " \
-        "samples required, but not given."
-    assert('time' in sample_parameters), "Time for each sampling run " \
-        "required, but not given."
 
-    n_sample = int(sample_parameters.get('samples'))
-
-    time_string = sample_parameters.get('time', '0.0 fs').split()
-    sampling_time = float(time_string[0]) * parse_unit(time_string[1])
-
-    systems = []
-    for i in range(n_sample):
-        system.step(sampling_time)
-
-        system.clear_log()
-        systems.append(copy.deepcopy(system))
-        systems[-1].nuclei.propagator.thermostat = None
-
-    return systems
+if __name__ == "__main__":
+    suite = unittest.TestLoader().loadTestsFromTestCase(AnalysisTest)
+    unittest.TextTestRunner().run(suite)

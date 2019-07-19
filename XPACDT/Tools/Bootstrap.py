@@ -32,13 +32,14 @@
 import numpy as np
 
 
-# TODO: how can I use broadcasting here...
 def bootstrap(data, function, n_bootstrap=1000):
-    """Performs a basic bootstrapping analysis of the error.
+    """Performs a basic bootstrapping analysis to obtain the standard error
+    of a certain property averaged over the ensemble of trajectories.
+    See: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 
     Parameters
     ----------
-    data : ndarray of floats
+    data : (nsamples) ndarray of floats
         The data.
     function : function
         The function for which the bootstrapping should be calculate, e.g..
@@ -47,8 +48,11 @@ def bootstrap(data, function, n_bootstrap=1000):
         Number of bootstrapping resamples to take. Default: 1000
 
     Returns:
-        ndarrays with the mean value of the function results and corresponding
-        error.
+        m : (nsamples) ndarray of floats
+            The mean value of the function over the sample
+        s : (nsamples) ndarray of floats
+            The standard error as obtained from the bootstrapping for the
+            values in m.
     """
 
     nsamples = len(data)

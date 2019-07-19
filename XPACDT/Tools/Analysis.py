@@ -34,9 +34,23 @@ import numpy as np
 import XPACDT.Tools.Bootstrap as bs
 import XPACDT.Tools.Operations as op
 
-"""Module to perform analysis on a set of XPACDT.Systems
-TODO: A lot of basic docu here.
-# this is all horrible!! Just testing some basic C_xx for simple systems
+"""Module to perform analysis on a set of XPACDT.Systems. The most general
+cases that can be calculated are:
+    Expectation values <A(t)>
+    Correlation functions <B(0)A(t)>
+    One- and Two-dimensional histograms
+
+In the input file one defines:
+    A(t), B(0):  Quantities of interest, e.g. the position of a certain atom,
+         a bond length, the charge, etc.
+    f(x): A statistical  i.e., the mean or standard devitaion, a histogram.
+
+The analysis then iterates over all XPACDT.Systems and calculates A(t), B(0)
+for each system. Then the function f(x) is evaluated, i.e., the mean of the
+quantity is obtained or a histogram of the quantity is obtained. The standard
+error of the obtain results is evaluated employing bootstrapping.
+
+Results are printed to file for easy plotting with gnuplot.
 """
 
 
@@ -52,6 +66,7 @@ def do_analysis(parameters, systems=None):
         systems are read from file.
     """
 
+    # Obtain an iterator over all systems
     folder = parameters.get('system').get('folder')
     if systems is None:
         file_name = parameters.get('system').get('picklefile', 'pickle.dat')
@@ -60,33 +75,30 @@ def do_analysis(parameters, systems=None):
         dirs = None
         file_name = None
 
-    t_old = None
+    # Calculate 'observables' for each system
     for system in get_systems(dirs, file_name, systems):
 
         # do different stuff for each command
         for key, command in parameters.commands.items():
-            times = apply_command(command, system)
+            apply_command(command, system)
 
-            # time consistency check
-            if t_old is not None and not times == t_old:
-                # TODO more info on which traj - how to do that?
-                raise RuntimeError("The time in the trajectories is not "
-                                   "aligned for command: " + key)
-            t_old = times.copy()
-
-    # todo: structure better for results
+    # Apply function for each 'observable'
     for key, command in parameters.commands.items():
         # Set up function to combine data...
         func = np.mean
         bins = None
         if 'value' in command:
+
             if command['value'] == 'mean':
                 func = np.mean
+
             elif command['value'] == 'std':
                 func = np.std
+
             elif 'percentile' in command['value']:
                 pe = float(command['value'].split()[1])
                 func = (lambda x: np.nanpercentile(x, pe))
+
             elif '2dhistogram' in command['value']:
                 # TODO other setup possibilities
                 values = command['value'].split()
@@ -98,7 +110,10 @@ def do_analysis(parameters, systems=None):
                                      int(values[6])+1)
                 bins2 = edges2[:-1] + 0.5*np.diff(edges2)
 
-                func = (lambda x: np.histogram2d(x[:len(x)//2], x[len(x)//2:], bins=(edges1, edges2), density=True)[0])
+                func = (lambda x: np.histogram2d(x[:len(x)//2], x[len(x)//2:],
+                                                 bins=(edges1, edges2),
+                                                 density=True)[0])
+
             elif 'histogram' in command['value']:
                 # TODO other setup possibilities
                 values = command['value'].split()
@@ -110,16 +125,17 @@ def do_analysis(parameters, systems=None):
 
         # bootstrap
         final_data = [bs.bootstrap(data, func)
-                      for data in np.array(command['results']).T]
+                      for data in np.array(command['results']).reshape(-1, len(command['times'])).T]
 
         # Output in different formats:
         # time: One line per timestep, all values and errors in that line
         # value: One line per value (with error), all times in that line
         file_output = os.path.join(folder, key + '.dat')
 
+        # Header for file
         header = "## Generated for the following command: \n"
         for k, v in command.items():
-            if k != 'results':
+            if k != 'results' and k != 'times':
                 header += "# " + str(k) + " = " + str(v) + " \n"
 
 ##2d plotting:
@@ -135,26 +151,40 @@ def do_analysis(parameters, systems=None):
 #pause 1
 #} 
 
+        # Output format: one line or block per timestep
         if command['format'] == 'time':
+
+            # If 2d histogram, we output to a blocked format used in gnuplot
+            # Each timestep is separated by two blank lines
+            # Within each timestep the data is blocked such that an increase
+            # in the first coordinate is separated by one blank line
+            # standard errors are ignored here!
             if '2d' in command:
                 outfile = open(file_output, 'w')
                 outfile.write(header)
-                dd = np.c_[times, np.array(final_data)[:, 0, :]]
+                dd = np.c_[command['times'], np.array(final_data)[:, 0, :]]
                 for data in dd:
                     outfile.write("# time = " + str(data[0]) + " \n")
                     for i, b1 in enumerate(bins1):
                         for j, b2 in enumerate(bins2):
-                            outfile.write(str(b1) + " " + str(b2) + " " + str(data[1+i*len(bins2)+j]) + " \n")
+                            outfile.write(str(b1) + " " + str(b2) + " " +
+                                          str(data[1+i*len(bins2)+j]) + " \n")
                         outfile.write("\n")
                     outfile.write("\n \n")
+
+            # Regular output, just one line per timestep
             else:
-                number_times = len(times)
-                np.savetxt(file_output, np.c_[times, np.array(final_data).
+                number_times = len(command['times'])
+                np.savetxt(file_output, np.c_[command['times'],
+                                              np.array(final_data).
                                               reshape((number_times, -1))],
                            header=header)
+
+        # Output format: One line per value (e.g. per bin in histogram)
+        # each column represents one timestep
         elif command['format'] == 'value':
-            # TODO: add values in front! (instead of time)
-            for t in times:
+            # add time values in header for later reference
+            for t in command['times']:
                 header += str(t) + "\t" + str(t) + "\t"
             header += " \n"
 
@@ -165,9 +195,24 @@ def do_analysis(parameters, systems=None):
                                           reshape((-1, number_values)).T],
                        header=header)
 
+        # Output format: For 2D plots of histograms vs. time
+        elif command['format'] == '2d':
+            outfile = open(file_output, 'w')
+            outfile.write(header)
+
+            number_times = len(command['times'])
+            dd = np.c_[command['times'], np.array(final_data).reshape((number_times, -1))]
+            for data in dd:
+                for i, b in enumerate(bins):
+                    outfile.write(str(data[0]) + " " + str(b) + " " +
+                                  str(data[1+i]) + " \n")
+                outfile.write("\n")
+
 
 def apply_command(command, system):
-    """ Apply a given command to a given system.
+    """ Apply a given command to a given system. The results are stored in
+    command['results'] and the times for which the system is evaluated
+    are stored in command['times'].
 
     Parameters
     ----------
@@ -175,13 +220,9 @@ def apply_command(command, system):
         The definition of the command to evaluated as given in the input file.
     system : XPACDT.System
         The read in system containing its own log.
-
-    Returns
-    -------
-    list of floats
-        The times for which the command was evaluated, i.e., the times in the
-        log of the system.
     """
+
+    steps_used = [int(x) for x in command.get('step', '').split()]
 
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
@@ -189,21 +230,49 @@ def apply_command(command, system):
         value_0 = apply_operation(command['op0'], system._log[0])
 
     # Iterate over all times and calculate the full command.
-    # TODO: Implement to only do a subpart of the times. I.e. first, last, ...
     command['results'].append([value_0 * apply_operation(command['op'], log)
-                               for log in system._log])
+                               for i, log in enumerate(system._log)
+                               if __use_time(i, steps_used)])
 
+    # For a 2d histogram another 'obeservable' needs to be computed
     if '2d' in command:
         value_0 = 1.0
         if '2op0' in command:
             value_0 = apply_operation(command['2op0'], system._log[0])
 
         # Iterate over all times and calculate the full command.
-        # TODO: Implement to only do a subpart of the times. I.e. first, last, ...
         command['results'].append([value_0 * apply_operation(command['2op'], log)
-                                   for log in system._log])
+                                   for i, log in enumerate(system._log)
+                                   if __use_time(i, steps_used)])
 
-    return [log['time'] for log in system._log]
+    command['times'] = [log['time'] for i, log in enumerate(system._log)
+                        if __use_time(i, steps_used)]
+
+    return
+
+
+def __use_time(i, steps_used):
+    """ Wrapper to check if a certain command is supposed to be evaluated for a
+    given timestep.
+
+    Parameters
+    ----------
+    i : integer
+        Index of the timestep in question.
+    steps_used : list of integer
+        Empty list if all timesteps should be used. Else a list of integers
+        identifying the timesteps to be used.
+    Returns
+    -------
+    bool :
+        True is steps_used is empty or if i is present in steps_used. Else
+        False is returned.
+    """
+
+    if steps_used == []:
+        return True
+    else:
+        return (i in steps_used)
 
 
 def apply_operation(operation, system):
@@ -230,6 +299,7 @@ def apply_operation(operation, system):
         ops = op_string.split()
 
         # match the different operations here.
+        # TODO: more automatic
         if ops[0] == 'id' or ops[0] == 'idendity':
             value *= 1.0
         elif ops[0] == 'pos' or ops[0] == 'position':

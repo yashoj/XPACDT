@@ -181,6 +181,25 @@ beads given."
         refactoring."""
         return self.pes.energy(self.positions)
 
+    def getCOM(self, atoms):
+        raise NotImplementedError("GetCOM called but not implemented!")
+
+    def parse_coordinate(self, coordinate_string, beads=False):
+        vals = coordinate_string.split(',')
+
+        if vals[0] == 'm':
+            coordinates = self.getCOM([int(v) for v in vals[1:]])
+
+        else:
+            coordinates = []
+            for j, v in enumerate(vals):
+                if beads:
+                    coordinates.append(self.positions[int(v)])
+                else:
+                    coordinates.append(self.x_centroid[int(v)])
+
+        return np.array(coordinates)
+
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If
         required, a thermostatt is added to the propagator as well.
@@ -220,4 +239,3 @@ beads given."
             self.__propagator.propagate(self.positions, self.momenta, time)
 
         return
-

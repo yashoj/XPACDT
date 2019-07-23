@@ -53,8 +53,6 @@ def propagate(system, input_parameters):
         XPACDT representation of the given input file.
     """
 
-    # TODO: put time parsing into function?! -> Tools?
-
     prop_parameters = input_parameters.get('propagation')
     sys_parameters = input_parameters.get('system')
 

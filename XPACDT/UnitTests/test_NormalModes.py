@@ -69,6 +69,7 @@ class NormalModesTest(unittest.TestCase):
         x0 = np.loadtxt("FilesForTesting/NormalModes/H2O/x0")
 
         # TODO: put ref to file?
+        # TODO: Fix this test as it constantly failes due to a free sign in the normal modes
         x_ref = np.array([
                 [1.4326, 0.2294, 0.0000+0.5774, 0.0000, 1.4309, 0.0000+0.5774, -1.4326, 0.2294, 0.0000+0.5774],
                 [1.4326-0.0001, 0.2294-0.5774, 0.0000, 0.0000-0.0001, 1.4309-0.5774, 0.0000, -1.4326-0.0001, 0.2294-0.5774, 0.0000],

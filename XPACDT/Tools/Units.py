@@ -31,6 +31,7 @@
 
 
 from scipy.constants import physical_constants, femto, pico, atto, centi, pi
+# TODO: Implement our own periodic table
 # from mendeleev import element
 from pyne.data import atomic_mass
 
@@ -65,7 +66,11 @@ def atom_mass(symbol):
     """ Return the mass of an atom in atomic units.
     """
 
+    # TODO: Better element parsing; isotope parsing!
     conversion = physical_constants['atomic mass constant'][0] / physical_constants['atomic unit of mass'][0]
-    return atomic_mass(symbol) * conversion
-#    return atomic_mass(symbol) * conversion
-#    return element(symbol).atomic_weight * conversion
+    try:
+        return atomic_mass(symbol) * conversion
+        #    return atomic_mass(symbol) * conversion
+        # return element(symbol).atomic_weight * conversion
+    except:
+        raise RuntimeError("Error obtaining element weight: ", symbol)

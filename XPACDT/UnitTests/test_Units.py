@@ -42,7 +42,7 @@ class UnitsTest(unittest.TestCase):
 #        self.input = infile.Inputfile("input.in")
 
     def test_atom_mass(self):
-        # from 
+        # from https://en.wikipedia.org/wiki/Electron_rest_mass
         amu_to_au = 1.0 / 5.48579909065e-4
         # from http://www.ciaaw.org/atomic-weights.htm
         mass_h_ref = 1.0078250322 * amu_to_au
@@ -51,7 +51,6 @@ class UnitsTest(unittest.TestCase):
         mass_d_ref = 2.0141017781 * amu_to_au
         mass_o18_ref = 17.999159613 * amu_to_au
 
-# TODO: change places etc. test; also check NM test
         np.testing.assert_allclose(units.atom_mass('H'), mass_h_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('F'), mass_f_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('O'), mass_o_ref, rtol=1e-3)

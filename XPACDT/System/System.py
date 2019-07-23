@@ -31,9 +31,9 @@
 core of XPACDT."""
 
 import copy
-from molmod.units import parse_unit
 
 import XPACDT.System.Nuclei as nuclei
+import XPACDT.Tools.Units as units
 
 
 class System(object):
@@ -57,8 +57,7 @@ class System(object):
             "degrees of freedom not specified!"
 
         self.n_dof = self.parameters.get("system").get("dof")
-        time_string = self.parameters.get("system").get("time", "0 fs").split()
-        time = float(time_string[0]) * parse_unit(time_string[1])
+        time = units.parse_time(self.parameters.get("system").get("time", "0 fs"))
 
         # Set up nuclei
         self.__nuclei = nuclei.Nuclei(self.n_dof, self.parameters, time)

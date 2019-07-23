@@ -32,9 +32,10 @@ sampling can be found in TODO: add paper. Please note that Wigner sampling
 only makes sense in a classical calculation and not for RPMD. """
 
 import copy
-import molmod.constants as const
 import numpy as np
+
 import XPACDT.Tools.NormalModes as nm
+import XPACDT.Tools.Units as units
 
 
 def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
@@ -81,7 +82,7 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
     if "temperature" in parameters.get("sampling"):
         temperature = float(parameters.get("sampling").
                             get('temperature').split()[0])
-        beta = 1.0 / (temperature * const.boltzmann)
+        beta = 1.0 / (temperature * units.boltzmann)
         thermal_factor = np.sqrt(1.0 / np.tanh(beta * omega / 2.0))
 
         sigma_x *= thermal_factor

@@ -46,7 +46,8 @@ activationFilePath = os.path.join(basePath, ".XPACDT")
 activationFile = open(activationFilePath, 'w')
 
 # Set up all important variables
-PATH = os.path.join(basePath, "XPACDT", "Bin")
+PATH_1 = os.path.join(basePath, "XPACDT", "Bin")
+PATH_2 = os.path.join(basePath, "XPACDT", "Bin", "dist")
 PYTHONPATH = basePath
 XPACDTPATH = os.path.join(basePath, "XPACDT")
 
@@ -59,7 +60,7 @@ else:
     sys.stdout.write("No XATOM path set. \n \n")
 
 # Write variables to file.
-activationFile.write("export PATH=" + PATH + ":$PATH\n")
+activationFile.write("export PATH=" + PATH_1 + ":" + PATH_2 + ":$PATH\n")
 activationFile.write("export PYTHONPATH=" + PYTHONPATH + ":$PYTHONPATH\n")
 activationFile.write("export XPACDTPATH=" + XPACDTPATH + "\n")
 if isXATOM == 'y':

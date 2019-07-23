@@ -93,7 +93,7 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-5)
 
         # with two beads
         coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1], [2.0, 2.1], [1.0, 1.1], [4.0, 4.1]])
@@ -105,7 +105,7 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-5)
 
         # with four beads
         coordinate_ref = np.array([[1.0, 1.1, 1.2, 1.3], [2.0, 2.1, 2.2, 2.3], [3.0, 3.1, 3.2, 3.3], [2.4, 2.5, 2.6, 2.7], [1.4, 1.5, 1.6, 1.7], [4.0, 4.1, 4.2, 4.3]])
@@ -121,12 +121,12 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-5)
 
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(RuntimeError):
             parameters._parse_xyz(input_string)
 
         # test too many/few coordinates given
@@ -152,7 +152,7 @@ class InputfileTest(unittest.TestCase):
             + "34631.9731 2.0 1.0 4.0 \n"
 
         parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-5)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
 

@@ -29,12 +29,12 @@
 
 """Implementation of the velocity verlet propagator."""
 
-from molmod.units import parse_unit
 import numpy as np
 import sys
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.System.Electrons as elecInterface
+import XPACDT.Tools.Units as units
 
 # TODO: test, benchmark, optimize, docu
 # TODO: add thermostatting and constraints.
@@ -70,8 +70,7 @@ class VelocityVerlet(object):
         self.electrons = electrons
         self.mass = mass
 
-        dt_string = kwargs.get("timestep").split()
-        self.timestep = float(dt_string[0]) * parse_unit(dt_string[1])
+        self.timestep = units.parse_time(kwargs.get("timestep"))
 
         # optional as keywords
         if 'beta' in kwargs:

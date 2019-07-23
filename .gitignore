@@ -6,3 +6,5 @@ build
 _static
 _templates
 XPACDT/Bin/input.in
+XPACDT/Bin/dist
+*.exe.spec

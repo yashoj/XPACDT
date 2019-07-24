@@ -181,24 +181,75 @@ beads given."
         refactoring."""
         return self.pes.energy(self.positions)
 
-    def getCOM(self, atoms):
+    def getCOM(self, dofs, quantity='x'):
+        """ Get the center of mass position, momentum or velocity for a list
+        of degree of freedoms.
+
+        Parameters
+        ----------
+        dofs : list of ints
+            Degrees of freedoms to calculate the center of mass quantity for.
+        quantity : character, default 'x'
+            Type of quantity to calulate. 'x': positions, 'p': momentum,
+            'v': velocity
+
+        Returns
+        -------
+        Currently a NotImplementedError!
+        float :
+            Center of mass position, momentum or velocity.
+        """
         raise NotImplementedError("GetCOM called but not implemented!")
 
-    def parse_coordinate(self, coordinate_string, beads=False):
-        vals = coordinate_string.split(',')
+    def parse_dof(self, dof_string, quantity='x', beads=False):
+        """ Obtain positions, momenta or velocities for a list of degrees of
+        freedom.
 
-        if vals[0] == 'm':
-            coordinates = self.getCOM([int(v) for v in vals[1:]])
+        Parameters
+        ----------
+        dof_string : string
+            Degrees of freedoms to calculate the quantity for. This can be a
+            comma-separated list of degrees of freedom. Then an array of the
+            quantity for each degree of freedom is returned. Or it can be a
+            'm' followed by a comma-separated list of degrees of freedom. Then
+            the center of mass of that quantity is returned.
+        quantity : character, default 'x'
+            Type of quantity to calulate. 'x': positions, 'p': momentum,
+            'v': velocity
+        beads : bool, default: False
+            Whether the ring polymer beads should be used (True) or the
+            respective centroids (False).
+
+        Returns
+        -------
+        ndarray of floats
+           Array of position, momentum or velocity values requested.
+        """
+        dofs = dof_string.split(',')
+
+        if dofs[0] == 'm':
+            values = self.getCOM([int(v) for v in dofs[1:]], quantity)
 
         else:
-            coordinates = []
-            for j, v in enumerate(vals):
-                if beads:
-                    coordinates.append(self.positions[int(v)])
-                else:
-                    coordinates.append(self.x_centroid[int(v)])
+            values = []
+            for dof in [int(d) for d in dofs]:
+                if quantity == 'x':
+                    if beads:
+                        values.append(self.positions[dof])
+                    else:
+                        values.append(self.x_centroid[dof])
+                if quantity == 'p':
+                    if beads:
+                        values.append(self.momenta[dof])
+                    else:
+                        values.append(self.p_centroid[dof])
+                if quantity == 'v':
+                    if beads:
+                        values.append(self.momenta[dof] / self.masses[dof])
+                    else:
+                        values.append(self.x_centroid[dof] / self.masses[dof])
 
-        return np.array(coordinates)
+        return np.array(values)
 
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If

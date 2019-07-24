@@ -304,6 +304,10 @@ def apply_operation(operation, system):
             value *= 1.0
         elif ops[0] == 'pos' or ops[0] == 'position':
             value *= op.position(ops[1:], system)
+        elif ops[0] == 'mom' or ops[0] == 'momentum':
+            value *= op.momentum(ops[1:], system)
+        elif ops[0] == 'vel' or ops[0] == 'velocity':
+            value *= op.momentum(ops[1:] + ['-v'], system)
         else:
             raise RuntimeError("XPACDT: The given operation is not"
                                "implemented. " + ops)

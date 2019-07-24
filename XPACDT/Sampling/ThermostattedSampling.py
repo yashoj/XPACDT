@@ -28,7 +28,6 @@
 #  **************************************************************************
 
 import copy
-from molmod.units import parse_unit
 
 import XPACDT.Tools.Units as units
 

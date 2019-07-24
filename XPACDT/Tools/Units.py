@@ -90,7 +90,8 @@ def atom_mass(symbol):
 
 
 # from http://www.ciaaw.org/atomic-masses.htm
-# Non-Common Isotopes are labeled: X-N, where X is the atom Symbol and N is the
+# Weight of the most common isotope given for just the atom symbol
+# Non-Common Isotopes are labeled: X-N, where X is the atom symbol and N is the
 # Isotope Mass Number. Deuterium would, e.g., be H-2.
 # TODO: expand (see below)
 # TODO: good source for Mu mass; http://goldbook.iupac.org/terms/view/M04069 ?

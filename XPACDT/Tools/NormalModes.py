@@ -36,28 +36,28 @@ import numpy as np
 def get_normal_modes(Hessian, mass):
     """
     Obtain the normal mode frequencies and mass weighted normal modes of a
-    given Hessian. c.f.
+    given Hessian. c.f., https://gaussian.com/vib/.
 
     TODO: Implement option to project out rotation, translation.
 
     Parameters
     ----------
-    Hessian : two-dimensional ndarray of floats
+    Hessian : (n_dof, n_dof) ndarray of floats
         The Hessian matrix of the system in au. Not mass weighted!
-    mass : ndarray of floats
+    mass : (n_dof) ndarray of floats
         The mass for each degree of freedom in au.
 
     Returns
     -------
-    omega : ndarray of floats
+    omega : (n_dof) ndarray of floats
         List of all normal mode frequencies in au. "Complex" frequencies
         (i.e. associated with a negative eigenvalue of the Hessian) are given
         back as the negative of the squareroot of the absolute eigenvalue.
-    mode_masses : ndarray of floats
+    mode_masses : (n_dof) ndarray of floats
         The masses associated with each normal mode in au.
-    vec : two-dimensional ndarray of floats
+    vec : (n_dof, n_dof) ndarray of floats
         Mass-weighted normal modes in au as columns.
-    cartesian : two-dimensional ndarray of floats
+    cartesian : (n_dof, n_dof) ndarray of floats
         Cartesian displacements for each normal mode in au as column.
     """
 
@@ -83,21 +83,21 @@ def transform_to_cartesian(x, p, x0, normal_modes):
 
     Parameters
     ----------
-    x : ndarray of floats
+    x : (n_modes,-1) ndarray of floats
         Normal mode coordinate values.
-    p : ndarray of floats
+    p : (n_modes,-1) ndarray of floats
         Normal mode momenta values.
-    x0 : ndarray of floats
+    x0 : (n_dof) ndarray of floats
         Reference position used in normal mode calculation/Hessian calculation
         in au.
-    normal_modes : two-dimensional ndarray of floats
+    normal_modes : (n_dof, n_modes) ndarray of floats
         Cartesian displacments for each normal mode in au as columns.
 
     Returns
     -------
-    ndarray of floats
+    (n_dof, -1) ndarray of floats
         Cartisian coordinates
-    ndarray of floats
+    (n_dof, -1) ndarray of floats
         Cartisian momenta
     """
 
@@ -127,27 +127,25 @@ def get_sampling_modes(system, parameters):
         System that defines the initial geometry and the potential.
     parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
+
     Returns
     -------
-    omega : ndarray of floats
+    omega : (n_modes) ndarray of floats
         Normal mode frequencies in au.
-    nm_masses : ndarray of floats
+    nm_masses : (n_modes) ndarray of floats
         Normal mode masses in au.
-    nm_cartesian : two-dimensional ndarray of floats, shape(#dof, #modes)
+    nm_cartesian : (n_dof, n_modes) ndarray of floats
         Transformation matrix from the normal modes that should be sampled to
         the full cartesian coordinates.
     """
 
-    hessian = system.pes.get_Hessian(system.nuclei.positions[:, 0])
+    hessian = system.nuclei.electrons.pes.get_Hessian(system.nuclei.positions[:, 0])
 
     omega, nm_masses, normal_modes, nm_cartesian = \
         get_normal_modes(hessian, system.nuclei.masses)
 
-    # get modes to be sampled from input. This can be
-    # - nothing given - sample all modes
-    # - linear - linear system, so remove first 5 modes
-    # - nonlinear - not a linear system, so remove first 6
-    # - a list of numbers - only sample the given ones
+    # get modes to be sampled from input.
+    # For details see the method documentaion.
     modes = parameters.get("sampling").get("modes")
     if modes is None or modes == '':
         modelist = range(system.n_dof)

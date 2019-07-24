@@ -106,4 +106,5 @@ op0 = +pos
 value = histogram -3.0 3.0 10 # way to analyze the data; could be 'mean', 'std' 'percentile x', 'histogram min max n'
 format = value # format for printing: time - one line per timestep; value - one line per value
 $end
+
 ### more comments!!

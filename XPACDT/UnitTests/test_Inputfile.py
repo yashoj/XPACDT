@@ -87,7 +87,7 @@ class InputfileTest(unittest.TestCase):
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
         parameters['system'] = {'dof': '6'}
 
-        mass_ref = np.array([1837.362363054474, 34631.97313115233])
+        mass_ref = np.array([1837.15, 34631.97])
         coordinate_ref = np.array([[1.0], [2.0], [3.0], [2.0], [1.0], [4.0]])
         input_string = "H 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
@@ -95,7 +95,7 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # with two beads
         coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1], [2.0, 2.1], [1.0, 1.1], [4.0, 4.1]])
@@ -107,7 +107,7 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # with four beads
         coordinate_ref = np.array([[1.0, 1.1, 1.2, 1.3], [2.0, 2.1, 2.2, 2.3], [3.0, 3.1, 3.2, 3.3], [2.4, 2.5, 2.6, 2.7], [1.4, 1.5, 1.6, 1.7], [4.0, 4.1, 4.2, 4.3]])
@@ -123,12 +123,12 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(RuntimeError):
             parameters._parse_xyz(input_string)
 
         # test too many/few coordinates given
@@ -154,7 +154,7 @@ class InputfileTest(unittest.TestCase):
             + "34631.9731 2.0 1.0 4.0 \n"
 
         parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
 
@@ -179,6 +179,10 @@ class InputfileTest(unittest.TestCase):
         self.assertTrue("pes" in parameters)
         self.assertFalse("wrong" in parameters)
 
+        return
+
+    def test_format_coordinates(self):
+        # Implicity tested in parse modules - not clear how to test separately.
         return
 
 

@@ -333,6 +333,7 @@ def get_directory_list(folder='./', file_name=None):
     dirs : list of string
         Sorted list of trj_ subfolders.
     """
+
     allEntries = os.listdir(folder)
     dirs = []
     for entry in allEntries:

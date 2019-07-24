@@ -34,7 +34,7 @@ import numpy as np
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
 
-class OneDPolynomial(itemplate.Interface):
+class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
     V(x) = \sum_{i=0}^{N} a_i (x-x_0)^i.
@@ -66,11 +66,12 @@ class OneDPolynomial(itemplate.Interface):
                                    "not convertable to floats."
                                    " a is " + kwargs.get('a'))
 
-        itemplate.Interface.__init__(self, "OneDPolynomial")
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial")
 
     @property
     def a(self):
-        """ndarray of floats : Expansion coefficients for the polynomial. """
+        """(N) ndarray of floats : Expansion coefficients for the polynomial
+        of degree N-1"""
         return self.__as
 
     @property
@@ -78,15 +79,15 @@ class OneDPolynomial(itemplate.Interface):
         """float : The equilibrium position. Default is x0=0. """
         return self.__x0
 
-    def _calculate(self, R, P=None, S=None):
+    def _calculate_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
-        P : two-dimensional ndarray of floats, optional
+        P : (n_dof, n_beads) ndarray of floats, optional
             The momenta of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads. This is not
             used in this potential and thus defaults to None.
@@ -98,47 +99,37 @@ class OneDPolynomial(itemplate.Interface):
         assert (isinstance(R, np.ndarray)), "R not a numpy array!"
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
-#        if P is not None:
-#            assert (isinstance(P, np.ndarray)), "P not a numpy array!"
-#            assert (P.ndim == 2), "Momentum array not two-dimensional!"
-#            assert (P.dtype == 'float64'), "Momentum array not real!"
 
-        n = R.shape[1]
+        # centroid part if more than 1 bead
+        if R.shape[1] > 1:
+            centroid = np.mean(R, axis=1)
+            distance_centroid = centroid[0] - self.x0
+            power_centroid = 1.0
+            self._gradient_centroid = np.zeros_like(distance_centroid)
+            self._energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
 
-        self._energy, self._gradient = self.__polynomial(R)
-        self._energy += np.array([self.a[0]]*n)
-        self._gradient = self._gradient.reshape((-1, n))
-
-        return
-
-    def __polynomial(self, R):
-        """
-        Function to calculate the one-D polynomial that can be vectorized.
-
-        Parameters:
-        -----------
-        R : two-dimensional ndarray of floats
-            The positions of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads.
-
-        Returns:
-        --------
-        energy : ndarray of floats
-            The potential energy of each bead.
-        gradient : ndarray of floats
-            The gradient along the one dimension of each bead.
-        """
-
+        # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
-
-        gradient = np.zeros_like(distance)
-        energy = np.zeros_like(distance)
+        self._gradient = np.zeros_like(distance)
+        self._energy = np.zeros_like(distance) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
-            gradient += float(i+1) * a * power
-
+            # beads part
+            self._gradient += float(i+1) * a * power
             power *= distance
-            energy += a * power
+            self._energy += a * power
 
-        return energy, gradient
+            # centroid part if more than 1 bead
+            if R.shape[1] > 1:
+                self._gradient_centroid += float(i+1) * a * power_centroid
+                power_centroid *= distance_centroid
+                self._energy_centroid += a * power_centroid
+
+        self._gradient = self._gradient.reshape((1, -1))
+
+        if R.shape[1] == 1:
+            self._energy_centroid = self._energy
+            self._gradient_centroid = self._gradient
+
+        return

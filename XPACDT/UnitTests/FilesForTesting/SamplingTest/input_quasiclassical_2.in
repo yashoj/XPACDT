@@ -21,7 +21,7 @@ $end
 $sampling               # sampling input
 
 method = Quasiclassical          # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
-samples = 1000          # number of samples to be collected
+samples = 100          # number of samples to be collected
 
 quantum_numbers = 2 # the quantum number used in Quasiclassical sampling for each mode
 

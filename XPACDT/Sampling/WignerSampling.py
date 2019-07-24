@@ -27,13 +27,18 @@
 #
 #  **************************************************************************
 
+""" Modul that implements Wigner sampling of a system. Details on Wigner
+sampling can be found in TODO: add paper. Please note that Wigner sampling
+only makes sense in a classical calculation and not for RPMD. """
+
 import copy
-import molmod.constants as const
 import numpy as np
+
 import XPACDT.Tools.NormalModes as nm
+import XPACDT.Tools.Units as units
 
 
-def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
+def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
     """
     Perform Wigner sampling of normal modes. Either the ground state or
     a thermal distribution is sampled. A list of systems located at the
@@ -49,13 +54,14 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
         and a valid starting geometry.
     parameters : XPACDT input file
         Dictonary-like presentation of the input file.
-    hessian : two-dimensional ndarray of floats, optional
+    n_sample : int
+        Actual number of samples required.
+    hessian : (n_dof, n_dof) ndarray of floats, optional
         A Hessian for the system the defines the normal modes to be sampled.
-    shift : optional TODO, define - for linear sift of position of momenta??
 
     Returns
     -------
-    systems : list of XPACDT.Dynamics.System
+    systems : (n_sample) list of XPACDT.Dynamics.System
         A list of systems located at the sampled phase-space points.
     """
 
@@ -65,6 +71,9 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
     x0 = system.nuclei.positions[:, 0]
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
 
+    assert((omega > 0.0).all()), "Negative frequency given for sampling. " \
+                                 + "omega = " + str(omega)
+
     # Get the width of the ground state distribution
     sigma_x = np.sqrt(1.0 / (2.0 * omega * nm_masses))
     sigma_p = np.sqrt((omega * nm_masses) / (2.0))
@@ -73,13 +82,11 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
     if "temperature" in parameters.get("sampling"):
         temperature = float(parameters.get("sampling").
                             get('temperature').split()[0])
-        beta = 1.0 / (temperature * const.boltzmann)
+        beta = 1.0 / (temperature * units.boltzmann)
         thermal_factor = np.sqrt(1.0 / np.tanh(beta * omega / 2.0))
 
         sigma_x *= thermal_factor
         sigma_p *= thermal_factor
-
-    n_sample = int(parameters.get("sampling").get('samples'))
 
     # Draw from normal distribution
     x_normal_modes = np.random.normal(np.zeros_like(sigma_x), sigma_x,
@@ -96,8 +103,8 @@ def do_Wigner_sampling(system, parameters, hessian=None, shift=None):
     systems = []
     for x, p in zip(xs, ps):
         systems.append(copy.deepcopy(system))
-        systems[-1].nuclei.positions = x.reshape(1, -1)
-        systems[-1].nuclei.momenta = p.reshape(1, -1)
-        systems[-1].log(init=True)
+        systems[-1].nuclei.positions = x.reshape(-1, 1)
+        systems[-1].nuclei.momenta = p.reshape(-1, 1)
+        systems[-1].do_log(init=True)
 
     return systems

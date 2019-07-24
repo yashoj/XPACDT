@@ -1,0 +1,14 @@
+$system
+dof = 1
+Interface = OneDPolynomial
+job = analyze 
+picklefile = pickle.dat
+folder = ensm/
+$end
+
+$OneDPolynomial
+a = 0 0 0.5 0.1 0.01
+x0 = 0
+$end
+
+

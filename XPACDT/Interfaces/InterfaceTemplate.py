@@ -31,13 +31,13 @@
 potential in the simulations."""
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import minimize as spminimize
 
 # TODO: what to store
 # TODO: which general functions to implement.
 
 
-class Interface:
+class PotentialInterface:
     """
     This is a template for creating and unifying classes that give potential
     energies, gradients and couplings that are required for the dynamics.
@@ -59,8 +59,11 @@ class Interface:
         self._old_R = None
         self._old_P = None
         self._old_S = None
+
         self._energy = None
         self._gradient = None
+        self._energy_centroid = None
+        self._gradient_gradient = None
 
         self.__SAVE_THRESHOLD = 1e-8
 
@@ -76,21 +79,21 @@ class Interface:
         return self.__SAVE_THRESHOLD
 
     @property
-    def STEPSIZE(self):
+    def DERIVATIVE_STEPSIZE(self):
         """float : Step size for numerical derivatives in au."""
         return 1e-4
 
-    def _calculate(self, R, P, S=None):
+    def _calculate_all(self, R, P, S=None):
         """Calculate the energy, gradient and possibly couplings at the current
         geometry.
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) momenta representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
@@ -112,11 +115,11 @@ class Interface:
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) momenta representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
@@ -145,51 +148,58 @@ class Interface:
             self._old_R = R.copy()
             return True
 
-    def energy(self, R, S=None):
+    def energy(self, R, S=None, centroid=False):
         """Obtain energy of the system in the current state.
 
         Parameters
         ----------
-        R : array of arrays of floats
-            The (ring-polymer) positions representing the system in bohr.
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
+        centroid : bool, default False
+            If the energy of the centroid should be returned.
+
 
         Returns
         -------
-        array of float
-        The energy of the system at each bead position in hartree.
+        (n_beads) ndarray of float /or/ float
+        The energy of the system at each bead position or at the centroid
+        in hartree.
         """
         if self._changed(R, None, S):
-            self._calculate(R, None, S)
+            self._calculate_all(R, None, S)
 
-        if S is None:
-            return self._energy[0]
+        if centroid:
+            return self._energy_centroid[0 if S is None else S]
         else:
-            return self._energy[S]
+            return self._energy[0 if S is None else S]
 
-    def gradient(self, R, S=None):
+    def gradient(self, R, S=None, centroid=False):
         """Obtain gradient of the system in the current state.
 
         Parameters
         ----------
-        R : array of arrays of floats
-            The (ring-polymer) positions representing the system in bohr.
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
+        centroid : bool, default False
+            If the gradient of the centroid should be returned.
 
         Returns
         -------
-        array of arrays of floats
-        The gradient of the system at each bead position in hartree/bohr.
+        (n_dof, n_beads) ndarray of floats /or/ (n_dof) ndarray of floats
+        The gradient of the system at each bead position or at the centroid
+        in hartree/au.
         """
         if self._changed(R, None, S):
-            self._calculate(R, None, S)
+            self._calculate_all(R, None, S)
 
-        if S is None:
-            return self._gradient[0]
+        if centroid:
+            return self._gradient_centroid[0 if S is None else S]
         else:
-            return self._gradient[S]
+            return self._gradient[0 if S is None else S]
 
     def coupling(self, R,):
         """ Obtain coupling. """
@@ -206,13 +216,14 @@ class Interface:
 
         Parameters
         ----------
-        R : array of floats
-            The positions representing the system in bohr.
+        R : (n_dof) ndarray of floats
+            The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
 
         Returns
         -------
+        float:
         The energy at the given geometry in hartree.
         """
         return self.energy(np.array([R]), S)
@@ -224,39 +235,42 @@ class Interface:
 
         Parameters
         ----------
-        R : array of floats
-            The positions representing the system in bohr.
+        R : (n_dof) ndarray of floats
+            The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
 
         Returns
         -------
-        The gradient at the given geometry in hartree/bohr.
+        (n_dof) ndarray of floats:
+        The gradient at the given geometry in hartree/au.
         """
         return self.gradient(np.array([R]), S)
 
-    def minimize(self, R0):
+    def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method
         as implemented in Scipy.
 
         Parameters
         ----------
-        R0 : array of floats
+        R0 : (n_dof) ndarray of floats
              The starting position for the minimization.
 
         Returns
         ----------
         fun : float
               The minimal potential value in hartree.
-        x : array
-           The minimized position in bohr.
+        x : (n_dof) ndarray of floats
+           The minimized position in au.
 
         Raises a RuntimeError if unsuccessful.
         """
 
+        old_thresh = self.__SAVE_THRESHOLD
         self.__SAVE_THRESHOLD = 1e-15
-        results = minimize(self._energy_wrapper, R0, method='Newton-CG',
-                           jac=self._gradient_wrapper)
+        results = spminimize(self._energy_wrapper, R0, method='Newton-CG',
+                             jac=self._gradient_wrapper)
+        self.__SAVE_THRESHOLD = old_thresh
 
         if results.success:
             return results.fun, results.x
@@ -268,7 +282,7 @@ class Interface:
         """ Find the transition state. """
         raise NotImplementedError
 
-    def plot_1D(self, R, i, start, end, step, relax=False, S=0):
+    def plot_1D(self, R, dof_i, start, end, step, relax=False, S=0):
         """Generate data to plot a potential energy surface along one
         dimension. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_1d.dat' or
@@ -282,17 +296,17 @@ class Interface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
-        i : integer
+        dof_i : integer
             Index of the variable that should change.
         start : float
-            Starting value of the coordinate that is scanned in bohr.
+            Starting value of the coordinate that is scanned in au.
         end : float
-            Ending value of the coordinate that is scanned in bohr.
+            Ending value of the coordinate that is scanned in au.
         step : float
-            Step size used along the scan in bohr.
+            Step size used along the scan in au.
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or relaxed (True)
             along the scan.
@@ -313,11 +327,11 @@ class Interface:
 
         for g in grid:
             if relax:
-                constraint = ({'type': 'eq', 'fun': lambda x: x[i] - g})
+                constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g})
                 R0 = R.copy()
-                R0[i] = g
-                results = minimize(self._energy_wrapper, R0, method='SLSQP',
-                                   constraints=constraint)
+                R0[dof_i] = g
+                results = spminimize(self._energy_wrapper, R0, method='SLSQP',
+                                     constraints=constraint)
 
                 # Store both the optimized energy and coordinates.
                 if results.success:
@@ -327,7 +341,7 @@ class Interface:
                     raise RuntimeError("Minimization of PES failed with "
                                        " message: " + results.message)
             else:
-                R[i] = g
+                R[dof_i] = g
                 e.append([self._energy_wrapper(R)])
 
         pes = np.insert(np.array(e), 0, grid, axis=1)
@@ -335,7 +349,7 @@ class Interface:
             pes = np.hstack((pes, np.array(R_optimized)))
         np.savetxt('pes_1d' + ('_opti' if relax else '') + '.dat', pes)
 
-    def plot_2D(self, R, i, j, starts, ends, steps, relax=False):
+    def plot_2D(self, R, dof_i, dof_j, starts, ends, steps, relax=False):
         """Generate data to plot a potential energy surface along two
         dimensions. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_2d.dat' or
@@ -351,19 +365,19 @@ class Interface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
-        i : integer
+        dof_i : integer
             Index of the first variable that should change.
-        j : integer
+        dof_j : integer
             Index of the second variable that should change.
         starts : 2 floats
-            Starting values of the coordinates that are scanned in bohr.
+            Starting values of the coordinates that are scanned in au.
         ends : 2 floats
-            Ending values of the coordinates that are scanned in bohr.
+            Ending values of the coordinates that are scanned in au.
         steps : 2 floats
-            Step sizes used along the scan in bohr.
+            Step sizes used along the scan in au.
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or
             relaxed (True) along the scan.
@@ -392,12 +406,12 @@ class Interface:
             for g_y in grid_y:
 
                 if relax:
-                    constraint = ({'type': 'eq', 'fun': lambda x: x[i] - g_x},
-                                  {'type': 'eq', 'fun': lambda x: x[j] - g_y})
+                    constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g_x},
+                                  {'type': 'eq', 'fun': lambda x: x[dof_j] - g_y})
                     R0 = R.copy()
-                    R0[i] = g_x
-                    R0[j] = g_y
-                    results = minimize(self._energy_wrapper, R0,
+                    R0[dof_i] = g_x
+                    R0[dof_j] = g_y
+                    results = spminimize(self._energy_wrapper, R0,
                                        method='SLSQP', constraints=constraint)
 
                     if results.success:
@@ -407,8 +421,8 @@ class Interface:
                         raise RuntimeError("Minimization of PES failed with"
                                            " message: " + results.message)
             else:
-                R[i] = g_x
-                R[j] = g_y
+                R[dof_i] = g_x
+                R[dof_j] = g_y
                 e.append([self._energy_wrapper(R)])
 
         grid = np.dstack((grid_x, grid_y)).reshape(n_grid, -1)
@@ -430,25 +444,30 @@ class Interface:
 
         Parameters
         ----------
-        R : array of floats
+        R : (n_dof) ndarray of floats
             Position for which the Hessian is calculated
             .
         Returns
         -------
-        H : array of array of floats
+        H : (n_dof, n_dof) ndarray of floats
             Hessian of the potential at the given geometry.
         """
 
         n = len(R)
         H = np.zeros((n, n))
+        R_step = R.copy()
 
         for i in range(len(R)):
             # TODO: maybe put into some numerics module?
-            R[i] += self.STEPSIZE
-            grad_plus = self._gradient_wrapper(R)
-            R[i] -= 2.0*self.STEPSIZE
-            grad_minus = self._gradient_wrapper(R)
-            R[i] += self.STEPSIZE
-            H[i] = (grad_plus - grad_minus) / (2.0 * self.STEPSIZE)
+            R_step[i] += self.DERIVATIVE_STEPSIZE
+            grad_plus = self._gradient_wrapper(R_step)
+
+            R_step = R.copy()
+            R_step[i] -= self.DERIVATIVE_STEPSIZE
+            grad_minus = self._gradient_wrapper(R_step)
+
+            H[i] = (grad_plus - grad_minus) / (2.0 * self.DERIVATIVE_STEPSIZE)
+
+            R_step = R.copy()
 
         return H

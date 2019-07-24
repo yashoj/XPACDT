@@ -30,8 +30,9 @@
 """ This module holds the defines te massive Andersen Thermostat.
 """
 
-import molmod.constants as const
 import numpy as np
+
+import XPACDT.Tools.Units as units
 
 
 class MassiveAndersen(object):
@@ -47,7 +48,7 @@ class MassiveAndersen(object):
     ---------
     input_parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
-    masses : ndarray of floats
+    masses : (n_dof) ndarray of floats
         The atomic masses of the current system in au.
 
     Other Parameters
@@ -71,7 +72,7 @@ class MassiveAndersen(object):
         else:
             raise RuntimeError("No temperature given for MassiveAndersen!")
 
-        self.beta = 1.0 / (self.temperature * const.boltzmann)
+        self.beta = 1.0 / (self.temperature * units.boltzmann)
         self.mass = masses
 
     def apply(self, R, P, state):
@@ -80,9 +81,9 @@ class MassiveAndersen(object):
 
         Parameters
         ----------
-        R : two-dimensional ndarray of floats
+        R : (n_dof, n_beads) ndarray of floats
             Positions of the system. Ignored here.
-        P : two-dimensional ndarray of floats
+        P : (n_dof, n_beads) ndarray of floats
             Momenta of the system that will be reset.
         state : int
             Step within the propagation, where the function is called.

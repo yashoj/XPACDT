@@ -52,6 +52,7 @@ import XPACDT.Input.Inputfile as infile
 def start():
     """Start any XPACDT calculation."""
 
+    # TODO find possibility to include something with pyinstaller
     # Save version used for later reference
     current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
     repo = git.Repo(path=current_path, search_parent_directories=True)

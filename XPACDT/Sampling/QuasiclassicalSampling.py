@@ -33,11 +33,12 @@ import numpy as np
 import XPACDT.Tools.NormalModes as nm
 
 
-def do_Quasiclassical_sampling(system, parameters):
+def do_Quasiclassical_sampling(system, parameters, n_sample):
     """
     Perform quasiclassical sampling, i.e., sample the normal modes with a
     random phase and a fixed energy.
-    TODO: add paper
+    The basic idea is presented in: Chem. Phys. Lett. 74, 284 (1980)
+    TODO: Are there other, better references?
 
     The following things are assumed to be set in parameters:
     TODO
@@ -49,15 +50,20 @@ def do_Quasiclassical_sampling(system, parameters):
         and a valid starting geometry.
     parameters : XPACDT input file
         Dictonary-like presentation of the input file.
+    n_sample : int
+        Actual number of samples required.
 
     Returns
     -------
-    systems : list of XPACDT.Dynamics.System
+    systems : (n_sample) list of XPACDT.Dynamics.System
         A list of systems located at the sampled phase-space points.
     """
 
     x0 = system.nuclei.positions[:, 0]
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
+
+    assert((omega > 0.0).all()), "Negative frequency given for sampling. " \
+                                 + "omega = " + str(omega)
 
     # Get the quantum numbers or set to 0
     if 'quantum_numbers' in parameters.get("sampling"):
@@ -71,7 +77,6 @@ def do_Quasiclassical_sampling(system, parameters):
     factor_p = factor * np.sqrt((omega * nm_masses))
 
     # Draw from random angle distribution
-    n_sample = int(parameters.get("sampling").get('samples'))
     angles = 2.0 * np.pi * np.random.random(n_sample)
     x_normal_modes = np.outer(factor_x, np.sin(angles))
     p_normal_modes = np.outer(factor_p, np.cos(angles))
@@ -85,8 +90,8 @@ def do_Quasiclassical_sampling(system, parameters):
     systems = []
     for x, p in zip(xs, ps):
         systems.append(copy.deepcopy(system))
-        systems[-1].nuclei.positions = x.reshape(1, -1)
-        systems[-1].nuclei.momenta = p.reshape(1, -1)
-        systems[-1].log(init=True)
+        systems[-1].nuclei.positions = x.reshape(-1, 1)
+        systems[-1].nuclei.momenta = p.reshape(-1, 1)
+        systems[-1].do_log(init=True)
 
     return systems

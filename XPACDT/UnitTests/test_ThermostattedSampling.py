@@ -29,7 +29,6 @@
 #
 #  **************************************************************************
 
-import molmod.constants as const
 import numpy as np
 import random
 import scipy.stats
@@ -38,6 +37,7 @@ import unittest
 import XPACDT.System.System as xSystem
 import XPACDT.Sampling.ThermostattedSampling as thermo
 import XPACDT.Input.Inputfile as infile
+import XPACDT.Tools.Units as units
 
 
 class ThermostattedSamplingTest(unittest.TestCase):
@@ -51,12 +51,13 @@ class ThermostattedSamplingTest(unittest.TestCase):
         self.system = xSystem.System(self.parameters)
 
     def test_do_Thermostatted_sampling(self):
-        samples = thermo.do_Thermostatted_sampling(self.system, self.parameters)
+        samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
+                                                   int(self.parameters.get("sampling").get('samples')))
         energies = [s.nuclei.energy for s in samples]
         statistics = scipy.stats.bayes_mvs(energies)
         mean_min, mean_max = statistics[0][1]
         dev_min, dev_max = statistics[2][1]
-        mean_reference = 1.0 / (315777*const.boltzmann)
+        mean_reference = 1.0 / (315777*units.boltzmann)
 
         self.assertTrue(mean_min < mean_reference < mean_max)
         self.assertTrue(dev_min < mean_reference < dev_max)

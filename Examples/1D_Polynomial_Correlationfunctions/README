@@ -1,0 +1,21 @@
+Basic examples to calculate classical and RPMD position-position 
+autocorrelation functions for one-dimensional polynomial potentials
+(e.g. harmonic and quartic osillators). This should reproduce the results
+published in the first RPMD paper, JCP 121, 3368 (2004).
+
+There are examples for different potentials, beta values and bead numbers,
+each in its own folder.
+
+----- Top level -----
+A - anharmonic potential (0.5x^2 + 0.1x^3 + 0.01x^4)
+HO - harmonic potential (0.5x^2)
+Q - quartic potential (0.25x^4)
+----- Second level -----
+Beta values of 1 and 8
+----- Third level -----
+Number of beads; 1 and 4 or 32, depending on beta.
+
+Each example can be run using the 'doit.sh' shell script. This runs 
+a sampling step first and then propagates each sample in real time. 
+After that, the results are used to generate the correlation function 
+stored in cxx.dat

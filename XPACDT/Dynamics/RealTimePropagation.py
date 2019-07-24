@@ -32,9 +32,10 @@
 """ This module defines all required routines to propagate a given system in
 real time."""
 
-from molmod.units import parse_unit
 import os
 import pickle
+
+import XPACDT.Tools.Units as units
 
 
 def propagate(system, input_parameters):
@@ -52,8 +53,6 @@ def propagate(system, input_parameters):
         XPACDT representation of the given input file.
     """
 
-    # TODO: put time parsing into function?!
-
     prop_parameters = input_parameters.get('propagation')
     sys_parameters = input_parameters.get('system')
 
@@ -61,23 +60,18 @@ def propagate(system, input_parameters):
         "given for the propagation."
 
     if 'continue' not in sys_parameters:
-        system.reset()
-
-        # set initial time
-        time_string = prop_parameters.get('time_start', '0.0 fs').split()
-        system.time = float(time_string[0]) * parse_unit(time_string[1])
+        # set initial time and reset log
+        system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
 
     # Set desired propagator
     system.nuclei.attach_nuclei_propagator(input_parameters)
 
     # Obtain times for propagation and output
-    time_string = prop_parameters.get('time_end').split()
-    time_end = float(time_string[0]) * parse_unit(time_string[1])
+    time_end = units.parse_time(prop_parameters.get('time_end'))
 
     timestep_output = prop_parameters.get('time_output')
     if timestep_output is not None:
-        time_string = timestep_output.split()
-        timestep_output = float(time_string[0]) * parse_unit(time_string[1])
+        timestep_output = units.parse_time(timestep_output)
     else:
         timestep_output = system.nuclei.propagator.timestep
 
@@ -85,7 +79,7 @@ def propagate(system, input_parameters):
     name_folder = sys_parameters.get('folder')
     name_file = sys_parameters.get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
-    while(system.time < time_end):
+    while(system.nuclei.time < time_end):
         system.step(timestep_output)
 
         # TODO: Learn how to append in pickle and maybe do that

@@ -37,13 +37,14 @@ def do_analysis(parameters):
     dirs = get_directory_list(parameters.get('system').get('folder'))
     file_name = parameters.get('system').get('picklefile', 'pickle.dat')
     cxxs = []
+    
     for folder_name in dirs:
         path_file = os.path.join(folder_name, file_name)
         if os.path.isfile(path_file):
             system = pickle.load(open(path_file, 'rb'))
-            
-        x0 = system._log[0]['nuclei'].x_centroid[0]
-        cxxs.append(x0*np.array([log['nuclei'].x_centroid[0] for log in system._log]))
+
+        x0 = system.log[0].x_centroid[0]
+        cxxs.append(x0*np.array([log.x_centroid[0] for log in system.log]))
         
     cxx = np.average(cxxs, axis=0)
     np.savetxt('cxx.dat', cxx)

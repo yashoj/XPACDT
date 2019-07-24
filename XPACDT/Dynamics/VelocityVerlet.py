@@ -29,12 +29,12 @@
 
 """Implementation of the velocity verlet propagator."""
 
-from molmod.units import parse_unit
 import numpy as np
 import sys
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
-import XPACDT.Interfaces.InterfaceTemplate as template
+import XPACDT.System.Electrons as elecInterface
+import XPACDT.Tools.Units as units
 
 # TODO: test, benchmark, optimize, docu
 # TODO: add thermostatting and constraints.
@@ -49,8 +49,8 @@ class VelocityVerlet(object):
     ----------
     dt : float
         Basic timestep for the propagator in a.u.
-    potential : Child of XPACDT.Interfaces.InterfaceTemplate
-        Potential function that gives the gradients.
+    electrons : XPACDT.System.Electrons
+        Representation of the electrons that gives the gradients.
     mass : (n_dof) ndarray of floats
         Masses of the system in au.
 
@@ -60,19 +60,18 @@ class VelocityVerlet(object):
         Inverse temperature for ring polymer springs in a.u.
     """
 
-    def __init__(self, potential, mass, **kwargs):
+    def __init__(self, electrons, mass, **kwargs):
         # TODO: basic argument parsing here
 
-        assert (isinstance(potential, template.PotentialInterface)), \
-            "potential not derived from InterfaceTemplate!"
+        assert (isinstance(electrons, elecInterface.Electrons)), \
+            "electrons not derived from System.Electrons!"
         assert ('timestep' in kwargs), "No timestep given for propagator."
 
-        self.potential = potential
+        self.electrons = electrons
         self.mass = mass
         self.n_beads = int(kwargs.get("beads"))
 
-        dt_string = kwargs.get("timestep").split()
-        self.timestep = float(dt_string[0]) * parse_unit(dt_string[1])
+        self.timestep = units.parse_time(kwargs.get("timestep"))
 
         # optional as keywords
         if 'beta' in kwargs:
@@ -122,15 +121,15 @@ class VelocityVerlet(object):
         self.__mass = a.copy()
 
     @property
-    def potential(self):
-        """ XPACDT.Interface : The potential used in the propagation."""
-        return self.__potential
+    def electrons(self):
+        """ XPACDT.System.Electrons : The electrons used in the propagation."""
+        return self.__electrons
 
-    @potential.setter
-    def potential(self, p):
-        assert (isinstance(p, template.PotentialInterface)), "potential not"
-        "derived from InterfaceTemplate!"
-        self.__potential = p
+    @electrons.setter
+    def electrons(self, p):
+        assert (isinstance(p, elecInterface.Electrons)), "electrons not"
+        "derived from System.Electrons!"
+        self.__electrons = p
 
     @property
     def propagation_matrix(self):
@@ -266,7 +265,7 @@ class VelocityVerlet(object):
         is the degrees of freedom and the second axis the beads.
         """
 
-        return P - 0.5 * self.timestep * self.potential.gradient(R)
+        return P - 0.5 * self.timestep * self.electrons.gradient(R)
 
     def _verlet_step(self, R, P):
         """ Take a full timestep for the positions and internal ring-polymer

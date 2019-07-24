@@ -38,12 +38,13 @@ start with a '#' character."""
 import collections
 from errno import ENOENT
 from io import StringIO
-from molmod.periodic import periodic
+#from molmod.periodic import periodic
 import numpy as np
 import os
 import re
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
+import XPACDT.Tools.Units as units
 
 
 class Inputfile(collections.MutableMapping):
@@ -255,7 +256,8 @@ class Inputfile(collections.MutableMapping):
         try:
             # TODO write a small wrapper for isotope masses!
             mc = np.loadtxt(d, ndmin=2,
-                            converters={0: lambda s: periodic[str(s)[2]].mass})
+#                            converters={0: lambda s: periodic[str(s)[2]].mass})
+                            converters={0: lambda s: units.atom_mass(str(s)[2])})
         except AttributeError as e:
             raise type(e)(str(e) + "\nXPACDT: Unknwon atomic symbol given!")
         except ValueError as e:

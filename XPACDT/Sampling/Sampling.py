@@ -71,7 +71,7 @@ def sample(system, parameters):
     # Create or handle trajectory folder.
     n_samples = int(sampling_parameters.get('samples'))
     n_samples_required = n_samples
-#    folder_shift = 0
+
     name_folder = system_parameters.get('folder')
     if not os.path.isdir(name_folder):
         try:

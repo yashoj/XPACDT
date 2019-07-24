@@ -9,10 +9,10 @@ surface hopping.
 
 Requirements:
 	- Python 3.7.1
-	- numpy XXX
-	- scipy XXX
-	- PyGIT
-	- TODO: What else...
+	- numpy 1.16.2
+	- scipy 1.2.1
+	- PyGIT 2.1.11
+	- Molmod 1.4.4
 
 Installation:
 	- Run the "install" script to generate important environment variables.
@@ -20,6 +20,16 @@ Installation:
 
 Verifying the code:
 	- To check if everything works correctly, unittests can be run. To do so, lease got to XPACDT/UnitTests and run "python allTests.py".
+
+Examples:
+	- Basic examples will be made available in the 'Examples' folder.
+
+Generate Documentation:
+	 - To generate the general documentation please execute the following commands: 
+	    cd docs 
+	    make html 
+	 - The documentation can then be accessed using a standard browser to open 'docs/build/html/index.html' 
+	 - Documentation can also be build in other formats. Please run 'make' in the docs folder to learn more. 
 
 Help:
 	- Consult the confluence page at: https://confluence.desy.de/display/CDT/XPACDT%3A+eXtended+PolyAtomic+Chemical+Dynamics+Toolkit

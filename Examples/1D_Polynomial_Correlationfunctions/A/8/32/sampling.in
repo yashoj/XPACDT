@@ -1,0 +1,45 @@
+$system
+dof = 1
+Interface = OneDPolynomial
+job = sample
+picklefile = pickle.dat
+folder = ensm
+override
+$end
+
+$OneDPolynomial
+a = 0 0 0.5 0.1 0.01
+x0 = 0
+$end
+
+$thermostat
+method = MassiveAndersen
+$end
+
+$sampling
+method = Thermostatted
+samples = 5000
+time = 2.0 fs
+temperature = 39471.830216988295
+$end
+
+$nuclei_propagator
+method = VelocityVerlet
+timestep = 0.001 fs
+$end
+
+$rpmd
+beads = 32
+beta = 8.0
+$end
+
+$coordinates
+type = mass-value
+1.0 0.78833799 0.06460078 1.51713698 1.78651586 2.72709624  0.40564022 -0.57270788 0.20222685 -0.70355587 0.67114414  0.1995275  0.58474044 1.28721675 0.38530412 -0.9789459   0.70518173 0.03570174 1.36915335 -0.94837823 0.04206792  0.74556491 -0.29044248 -0.51544783 -0.93152915 -0.32669315  1.57603073 -0.84927123 0.64118558 1.115929   -2.27857848  0.26100083 2.15577683
+$end
+
+$momenta
+0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 
+$end
+
+### more comments!!

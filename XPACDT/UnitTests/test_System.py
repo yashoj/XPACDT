@@ -29,20 +29,95 @@
 #
 #  **************************************************************************
 
+import copy
 import unittest
 
-import XPACDT.System.System as system
+import XPACDT.System.System as xSystem
+import XPACDT.Input.Inputfile as infile
 
 
 class SystemTest(unittest.TestCase):
 
-#    def setUp(self):
-#        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
+    def setUp(self):
+        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_fixed.in")
+        self.system = xSystem.System(self.parameters)
+        self.nuclei = copy.deepcopy(self.system.nuclei)
 
-    def dummyTest(self):
-        raise NotImplementedError("Please implement a test here!!")
+    def test_do_log(self):
+        # initial setup check
+        self.assertEqual(len(self.system.log), 1)
+        self.assertEqual(self.system.log[0].time, 0.0)
+        self.assertEqual(self.system.log[0], self.nuclei)
+
+        # do one log
+        self.system.do_log()
+        self.assertEqual(len(self.system.log), 2)
+        self.assertEqual(self.system.log[1].time, 0.0)
+        self.assertEqual(self.system.log[1], self.nuclei)
+
+        return
+
+    def test_clear_log(self):
+        self.system.log.append(copy.deepcopy(self.system.log[0]))
+        self.system.log[-1].time = 1.0
+        self.system.log[-1].positions[0, 0] = 10.0
+
+        self.system.clear_log()
+        self.assertEqual(len(self.system.log), 1)
+        self.assertEqual(self.system.log[0].time, 1.0)
+
+        self.nuclei_ref = copy.deepcopy(self.nuclei)
+        self.nuclei_ref.positions[0, 0] = 10.0
+        self.assertNotEqual(self.system.nuclei, self.nuclei)
+        self.assertEqual(self.system.nuclei, self.nuclei_ref)
+
+        return
+
+    def test_reset(self):
+        self.system.log.append(copy.deepcopy(self.system.log[0]))
+        self.system.log[-1].time = 1.0
+        self.system.log[-1].positions[0, 0] = 10.0
+
+        self.system.reset()
+        self.assertEqual(len(self.system.log), 1)
+        self.assertEqual(self.system.log[0].time, 0.0)
+
+        self.nuclei_ref = copy.deepcopy(self.nuclei)
+        self.nuclei_ref.positions[0, 0] = 10.0
+        self.assertEqual(self.system.nuclei, self.nuclei)
+        self.assertNotEqual(self.system.nuclei, self.nuclei_ref)
+
+        return
+
+    def test_step(self):
+        # Set up dummy propagator
+        self.system.nuclei.propagator = DummyProp()
+        self.system.step(1.0)
+
+        # check correct advance
+        self.nuclei_ref = copy.deepcopy(self.nuclei)
+        self.nuclei_ref.positions *= 2.0
+        self.nuclei_ref.momenta *= 2.0
+        self.assertEqual(self.system.nuclei.time, 1.0)
+        self.assertEqual(len(self.system.log), 2)
+        self.assertEqual(self.system.nuclei, self.nuclei_ref)
+
+        # check correct logging
+        self.assertEqual(self.system.log[0].time, 0.0)
+        self.assertEqual(self.system.log[0], self.nuclei)
+
+        self.assertEqual(self.system.log[1].time, 1.0)
+        self.assertEqual(self.system.log[1], self.nuclei_ref)
+
+        return
+
+
+class DummyProp(object):
+    def __init__(self):
         pass
+
+    def propagate(self, R, P, time_propagation):
+        return 2.0*R, 2.0*P
 
 
 if __name__ == "__main__":

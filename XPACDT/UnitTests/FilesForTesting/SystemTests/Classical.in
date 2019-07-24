@@ -1,0 +1,50 @@
+$system                     # general parameters
+
+seed = 0                    # Seed for random number generator
+dof = 4                     # the number of degrees of freedom
+job = sample	            # The job type (possible: sample, propagate, analyze)
+Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
+folder = test               # the folder for the trajectories
+
+$end
+
+##############################################################################
+
+$OneDPolynomial # must match the interface specified; specific to each interface
+
+a = 0 0 0.5
+x0 = 0
+$end
+
+##############################################################################
+
+$sampling               # sampling input
+
+method = Fixed          # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
+samples = 1000          # number of samples to be collected
+
+$end
+
+##############################################################################
+
+$coordinates	           # coordinates given here
+
+type = mass-value      # coordinate format (possible: mass-value, xyz)
+1.0 2.0
+2.0 1.0
+12.0 4.0
+2.1 -2.0
+$end
+
+##############################################################################
+
+$momenta               # momenta, must be the same ordering as coordinates
+
+-1.0
+0.1
+2.0
+1.25
+$end
+
+##############################################################################
+

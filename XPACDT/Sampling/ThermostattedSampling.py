@@ -28,7 +28,8 @@
 #  **************************************************************************
 
 import copy
-from molmod.units import parse_unit
+
+import XPACDT.Tools.Units as units
 
 
 def do_Thermostatted_sampling(system, parameters, n_sample):
@@ -61,8 +62,7 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
     assert('time' in sample_parameters), "Time for each sampling run " \
         "required, but not given."
 
-    time_string = sample_parameters.get('time', '0.0 fs').split()
-    sampling_time = float(time_string[0]) * parse_unit(time_string[1])
+    sampling_time = units.parse_time(sample_parameters.get('time', '0.0 fs'))
 
     systems = []
     for i in range(n_sample):

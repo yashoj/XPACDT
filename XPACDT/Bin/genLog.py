@@ -30,31 +30,113 @@
 #  **************************************************************************
 
 """ This module is for generating human readable text files for some of the
-quantities calculated in XPACDT. THIS IS NOT REALLY IMPLEMENTED YET!!
-
-TODO: Read from command line what to output!
+quantities calculated in XPACDT. Currently only position and momenta of
+the centroid and the ring polymer are outputted. More needs to be added.
 """
 
+import argparse
 import pickle
+import sys
 
 
 def start():
     """
-    Generate a human readable logfile. This is not really functional yet and
-    just for some small testing purposes!!
+    Generate a human readable logfile. Currently only position and momenta of
+    the centroid and the ring polymer are outputted. More needs to be added.
     """
 
-    system = pickle.load(open('pickle.dat', 'rb'))
-    R_outfile = open('R.log', 'w')
-    P_outfile = open('P.log', 'w')
-    for d in system._log:
-        R_outfile.write(str(d.get("time")) + " " + str(d.get("nuclei").x_centroid[0]) + " \n")
+    # Parse command line arguments
+    parser = argparse.ArgumentParser()
 
-#    for t, nuc in system._log:
-#        R_outfile.write(str(t) + " " + str(nuc.x_centroid[0]) + " \n")
-#        P_outfile.write(str(t) + " " + str(nuc.p_centroid[0]) + " \n")
-    R_outfile.close()
-    P_outfile.close()
+    i_help = "Name of the XPACDT pickle file to parse for output generation." \
+        " The default is 'pickle.dat'."
+    parser.add_argument("-i", "--input", type=str, dest="PickleFile",
+                        required=False, help=i_help, default='pickle.dat')
+
+    w_help = "Width for number format in output. Default 16."
+    parser.add_argument("-w", "--width", type=int, dest="width",
+                        required=False, help=w_help, default=16)
+
+    p_help = "Precision for number format in output. Default 8."
+    parser.add_argument("-p", "--precision", type=int, dest="prec",
+                        required=False, help=p_help, default=8)
+
+    args = parser.parse_args()
+
+    # Formatting style
+    WIDTH = args.width
+    PREC = args.prec
+
+    # Get input file
+    system = pickle.load(open(args.PickleFile, 'rb'))
+
+    # Currently just position and momenta output.
+    # Add more functions for each value
+    outfiles = setup_outfiles(args)
+
+    # iterate over log
+    for d in system.log:
+        # for each required output, write the current line to the file
+        for key, outfile in outfiles.items():
+            getattr(sys.modules[__name__], "write_" + key)(d, outfile,
+                                                           WIDTH, PREC)
+
+    for outfile in outfiles.values():
+        outfile.close()
+
+
+def write_R(log_dict, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+                  width=width, prec=prec))
+    for x in log_dict.get("nuclei").x_centroid:
+        outfile.write("{: {width}.{prec}f} ".format(x,
+                      width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def write_P(log_dict, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+                  width=width, prec=prec))
+    for p in log_dict.get("nuclei").p_centroid:
+        outfile.write("{: {width}.{prec}f} ".format(p,
+                      width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def write_Rrp(log_dict, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+                  width=width, prec=prec))
+    for bead_position in log_dict.get("nuclei").positions:
+        for x in bead_position:
+            outfile.write("{: {width}.{prec}f} ".format(x,
+                          width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def write_Prp(log_dict, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+                  width=width, prec=prec))
+    for bead_momenta in log_dict.get("nuclei").momenta:
+        for p in bead_momenta:
+            outfile.write("{: {width}.{prec}f} ".format(p,
+                          width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def setup_outfiles(args):
+    outfiles = {}
+
+    # TODO parse cmd line here to create more files
+    outfiles['R'] = open('R.log', 'w')
+    outfiles['P'] = open('P.log', 'w')
+    outfiles['Rrp'] = open('R_rp.log', 'w')
+    outfiles['Prp'] = open('P_rp.log', 'w')
+
+    return outfiles
 
 
 # This is a wrapper for the setup function!

@@ -101,7 +101,7 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # with two beads
         parameters.n_beads = '2'
@@ -115,7 +115,7 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # with four beads
         parameters.n_beads = '4'
@@ -137,12 +137,12 @@ class InputfileTest(unittest.TestCase):
         parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(RuntimeError):
             parameters._parse_xyz(input_string)
 
         # test too many/few coordinates given
@@ -183,8 +183,7 @@ class InputfileTest(unittest.TestCase):
             + "34631.9731 2.0 \n"
 
         parameters._parse_mass_value(input_string)
-
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
 
@@ -259,6 +258,10 @@ class InputfileTest(unittest.TestCase):
         self.assertTrue("pes" in parameters)
         self.assertFalse("wrong" in parameters)
 
+        return
+
+    def test_format_coordinates(self):
+        # Implicity tested in parse modules - not clear how to test separately.
         return
 
 

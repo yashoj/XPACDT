@@ -59,8 +59,11 @@ class PotentialInterface:
         self._old_R = None
         self._old_P = None
         self._old_S = None
+
         self._energy = None
         self._gradient = None
+        self._energy_centroid = None
+        self._gradient_gradient = None
 
         self.__SAVE_THRESHOLD = 1e-8
 
@@ -145,7 +148,7 @@ class PotentialInterface:
             self._old_R = R.copy()
             return True
 
-    def energy(self, R, S=None):
+    def energy(self, R, S=None, centroid=False):
         """Obtain energy of the system in the current state.
 
         Parameters
@@ -154,21 +157,25 @@ class PotentialInterface:
             The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
+        centroid : bool, default False
+            If the energy of the centroid should be returned.
+
 
         Returns
         -------
-        (n_beads) ndarray of float
-        The energy of the system at each bead position in hartree.
+        (n_beads) ndarray of float /or/ float
+        The energy of the system at each bead position or at the centroid
+        in hartree.
         """
         if self._changed(R, None, S):
             self._calculate_all(R, None, S)
 
-        if S is None:
-            return self._energy[0]
+        if centroid:
+            return self._energy_centroid[0 if S is None else S]
         else:
-            return self._energy[S]
+            return self._energy[0 if S is None else S]
 
-    def gradient(self, R, S=None):
+    def gradient(self, R, S=None, centroid=False):
         """Obtain gradient of the system in the current state.
 
         Parameters
@@ -177,19 +184,22 @@ class PotentialInterface:
             The (ring-polymer) positions representing the system in au.
         S : integer, default None
             The current state of the system.
+        centroid : bool, default False
+            If the gradient of the centroid should be returned.
 
         Returns
         -------
-        (n_dof, n_beads) ndarray of floats
-        The gradient of the system at each bead position in hartree/au.
+        (n_dof, n_beads) ndarray of floats /or/ (n_dof) ndarray of floats
+        The gradient of the system at each bead position or at the centroid
+        in hartree/au.
         """
         if self._changed(R, None, S):
             self._calculate_all(R, None, S)
 
-        if S is None:
-            return self._gradient[0]
+        if centroid:
+            return self._gradient_centroid[0 if S is None else S]
         else:
-            return self._gradient[S]
+            return self._gradient[0 if S is None else S]
 
     def coupling(self, R,):
         """ Obtain coupling. """
@@ -213,7 +223,7 @@ class PotentialInterface:
 
         Returns
         -------
-        float: 
+        float:
         The energy at the given geometry in hartree.
         """
         return self.energy(np.array([R]), S)

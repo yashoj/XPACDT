@@ -30,8 +30,9 @@
 """ This module holds the defines te massive Andersen Thermostat.
 """
 
-import molmod.constants as const
 import numpy as np
+
+import XPACDT.Tools.Units as units
 
 
 class MassiveAndersen(object):
@@ -71,7 +72,7 @@ class MassiveAndersen(object):
         else:
             raise RuntimeError("No temperature given for MassiveAndersen!")
 
-        self.beta = 1.0 / (self.temperature * const.boltzmann)
+        self.beta = 1.0 / (self.temperature * units.boltzmann)
         self.mass = masses
 
     def apply(self, R, P, state):

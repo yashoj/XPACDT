@@ -31,42 +31,20 @@
 core of XPACDT."""
 
 import copy
-from molmod.units import parse_unit
-import sys
 
 import XPACDT.System.Nuclei as nuclei
+import XPACDT.Tools.Units as units
 
 
 class System(object):
     """This class is the main class representing the system state. It stores
-    all important objects.
+    the nuclei and takes care of logging.
 
     Parameters
     ----------
     input_parameters : XPACDT.Inputfile
         Represents all the input parameters for the simulation given in the
         input file.
-
-### TODO: stuff we need:
-    - number of dof
-    - masses/atoms
-
-    - Interface (own classes)
-
-    - Nuclear part (own class)
-      -> # beads
-      -> positions
-      -> velocities
-      -> propagator
-
-    - Electronic part (own class)
-      -> expansion coefficients
-    - -> electron dynamics part
-
-    - constraints
-    - pes where
-
-
     """
 
     def __init__(self, input_parameters):
@@ -79,22 +57,19 @@ class System(object):
             "degrees of freedom not specified!"
 
         self.n_dof = self.parameters.get("system").get("dof")
-        time_string = self.parameters.get("system").get("time", "0 fs").split()
-        self.time = float(time_string[0]) * parse_unit(time_string[1])
-
-        # Set up potential interface
-        pes_name = self.parameters.get("system").get("Interface", None)
-        __import__("XPACDT.Interfaces." + pes_name)
-        self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(**self.parameters.get(pes_name))
+        time = units.parse_time(self.parameters.get("system").get("time", "0 fs"))
 
         # Set up nuclei
-        self.__nuclei = nuclei.Nuclei(self.n_dof, self.parameters, self.pes)
+        self.__nuclei = nuclei.Nuclei(self.n_dof, self.parameters, time)
 
-        # TOOD: Set up electrons
-        self._init_electrons(self.parameters)
+        self.do_log(init=True)
 
-        self.log(init=True)
+    @property
+    def log(self):
+        """list of dicts : Log of the system history as a list. Each list entry
+        is a dictonary contraining the stored information, e.g., time, nuclei,
+        etc."""
+        return self.__log
 
     @property
     def n_dof(self):
@@ -107,15 +82,6 @@ class System(object):
         self.__n_dof = int(i)
 
     @property
-    def time(self):
-        """float : Current time of the system in au."""
-        return self.__time
-
-    @time.setter
-    def time(self, f):
-        self.__time = f
-
-    @property
     def parameters(self):
         """XPACDT.Input.Inputfile : The parameters from the input file."""
         return self.__parameters
@@ -124,18 +90,6 @@ class System(object):
     def nuclei(self):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
-
-    @property
-    def pes(self):
-        """InterfaceTemplate : Potential energy interface of the system."""
-        return self.__pes
-
-    def _init_electrons(self, parameters):
-        """ Function to set up the electrons of a system including all
-        associated objects like propagators. Not yet implemented.
-        """
-
-        self.__electrons = None
 
     def step(self, time):
         """ Step the whole system forwar in time. Also keep a log of the
@@ -146,30 +100,34 @@ class System(object):
         time : float
             Time to advance the system in au.
         """
-        # TODO: more advanced here.
-        # TODO: add electrons
-        # TODO: add logging
-        # TODO: split in timesteps
+
         self.__nuclei.propagate(time)
-        self.time += time
-        self.log()
+        self.do_log()
 
-    def reset(self):
-        """ Reset the system state to its original values. """
+    def reset(self, time=None):
+        """ Reset the system state to its original values and clear everything
+        else in the log. Optionally, the time can be set to a given value.
 
-        self.time = self._log[0]['time']
-        self.nucei = copy.deepcopy(self._log[0]['nuclei'])
+        Parameters
+        ----------
+        time : float, optional, default None
+            System time to be set, if given.
+        """
+
+        self.__nuclei = copy.deepcopy(self.__log[0])
+        if time is not None:
+            self.__nuclei.time = time
+        self.do_log(True)
 
     def clear_log(self):
         """ Set the current system state as initial state and clear everything
         else in the log."""
 
-        self.time = self._log[0]['time']
-        self.nucei = copy.deepcopy(self._log[-1]['nuclei'])
-        self.log(True)
+        self.__nuclei = copy.deepcopy(self.__log[-1])
+        self.do_log(True)
 
-    def log(self, init=False):
-        """ Log the system state to a list called _log. Each entry is a
+    def do_log(self, init=False):
+        """ Log the system state to a list called __log. Each entry is a
         dictonary containing the logged quantities. Currently this logs
         the system time and the nuclei object.
 
@@ -180,7 +138,8 @@ class System(object):
         """
 
         if init:
-            self._log = []
-        self._log.append({'time': self.time, 'nuclei': copy.deepcopy(self.nuclei)})
+            self.__log = []
+
+        self.__log.append(copy.deepcopy(self.nuclei))
 
         # TODO: remove certain parts to not consume too much memory

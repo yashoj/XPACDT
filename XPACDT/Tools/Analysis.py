@@ -130,7 +130,7 @@ def do_analysis(parameters, systems=None):
         # Output in different formats:
         # time: One line per timestep, all values and errors in that line
         # value: One line per value (with error), all times in that line
-        file_output = os.path.join(folder, key + '.dat')
+        file_output = os.path.join(folder, key.replace('command', '') + '.dat')
 
         # Header for file
         header = "## Generated for the following command: \n"
@@ -227,25 +227,25 @@ def apply_command(command, system):
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
     if 'op0' in command:
-        value_0 = apply_operation(command['op0'], system._log[0])
+        value_0 = apply_operation(command['op0'], system.log[0])
 
     # Iterate over all times and calculate the full command.
     command['results'].append([value_0 * apply_operation(command['op'], log)
-                               for i, log in enumerate(system._log)
+                               for i, log in enumerate(system.log)
                                if __use_time(i, steps_used)])
 
     # For a 2d histogram another 'obeservable' needs to be computed
     if '2d' in command:
         value_0 = 1.0
         if '2op0' in command:
-            value_0 = apply_operation(command['2op0'], system._log[0])
+            value_0 = apply_operation(command['2op0'], system.log[0])
 
         # Iterate over all times and calculate the full command.
         command['results'].append([value_0 * apply_operation(command['2op'], log)
-                                   for i, log in enumerate(system._log)
+                                   for i, log in enumerate(system.log)
                                    if __use_time(i, steps_used)])
 
-    command['times'] = [log['time'] for i, log in enumerate(system._log)
+    command['times'] = [log.time for i, log in enumerate(system.log)
                         if __use_time(i, steps_used)]
 
     return

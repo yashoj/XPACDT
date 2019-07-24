@@ -103,9 +103,9 @@ def position(arguments, log):
         return None
 
     # get coordinate values under consideration here!
-    current_value = log['nuclei'].parse_dof(opts.x1, 'x', opts.rpmd)
+    current_value = log.parse_dof(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log['nuclei'].parse_dof(opts.x2, 'x', opts.rpmd)
+        coordinate_2 = log.parse_dof(opts.x2, 'x', opts.rpmd)
         # TODO: howto with beads...
         current_value = np.linalg.norm(current_value - coordinate_2)
 
@@ -215,9 +215,9 @@ def momentum(arguments, log):
     quantity = 'v' if opts.vel else 'p'
 
     # get coordinate values under consideration here!
-    current_value = log['nuclei'].parse_dof(opts.x1, quantity, opts.rpmd)
+    current_value = log.parse_dof(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log['nuclei'].parse_coordinate(opts.x2, quantity, opts.rpmd)
+        coordinate_2 = log.parse_coordinate(opts.x2, quantity, opts.rpmd)
         # TODO: howto with beads...
         current_value = np.linalg.norm(current_value - coordinate_2)
 

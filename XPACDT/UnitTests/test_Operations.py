@@ -537,6 +537,94 @@ class OperationsTest(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0,1,2 -2 2,3 -r".split(), self.log_rpmd)
 
+    def test_projection(self):
+        # below a value
+        values = operations._projection("<,0.0", -1.0)
+        values_ref = 1.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection("<,0.0", 0.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection("<,0.0", 1.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        # above a value
+        values = operations._projection(">,0.0", -1.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection(">,0.0", 0.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection(">,0.0", 1.0)
+        values_ref = 1.0
+        np.testing.assert_equal(values, values_ref)
+
+        # within a range
+        values = operations._projection("0.0,<,1.0", -1.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection("0.0,<,1.0", 0.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection("0.0,<,1.0", 0.3)
+        values_ref = 1.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection("0.0,<,1.0", 1.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        values = operations._projection("0.0,<,1.0", 3.0)
+        values_ref = 0.0
+        np.testing.assert_equal(values, values_ref)
+
+        # below a value - 1d array
+        values = operations._projection("<,0.0", np.array([-1.0, 0.0, 1.0]))
+        values_ref = np.array([1.0, 0.0, 0.0])
+        np.testing.assert_array_equal(values, values_ref)
+
+        # above a value - 1d array
+        values = operations._projection(">,0.0", np.array([-1.0, 0.0, 1.0]))
+        values_ref = np.array([0.0, 0.0, 1.0])
+        np.testing.assert_equal(values, values_ref)
+
+        # within a range - 1d array
+        values = operations._projection("0.0,<,1.0", np.array([-1.0, 0.0, 0.3, 1.0, 2.0]))
+        values_ref = np.array([0.0, 0.0, 1.0, 0.0, 0.0])
+        np.testing.assert_equal(values, values_ref)
+
+        # below a value - 2d array
+        values = operations._projection("<,0.0", np.array([[-1.0], [0.0], [1.0]]))
+        values_ref = np.array([[1.0], [0.0], [0.0]])
+        np.testing.assert_array_equal(values, values_ref)
+
+        # above a value - 2d array
+        values = operations._projection(">,0.0", np.array([[-1.0], [0.0], [1.0]]))
+        values_ref = np.array([[0.0], [0.0], [1.0]])
+        np.testing.assert_equal(values, values_ref)
+
+        # within a range - 2d array
+        values = operations._projection("0.0,<,1.0", np.array([[-1.0, 0.0, 0.2], [0.3, 1.0, 2.0]]))
+        values_ref = np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+        np.testing.assert_equal(values, values_ref)
+
+        # Different parsing errors
+        with self.assertRaises(RuntimeError):
+            operations._projection("<4.0", None)
+
+        with self.assertRaises(RuntimeError):
+            operations._projection("<,4.0,>,3.0", None)
+
+        with self.assertRaises(ValueError):
+            operations._projection("<,>,4.0", None)
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(OperationsTest)

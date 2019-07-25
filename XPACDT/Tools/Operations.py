@@ -114,7 +114,7 @@ def position(arguments, log):
 
     # if we want to project the distance/position onto a certain interval
     if opts.proj is not None:
-        current_value = __projection(opts.proj, current_value)
+        current_value = _projection(opts.proj, current_value)
 
     return current_value
 
@@ -208,30 +208,45 @@ def momentum(arguments, log):
 
     # if we want to project the distance/position onto a certain interval
     if opts.proj is not None:
-        current_value = __projection(opts.proj, current_value)
+        current_value = _projection(opts.proj, current_value)
 
     return current_value
 
 
-def __projection(options, current_value):
-    """ Perform projection ..."""
+def _projection(options, values):
+    """Check if the given values are below, above or within some limits.
 
-    vals = options.split(',')
-    if len(vals) < 2 or len(vals) > 3:
+    Parameters
+    ----------
+    options : string
+        Defines the test to be performed for each value. Valid are:
+            - fully bound ranges: A,<,B
+            - below a value: <,A
+            - above a value: >,A
+    values : float or ndarray of floats
+        The values to be checked.
+    Returns
+    -------
+    float or ndarray of floats - same shape as values
+        1.0 if given value is within the range, 0.0 otherwise.
+    """
+
+    limits = options.split(',')
+    if len(limits) < 2 or len(limits) > 3:
         raise RuntimeError("Error parsing projection: " + options)
 
     try:
         # case: above a value; > A
-        if vals[0] == '>':
-            current_value = current_value > float(vals[1])
+        if limits[0] == '>':
+            values = values > float(limits[1])
 
         # case: below a value; < A
-        elif vals[0] == '<':
-            current_value = current_value < float(vals[1])
+        elif limits[0] == '<':
+            values = values < float(limits[1])
 
         # case: between values < A <
-        elif vals[1] == '<':
-            current_value = np.logical_and(current_value > float(vals[0]), current_value < float(vals[2]))
+        elif limits[1] == '<':
+            values = np.logical_and(values > float(limits[0]), values < float(limits[2]))
 
         else:
             raise RuntimeError("Error parsing projection: " + options)
@@ -239,9 +254,9 @@ def __projection(options, current_value):
     except ValueError as e:
         raise type(e)(str(e) + "\nXPACDT: Cannot convert limits in projection: " + options)
 
-    if type(current_value) == bool:
-        current_value = float(current_value)
-    elif type(current_value) == np.ndarray:
-        current_value = current_value.astype(float)
+    if type(values) == bool:
+        values = float(values)
+    elif type(values) == np.ndarray:
+        values = values.astype(float)
 
-    return current_value
+    return values

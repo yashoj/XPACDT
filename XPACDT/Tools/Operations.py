@@ -106,33 +106,15 @@ def position(arguments, log):
     current_value = log.parse_dof(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
         coordinate_2 = log.parse_dof(opts.x2, 'x', opts.rpmd)
-        # TODO: howto with beads...
-        current_value = np.linalg.norm(current_value - coordinate_2)
+        # Also calculated per beads
+        try:
+            current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
+        except ValueError as e:
+            raise type(e)(str(e) + "\nXPACDT: Cannot calculate distance between given sites. Maybe different number of dofs per site.")
 
-    # if we want to project the distance/coordinate onto a certain interval
+    # if we want to project the distance/position onto a certain interval
     if opts.proj is not None:
-        vals = opts.proj.split(',')
-
-        # case: above a value; > A
-        if vals[0] == '>':
-            if current_value > float(vals[1]):
-                current_value = 1.0
-            else:
-                current_value = 0.0
-
-        # case: below a value; < A
-        if vals[0] == '<':
-            if current_value < float(vals[1]):
-                current_value = 1.0
-            else:
-                current_value = 0.0
-
-        # case: between values < A <
-        if vals[1] == '<':
-            if current_value > float(vals[0]) and current_value < float(vals[2]):
-                current_value = 1.0
-            else:
-                current_value = 0.0
+        current_value = __projection(opts.proj, current_value)
 
     return current_value
 
@@ -217,33 +199,49 @@ def momentum(arguments, log):
     # get coordinate values under consideration here!
     current_value = log.parse_dof(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log.parse_coordinate(opts.x2, quantity, opts.rpmd)
-        # TODO: howto with beads...
-        current_value = np.linalg.norm(current_value - coordinate_2)
+        raise NotImplementedError("Implement relative momentum calculations, etc.")
+#        coordinate_2 = log.parse_coordinate(opts.x2, quantity, opts.rpmd)
+#        try:
+#            current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
+#        except ValueError as e:
+#            raise type(e)(str(e) + "\nXPACDT: Cannot calculate relative momentum between given sites. Maybe different number of dofs per site.")
 
-    # if we want to project the distance/coordinate onto a certain interval
+    # if we want to project the distance/position onto a certain interval
     if opts.proj is not None:
-        vals = opts.proj.split(',')
+        current_value = __projection(opts.proj, current_value)
 
+    return current_value
+
+
+def __projection(options, current_value):
+    """ Perform projection ..."""
+
+    vals = options.split(',')
+    if len(vals) < 2 or len(vals) > 3:
+        raise RuntimeError("Error parsing projection: " + options)
+
+    try:
         # case: above a value; > A
         if vals[0] == '>':
-            if current_value > float(vals[1]):
-                current_value = 1.0
-            else:
-                current_value = 0.0
+            current_value = current_value > float(vals[1])
 
         # case: below a value; < A
-        if vals[0] == '<':
-            if current_value < float(vals[1]):
-                current_value = 1.0
-            else:
-                current_value = 0.0
+        elif vals[0] == '<':
+            current_value = current_value < float(vals[1])
 
         # case: between values < A <
-        if vals[1] == '<':
-            if current_value > float(vals[0]) and current_value < float(vals[2]):
-                current_value = 1.0
-            else:
-                current_value = 0.0
+        elif vals[1] == '<':
+            current_value = np.logical_and(current_value > float(vals[0]), current_value < float(vals[2]))
+
+        else:
+            raise RuntimeError("Error parsing projection: " + options)
+
+    except ValueError as e:
+        raise type(e)(str(e) + "\nXPACDT: Cannot convert limits in projection: " + options)
+
+    if type(current_value) == bool:
+        current_value = float(current_value)
+    elif type(current_value) == np.ndarray:
+        current_value = current_value.astype(float)
 
     return current_value

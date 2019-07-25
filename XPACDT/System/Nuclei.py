@@ -299,7 +299,7 @@ beads given."
                     if beads:
                         values.append(self.momenta[dof] / self.masses[dof])
                     else:
-                        values.append(self.x_centroid[dof] / self.masses[dof])
+                        values.append(self.p_centroid[dof] / self.masses[dof])
 
         return np.array(values)
 
@@ -343,7 +343,7 @@ beads given."
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta,
                                         time_propagate)
-        self.electrons.step(time_propagate, **{'second': True})
+        self.electrons.step(time_propagate, **{'last': True})
 
         self.time += time_propagate
 

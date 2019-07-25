@@ -232,7 +232,7 @@ def apply_command(command, system):
     # Iterate over all times and calculate the full command.
     command['results'].append([value_0 * apply_operation(command['op'], log)
                                for i, log in enumerate(system.log)
-                               if __use_time(i, steps_used)])
+                               if _use_time(i, steps_used)])
 
     # For a 2d histogram another 'obeservable' needs to be computed
     if '2d' in command:
@@ -243,15 +243,15 @@ def apply_command(command, system):
         # Iterate over all times and calculate the full command.
         command['results'].append([value_0 * apply_operation(command['2op'], log)
                                    for i, log in enumerate(system.log)
-                                   if __use_time(i, steps_used)])
+                                   if _use_time(i, steps_used)])
 
     command['times'] = [log.time for i, log in enumerate(system.log)
-                        if __use_time(i, steps_used)]
+                        if _use_time(i, steps_used)]
 
     return
 
 
-def __use_time(i, steps_used):
+def _use_time(i, steps_used):
     """ Wrapper to check if a certain command is supposed to be evaluated for a
     given timestep.
 
@@ -262,6 +262,7 @@ def __use_time(i, steps_used):
     steps_used : list of integer
         Empty list if all timesteps should be used. Else a list of integers
         identifying the timesteps to be used.
+
     Returns
     -------
     bool :

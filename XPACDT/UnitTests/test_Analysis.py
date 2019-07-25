@@ -36,11 +36,37 @@ import XPACDT.Tools.Analysis as analysis
 
 class AnalysisTest(unittest.TestCase):
 
-#    def setUp(self):
-#        # todo create input file here.
+    def setUp(self):
+        # todo create input file here.
 #        self.input = infile.Inputfile("input.in")
+        pass
 
-    def dummyTest(self):
+    def test_do_analysis(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_apply_command(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_use_time(self):
+        for i in range(0, 100):
+            self.assertTrue(analysis._use_time(i, []))
+        for i in range(0, 100):
+            if i in [1, 5, 6, 10]:
+                self.assertTrue(analysis._use_time(i, [1, 5, 6, 10]))
+            else:
+                self.assertFalse(analysis._use_time(i, [1, 5, 6, 10]))
+
+    def test_apply_operation(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_get_directory_list(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_get_systems(self):
         raise NotImplementedError("Please implement a test here!!")
         pass
 

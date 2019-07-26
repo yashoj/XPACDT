@@ -32,7 +32,7 @@
 import numpy as np
 
 
-def bootstrap(data, function, n_bootstrap=1000):
+def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
     """Performs a basic bootstrapping analysis to obtain the standard error
     of a certain property averaged over the ensemble of trajectories.
     See: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
@@ -46,6 +46,9 @@ def bootstrap(data, function, n_bootstrap=1000):
         np.mean, np.percentile, histogram, ...
     n_bootstrap : int, optional
         Number of bootstrapping resamples to take. Default: 1000
+    is_2D : bool, optional
+        Set if the function is a 2d histogram. Then no resampling is possible
+        currently.
 
     Returns:
         m : (nsamples) ndarray of floats
@@ -56,8 +59,9 @@ def bootstrap(data, function, n_bootstrap=1000):
     """
 
     nsamples = len(data)
-    if n_bootstrap == 1:
+    if n_bootstrap == 1 or is_2D:
         values = [function(data)]
+        n_bootstrap = 1
     else:
         values = [function(data[np.random.randint(nsamples, size=nsamples)])
                   for i in range(n_bootstrap)]

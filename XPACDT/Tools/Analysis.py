@@ -102,41 +102,46 @@ def do_analysis(parameters, systems=None):
             elif '2dhistogram' in command['value']:
                 # TODO other setup possibilities
                 values = command['value'].split()
+
+                bins = []
                 edges1 = np.linspace(float(values[1]), float(values[2]),
                                      int(values[3])+1)
-                bins1 = edges1[:-1] + 0.5*np.diff(edges1)
+                bins.append(edges1[:-1] + 0.5*np.diff(edges1))
 
                 edges2 = np.linspace(float(values[4]), float(values[5]),
                                      int(values[6])+1)
-                bins2 = edges2[:-1] + 0.5*np.diff(edges2)
+                bins.append(edges2[:-1] + 0.5*np.diff(edges2))
 
-                func = (lambda x: np.histogram2d(x[:len(x)//2], x[len(x)//2:],
+                func = (lambda x: np.histogram2d(x[0::2], x[1::2],
                                                  bins=(edges1, edges2),
                                                  density=True)[0])
 
             elif 'histogram' in command['value']:
                 # TODO other setup possibilities
                 values = command['value'].split()
+
+                bins = []
                 edges = np.linspace(float(values[1]), float(values[2]),
                                     int(values[3])+1)
-                bins = edges[:-1] + 0.5*np.diff(edges)
+                bins.append(edges[:-1] + 0.5*np.diff(edges))
 
                 func = (lambda x: np.histogram(x, bins=edges, density=True)[0])
 
         # bootstrap
-        final_data = [bs.bootstrap(data, func)
+        final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
                       for data in np.array(command['results']).reshape(-1, len(command['times'])).T]
 
-        # Output in different formats:
-        # time: One line per timestep, all values and errors in that line
-        # value: One line per value (with error), all times in that line
-        file_output = os.path.join(folder, key.replace('command', '') + '.dat')
-
-        # Header for file
+        # Generate header
         header = "## Generated for the following command: \n"
         for k, v in command.items():
             if k != 'results' and k != 'times':
                 header += "# " + str(k) + " = " + str(v) + " \n"
+
+        # Output data:
+        file_output = os.path.join(folder, key.replace('command', '') + '.dat')
+        output_data(header, file_output, command['format'], command['times'],
+                    bins, final_data, two_d=('2d' in command))
+
 
 ##2d plotting:
 #unset ztics
@@ -151,62 +156,98 @@ def do_analysis(parameters, systems=None):
 #pause 1
 #} 
 
-        # Output format: one line or block per timestep
-        if command['format'] == 'time':
 
-            # If 2d histogram, we output to a blocked format used in gnuplot
-            # Each timestep is separated by two blank lines
-            # Within each timestep the data is blocked such that an increase
-            # in the first coordinate is separated by one blank line
-            # standard errors are ignored here!
-            if '2d' in command:
-                outfile = open(file_output, 'w')
-                outfile.write(header)
-                dd = np.c_[command['times'], np.array(final_data)[:, 0, :]]
-                for data in dd:
-                    outfile.write("# time = " + str(data[0]) + " \n")
-                    for i, b1 in enumerate(bins1):
-                        for j, b2 in enumerate(bins2):
-                            outfile.write(str(b1) + " " + str(b2) + " " +
-                                          str(data[1+i*len(bins2)+j]) + " \n")
-                        outfile.write("\n")
-                    outfile.write("\n \n")
+def output_data(header, file_output, form, times, bins, results, two_d=False):
+    """ Output the analyzed data in different formats.
 
-            # Regular output, just one line per timestep
-            else:
-                number_times = len(command['times'])
-                np.savetxt(file_output, np.c_[command['times'],
-                                              np.array(final_data).
-                                              reshape((number_times, -1))],
-                           header=header)
+        - time: One line per timestep, all values and errors in that line. Or
+            for 2D data, one block per timestep (separated by two blank lines)
+            and the 2D data gridded (i.e. separated by one blank line for one
+                                     dimension)
 
-        # Output format: One line per value (e.g. per bin in histogram)
-        # each column represents one timestep
-        elif command['format'] == 'value':
-            # add time values in header for later reference
-            for t in command['times']:
-                header += str(t) + "\t" + str(t) + "\t"
-            header += " \n"
+        - value: One line per value (with error), all times in that line.
 
-            number_values = len(final_data[0][0])
-            if bins is None:
-                bins = np.zeros(number_values)
-            np.savetxt(file_output, np.c_[bins, np.array(final_data).
-                                          reshape((-1, number_values)).T],
-                       header=header)
+        - 2d: Blocked data for 2d plotting. All values for a given time
+            separated by a blank line.
 
-        # Output format: For 2D plots of histograms vs. time
-        elif command['format'] == '2d':
+        Parameters
+        ----------
+        header : string
+            Header to be printed in the file stating the parameters, etc.
+        file_output : string
+            Name of the file to write to.
+        form : string
+            Format in which the data should be written. Allowed: time, value, 2d
+        times : ndarray of floats
+            The times for which the data was created
+        bins : list of ndarrays
+            If a histogram of the data was generated, bins contains the
+            mid-points of each bin. For a 1d histogram, the list only has
+            1 element, for a 2d histogram it has two.
+        results : ndarray
+            The results to be written to file.
+        two_d : bool, optional, default False
+            Whether a 2d histogram was produced.
+    """
+
+    # Output format: one line or block per timestep
+    if form == 'time':
+
+        # If 2d histogram, we output to a blocked format used in gnuplot
+        # Each timestep is separated by two blank lines
+        # Within each timestep the data is blocked such that an increase
+        # in the first coordinate is separated by one blank line
+        # standard errors are ignored here!
+        if two_d:
             outfile = open(file_output, 'w')
             outfile.write(header)
-
-            number_times = len(command['times'])
-            dd = np.c_[command['times'], np.array(final_data).reshape((number_times, -1))]
+            dd = np.c_[times, np.array(results)[:, 0, :]]
             for data in dd:
-                for i, b in enumerate(bins):
-                    outfile.write(str(data[0]) + " " + str(b) + " " +
-                                  str(data[1+i]) + " \n")
-                outfile.write("\n")
+                outfile.write("# time = " + str(data[0]) + " \n")
+                for i, b1 in enumerate(bins[0]):
+                    for j, b2 in enumerate(bins[1]):
+                        outfile.write(str(b1) + " " + str(b2) + " " +
+                                      str(data[1+i*len(bins[1])+j]) + " \n")
+                    outfile.write("\n")
+                outfile.write("\n \n")
+
+        # Regular output, just one line per timestep
+        else:
+            number_times = len(times)
+            np.savetxt(file_output,
+                       np.c_[times, np.array(results).reshape((number_times, -1))],
+                       header=header)
+
+    # Output format: One line per value (e.g. per bin in histogram)
+    # each column represents one timestep
+    elif form == 'value':
+        # add time values in header for later reference
+        for t in times:
+            header += str(t) + "\t" + str(t) + "\t"
+        header += " \n"
+
+        number_values = len(results[0][0])
+        if bins is None:
+            bins = np.zeros(number_values)
+        np.savetxt(file_output,
+                   np.c_[bins[0], np.array(results).reshape((-1, number_values)).T],
+                   header=header)
+
+    # Output format: For 2D plots of histograms vs. time
+    elif form == '2d':
+        outfile = open(file_output, 'w')
+        outfile.write(header)
+
+        number_times = len(times)
+        dd = np.c_[times, np.array(results).reshape((number_times, -1))]
+        for data in dd:
+            for i, b in enumerate(bins[0]):
+                outfile.write(str(data[0]) + " " + str(b) + " " +
+                              str(data[1+i]) + " \n")
+            outfile.write("\n")
+
+    else:
+        raise RuntimeError("XPACDT: No or incorrect output format given: " + form)
 
 
 def apply_command(command, system):
@@ -230,7 +271,7 @@ def apply_command(command, system):
         value_0 = apply_operation(command['op0'], system.log[0])
 
     # Iterate over all times and calculate the full command.
-    command['results'].append([value_0 * apply_operation(command['op'], log)
+    command['results'].extend([value_0 * apply_operation(command['op'], log)
                                for i, log in enumerate(system.log)
                                if _use_time(i, steps_used)])
 
@@ -241,7 +282,7 @@ def apply_command(command, system):
             value_0 = apply_operation(command['2op0'], system.log[0])
 
         # Iterate over all times and calculate the full command.
-        command['results'].append([value_0 * apply_operation(command['2op'], log)
+        command['results'].extend([value_0 * apply_operation(command['2op'], log)
                                    for i, log in enumerate(system.log)
                                    if _use_time(i, steps_used)])
 
@@ -293,6 +334,9 @@ def apply_operation(operation, system):
         The value resulting from the operations.
     """
 
+    if '+' not in operation:
+            raise RuntimeError("XPACDT: No operation given, instead: " + operation)
+
     value = 1.0
     # The split has '' as a first results on something like '+pos'.split('+'),
     # and we need to ignore that one.
@@ -301,7 +345,7 @@ def apply_operation(operation, system):
 
         # match the different operations here.
         # TODO: more automatic
-        if ops[0] == 'id' or ops[0] == 'idendity':
+        if ops[0] == 'id' or ops[0] == 'identity':
             value *= 1.0
         elif ops[0] == 'pos' or ops[0] == 'position':
             value *= op.position(ops[1:], system)
@@ -311,7 +355,7 @@ def apply_operation(operation, system):
             value *= op.momentum(ops[1:] + ['-v'], system)
         else:
             raise RuntimeError("XPACDT: The given operation is not"
-                               "implemented. " + ops)
+                               "implemented. " + " ".join(ops))
 
     return value
 

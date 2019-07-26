@@ -29,25 +29,206 @@
 #
 #  **************************************************************************
 
+import copy
+import collections
+import numpy as np
+import random
+import os
+import shutil
 import unittest
 
 import XPACDT.Tools.Analysis as analysis
+import XPACDT.System.System as xSystem
+import XPACDT.Input.Inputfile as infile
 
 
 class AnalysisTest(unittest.TestCase):
 
     def setUp(self):
-        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
-        pass
+        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_fixed.in")
+        self.system = xSystem.System(self.parameters)
 
-    def test_do_analysis(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        seed = 42
+        random.seed(seed)
+        np.random.seed(seed)
+        self.systems = []
+        for i in range(4):
+            shape = self.system.nuclei.positions.shape
+            self.systems.append(copy.deepcopy(self.system))
+            self.systems[-1].nuclei.positions = np.random.randn(*shape)
+            self.systems[-1].nuclei.momenta = np.random.randn(*shape)
+            self.systems[-1].do_log(init=True)
 
+        self.systems[-1].nuclei.time = 2.0
+        self.systems[-1].nuclei.positions = np.random.randn(*shape)
+        self.systems[-1].nuclei.momenta = np.random.randn(*shape)
+        self.systems[-1].do_log()
+
+#    def test_do_analysis(self):
+#        # TODO: Implement a more integrated test here!
+#        raise NotImplementedError("Please implement a test here!!")
+#        pass
+#
     def test_apply_command(self):
-        raise NotImplementedError("Please implement a test here!!")
+        command = {'op': '+pos -1 0 +mom -1 0', 'step': '', 'results': []}
+        analysis.apply_command(command, self.systems[0])
+        results_ref = np.array([[0.49671415 * -0.23415337]])
+        np.testing.assert_array_almost_equal(command['results'], results_ref)
+        times_ref = np.array([0.0])
+        np.testing.assert_array_almost_equal(command['times'], times_ref)
+
+        command = {'op': '+pos -1 0 +mom -1 0', 'step': '1', 'results': []}
+        analysis.apply_command(command, self.systems[0])
+        results_ref = np.array([])
+        np.testing.assert_array_almost_equal(command['results'], results_ref)
+        times_ref = np.array([])
+        np.testing.assert_array_almost_equal(command['times'], times_ref)
+
+        command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '', 'results': []}
+        analysis.apply_command(command, self.systems[3])
+        results_ref = np.array([[-0.54438272*-0.60063869], [-0.54438272*0.2088636]])
+        np.testing.assert_array_almost_equal(command['results'], results_ref)
+        times_ref = np.array([0.0, 2.0])
+        np.testing.assert_array_almost_equal(command['times'], times_ref)
+
+        command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '1', 'results': []}
+        analysis.apply_command(command, self.systems[3])
+        results_ref = np.array([[-0.54438272*0.2088636]])
+        np.testing.assert_array_almost_equal(command['results'], results_ref)
+        times_ref = np.array([2.0])
+        np.testing.assert_array_almost_equal(command['times'], times_ref)
+
+        command2d = {'op': '+pos -1 0', 'step': '', '2d': None, '2op': '+mom -1 0', 'results': []}
+        analysis.apply_command(command2d, self.systems[3])
+        results_ref = np.array([[-0.54438272], [-0.01349722], [-0.60063869], [0.2088636]])
+        np.testing.assert_array_almost_equal(command2d['results'], results_ref)
+        times_ref = np.array([0.0, 2.0])
+        np.testing.assert_array_almost_equal(command2d['times'], times_ref)
+
         pass
+
+    def test_apply_operation(self):
+        with self.assertRaises(RuntimeError):
+            operation = "+notImplemented"
+            value = analysis.apply_operation(operation, self.systems[0].nuclei)
+
+        with self.assertRaises(RuntimeError):
+            operation = "No Operation given here!"
+            value = analysis.apply_operation(operation, self.systems[0].nuclei)
+
+        operation = "+id"
+        value_ref = 1.0
+        value = analysis.apply_operation(operation, self.systems[0].nuclei)
+        np.testing.assert_equal(value, value_ref)
+
+        operation = "+identity"
+        value_ref = 1.0
+        value = analysis.apply_operation(operation, self.systems[0].nuclei)
+        np.testing.assert_equal(value, value_ref)
+
+        operation = "+pos -1 1,2"
+        value_ref = np.array([-0.1382643, 0.64768854])
+        value = analysis.apply_operation(operation, self.systems[0].nuclei)
+        np.testing.assert_array_almost_equal(value, value_ref)
+
+        operation = "+position -1 0"
+        value_ref = np.array([0.49671415])
+        value = analysis.apply_operation(operation, self.systems[0].nuclei)
+        np.testing.assert_array_almost_equal(value, value_ref)
+
+        operation = "+mom -1 1,2"
+        value_ref = np.array([-1.91328024, -1.72491783])
+        value = analysis.apply_operation(operation, self.systems[1].nuclei)
+        np.testing.assert_array_almost_equal(value, value_ref)
+
+        operation = "+momentum -1 0"
+        value_ref = np.array([0.24196227])
+        value = analysis.apply_operation(operation, self.systems[1].nuclei)
+        np.testing.assert_array_almost_equal(value, value_ref)
+
+        operation = "+vel -1 1,2"
+        value_ref = np.array([-0.2257763 / 2.0, 0.0675282 / 12.0])
+        value = analysis.apply_operation(operation, self.systems[2].nuclei)
+        np.testing.assert_array_almost_equal(value, value_ref)
+
+        operation = "+velocity -1 0"
+        value_ref = np.array([1.46564877])
+        value = analysis.apply_operation(operation, self.systems[2].nuclei)
+        np.testing.assert_array_almost_equal(value, value_ref)
+
+    def test_output_data(self):
+        header = "This is a stupid header\nFor my super test!"
+        output_file = "test.dat"
+        form = 'time'
+        times = np.array([0.0, 2.0])
+        bins = None
+        results = np.array([[-5.0], [2.0]])
+
+        compare_text = "# This is a stupid header\n# For my super test!\n0.000000000000000000e+00 -5.000000000000000000e+00\n2.000000000000000000e+00 2.000000000000000000e+00\n"
+
+        analysis.output_data(header, output_file, form, times, bins, results)
+        text = ''
+        with open(output_file, 'r') as infile:
+            for line in infile:
+                text += line
+
+        os.remove("test.dat")
+        self.assertEqual(text, compare_text)
+
+        header = "This is a stupid header\nFor my super test!\n"
+        output_file = "test.dat"
+        form = 'value'
+        times = np.array([0.0, 2.0])
+        bins = [np.array([-2.0, -1.0, 0.0, 1.0, 2.0])]
+        results = [np.array([[-5.0, 2.0, 3.0, 2.0, 1.5], [5.0, -2.0, -3.0, -2.0, -1.5]])]
+
+        compare_text = "# This is a stupid header\n" + \
+        "# For my super test!\n" + \
+        "# 0.0\t0.0\t2.0\t2.0\t \n" + \
+        "# \n-2.000000000000000000e+00 -5.000000000000000000e+00 5.000000000000000000e+00\n" + \
+        "-1.000000000000000000e+00 2.000000000000000000e+00 -2.000000000000000000e+00\n" + \
+        "0.000000000000000000e+00 3.000000000000000000e+00 -3.000000000000000000e+00\n" + \
+        "1.000000000000000000e+00 2.000000000000000000e+00 -2.000000000000000000e+00\n" + \
+        "2.000000000000000000e+00 1.500000000000000000e+00 -1.500000000000000000e+00\n"
+
+        analysis.output_data(header, output_file, form, times, bins, results)
+        text = ''
+        with open(output_file, 'r') as infile:
+            for line in infile:
+                text += line
+
+        os.remove("test.dat")
+        self.assertEqual(text, compare_text)
+
+        header = "# This is a stupid header\n# For my super test!\n"
+        output_file = "test.dat"
+        form = '2d'
+        times = np.array([0.0, 2.0])
+        bins = [np.array([-2.0, -1.0, 0.0, 1.0, 2.0])]
+        results = [np.array([[-5.0, 2.0, 3.0, 2.0, 1.5], [5.0, -2.0, -3.0, -2.0, -1.5]])]
+
+        compare_text = "# This is a stupid header\n" + \
+        "# For my super test!\n" + \
+        "0.0 -2.0 -5.0 \n" + \
+        "0.0 -1.0 2.0 \n" + \
+        "0.0 0.0 3.0 \n" + \
+        "0.0 1.0 2.0 \n" + \
+        "0.0 2.0 1.5 \n" + \
+        "\n" + \
+        "2.0 -2.0 5.0 \n" + \
+        "2.0 -1.0 -2.0 \n" + \
+        "2.0 0.0 -3.0 \n" + \
+        "2.0 1.0 -2.0 \n" + \
+        "2.0 2.0 -1.5 \n\n"
+
+        analysis.output_data(header, output_file, form, times, bins, results)
+        text = ''
+        with open(output_file, 'r') as infile:
+            for line in infile:
+                text += line
+
+        os.remove("test.dat")
+        self.assertEqual(text, compare_text)
 
     def test_use_time(self):
         for i in range(0, 100):
@@ -58,17 +239,44 @@ class AnalysisTest(unittest.TestCase):
             else:
                 self.assertFalse(analysis._use_time(i, [1, 5, 6, 10]))
 
-    def test_apply_operation(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
-
     def test_get_directory_list(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
+        dir_list_ref2 = ["./trj_0", "./trj_2"]
+        for d in dir_list_ref:
+            os.mkdir(d)
+
+        for d in dir_list_ref2:
+            open(d + "/pickle.dat", 'a').close()
+
+        dir_list = analysis.get_directory_list()
+        self.assertSequenceEqual(dir_list, dir_list_ref)
+
+        dir_list = analysis.get_directory_list(file_name='pickle.dat')
+        self.assertSequenceEqual(dir_list, dir_list_ref2)
+
+# TODO: make sure these are always removed!
+        for d in dir_list_ref:
+            shutil.rmtree(d)
 
     def test_get_systems(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        with self.assertRaises(RuntimeError):
+            analysis.get_systems(None, None, None)
+
+        # TODO generate a list of systems and store them to be read by pickle etc.
+        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
+        dir_list_ref2 = ["./trj_0", "./trj_2"]
+        for d in dir_list_ref:
+            os.mkdir(d)
+
+        for d in dir_list_ref2:
+            open(d + "/pickle.dat", 'a').close()
+
+        sys = analysis.get_systems(dir_list_ref, 'pickle.dat', None)
+        self.assertTrue(isinstance(sys, collections.Iterable))
+
+# TODO: make sure these are always removed!
+        for d in dir_list_ref:
+            shutil.rmtree(d)
 
 
 if __name__ == "__main__":

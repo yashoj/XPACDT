@@ -69,7 +69,7 @@ class System(object):
         """list of dicts : Log of the system history as a list. Each list entry
         is a dictonary contraining the stored information, e.g., time, nuclei,
         etc."""
-        return self.__log
+        return self. __log
 
     @property
     def n_dof(self):

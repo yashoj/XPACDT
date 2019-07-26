@@ -85,30 +85,30 @@ def start():
         outfile.close()
 
 
-def write_R(log_dict, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+def write_R(log, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log.time,
                   width=width, prec=prec))
-    for x in log_dict.get("nuclei").x_centroid:
+    for x in log.x_centroid:
         outfile.write("{: {width}.{prec}f} ".format(x,
                       width=width, prec=prec))
     outfile.write(" \n")
     return
 
 
-def write_P(log_dict, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+def write_P(log, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log.time,
                   width=width, prec=prec))
-    for p in log_dict.get("nuclei").p_centroid:
+    for p in log.p_centroid:
         outfile.write("{: {width}.{prec}f} ".format(p,
                       width=width, prec=prec))
     outfile.write(" \n")
     return
 
 
-def write_Rrp(log_dict, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+def write_Rrp(log, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log.time,
                   width=width, prec=prec))
-    for bead_position in log_dict.get("nuclei").positions:
+    for bead_position in log.positions:
         for x in bead_position:
             outfile.write("{: {width}.{prec}f} ".format(x,
                           width=width, prec=prec))
@@ -116,10 +116,10 @@ def write_Rrp(log_dict, outfile, width, prec):
     return
 
 
-def write_Prp(log_dict, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log_dict.get("time"),
+def write_Prp(log, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log.time,
                   width=width, prec=prec))
-    for bead_momenta in log_dict.get("nuclei").momenta:
+    for bead_momenta in log.momenta:
         for p in bead_momenta:
             outfile.write("{: {width}.{prec}f} ".format(p,
                           width=width, prec=prec))

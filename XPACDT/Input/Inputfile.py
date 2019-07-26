@@ -38,7 +38,6 @@ start with a '#' character."""
 import collections
 from errno import ENOENT
 from io import StringIO
-#from molmod.periodic import periodic
 import numpy as np
 import os
 import re

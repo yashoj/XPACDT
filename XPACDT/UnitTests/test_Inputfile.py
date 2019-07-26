@@ -142,6 +142,8 @@ class InputfileTest(unittest.TestCase):
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
+
+#        with self.assertRaises(AttributeError):
         with self.assertRaises(RuntimeError):
             parameters._parse_xyz(input_string)
 

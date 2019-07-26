@@ -74,13 +74,16 @@ class Inputfile(collections.MutableMapping):
             self._intext = infile.read()
 
         self._parse_file()
-        # 'try' added simply to work with test files
-        try:
+        if 'system' in self.store:
             self.n_dof = int(self.get('system').get('dof'))
+
+        if 'rpmd' in self.store:
+            assert('beads' in self.get("rpmd")), "No number of beads " \
+                   "given for RPMD."
+            assert('beta' in self.get("rpmd")), "No beta " \
+                                                "given for RPMD."
             self.n_beads = self.get('rpmd').get('beads')
             self.beta = float(self.get('rpmd').get('beta'))
-        except AttributeError:
-            pass
 
         if self.__coordinates is not None:
             self.__format_coordinates()
@@ -256,7 +259,7 @@ class Inputfile(collections.MutableMapping):
         try:
             # TODO write a small wrapper for isotope masses!
             mc = np.loadtxt(d, ndmin=2,
-#                            converters={0: lambda s: periodic[str(s)[2]].mass})
+ #                           converters={0: lambda s: periodic[str(s)[2]].mass})
                             converters={0: lambda s: units.atom_mass(str(s)[2])})
         except AttributeError as e:
             raise type(e)(str(e) + "\nXPACDT: Unknwon atomic symbol given!")
@@ -349,15 +352,17 @@ class Inputfile(collections.MutableMapping):
                 rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
                 rp_momenta = np.zeros((self.n_dof, max(self.n_beads)))
                 NMtransform_type = self.get('rpmd').get("nm_transform", "matrix")
+                RPtransform = RPtrafo.RingPolymerTransformations(
+                                self.n_beads, NMtransform_type)
 
                 for i in range(self.n_dof):
-                    rp_coord[i] = RPtrafo.sample_free_rp_coord(
+                    rp_coord[i] = RPtransform.sample_free_rp_coord(
                         self.n_beads[i], self.masses[i], self.beta,
-                        self.__coordinates[i, 0], NMtransform_type)
+                        self.__coordinates[i, 0])
                     if self.__momenta is not None:
-                        rp_momenta[i] = RPtrafo.sample_free_rp_momenta(
+                        rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                             self.n_beads[i], self.masses[i], self.beta,
-                            self.__momenta[i, 0], NMtransform_type)
+                            self.__momenta[i, 0])
 
                 self.__coordinates = rp_coord.copy()
                 if self.__momenta is not None:
@@ -416,16 +421,18 @@ class Inputfile(collections.MutableMapping):
                 rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
                 rp_momenta = np.zeros((self.n_dof, max(self.n_beads)))
                 NMtransform_type = self.get('rpmd').get("nm_transform", "matrix")
+                RPtransform = RPtrafo.RingPolymerTransformations(
+                                self.n_beads, NMtransform_type)
 
                 for i in range(self.n_dof):
                     masses_dof[i] = self.masses[i//3]
-                    rp_coord[i] = RPtrafo.sample_free_rp_coord(
+                    rp_coord[i] = RPtransform.sample_free_rp_coord(
                         self.n_beads[i], masses_dof[i], self.beta,
-                        self.__coordinates[i // 3, i % 3], NMtransform_type)
+                        self.__coordinates[i // 3, i % 3])
                     if self.__momenta is not None:
-                        rp_momenta[i] = RPtrafo.sample_free_rp_momenta(
+                        rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                             self.n_beads[i], masses_dof[i], self.beta,
-                            self.__momenta[i // 3, i % 3], NMtransform_type)
+                            self.__momenta[i // 3, i % 3])
 
                 self.masses = masses_dof.copy()
                 self.__coordinates = rp_coord.copy()

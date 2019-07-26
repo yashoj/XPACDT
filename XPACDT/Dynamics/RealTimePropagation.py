@@ -79,6 +79,7 @@ def propagate(system, input_parameters):
     name_folder = sys_parameters.get('folder')
     name_file = sys_parameters.get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
+
     while(system.nuclei.time < time_end):
         system.step(timestep_output)
 

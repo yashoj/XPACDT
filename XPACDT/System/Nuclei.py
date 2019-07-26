@@ -50,7 +50,8 @@ class Nuclei(object):
     Attributes:
     -----------
     n_dof
-    n_beads
+    n_beads : (n_dof) list of int
+        Number of beads for each degrees of freedom
     time
     positions
     momenta
@@ -191,7 +192,7 @@ class Nuclei(object):
         """Test if an object is equal to the current nuclei object. A nuclei
         object is assumed to be equal to another nuclei object if they have
         the same number of degrees of freedom, the same number of beads,
-        thesame positions, momenta and masses.
+        the same positions, momenta and masses.
 
         Parameters:
         -----------
@@ -240,12 +241,14 @@ class Nuclei(object):
             assert('beta' in parameters.get("rpmd")), "No beta " \
                    "given for RPMD."
             prop_parameters['beta'] = parameters.get("rpmd").get('beta')
+            prop_parameters['rp_transform_type'] = parameters.get('rpmd').get(
+                    "nm_transform", "matrix")
 
         prop_method = prop_parameters.get('method')
         __import__("XPACDT.Dynamics." + prop_method)
         self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
                                   prop_method)(self.electrons, self.masses,
-                                               **prop_parameters)
+                                               self.n_beads, **prop_parameters)
 
         if 'thermostat' in parameters:
             self.propagator.attach_thermostat(parameters, self.masses)

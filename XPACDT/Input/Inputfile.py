@@ -351,7 +351,8 @@ class Inputfile(collections.MutableMapping):
                     and np.all([i != 1 for i in self.n_beads])):
                 rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
                 rp_momenta = np.zeros((self.n_dof, max(self.n_beads)))
-                NMtransform_type = self.get('rpmd').get("nm_transform", "matrix")
+                NMtransform_type = self.get('rpmd').get("nm_transform",
+                                                        "matrix")
                 RPtransform = RPtrafo.RingPolymerTransformations(
                                 self.n_beads, NMtransform_type)
 
@@ -420,7 +421,8 @@ class Inputfile(collections.MutableMapping):
                 masses_dof = np.zeros(self.n_dof)
                 rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
                 rp_momenta = np.zeros((self.n_dof, max(self.n_beads)))
-                NMtransform_type = self.get('rpmd').get("nm_transform", "matrix")
+                NMtransform_type = self.get('rpmd').get("nm_transform",
+                                                        "matrix")
                 RPtransform = RPtrafo.RingPolymerTransformations(
                                 self.n_beads, NMtransform_type)
 

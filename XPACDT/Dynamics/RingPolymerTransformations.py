@@ -251,7 +251,8 @@ class RingPolymerTransformations(object):
         after_fft = fft.rfft(x) / math.sqrt(nb)
         after_fft[1:-1] *= math.sqrt(2.0)
 
-        reorder_index = [0, 1] + list(range(3, nb+1, 2)) + list(range(nb-2, 1, -2))
+        reorder_index = [0, 1] + list(range(3, nb+1, 2)) \
+                               + list(range(nb-2, 1, -2))
 
         return after_fft[reorder_index]
 
@@ -300,7 +301,6 @@ class RingPolymerTransformations(object):
             Ring polymer normal mode tranformation matrices for each distinct
             i-th element in 'n_beads' as keys and their transformation matrix
             (n_beads[i], n_beads[i]) ndarray of floats as values
-            
         """
         C_dict = {}
 
@@ -343,8 +343,8 @@ class RingPolymerTransformations(object):
         p_arr : (nb) ndarray of floats
             Sampled bead momenta in a.u.
         """
-        # Remark: This can also equivalently be done in Cartesian representation
-        #         instead of normal mode and then simply shifting by centroid value
+        # Remark: This can also equivalently be done in Cartesian coordinates
+        #         instead of normal mode and then shift by centroid value
 
         stdev_p = math.sqrt(mass * float(nb) / beta)
 
@@ -354,12 +354,12 @@ class RingPolymerTransformations(object):
         else:
             p_nm.insert(0, np.random.normal(0, stdev_p))
         p_nm = np.array(p_nm)
-        
+
         if self.transform_type == 'matrix':
             p_arr = self._1d_from_nm_using_matrix(p_nm, nb)
         else:
             p_arr = self._1d_from_nm_using_fft(p_nm, nb)
-        
+
         return p_arr
 
     def sample_free_rp_coord(self, nb, mass, beta, centroid):
@@ -397,7 +397,7 @@ class RingPolymerTransformations(object):
         # Adding centroid value from input
         x_nm.insert(0, centroid * np.sqrt(float(nb)))
         x_nm = np.array(x_nm)
-        
+
         if self.transform_type == 'matrix':
             x_arr = self._1d_from_nm_using_matrix(x_nm, nb)
         else:

@@ -69,6 +69,7 @@ class VelocityVerlet(object):
 
         self.electrons = electrons
         self.mass = mass
+        self.n_beads = int(kwargs.get("beads"))
 
         self.timestep = units.parse_time(kwargs.get("timestep"))
 
@@ -83,6 +84,10 @@ class VelocityVerlet(object):
 
         # basic initialization
         self.__propagation_matrix = None
+
+        NMtransform_type = kwargs.get("nm_transform", "matrix")
+        self.RPtransform = RPtrafo.RingPolymerTransformations(self.beads,
+                                                              NMtransform_type)
         return
 
     @property
@@ -286,11 +291,10 @@ class VelocityVerlet(object):
         """
 
         # TODO: profile and optimize, and generalize to more D; docu properly
-        rnm = RPtrafo.to_RingPolymer_normalModes(R)
-        pnm = RPtrafo.to_RingPolymer_normalModes(P)
+        rnm = self.RPtransform.to_RingPolymer_normalModes(R)
+        pnm = self.RPtransform.to_RingPolymer_normalModes(P)
 
-        n_beads = R.shape[1]
-        self._set_propagation_matrix(n_beads)
+        self._set_propagation_matrix(self.n_beads)
 
         # three-dimensional array; For each physical degree of freedom and
         # each ring polymer bead the normal mode position and momentum is
@@ -311,8 +315,8 @@ class VelocityVerlet(object):
             pnm_t[k] = tt[:, 0]
             rnm_t[k] = tt[:, 1]
 
-        return RPtrafo.from_RingPolymer_normalModes(rnm_t),\
-            RPtrafo.from_RingPolymer_normalModes(pnm_t)
+        return self.RPtransform.from_RingPolymer_normalModes(rnm_t),\
+            self.RPtransform.from_RingPolymer_normalModes(pnm_t)
 
     def _set_propagation_matrix(self, n):
         """Set the propagation matrices for the momenta and internal ring

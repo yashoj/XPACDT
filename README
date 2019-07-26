@@ -29,3 +29,8 @@ Generate Documentation:
 Help:
 	- Consult the confluence page at: https://confluence.desy.de/display/CDT/XPACDT%3A+eXtended+PolyAtomic+Chemical+Dynamics+Toolkit
 	- Contact Ralph Welsch at ralph.welsch@desy.de
+
+Authors of XPACDT:
+	- Dr. Ralph Welsch: Basic structure, Sampling, Analysis, Potentials, Supervison
+	- Yashoj Shakya: Ring Polymer Transformations, Surface Hopping, Potential Models
+	- Lawrence Rybakowski: NRPMD

@@ -62,7 +62,7 @@ class QuasiclassicalSamplingTest(unittest.TestCase):
         self.assertEqual(len(samples), 1000)
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
-            self.assertAlmostEqual(0.5, s.nuclei.energy, delta=1e-5)
+            self.assertAlmostEqual(0.5, s.nuclei.energy, delta=5e-4)
 
         samples = qcs.do_Quasiclassical_sampling(self.system2, self.parameters2,
                                                  int(self.parameters2.get("sampling").get('samples')))
@@ -70,7 +70,7 @@ class QuasiclassicalSamplingTest(unittest.TestCase):
         self.assertEqual(len(samples), 1000)
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
-            self.assertAlmostEqual(2.5, s.nuclei.energy, delta=1e-5)
+            self.assertAlmostEqual(2.5, s.nuclei.energy, delta=5e-4)
 
 
 if __name__ == "__main__":

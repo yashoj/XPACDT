@@ -55,6 +55,13 @@ class Inputfile(collections.MutableMapping):
     ----------
     inputfile: str
         Filename of the input file.
+
+    Attributes:
+    -----------
+    n_dof : int (optional if specified in input file)
+        Number of degrees of freedom in the system.
+    n_beads : (n_dof) list of int (optional if specified in input file)
+        Number of beads for each degrees of freedom. Default: 1 for each dof
     """
 
     def __init__(self, inputfile):
@@ -75,14 +82,15 @@ class Inputfile(collections.MutableMapping):
         self._parse_file()
         if 'system' in self.store:
             self.n_dof = int(self.get('system').get('dof'))
-
-        if 'rpmd' in self.store:
-            assert('beads' in self.get("rpmd")), "No number of beads " \
-                   "given for RPMD."
-            assert('beta' in self.get("rpmd")), "No beta " \
-                                                "given for RPMD."
-            self.n_beads = self.get('rpmd').get('beads')
-            self.beta = float(self.get('rpmd').get('beta'))
+            if 'rpmd' in self.store:
+                assert('beads' in self.get("rpmd")), "No number of beads " \
+                       "given for RPMD."
+                assert('beta' in self.get("rpmd")), "No beta " \
+                                                    "given for RPMD."
+                self.n_beads = self.get('rpmd').get('beads')
+                self.beta = float(self.get('rpmd').get('beta'))
+            else:
+                self.n_beads = '1'
 
         if self.__coordinates is not None:
             self.__format_coordinates()

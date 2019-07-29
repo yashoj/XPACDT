@@ -348,8 +348,8 @@ class VelocityVerlet(object):
         -------
         """
         # TODO: Make this compatible with different n_beads for each dof
-        n = float(max(self.n_beads))
-        w = np.array([2.0 * (n / self.beta) * math.sin(k * math.pi / n)
+        n = max(self.n_beads)
+        w = np.array([2.0 * (float(n) / self.beta) * math.sin(k * math.pi / float(n))
                       for k in range(1, n)])
         ps = []
         for m in self.mass:

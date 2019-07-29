@@ -119,7 +119,7 @@ class Nuclei(object):
 
     @n_beads.setter
     def n_beads(self, l):
-        self.__nbeads = l
+        self.__n_beads = l
 
     @property
     def masses(self):

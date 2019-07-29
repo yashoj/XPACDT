@@ -56,12 +56,53 @@ class VelocityVerletTest(unittest.TestCase):
         return
 
     def test_propagate(self):
-        # Need to check thermostated propagation?
+        # Classical
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
+                                       **{'beta': 8.0, 'timestep': '0.2 au'})
+
+        p = np.array([[0.25]])
+        r = np.array([[0.5]])
+
+        # Single time step
+        p_ref = np.array([[0.148]])
+        r_ref = np.array([[0.52]])
+        rt, pt = propagator.propagate(r, p, 0.2)
+        np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
+        np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
+
+        # Two time step
+        p_ref = np.array([[0.04304]])
+        r_ref = np.array([[0.5296]])
+        rt, pt = propagator.propagate(r, p, 0.4)
+        np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
+        np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
+
+        ###############
+
+        # 4 beads
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [4],
+                                       **{'beta': 8.0, 'timestep': '0.2 au'})
+
+        p = np.array([[0.25, -0.25, 0.5, 0.0]])
+        r = np.array([[0.5, 1.0, 0.0, -0.5]])
+
+        # Single time step
+        p_ref = np.array([[0.09494187, -0.58829502,  0.53812469,  0.25122846]])
+        r_ref = np.array([[0.51738778,  0.95774543,  0.05227955, -0.48741276]])
+        rt, pt = propagator.propagate(r, p, 0.2)
+        np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
+        np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
         
+        # Two time step
+        p_ref = np.array([[-0.06724218, -0.89683408,  0.55144043, 0.49871582]])
+        r_ref = np.array([[0.51881322,  0.88294329,  0.10715463, -0.44971114]])
+        rt, pt = propagator.propagate(r, p, 0.4)
+        np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
+        np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
+
         return
 
     def test_step(self):
-        # Need to check thermostated propagation?
         # classical
         propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
@@ -82,11 +123,11 @@ class VelocityVerletTest(unittest.TestCase):
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
 
-        p_ref = np.array([[0.19643, -0.39327, 0.54360, 0.15324]])
-        r_ref = np.array([[0.522379, 0.96772, 0.052288, -0.492388]])
+        p_ref = np.array([[0.09494187, -0.58829502,  0.53812469,  0.25122846]])
+        r_ref = np.array([[0.51738778,  0.95774543,  0.05227955, -0.48741276]])
         rt, pt = propagator._step(r, p)
-        np.testing.assert_allclose(pt, p_ref, rtol=1e-4)
-        np.testing.assert_allclose(rt, r_ref, rtol=1e-4)
+        np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
+        np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
         return
 
     def test_verlet_step(self):
@@ -231,7 +272,7 @@ class VelocityVerletTest(unittest.TestCase):
                                    [[0.9900, -0.19933], [0.099667, 0.9900]],
                                    [[0.9801, -0.3973], [0.09933, 0.9801]],
                                    [[0.9900, -0.19933], [0.099667, 0.9900]]]])
-        propagator._set_propagation_matrix(4)
+        propagator._set_propagation_matrix()
         four_beads_pm = propagator.propagation_matrix
         np.testing.assert_allclose(four_beads_pm, four_beads_ref, rtol=1e-4)
 

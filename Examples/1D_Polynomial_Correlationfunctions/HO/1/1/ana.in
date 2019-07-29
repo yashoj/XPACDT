@@ -11,4 +11,9 @@ a = 0 0 0.5
 x0 = 0
 $end
 
-
+$commandCXX
+op = +pos -1 0
+op0 = +pos -1 0
+value = mean 
+format = time
+$end

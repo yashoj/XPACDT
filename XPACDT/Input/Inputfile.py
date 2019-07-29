@@ -63,6 +63,9 @@ class Inputfile(collections.MutableMapping):
         self.__masses = None
         self.__coordinates = None
 
+#       self.__positionShift = None
+#       self.__momentumShift = None
+
         self._filename = inputfile
         if not os.path.isfile(self._filename):
             raise FileNotFoundError(ENOENT, "Input file does not exist!",
@@ -110,6 +113,26 @@ class Inputfile(collections.MutableMapping):
         if self._c_type != 'xpacdt':
             self.__format_coordinates()
         return self.__coordinates
+
+#    @property
+#    def positionShift(self):
+#        """(n_dof) ndarray of floats: Array containing a shift that should
+#        be applied to the position centroid of each degree of freedom in au.
+#
+#        # assure correct format.
+#        if self._c_type != 'xpacdt':
+#            self.__format_coordinates()
+#        return self.__positionShift
+
+#    @property
+#    def momentumShift(self):
+#        """(n_dof) ndarray of floats: Array containing a shift that should
+#        be applied to the momentum centroid of each degree of freedom in au.
+#
+#        # assure correct format.
+#        if self._c_type != 'xpacdt':
+#            self.__format_coordinates()
+#        return self.__momentumShift
 
     @property
     def momenta(self):
@@ -176,6 +199,13 @@ class Inputfile(collections.MutableMapping):
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
                 self.__momenta = np.loadtxt(d)
+#            elif section[0:14] == "$positionShift":
+#                d = StringIO(section[8:])
+#                self.__positionShift = np.loadtxt(d)
+#            elif section[0:14] == "$momentumShift":
+#                d = StringIO(section[8:])
+#                self.__momentumShift = np.loadtxt(d)
+
             else:
                 match = re.search(r"\$(\w+).*?\n(.*)", section,
                                   flags=re.DOTALL)
@@ -308,6 +338,23 @@ class Inputfile(collections.MutableMapping):
                 raise type(e)(str(e) + "\nXPACDT: Number of given momenta and "
                                        "coordinates does not match!")
 
+#            if self.__positionShift is not None:
+#                self.__positionShift = self.__positionShift.reshape(-1)
+#                if len(self.__positionShift) != n_dof:
+#                    raise RuntimeError("XPACDT: Number of coordinates in "
+#                                       "position shift does not match number "
+#                                       "of degrees of freedom given: "
+#                                       + str(n_dof) + " "
+#                                       + str(len(self.__positionShift)))
+
+#            if self.__momentumShift is not None:
+#                self.__momentumShift = self.__momentumShift.reshape(-1)
+#                if len(self.__momentumShift) != n_dof:
+#                    raise RuntimeError("XPACDT: Number of coordinates in "
+#                                       "momentum shift does not match number "
+#                                       "of degrees of freedom given: "
+#                                       + str(n_dof) + " "
+#                                       + str(len(self.__momentumShift)))
             self._c_type = 'xpacdt'
 
         elif self._c_type == 'xyz':

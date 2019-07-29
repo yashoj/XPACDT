@@ -101,7 +101,10 @@ def sample(system, parameters):
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
                               "do_" + method + "_sampling")(system, parameters, n_samples_required)
 
-    # TODO: Add linear shifts in position or momentum!
+#    if 'PositionShift' in parameters:
+    #   for system in sampled_systems:
+    #       system.nuclei.positions += + parameters.positionShift[:, None]
+#
 
     # Save stuff to pickle files. Iterate over all possible folders
     shift = 0

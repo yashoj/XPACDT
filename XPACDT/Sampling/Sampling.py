@@ -101,10 +101,15 @@ def sample(system, parameters):
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
                               "do_" + method + "_sampling")(system, parameters, n_samples_required)
 
-#    if 'PositionShift' in parameters:
-    #   for system in sampled_systems:
-    #       system.nuclei.positions += + parameters.positionShift[:, None]
-#
+    if parameters.positionShift is not None:
+        for system in sampled_systems:
+            system.nuclei.positions += parameters.positionShift[:, None]
+            system.do_log(init=True)
+
+    if parameters.momentumShift is not None:
+        for system in sampled_systems:
+            system.nuclei.momenta += parameters.momentumShift[:, None]
+            system.do_log(init=True)
 
     # Save stuff to pickle files. Iterate over all possible folders
     shift = 0

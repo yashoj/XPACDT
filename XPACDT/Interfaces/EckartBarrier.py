@@ -94,7 +94,7 @@ class EckartBarrier(itemplate.PotentialInterface):
                               "barrier not convertable to float. L is "
                               + kwargs.get('L'))
 
-        elif {'w', 'h', 'e', 'm'} <= set(kwargs):
+        elif {'w', 'h', 'd', 'm'} <= set(kwargs):
             try:
                 w = float(kwargs.get('w'))
             except ValueError as e:
@@ -124,9 +124,7 @@ class EckartBarrier(itemplate.PotentialInterface):
             # TOOD: conversion here!
             self.__A = d
             self.__B = (math.sqrt(h) + math.sqrt(h-d))**2
-            self.__L = math.sqrt(h*(h-d)) / (math.sqrt(2.0) * math.pi * w
-                                             * math.sqrt(self.__B)
-                                             * math.sqrt(m))
+            self.__L = math.sqrt(2.0*h*(h-d)) / (w * math.sqrt(m) * math.sqrt(self.__B))
         else:
             raise RuntimeError("XPACDT: Parameters for Eckart barrier not "
                                "given properly. Either give A, B, L or give "
@@ -134,6 +132,7 @@ class EckartBarrier(itemplate.PotentialInterface):
 
         assert(self.__A <= 0.0), "A not zero or less!"
         assert(self.__B > 0.0), "B not positive!"
+        assert(self.__L > 0.0), "L not positive!"
 
         itemplate.PotentialInterface.__init__(self, "EckartBarrier")
 

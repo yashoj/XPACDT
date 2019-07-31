@@ -209,7 +209,7 @@ class PotentialInterface:
 #
 #        return self._coupling
 
-    def _energy_wrapper(self, R, S=0):
+    def _energy_wrapper(self, R, S=0, internal=False):
         """Wrapper function to do call energy with a one-dimensional array.
         This should only be used for directly accessing the PES and not for any
         dynamics calculation!.
@@ -220,15 +220,22 @@ class PotentialInterface:
             The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
+        internal : bool, optional, default False
+            Whether 'R' is in internal coordinates. Then it is backtransformed
+            to cartesian coordinates in the wrapper.
 
         Returns
         -------
         float:
         The energy at the given geometry in hartree.
         """
-        return self.energy(np.array([R]), S)
 
-    def _gradient_wrapper(self, R, S=0):
+        if internal:
+            return self.energy(self._from_internal(R)[:, None], S)
+        else:
+            return self.energy(R[:, None], S)
+
+    def _gradient_wrapper(self, R, S=0, internal=False):
         """Wrapper function to do call gradient with a one-dimensional array.
         This should only be used for directly accessing the PES and not for any
         dynamics calculation!.
@@ -239,13 +246,20 @@ class PotentialInterface:
             The positions representing the system in au.
         S : integer, default 0
             The current state of the system.
+        internal : bool, optional, default False
+            Whether 'R' is in internal coordinates. Then it is backtransformed
+            to cartesian coordinates in the wrapper.
 
         Returns
         -------
         (n_dof) ndarray of floats:
         The gradient at the given geometry in hartree/au.
         """
-        return self.gradient(np.array([R]), S)
+
+        if internal:
+            return self.gradient(self._from_internal(R)[:, None], S)
+        else:
+            return self.gradient(R[:, None], S)
 
     def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method
@@ -282,7 +296,7 @@ class PotentialInterface:
         """ Find the transition state. """
         raise NotImplementedError
 
-    def plot_1D(self, R, dof_i, start, end, step, relax=False, S=0):
+    def plot_1D(self, R, dof_i, start, end, step, relax=False, internal=False, S=0):
         """Generate data to plot a potential energy surface along one
         dimension. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_1d.dat' or
@@ -310,6 +324,9 @@ class PotentialInterface:
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or relaxed (True)
             along the scan.
+        internal : bool, optional, Default: False
+            Whether R is in internal coordinates and internal coordinates
+            should be used throughout the plotting.
         S : integer, optional, Default: 0
             Could be the state, not impemented yet.
 
@@ -330,7 +347,8 @@ class PotentialInterface:
                 constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g})
                 R0 = R.copy()
                 R0[dof_i] = g
-                results = spminimize(self._energy_wrapper, R0, method='SLSQP',
+                results = spminimize(lambda x : self._energy_wrapper(x, internal=internal),
+                                     R0, method='SLSQP',
                                      constraints=constraint)
 
                 # Store both the optimized energy and coordinates.
@@ -342,14 +360,14 @@ class PotentialInterface:
                                        " message: " + results.message)
             else:
                 R[dof_i] = g
-                e.append([self._energy_wrapper(R)])
+                e.append([self._energy_wrapper(R, internal=internal)])
 
         pes = np.insert(np.array(e), 0, grid, axis=1)
         if relax:
             pes = np.hstack((pes, np.array(R_optimized)))
         np.savetxt('pes_1d' + ('_opti' if relax else '') + '.dat', pes)
 
-    def plot_2D(self, R, dof_i, dof_j, starts, ends, steps, relax=False):
+    def plot_2D(self, R, dof_i, dof_j, starts, ends, steps, relax=False, internal=False):
         """Generate data to plot a potential energy surface along two
         dimensions. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_2d.dat' or
@@ -372,15 +390,18 @@ class PotentialInterface:
             Index of the first variable that should change.
         dof_j : integer
             Index of the second variable that should change.
-        starts : 2 floats
+        starts : tuple of 2 floats
             Starting values of the coordinates that are scanned in au.
-        ends : 2 floats
+        ends : tuple of 2 floats
             Ending values of the coordinates that are scanned in au.
-        steps : 2 floats
+        steps : tuple of 2 floats
             Step sizes used along the scan in au.
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or
             relaxed (True) along the scan.
+        internal : bool, optional, Default: False
+            Whether R is in internal coordinates and internal coordinates
+            should be used throughout the plotting.
         S : integer, optional, Default: 0
             Could be the state, not impemented yet.
 
@@ -390,7 +411,9 @@ class PotentialInterface:
         Throws RuntimeError if relax is True and minimization failed.
         """
 
-        # TODO: add some asserts
+        old_thresh = self.__SAVE_THRESHOLD
+        self.__SAVE_THRESHOLD = 1e-15
+
         e = []
         if relax:
             R_optimized = []
@@ -402,8 +425,8 @@ class PotentialInterface:
         n_grid = len(x) * len(y)
         grid_x, grid_y = np.meshgrid(x, y)
 
-        for g_x in grid_x:
-            for g_y in grid_y:
+        for g_y in y:
+            for g_x in x:
 
                 if relax:
                     constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g_x},
@@ -411,8 +434,10 @@ class PotentialInterface:
                     R0 = R.copy()
                     R0[dof_i] = g_x
                     R0[dof_j] = g_y
-                    results = spminimize(self._energy_wrapper, R0,
-                                       method='SLSQP', constraints=constraint)
+                    results = spminimize(lambda x : self._energy_wrapper(x, internal=internal),
+                                         R0, method='SLSQP',
+                                         constraints=constraint,
+                                         options={'ftol': 1e-6, 'eps':1e-3})
 
                     if results.success:
                         R_optimized.append(results.x.copy())
@@ -420,12 +445,12 @@ class PotentialInterface:
                     else:
                         raise RuntimeError("Minimization of PES failed with"
                                            " message: " + results.message)
-            else:
-                R[dof_i] = g_x
-                R[dof_j] = g_y
-                e.append([self._energy_wrapper(R)])
+                else:
+                    R[dof_i] = g_x
+                    R[dof_j] = g_y
+                    e.append([self._energy_wrapper(R, internal=internal)])
 
-        grid = np.dstack((grid_x, grid_y)).reshape(n_grid, -1)
+        grid = np.dstack((grid_y, grid_x)).reshape(n_grid, -1)
         pes = np.hstack((grid, e))
         if relax:
             pes = np.hstack((pes, np.array(R_optimized)))
@@ -436,6 +461,9 @@ class PotentialInterface:
             outfile.write('\n')
             if (k+1) % len(x) == 0:
                 outfile.write('\n')
+        outfile.close()
+
+        self.__SAVE_THRESHOLD = old_thresh
 
     def get_Hessian(self, R):
         """Calculate the Hessian at a given geometry R. The Hessian is

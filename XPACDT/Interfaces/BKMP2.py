@@ -79,23 +79,80 @@ class BKMP2(itemplate.PotentialInterface):
 
         return
 
+    def _to_internal(self, R):
+        """Transform to internal coordinates. """
+        internal = np.zeros(3)
+
+        # r
+        r_vec = R[0:3]-R[3:6]
+        internal[0] = np.linalg.norm(r_vec)
+
+        # R
+        R_vec = 0.5 * (R[0:3]+R[3:6]) - R[6:9]
+        internal[1] = np.linalg.norm(R_vec)
+
+        # phi
+        internal[2] = py_ang(r_vec, R_vec)
+        if R[7] < 0.0:
+            internal[2] = 2.0*np.pi-internal[2]
+
+        return internal
+
+    def _from_internal(self, internal):
+        """Transform from internal coordinates. """
+        R = np.zeros(9)
+
+        # r
+        R[3] = internal[0]
+
+        # R
+        R[6] = (internal[1]) * np.cos(internal[2]) + 0.5*internal[0]
+        R[7] = (internal[1]) * np.sin(internal[2])
+
+        return R
+
+
+# Move to tools!
+def py_ang(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2'    """
+    cosang = np.dot(v1, v2)
+    sinang = np.linalg.norm(np.cross(v1, v2))
+    return np.arctan2(sinang, cosang)
+
 
 if __name__ == "__main__":
     pes = BKMP2()
-    print(pes.name)
-    x=np.zeros(9)
-    x[0] = 0.0
-    x[1] = 0.0
-    x[2] = 0.0 
-    x[3] = 1.7566 + 0.0001
-    x[4] = 0.0
-    x[5] = 0.0
-    x[6] = 2.0 * x[3]
-    x[7] = 0.0
-    x[8] = 0.0
+#    print(pes.name)
+#    x=np.zeros(9)
+#    for i in range(1000):
+#        phi = np.random.rand(1)*2.0*np.pi
+#        x[0] = 0.0
+#        x[1] = 0.0
+#        x[2] = 0.0 
+#        x[3] = 2.0
+#        x[4] = 0.0
+#        x[5] = 0.0
+#        x[6] = 3.0*np.cos(phi)+1.0
+#        x[7] = 3.0*np.sin(phi)
+#        x[8] = 0.0
+#        
+#        
+#        if phi > -11.0:
+#            inte = pes._to_internal(x)
+##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
+#            y = pes._from_internal(inte)
+##            print(x, y)
+#   
+#            print((abs(x-y) < 1e-8).all())
+##            print()
     
-    pes._calculate_all(x[:, None])
-    print(pes._energy, pes._gradient)
-    print(pes.energy(x[:, None]))
-    pes.plot_1D(x, 6, 3.0, 10.0, 0.1)
-    pes.plot_1D(x, 6, 3.0, 10.0, 0.1, relax=True)
+#    pes._calculate_all(x[:, None])
+#    print(pes._energy, pes._gradient)
+#    print(pes.energy(x[:, None]))\
+    internal = np.array([2.0, 5.0, 0.1])
+#    pes.plot_1D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)
+#    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
+    
+    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=False, internal=True)
+    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
+#    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

@@ -37,7 +37,7 @@ import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
 class BKMP2(itemplate.PotentialInterface):
     """
-    BKMP2 PES
+    BKMP2 PES. No parameters required.
     """
     def __init__(self, **kwargs):
         pot.pes_init()
@@ -48,6 +48,7 @@ class BKMP2(itemplate.PotentialInterface):
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
+        -----------
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
@@ -64,23 +65,43 @@ class BKMP2(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros(1)
-        self._gradient = np.zeros((1, 9))
+        self._energy = np.zeros(R.shape[1])
+        self._gradient = np.zeros((R.shape, 9))
 
         # centroid part if more than 1 bead
-        if R.shape[1] > 0: #1:
+        if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-
             self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
-            self._energy[0], self._gradient[0] = self._energy_centroid, self._gradient_centroid
 
-        # beads part
-        pass
+        for i, r in enumerate(R.T):
+            self._energy[i], self._gradient[i] = pot.pot(r)
+
+        if R.shape[1] == 1:
+            self._energy_centroid = self._energy
+            self._gradient_centroid = self._gradient
 
         return
 
     def _to_internal(self, R):
-        """Transform to internal coordinates. """
+        """Transform from full cartesian coordinates to internal Jacobi
+        coordinates. The Jacobi coordinates are defined as follows:
+            r = internal[0] = Distance between the first and second H in au.
+            R = internal[1] = Distance between the thrid H and the center of
+                              the first two H's in au.
+            phi = internal[2] = angle between the two vectors that define
+                                r and R.
+
+        Parameters
+        ----------
+        R: (9) ndarray of floats
+            Values of the cartesian coordinates in au.
+
+        Returns
+        -------
+        internal : (3) ndarray of floats
+            Values of the Jacobi coordinates associated with the input
+            cartesian coordinates in au.
+        """
         internal = np.zeros(3)
 
         # r
@@ -99,7 +120,30 @@ class BKMP2(itemplate.PotentialInterface):
         return internal
 
     def _from_internal(self, internal):
-        """Transform from internal coordinates. """
+        """Transform from Jacobi coordinates to full cartesian coordinates. The
+        Jacobi coordinates are defined as follows:
+            r = internal[0] = Distance between the first and second H in au.
+            R = internal[1] = Distance between the thrid H and the center of
+                              the first two H's in au.
+            phi = internal[2] = angle between the two vectors that define
+                                r and R.
+        The output cartesian coordinates are in the xy plane. The first H is
+        located in the center of the coordinate system. The second H is
+        displaced from the first H along the x-axis by 'r'. The third H is then
+        placed in the xy-plane according to 'R' and 'phi'.
+
+        Parameters
+        ----------
+        internal: (3) ndarray of floats
+            Values of the Jacobi coordinates in au.
+
+        Returns
+        -------
+        R : (9) ndarray of floats
+            Cartesian coordinates associated with the given internal
+            coordinates with the orientation defined above.
+        """
+
         R = np.zeros(9)
 
         # r
@@ -149,10 +193,10 @@ if __name__ == "__main__":
 #    pes._calculate_all(x[:, None])
 #    print(pes._energy, pes._gradient)
 #    print(pes.energy(x[:, None]))\
-    internal = np.array([2.0, 5.0, 0.1])
+#    internal = np.array([2.0, 5.0, 0.1])
 #    pes.plot_1D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)
 #    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
     
-    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=False, internal=True)
-    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
+#    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=False, internal=True)
+#    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
 #    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

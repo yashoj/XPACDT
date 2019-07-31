@@ -209,6 +209,23 @@ class PotentialInterface:
 #
 #        return self._coupling
 
+    def _from_internal(self, internal):
+        """Transform from a defined set of internal coordinates to the actually
+        used coordinates in the potential call.
+
+        Parameters
+        ----------
+        internal : (n_internal) ndarray of floats
+            The internal coordinates. This needs to be defined for each PES
+            individually.
+
+        Returns
+        -------
+        This function throws and NotImplemented Error and needs to be
+        implemented by any child class.
+        """
+        raise NotImplementedError
+
     def _energy_wrapper(self, R, S=0, internal=False):
         """Wrapper function to do call energy with a one-dimensional array.
         This should only be used for directly accessing the PES and not for any
@@ -490,12 +507,11 @@ class PotentialInterface:
             R_step[i] += self.DERIVATIVE_STEPSIZE
             grad_plus = self._gradient_wrapper(R_step)
 
-            R_step = R.copy()
-            R_step[i] -= self.DERIVATIVE_STEPSIZE
+            R_step[i] -= 2.0 * self.DERIVATIVE_STEPSIZE
             grad_minus = self._gradient_wrapper(R_step)
 
             H[i] = (grad_plus - grad_minus) / (2.0 * self.DERIVATIVE_STEPSIZE)
 
-            R_step = R.copy()
+            R_step[i] += self.DERIVATIVE_STEPSIZE
 
         return H

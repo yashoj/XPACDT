@@ -328,34 +328,36 @@ class RingPolymerTransformationsTest(unittest.TestCase):
 
         # This is more of an integrated test to check sampling!!!
         # Test for proper distribution of momenta
-#        nb = 4
-#        samples = 1000000
-#        mean_ref = 0.0
-#        std_ref = 2.0
-#        mean_centroid_ref = 2.0
-#        std_centroid_ref = 0.0
-#
-#        np.random.seed(0)
-#        p_nm_arr = []
-#        RP_nm_transform = RPtrafo.RingPolymerTransformations([nb], 'matrix')
-#
-#        for i in range(samples):
-#            p_rp = RP_nm_transform.sample_free_rp_momenta(nb, mass, beta,
-#                                                          centroid)
-#            p_nm_arr.append(RP_nm_transform.to_RingPolymer_normalModes(p_rp.reshape(1, -1)).flatten())
-#
-#        p_nm_arr = np.array(p_nm_arr)
-#
-#        for i in range(nb):
-#            mean, var, std = stats.bayes_mvs(p_nm_arr[:, i])
-#            mean_min, mean_max = mean[1]
-#            std_min, std_max = std[1]
-#            if (i == 0):
-#                np.testing.assert_allclose(mean[0], mean_centroid_ref, rtol=1e-7)
-#                np.testing.assert_allclose(std[0], std_centroid_ref, atol=1e-8)
-#            else:
-#                self.assertTrue(mean_min < mean_ref < mean_max)
-#                self.assertTrue(std_min < std_ref < std_max)
+        nb = 4
+        samples = 10000
+        mean_ref = 0.0
+        std_ref = 2.0
+        mean_centroid_ref = 2.0
+        std_centroid_ref = 0.0
+
+        np.random.seed(0)
+        p_nm_arr = []
+        RP_nm_transform = RPtrafo.RingPolymerTransformations([nb], 'matrix')
+
+        for i in range(samples):
+            p_rp = RP_nm_transform.sample_free_rp_momenta(nb, mass, beta,
+                                                          centroid)
+            p_nm_arr.append(RP_nm_transform.to_RingPolymer_normalModes(
+                                p_rp.reshape(1, -1)).flatten())
+
+        p_nm_arr = np.array(p_nm_arr)
+
+        for i in range(nb):
+            mean, var, std = stats.bayes_mvs(p_nm_arr[:, i], alpha=0.95)
+            mean_min, mean_max = mean[1]
+            std_min, std_max = std[1]
+            if (i == 0):
+                np.testing.assert_allclose(mean[0], mean_centroid_ref,
+                                           rtol=1e-7)
+                np.testing.assert_allclose(std[0], std_centroid_ref, atol=1e-8)
+            else:
+                self.assertTrue(mean_min < mean_ref < mean_max)
+                self.assertTrue(std_min < std_ref < std_max)
         return
 
     def test_sample_free_rp_coord(self):
@@ -383,34 +385,36 @@ class RingPolymerTransformationsTest(unittest.TestCase):
 
         # This is more of an integrated test to check sampling!!!
         # Test for proper distribution of positions
-#        nb = 4
-#        samples = 1000000
-#        mean_ref = 0.0
-#        std_ref = [(1. / (4.*math.sin(i*math.pi/4.))) for i in range(1, nb)]
-#        std_ref.insert(0, 0.0)  # For centroid
-#        mean_centroid_ref = 2.0
-#
-#        np.random.seed(0)
-#        x_nm_arr = []
-#        RP_nm_transform = RPtrafo.RingPolymerTransformations([nb], 'matrix')
-#
-#        for i in range(samples):
-#            x_rp = RP_nm_transform.sample_free_rp_coord(nb, mass, beta,
-#                                                        centroid)
-#            x_nm_arr.append(RP_nm_transform.to_RingPolymer_normalModes(x_rp.reshape(1, -1)).flatten())
-#            
-#        x_nm_arr = np.array(x_nm_arr)
-#
-#        for i in range(nb):
-#            mean, var, std = stats.bayes_mvs(x_nm_arr[:, i])
-#            mean_min, mean_max = mean[1]
-#            std_min, std_max = std[1]
-#            if (i == 0):
-#                np.testing.assert_allclose(mean[0], mean_centroid_ref, rtol=1e-7)
-#                np.testing.assert_allclose(std[0], std_ref[i], atol=1e-8)
-#            else:
-#                self.assertTrue(mean_min < mean_ref < mean_max)
-#                self.assertTrue(std_min < std_ref[i] < std_max)
+        nb = 4
+        samples = 10000
+        mean_ref = 0.0
+        std_ref = [(1. / (4.*math.sin(i*math.pi/4.))) for i in range(1, nb)]
+        std_ref.insert(0, 0.0)  # For centroid
+        mean_centroid_ref = 2.0
+
+        np.random.seed(0)
+        x_nm_arr = []
+        RP_nm_transform = RPtrafo.RingPolymerTransformations([nb], 'matrix')
+
+        for i in range(samples):
+            x_rp = RP_nm_transform.sample_free_rp_coord(nb, mass, beta,
+                                                        centroid)
+            x_nm_arr.append(RP_nm_transform.to_RingPolymer_normalModes(
+                                x_rp.reshape(1, -1)).flatten())
+
+        x_nm_arr = np.array(x_nm_arr)
+
+        for i in range(nb):
+            mean, var, std = stats.bayes_mvs(x_nm_arr[:, i], alpha=0.95)
+            mean_min, mean_max = mean[1]
+            std_min, std_max = std[1]
+            if (i == 0):
+                np.testing.assert_allclose(mean[0], mean_centroid_ref,
+                                           rtol=1e-7)
+                np.testing.assert_allclose(std[0], std_ref[i], atol=1e-8)
+            else:
+                self.assertTrue(mean_min < mean_ref < mean_max)
+                self.assertTrue(std_min < std_ref[i] < std_max)
         return
 
 

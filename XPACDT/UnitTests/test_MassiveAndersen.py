@@ -96,7 +96,6 @@ class MassiveAndersenTest(unittest.TestCase):
         np.testing.assert_allclose(x, x_ref, rtol=1e-7)
         np.testing.assert_allclose(p, p_ref, rtol=1e-7)
 
-
     def test_with_velocity_verlet_step(self):
         # Check if attaching thermostat doesn't affect anything in '_step'
         # function in velocity verlet
@@ -120,7 +119,7 @@ class MassiveAndersenTest(unittest.TestCase):
         r_ref = np.array([[0.51738778,  0.95774543,  0.05227955, -0.48741276]])
         rt, pt = propagator._step(r, p)
 
-        self.assertTrue(isinstance(propagator.thermostat, ma.MassiveAndersen))
+        self.assertIsInstance(propagator.thermostat, ma.MassiveAndersen)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
@@ -153,7 +152,7 @@ class MassiveAndersenTest(unittest.TestCase):
         # r reference values are unchanged from test of velocity verlet
         r_ref = np.array([[0.51738778, 0.95774543, 0.05227955, -0.48741276]])
 
-        self.assertTrue(isinstance(propagator.thermostat, ma.MassiveAndersen))
+        self.assertIsInstance(propagator.thermostat, ma.MassiveAndersen)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
@@ -166,7 +165,7 @@ class MassiveAndersenTest(unittest.TestCase):
         # 1 dof, beta = 1.0
         input_params = {'thermostat': {'temperature': '315775.130734'}}
         mass = np.array([1.])
-        samples = 500000
+        samples = 10000
         nb = 4
         x = np.array([[1.0, 2.0, 3.0, 4.0]])
         p = np.array([[0.5, 0., -0.5, 1.]])
@@ -193,7 +192,7 @@ class MassiveAndersenTest(unittest.TestCase):
         np.testing.assert_allclose(np.std(x_arr, axis=0), x_std_ref, rtol=1e-7)
 
         for i in range(nb):
-            mean, var, std = stats.bayes_mvs(p_arr[:, 0, i])
+            mean, var, std = stats.bayes_mvs(p_arr[:, 0, i], alpha=0.95)
             mean_min, mean_max = mean[1]
             std_min, std_max = std[1]
             self.assertTrue(mean_min < p_mean_ref < mean_max)

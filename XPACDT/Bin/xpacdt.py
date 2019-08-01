@@ -45,7 +45,6 @@ import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Sampling.Sampling as sampling
 import XPACDT.Tools.Analysis as analysis
 import XPACDT.System.System as xSystem
-
 import XPACDT.Input.Inputfile as infile
 
 

@@ -92,7 +92,7 @@ class System(object):
         return self.__nuclei
 
     def step(self, time):
-        """ Step the whole system forwar in time. Also keep a log of the
+        """ Step the whole system forward in time. Also keep a log of the
         system state at these times.
 
         Parameters

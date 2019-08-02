@@ -66,10 +66,10 @@ class System(object):
 
     @property
     def log(self):
-        """list of dicts : Log of the system history as a list. Each list entry
-        is a dictonary contraining the stored information, e.g., time, nuclei,
-        etc."""
-        return self. __log
+        """list of XPACDT.System.Nuclei : Log of the system history as a list
+        of the states of the nuclei, which also carry the information on the
+        electrons, times, etc."""
+        return self.__log
 
     @property
     def n_dof(self):
@@ -91,17 +91,17 @@ class System(object):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
 
-    def step(self, time):
+    def step(self, time_propagate):
         """ Step the whole system forwar in time. Also keep a log of the
         system state at these times.
 
         Parameters
         ----------
-        time : float # TODO: Find a better name! (maybe: advance_time, propagation_time, ??)
+        time_propagate : float
             Time to advance the system in au.
         """
 
-        self.__nuclei.propagate(time)
+        self.__nuclei.propagate(time_propagate)
         self.do_log()
 
     def reset(self, time=None):

@@ -274,8 +274,9 @@ beads given."
 
         Returns
         -------
-        ndarray of floats
-           Array of position, momentum or velocity values requested.
+        (selected dof) ndarray of floats if beads is False;
+        (selected dof, nbeads) ndarray of floats else
+            Array of positions, momenta or velocity values requested.
         """
         dofs = dof_string.split(',')
 

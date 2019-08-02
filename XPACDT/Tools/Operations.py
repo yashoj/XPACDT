@@ -31,7 +31,7 @@
 and perform analysis. """
 
 import numpy as np
-from optparse import OptionParser
+import argparse
 
 
 def position(arguments, log):
@@ -64,42 +64,43 @@ def position(arguments, log):
         values obtained from the position operation.
     """
 
-    obsparser = OptionParser(usage="Options for +pos", add_help_option=False)
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +pos", add_help=False)
 
-    obsparser.add_option('-h', '--help',
-                         dest='help',
-                         action='store_true',
-                         default=False,
-                         help='Prints this help page.')
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
 
-    obsparser.add_option('-1', '--x1',
-                         dest='x1',
-                         type='str',
-                         default=None,
-                         help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included.')
+    parser.add_argument('-1', '--x1',
+                        dest='x1',
+                        type=str,
+                        default=None,
+                        help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included.')
 
-    obsparser.add_option('-2', '--x2',
-                         dest='x2',
-                         type='str',
-                         default=None,
-                         help='If given, the distance between the two given (x1 and x2) sites should be calculated.')
+    parser.add_argument('-2', '--x2',
+                        dest='x2',
+                        type=str,
+                        default=None,
+                        help='If given, the distance between the two given (x1 and x2) sites should be calculated.')
 
-    obsparser.add_option('-p', '--project',
-                         dest='proj',
-                         type='str',
-                         default=None,
-                         help='Take the distance or coordinate value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
+    parser.add_argument('-p', '--project',
+                        dest='proj',
+                        type=str,
+                        default=None,
+                        help='Take the distance or coordinate value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
 
-    obsparser.add_option('-r', '--rpmd',
-                         dest='rpmd',
-                         action='store_true',
-                         default=False,
-                         help='Use beads instead of centroids.')
+    parser.add_argument('-r', '--rpmd',
+                        dest='rpmd',
+                        action='store_true',
+                        default=False,
+                        help='Use beads instead of centroids.')
 
-    opts, args = obsparser.parse_args(arguments)
+    opts = parser.parse_args(arguments)
 
     if opts.help is True:
-        obsparser.print_help()
+        parser.print_help()
         return None
 
     # get coordinate values under consideration here!
@@ -150,48 +151,49 @@ def momentum(arguments, log):
         values obtained from the momentum operation.
     """
 
-    obsparser = OptionParser(usage="Options for +mom", add_help_option=False)
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +mom", add_help=False)
 
-    obsparser.add_option('-h', '--help',
-                         dest='help',
-                         action='store_true',
-                         default=False,
-                         help='Prints this help page.')
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
 
-    obsparser.add_option('-v', '--velocities',
-                         dest='vel',
-                         action='store_true',
-                         default=False,
-                         help='Use velocities instead of momenta.')
+    parser.add_argument('-v', '--velocities',
+                        dest='vel',
+                        action='store_true',
+                        default=False,
+                        help='Use velocities instead of momenta.')
 
-    obsparser.add_option('-1', '--x1',
-                         dest='x1',
-                         type='str',
-                         default=None,
-                         help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included.')
+    parser.add_argument('-1', '--x1',
+                        dest='x1',
+                        type=str,
+                        default=None,
+                        help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included.')
 
-    obsparser.add_option('-2', '--x2',
-                         dest='x2',
-                         type='str',
-                         default=None,
-                         help='If given, the relative momentum between the two given (x1 and x2) sites should be calculated.')
+    parser.add_argument('-2', '--x2',
+                        dest='x2',
+                        type=str,
+                        default=None,
+                        help='If given, the relative momentum between the two given (x1 and x2) sites should be calculated.')
 
-    obsparser.add_option('-p', '--project',
-                         dest='proj',
-                         type='str',
-                         default=None,
-                         help='Take the momentum value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
+    parser.add_argument('-p', '--project',
+                        dest='proj',
+                        type=str,
+                        default=None,
+                        help='Take the momentum value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
 
-    obsparser.add_option('-r', '--rpmd',
-                         dest='rpmd',
-                         action='store_true',
-                         default=False,
-                         help='Use beads instead of centroids.')
+    parser.add_argument('-r', '--rpmd',
+                        dest='rpmd',
+                        action='store_true',
+                        default=False,
+                        help='Use beads instead of centroids.')
 
-    opts, args = obsparser.parse_args(arguments)
+    opts = parser.parse_args(arguments)
 
     if opts.help is True:
-        obsparser.print_help()
+        parser.print_help()
         return None
 
     quantity = 'v' if opts.vel else 'p'

@@ -100,11 +100,12 @@ $end
 
 ##############################################################################
 
-$command1 # commands are used for analysis - command name is also used for output file name
+$command1 # commands are used for analysis - command name is also used for output file name if no other name given.
 op = +pos # operations
 op0 = +pos
 value = histogram -3.0 3.0 10 # way to analyze the data; could be 'mean', 'std' 'percentile x', 'histogram min max n'
 format = value # format for printing: time - one line per timestep; value - one line per value
+filename = blah # optional
 $end
 
 ### more comments!!

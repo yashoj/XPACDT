@@ -57,7 +57,7 @@ class WignerSamplingTest(unittest.TestCase):
         samples = wigner.do_Wigner_sampling(self.system0, self.parameters0,
                                             int(self.parameters0.get("sampling").get('samples')))
         energies = [s.nuclei.energy for s in samples]
-        statistics = scipy.stats.bayes_mvs(energies, alpha=0.95)
+        statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
         mean_min, mean_max = statistics[0][1]
         dev_min, dev_max = statistics[2][1]
 
@@ -70,7 +70,7 @@ class WignerSamplingTest(unittest.TestCase):
         samples = wigner.do_Wigner_sampling(self.system2, self.parameters2,
                                             int(self.parameters2.get("sampling").get('samples')))
         energies = [s.nuclei.energy for s in samples]
-        statistics = scipy.stats.bayes_mvs(energies, alpha=0.95)
+        statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
         mean_min, mean_max = statistics[0][1]
         dev_min, dev_max = statistics[2][1]
         mean_reference = 1.0/(np.exp(1.0 / (315777*units.boltzmann))-1.0)+0.5

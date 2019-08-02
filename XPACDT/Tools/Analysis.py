@@ -138,7 +138,7 @@ def do_analysis(parameters, systems=None):
                 header += "# " + str(k) + " = " + str(v) + " \n"
 
         # Output data:
-        file_output = os.path.join(folder, key.replace('command', '') + '.dat')
+        file_output = os.path.join(folder, command.get('filename', key + '.dat'))
         output_data(header, file_output, command['format'], command['times'],
                     bins, final_data, two_d=('2d' in command))
 

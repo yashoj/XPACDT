@@ -102,6 +102,11 @@ class NucleiTest(unittest.TestCase):
                                              rpmd_centroid)
         pass
 
+    def test_parse_dof(self):
+        ## TODO
+        self.nuclei_classical.parse_dof("0")
+        pass
+
     def test_energy(self):
         raise NotImplementedError("Please implement a test here once "
                                   "the function is implemented!!")

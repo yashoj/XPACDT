@@ -75,40 +75,41 @@ def start():
     outfiles = setup_outfiles(args)
 
     # iterate over log
-    for d in system.log:
+    for logged_nuclei in system.log:
         # for each required output, write the current line to the file
         for key, outfile in outfiles.items():
-            getattr(sys.modules[__name__], "write_" + key)(d, outfile,
+            getattr(sys.modules[__name__], "write_" + key)(logged_nuclei,
+                                                           outfile,
                                                            WIDTH, PREC)
 
     for outfile in outfiles.values():
         outfile.close()
 
 
-def write_R(log, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log.time,
+def write_R(log_nuclei, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
-    for x in log.x_centroid:
+    for x in log_nuclei.x_centroid:
         outfile.write("{: {width}.{prec}f} ".format(x,
                       width=width, prec=prec))
     outfile.write(" \n")
     return
 
 
-def write_P(log, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log.time,
+def write_P(log_nuclei, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
-    for p in log.p_centroid:
+    for p in log_nuclei.p_centroid:
         outfile.write("{: {width}.{prec}f} ".format(p,
                       width=width, prec=prec))
     outfile.write(" \n")
     return
 
 
-def write_Rrp(log, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log.time,
+def write_Rrp(log_nuclei, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
-    for bead_position in log.positions:
+    for bead_position in log_nuclei.positions:
         for x in bead_position:
             outfile.write("{: {width}.{prec}f} ".format(x,
                           width=width, prec=prec))
@@ -116,10 +117,10 @@ def write_Rrp(log, outfile, width, prec):
     return
 
 
-def write_Prp(log, outfile, width, prec):
-    outfile.write("{: {width}.{prec}f} ".format(log.time,
+def write_Prp(log_nuclei, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
-    for bead_momenta in log.momenta:
+    for bead_momenta in log_nuclei.momenta:
         for p in bead_momenta:
             outfile.write("{: {width}.{prec}f} ".format(p,
                           width=width, prec=prec))

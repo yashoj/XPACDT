@@ -34,7 +34,7 @@ import numpy as np
 import argparse
 
 
-def position(arguments, log):
+def position(arguments, log_nuclei):
     """Does perform operations related to positions. If no options given it
     will return None.
 
@@ -58,7 +58,8 @@ def position(arguments, log):
     ----------
     arguments: list of strings
         Command line type options given to the position command. See above.
-    log: dict containing the system information (i.e., from the log).
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
 
     Output:
         values obtained from the position operation.
@@ -77,7 +78,7 @@ def position(arguments, log):
                         dest='x1',
                         type=str,
                         default=None,
-                        help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included.')
+                        help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included. Please note that the numbering starts a 0.')
 
     parser.add_argument('-2', '--x2',
                         dest='x2',
@@ -104,9 +105,9 @@ def position(arguments, log):
         return None
 
     # get coordinate values under consideration here!
-    current_value = log.parse_dof(opts.x1, 'x', opts.rpmd)
+    current_value = log_nuclei.parse_dof(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log.parse_dof(opts.x2, 'x', opts.rpmd)
+        coordinate_2 = log_nuclei.parse_dof(opts.x2, 'x', opts.rpmd)
         # Also calculated per beads
         try:
             current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
@@ -120,7 +121,7 @@ def position(arguments, log):
     return current_value
 
 
-def momentum(arguments, log):
+def momentum(arguments, log_nuclei):
     """Does perform operations related to momenta. If no options given it
     will return None.
 
@@ -145,7 +146,8 @@ def momentum(arguments, log):
     ----------
     arguments: list of strings
         Command line type options given to the position command. See above.
-    log: dict containing the system information (i.e., from the log).
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
 
     Output:
         values obtained from the momentum operation.
@@ -170,7 +172,7 @@ def momentum(arguments, log):
                         dest='x1',
                         type=str,
                         default=None,
-                        help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included.')
+                        help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included. Please note that the numbering starts a 0.')
 
     parser.add_argument('-2', '--x2',
                         dest='x2',
@@ -199,10 +201,10 @@ def momentum(arguments, log):
     quantity = 'v' if opts.vel else 'p'
 
     # get coordinate values under consideration here!
-    current_value = log.parse_dof(opts.x1, quantity, opts.rpmd)
+    current_value = log_nuclei.parse_dof(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
         raise NotImplementedError("Implement relative momentum calculations, etc.")
-#        coordinate_2 = log.parse_coordinate(opts.x2, quantity, opts.rpmd)
+#        coordinate_2 = log_nuclei.parse_coordinate(opts.x2, quantity, opts.rpmd)
 #        try:
 #            current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
 #        except ValueError as e:

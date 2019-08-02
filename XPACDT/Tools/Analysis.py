@@ -51,6 +51,22 @@ quantity is obtained or a histogram of the quantity is obtained. The standard
 error of the obtain results is evaluated employing bootstrapping.
 
 Results are printed to file for easy plotting with gnuplot.
+
+Some basic plotting commands for 2D plots in gnuplot: (TODO: where to actually
+put this, etc. Maybe generate a basic gnuplot script along the way?)
+
+#2d plotting:
+unset ztics
+unset key
+unset title
+set contour base
+set view map
+unset surface
+
+do for [a=0:100] {
+splot 'command3.dat' index a using 1:2:3 w l lw 3.2
+pause 1
+}
 """
 
 
@@ -127,6 +143,10 @@ def do_analysis(parameters, systems=None):
 
                 func = (lambda x: np.histogram(x, bins=edges, density=True)[0])
 
+            else:
+                raise RuntimeError("XPACDT: No function for 'value'"
+                                   " defined in the analysis part")
+
         # bootstrap
         final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
                       for data in np.array(command['results']).reshape(-1, len(command['times'])).T]
@@ -141,20 +161,6 @@ def do_analysis(parameters, systems=None):
         file_output = os.path.join(folder, command.get('filename', key + '.dat'))
         output_data(header, file_output, command['format'], command['times'],
                     bins, final_data, two_d=('2d' in command))
-
-
-##2d plotting:
-#unset ztics
-#unset key
-#unset title
-#set contour base
-#set view map
-#unset surface
-
-#do for [a=0:100] {
-#splot 'command3.dat' index a using 1:2:3 w l lw 3.2
-#pause 1
-#} 
 
 
 def output_data(header, file_output, form, times, bins, results, two_d=False):
@@ -258,7 +264,8 @@ def apply_command(command, system):
     Parameters
     ----------
     command : dict
-        The definition of the command to evaluated as given in the input file.
+        The definition of the command to be evaluated as given in the input
+        file.
     system : XPACDT.System
         The read in system containing its own log.
     """
@@ -317,8 +324,8 @@ def _use_time(i, steps_used):
         return (i in steps_used)
 
 
-def apply_operation(operation, system):
-    """ Apply a given sequence of operation to a given system log given.
+def apply_operation(operation, log_nuclei):
+    """ Apply a given sequence of operation to a given log_nuclei log given.
 
     Parameters
     ----------
@@ -326,7 +333,8 @@ def apply_operation(operation, system):
         The string defining the sequence of operations. Each operation starts
         with a '+' and an identifyer (e.g., +position, +velocity, ...).
         Arguments specifying the operation are given after that.
-    system : dict containing the system information (i.e., from the log).
+    log_nuclei : XPACDT.System.Nuclei object from the log to perform
+                 operations on.
 
     Returns
     -------
@@ -346,13 +354,13 @@ def apply_operation(operation, system):
         # match the different operations here.
         # TODO: more automatic
         if ops[0] == 'id' or ops[0] == 'identity':
-            value *= 1.0
+            pass
         elif ops[0] == 'pos' or ops[0] == 'position':
-            value *= op.position(ops[1:], system)
+            value *= op.position(ops[1:], log_nuclei)
         elif ops[0] == 'mom' or ops[0] == 'momentum':
-            value *= op.momentum(ops[1:], system)
+            value *= op.momentum(ops[1:], log_nuclei)
         elif ops[0] == 'vel' or ops[0] == 'velocity':
-            value *= op.momentum(ops[1:] + ['-v'], system)
+            value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
         else:
             raise RuntimeError("XPACDT: The given operation is not"
                                "implemented. " + " ".join(ops))
@@ -392,8 +400,8 @@ def get_directory_list(folder='./', file_name=None):
 
 
 def get_systems(dirs, file_name, systems):
-    """Obtain an iterator over all systems to sweep through them in the
-    analysis.
+    """Obtain a generator over all systems to sweep through them in the
+    analysis. 
     The systems are either given as a list of systems or read from pickle
     files in the given list of folders.
 
@@ -409,7 +417,7 @@ def get_systems(dirs, file_name, systems):
 
     Returns
     -------
-    Iterator over all sytems.
+    Generator over all sytems.
     """
 
     if dirs is not None:

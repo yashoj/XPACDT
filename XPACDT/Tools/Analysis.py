@@ -41,9 +41,10 @@ cases that can be calculated are:
     One- and Two-dimensional histograms
 
 In the input file one defines:
-    A(t), B(0):  Quantities of interest, e.g. the position of a certain atom,
+    A(t), B(0):  Quantities of interest, e.g., the position of a certain atom,
          a bond length, the charge, etc.
-    f(x): A statistical  i.e., the mean or standard devitaion, a histogram.
+    f(x): A function to be calculated over the quantities obtained from all
+         trajectories, i.e., the mean or standard devitaion, a histogram.
 
 The analysis then iterates over all XPACDT.Systems and calculates A(t), B(0)
 for each system. Then the function f(x) is evaluated, i.e., the mean of the
@@ -147,7 +148,12 @@ def do_analysis(parameters, systems=None):
                 raise RuntimeError("XPACDT: No function for 'value'"
                                    " defined in the analysis part")
 
-        # bootstrap
+        # bootstrap:
+        # The resuts array is reshaped and transposed to look
+        # like (n_times, n_values). Then one can easily iterate over all
+        # values created for a single timestep.
+        # In case of a two-d histrogram, the values for one or the other
+        # axis are alternating.
         final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
                       for data in np.array(command['results']).reshape(-1, len(command['times'])).T]
 
@@ -183,7 +189,8 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
         file_output : string
             Name of the file to write to.
         form : string
-            Format in which the data should be written. Allowed: time, value, 2d
+            Format in which the data should be written.
+            Allowed: time, value, 2d
         times : ndarray of floats
             The times for which the data was created
         bins : list of ndarrays
@@ -277,10 +284,16 @@ def apply_command(command, system):
     if 'op0' in command:
         value_0 = apply_operation(command['op0'], system.log[0])
 
-    # Iterate over all times and calculate the full command.
-    command['results'].extend([value_0 * apply_operation(command['op'], log)
-                               for i, log in enumerate(system.log)
-                               if _use_time(i, steps_used)])
+    try:
+        # Iterate over all times and calculate the full command.
+        command['results'].extend([value_0 * apply_operation(command['op'], log_nuclei)
+                                   for i, log_nuclei in enumerate(system.log)
+                                   if _use_time(i, steps_used)])
+    except ValueError as e:
+        raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
+                               " together it probably is due to incompatible"
+                               " array sizes returned by the 'op0' and 'op'"
+                               " operationsgiven. Please check!")
 
     # For a 2d histogram another 'obeservable' needs to be computed
     if '2d' in command:
@@ -288,10 +301,17 @@ def apply_command(command, system):
         if '2op0' in command:
             value_0 = apply_operation(command['2op0'], system.log[0])
 
-        # Iterate over all times and calculate the full command.
-        command['results'].extend([value_0 * apply_operation(command['2op'], log)
-                                   for i, log in enumerate(system.log)
-                                   if _use_time(i, steps_used)])
+        try:
+            # Iterate over all times and calculate the full command.
+            command['results'].extend([value_0 * apply_operation(command['2op'], log_nuclei)
+                                       for i, log_nuclei in enumerate(system.log)
+                                       if _use_time(i, steps_used)])
+        except ValueError as e:
+            raise type(e)(str(e) + "\nXPACDT: If 'operands could not be"
+                                   " broadcast together it probably is due to"
+                                   " incompatible array sizes returned by the"
+                                   " '2op0' and '2op' operationsgiven. Please"
+                                   " check!")
 
     command['times'] = [log.time for i, log in enumerate(system.log)
                         if _use_time(i, steps_used)]

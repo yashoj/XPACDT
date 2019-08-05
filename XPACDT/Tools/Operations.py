@@ -62,7 +62,12 @@ def position(arguments, log_nuclei):
                 operations on.
 
     Output:
-        values obtained from the position operation.
+        (n_values) ndarray of floats
+            values obtained from the position operation. The length depends on
+            the operation to be performed. If, e.g., all bead positions of a
+            single degree of freedom is requested, n_values will be n_beads of
+            that degree of freedom. If no arguments are given the function
+            returns None.
     """
 
     # Parse arguments
@@ -98,6 +103,9 @@ def position(arguments, log_nuclei):
                         default=False,
                         help='Use beads instead of centroids.')
 
+    if len(arguments) == 0:
+        return None
+
     opts = parser.parse_args(arguments)
 
     if opts.help is True:
@@ -118,7 +126,7 @@ def position(arguments, log_nuclei):
     if opts.proj is not None:
         current_value = _projection(opts.proj, current_value)
 
-    return current_value
+    return np.array(current_value).flatten()
 
 
 def momentum(arguments, log_nuclei):
@@ -150,7 +158,12 @@ def momentum(arguments, log_nuclei):
                 operations on.
 
     Output:
-        values obtained from the momentum operation.
+        (n_values) ndarray of floats
+            Values obtained from the momentum operation. The length depends on
+            the operation to be performed. If, e.g., all bead momenta of a
+            single degree of freedom is requested, n_values will be n_beads of
+            that degree of freedom. If no arguments are given the function
+            returns None.
     """
 
     # Parse arguments
@@ -192,6 +205,9 @@ def momentum(arguments, log_nuclei):
                         default=False,
                         help='Use beads instead of centroids.')
 
+    if len(arguments) == 0:
+        return None
+
     opts = parser.parse_args(arguments)
 
     if opts.help is True:
@@ -214,7 +230,7 @@ def momentum(arguments, log_nuclei):
     if opts.proj is not None:
         current_value = _projection(opts.proj, current_value)
 
-    return current_value
+    return np.array(current_value).flatten()
 
 
 def _projection(options, values):
@@ -231,7 +247,7 @@ def _projection(options, values):
         The values to be checked.
     Returns
     -------
-    float or ndarray of floats - same shape as values
+    values.shape ndarray of floats
         1.0 if given value is within the range, 0.0 otherwise.
     """
 

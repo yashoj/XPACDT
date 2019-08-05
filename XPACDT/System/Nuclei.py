@@ -302,7 +302,8 @@ beads given."
                     else:
                         values.append(self.p_centroid[dof] / self.masses[dof])
                 else:
-                    raise RuntimeError("XPACDT: Requested quantity not implemented: " + quantity)
+                    raise RuntimeError("XPACDT: Requested quantity not"
+                                       " implemented: " + quantity)
 
         return np.array(values)
 

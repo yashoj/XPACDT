@@ -70,6 +70,10 @@ class AnalysisTest(unittest.TestCase):
 #        pass
 #
     def test_apply_command(self):
+        with self.assertRaises(ValueError):
+            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'results': []}
+            analysis.apply_command(command, self.systems[3])
+
         command = {'op': '+pos -1 0 +mom -1 0', 'step': '', 'results': []}
         analysis.apply_command(command, self.systems[0])
         results_ref = np.array([[0.49671415 * -0.23415337]])

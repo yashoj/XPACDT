@@ -291,16 +291,18 @@ beads given."
                         values.append(self.positions[dof])
                     else:
                         values.append(self.x_centroid[dof])
-                if quantity == 'p':
+                elif quantity == 'p':
                     if beads:
                         values.append(self.momenta[dof])
                     else:
                         values.append(self.p_centroid[dof])
-                if quantity == 'v':
+                elif quantity == 'v':
                     if beads:
                         values.append(self.momenta[dof] / self.masses[dof])
                     else:
                         values.append(self.p_centroid[dof] / self.masses[dof])
+                else:
+                    raise RuntimeError("XPACDT: Requested quantity not implemented: " + quantity)
 
         return np.array(values)
 

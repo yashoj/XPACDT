@@ -30,6 +30,7 @@
 #  **************************************************************************
 
 import os
+import subprocess as sp
 import sys
 
 # This file creates the basic XPACDT configuration file ".XPACDT"
@@ -58,6 +59,21 @@ if isXATOM == 'y':
     XPACDT_XATOM = input("Please enter path to XATOM: ")
 else:
     sys.stdout.write("No XATOM path set. \n \n")
+
+# Ask if PES should be compiled:
+isCompile = input("Do you want the potential energy surfaces to be compiled? (y/n) ")
+
+if isCompile == 'y':
+   module_directories = [os.path.join("XPACDT/Interfaces/", d) for d in os.listdir("XPACDT/Interfaces/") if ('module' in d and os.path.isdir(os.path.join("XPACDT/Interfaces/", d)))]
+   for direc in module_directories:
+       sys.stdout.write("Compiling in " + direc + " ... ")
+       f = open(direc + "/output_make", 'w')
+       spoutput = sp.run(["make"], cwd=direc, stdout=f, stderr=f)
+       if spoutput.returncode != 0:
+       	  sys.stdout.write("\nError occured while compiling. Please check " + direc + "/output_make for more details. \n")
+       else:
+          sys.stdout.write(" done. \n")
+sys.stdout.write("\n")
 
 # Write variables to file.
 activationFile.write("export PATH=" + PATH_1 + ":" + PATH_2 + ":$PATH\n")

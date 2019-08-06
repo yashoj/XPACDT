@@ -33,6 +33,7 @@ import numpy as np
 import XPACDT.Interfaces.BKMP2_module.pot as pot
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
+import XPACDT.Tools.Geometry as geom
 
 
 class BKMP2(itemplate.PotentialInterface):
@@ -113,7 +114,7 @@ class BKMP2(itemplate.PotentialInterface):
         internal[1] = np.linalg.norm(R_vec)
 
         # phi
-        internal[2] = py_ang(r_vec, R_vec)
+        internal[2] = geom.angle(r_vec, R_vec)
         if R[7] < 0.0:
             internal[2] = 2.0*np.pi-internal[2]
 
@@ -146,22 +147,14 @@ class BKMP2(itemplate.PotentialInterface):
 
         R = np.zeros(9)
 
-        # r
+        # from r, fixed to x-axis
         R[3] = internal[0]
 
-        # R
+        # from R and phi, fixed to x-y-plane
         R[6] = (internal[1]) * np.cos(internal[2]) + 0.5*internal[0]
         R[7] = (internal[1]) * np.sin(internal[2])
 
         return R
-
-
-# Move to tools!
-def py_ang(v1, v2):
-    """ Returns the angle in radians between vectors 'v1' and 'v2'    """
-    cosang = np.dot(v1, v2)
-    sinang = np.linalg.norm(np.cross(v1, v2))
-    return np.arctan2(sinang, cosang)
 
 
 if __name__ == "__main__":

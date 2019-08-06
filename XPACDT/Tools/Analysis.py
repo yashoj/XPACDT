@@ -286,6 +286,7 @@ def apply_command(command, system):
                                    for i, log in enumerate(system.log)
                                    if _use_time(i, steps_used)])
 
+    # TODO: Do we need this for every system? Do we want some consistency check?
     command['times'] = [log.time for i, log in enumerate(system.log)
                         if _use_time(i, steps_used)]
 

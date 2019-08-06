@@ -92,8 +92,10 @@ def do_analysis(parameters, systems=None):
         dirs = None
         file_name = None
 
+    n_systems = 0
     # Calculate 'observables' for each system
     for system in get_systems(dirs, file_name, systems):
+        n_systems += 1
 
         # do different stuff for each command
         for key, command in parameters.commands.items():
@@ -129,7 +131,7 @@ def do_analysis(parameters, systems=None):
                                      int(values[6])+1)
                 bins.append(edges2[:-1] + 0.5*np.diff(edges2))
 
-                func = (lambda x: np.histogram2d(x[0::2], x[1::2],
+                func = (lambda x: np.histogram2d(x[:len(x)//2], x[len(x)//2:],
                                                  bins=(edges1, edges2),
                                                  density=True)[0])
 
@@ -148,14 +150,27 @@ def do_analysis(parameters, systems=None):
                 raise RuntimeError("XPACDT: No function for 'value'"
                                    " defined in the analysis part")
 
-        # bootstrap:
-        # The resuts array is reshaped and transposed to look
-        # like (n_times, n_values). Then one can easily iterate over all
-        # values created for a single timestep.
-        # In case of a two-d histrogram, the values for one or the other
-        # axis are alternating.
+        # The resuts array is reshaped to look like (n_times, n_values).
+        #
+        # After performing all commands the results array looks is of the
+        # follwoing order. It is a list of np.arrays.
+        #
+        # The np.arrays have the length of the number of returned values from
+        # the command.
+        #
+        # The list has length n_times*(op)*n_systems. (op) is 2 for
+        # 2d histograms, 1 otherwise. The list is ordered as follows. For each
+        # system, the operation results for all times are given. In case of a
+        # 2d histogram the first operation is stored for all times, then the
+        # second operation is stored for all times. Then results for the next
+        # system are given.
+        n_times = len(command['times'])
+        reshaped_results = np.swapaxes(np.array(command['results']).
+                                       reshape(n_systems, (2 if '2d' in command else 1), n_times, -1),
+                                       0, 2).reshape(n_times, -1)
+        # bootstrap
         final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
-                      for data in np.array(command['results']).reshape(-1, len(command['times'])).T]
+                      for data in reshaped_results]
 
         # Generate header
         header = "## Generated for the following command: \n"

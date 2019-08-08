@@ -41,10 +41,12 @@ class AdiabaticElectrons(electrons.Electrons):
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
+    n_beads : (n_dof) list of int
+        The number of beads for each degree of freedom.
     """
 
-    def __init__(self, parameters):
-        electrons.Electrons.__init__(self, parameters)
+    def __init__(self, parameters, n_beads):
+        electrons.Electrons.__init__(self, parameters, n_beads, 'adiabatic')
 
     def step(self, time, **kwargs):
         """ Dummy implementation of the step, as adiabatic electrons have no

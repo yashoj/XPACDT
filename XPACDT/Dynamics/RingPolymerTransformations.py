@@ -50,17 +50,14 @@ class RingPolymerTransformations(object):
     ----------
     nbeads : (n_dof) list of int
         The number of beads for each degree of freedom.
-    transform_type : string
-        Type of ring polymer normal mode transformation to be used; this can
-        be 'matrix' or 'fft'. Default: 'matrix'
+    transform_type : {'matrix', 'fft'}
+        Type of ring polymer normal mode transformation to be used.
+        Default: 'matrix'
 
     Attributes:
     -----------
-    n_beads : (n_dof) list of int
-        Number of beads for each degrees of freedom
-    transform_type : string
-        Type of ring polymer normal mode transformation to be used; this can
-        be 'matrix' or 'fft'.
+    n_beads
+    transform_type
     C_matrices : dictionary or None
         Normal mode transformation matrices for all different number of beads
         present in 'n_beads'; the keys are the number of beads
@@ -91,7 +88,7 @@ class RingPolymerTransformations(object):
 
     @property
     def transform_type(self):
-        """string : Type of ring polymer normal mode transformation."""
+        """{'matrix', 'fft'} : Type of ring polymer normal mode transformation."""
         return self.__transform_type
 
     @transform_type.setter

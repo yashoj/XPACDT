@@ -48,7 +48,11 @@ class OneDPolynomial(itemplate.PotentialInterface):
         expansion length is determined by the number of given coefficients
         here.
     """
-    def __init__(self, **kwargs):
+
+    def __init__(self, max_n_beads, basis, **kwargs):
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1, 
+                                              max_n_beads, 'adiabatic')
+
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))
         except ValueError as e:
@@ -66,8 +70,6 @@ class OneDPolynomial(itemplate.PotentialInterface):
                                    "not convertable to floats."
                                    " a is " + kwargs.get('a'))
 
-        itemplate.PotentialInterface.__init__(self, "OneDPolynomial")
-
     @property
     def a(self):
         """(N) ndarray of floats : Expansion coefficients for the polynomial
@@ -84,6 +86,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
+        ----------
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
@@ -99,6 +102,9 @@ class OneDPolynomial(itemplate.PotentialInterface):
         assert (isinstance(R, np.ndarray)), "R not a numpy array!"
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
+        assert (R.shape[0] == 1), "Degrees of freedom is not one!"
+        
+        #### Check shapes of gradients and E here !!!
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:

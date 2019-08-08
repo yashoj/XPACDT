@@ -51,26 +51,115 @@ class PotentialInterface:
     ----------
     name : str
            The name of the specific interface implemented.
-    """
+    n_dof
+    n_states
+    max_n_beads
+    bases_used : {'adiabatic', 'diabatic', 'dia2ad'}
+        Electronic state basis representations to be used. Default: 'adiabatic'
+    
+           
+    Attributes
+    ----------
+    name
+    n_dof
+    n_states
+    max_n_beads
+    _energy : (n_states, n_beads) ndarrays of floats
+        Adiabatic energy of the system for all states and beads.
+    _gradient : (n_states, n_dof, n_beads) ndarrays of floats
+        Gradient of adiabatic energy of the system for all states and beads.
+    _nac : (n_states, n_states, n_dof, n_beads) ndarrays of floats, optional
+        Non-adiabatic coupling vector of the system for all states and beads.
 
-    def __init__(self, name, **kwargs):
+    _energy_centroid : (n_states) ndarrays of floats
+        Centroid adiabatic energy of the system for all states.
+    _gradient_centroid : (n_states, n_dof) ndarrays of floats
+        Centroid gradient of adiabatic energy of the system for all states.
+    _nac_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
+        Centroid non-adiabatic coupling vector of the system for all states.
+
+
+    _diabatic_energy : (n_states, n_states, n_beads) ndarrays of floats, optional
+        Diabatic energy of the system for all states and beads.
+    _diabatic_gradient : (n_states, n_states, n_dof, n_beads) ndarrays of floats, optional
+        Gradient of diabatic energy of the system for all states and beads.
+
+    _diabatic_energy_centroid : (n_states, n_states) ndarrays of floats, optional
+        Centroid diabatic energy of the system for all states.
+    _diabatic_gradient_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
+        Centroid gradient of diabatic energy of the system for all states.
+
+    """
+    # TODO: where to put protected or private attributes
+    def __init__(self, name, n_dof, n_states=1, max_n_beads, 
+                 bases_used='adiabatic', **kwargs):
         self.__name = name
+        self.__n_dof = n_dof
+        self.__n_states = n_states
+        # Note that here all dof having same number of beads is assumed
+        # or at least that the effective position matrix having the max. nbeads
+        self.__max_n_beads = max_n_beads
+        self.bases_used = bases_used
+        self.__SAVE_THRESHOLD = 1e-8
 
         self._old_R = None
         self._old_P = None
         self._old_S = None
 
-        self._energy = None
-        self._gradient = None
-        self._energy_centroid = None
-        self._gradient_gradient = None
+        if (self.bases_used == 'adiabatic') or (self.bases_used == 'dia2ad'):
+            self._energy = np.zeros((self.n_states, self.max_n_beads))
+            self._gradient = np.zeros((self.n_states, self.n_dof, 
+                                       self.max_n_beads))
+            self._energy_centroid = np.zeros((self.n_states))
+            self._gradient_centroid = np.zeros((self.n_states, self.n_dof))
 
-        self.__SAVE_THRESHOLD = 1e-8
+            if (self.n_states > 1):
+                self._nac = np.zeros((self.n_states, self.n_states, self.n_dof,
+                                      self.max_n_beads))
+                self._nac_centroid = np.zeros((self.n_states, self.n_states,
+                                               self.n_dof))
+                
+        if (self.bases_used == 'diabatic') or (self.bases_used == 'dia2ad'):
+            self._diabatic_energy = np.zeros((self.n_states, self.n_states,
+                                              self.max_n_beads))
+            self._diabatic_gradient =  np.zeros((self.n_states, self.n_states,
+                                                 self.n_dof, self.max_n_beads))
+            self._diabatic_energy_centroid =  np.zeros((self.n_states,
+                                                        self.n_states))
+            self._diabatic_gradient_centroid =  np.zeros((self.n_states, self.n_states, self.n_dof))
+
+
 
     @property
     def name(self):
         """str : The name of the specific interface implementation."""
         return self.__name
+    
+    @property
+    def n_dof(self):
+        """int : Degrees of freedom."""
+        return self.__n_dof
+
+    @property
+    def n_states(self):
+        """int : Number of electronic states."""
+        return self.__n_states
+
+    @property
+    def max_n_beads(self):
+        """int : Number of electronic states."""
+        return self.__max_n_beads
+
+    @property
+    def bases_used(self):
+        """{'adiabatic', 'diabatic', 'dia2ad'} : Electronic state basis representations to be used."""
+        return self.__bases_used
+    
+    @bases_used.setter
+    def bases_used(self, b):
+        assert (b in ['adiabatic', 'diabatic', 'dia2ad']),\
+               ("Electronic state basis representation not available.")
+        self.__bases_used = b
 
     @property
     def SAVE_THESHOLD(self):
@@ -149,7 +238,7 @@ class PotentialInterface:
             return True
 
     def energy(self, R, S=None, centroid=False):
-        """Obtain energy of the system in the current state.
+        """Obtain adiabatic energy of the system in the current state.
 
         Parameters
         ----------
@@ -176,7 +265,7 @@ class PotentialInterface:
             return self._energy[0 if S is None else S]
 
     def gradient(self, R, S=None, centroid=False):
-        """Obtain gradient of the system in the current state.
+        """Obtain adiabatic gradient of the system in the current state.
 
         Parameters
         ----------

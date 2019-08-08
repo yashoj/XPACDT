@@ -61,9 +61,8 @@ class VelocityVerlet(object):
     ----------------
     beta : float, optional, default None
         Inverse temperature for ring polymer springs in a.u.
-    rp_transform_type : string, optional, default: 'matrix'
-        Type of ring polymer normal mode transformation to be used; this can
-        be 'matrix' or 'fft'.
+    rp_transform_type : {'matrix', 'fft'}, optional, default: 'matrix'
+        Type of ring polymer normal mode transformation to be used.
 
     Attributes:
     -----------

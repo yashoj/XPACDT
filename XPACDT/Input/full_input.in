@@ -45,16 +45,10 @@ $end
 
 ##############################################################################
 
-$MorseDiabatic2states  # must match the interface specified; specific to each interface
+$MorseDiabatic  # must match the interface specified; specific to each interface
 
 model_type = model_1         # Model number to be used (possible: model_1, model_2, model_3)
-$end
-
-##############################################################################
-
-$MorseDiabatic3states  # must match the interface specified; specific to each interface
-
-model_type = model_1         # Model number to be used (possible: model_1, model_2, model_3)
+n_states = 3                 # Number of morse diabatic states (possible: 2, 3)
 $end
 
 ##############################################################################

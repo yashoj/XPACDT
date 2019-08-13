@@ -91,7 +91,7 @@ class PotentialInterface:
 
     """
     # TODO: where to put protected or private attributes
-    def __init__(self, name, n_dof, n_states=1, max_n_beads, 
+    def __init__(self, name, n_dof, n_states=1, max_n_beads,
                  bases_used='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof

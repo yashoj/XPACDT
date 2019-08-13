@@ -37,7 +37,7 @@ import XPACDT.Interfaces.InterfaceTemplate as itemplate
 class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
-    V(x) = \sum_{i=0}^{N} a_i (x-x_0)^i.
+    :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
 
     Other Parameters
     ----------------

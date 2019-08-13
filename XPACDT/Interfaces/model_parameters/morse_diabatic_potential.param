@@ -1,0 +1,98 @@
+# Three state diabatic model potential in one dimension
+# The diagonal terms are morse potential and off-diagonal couplings are gaussian
+# Reference: Chem. Phys. Lett. 349, 521-529 (2001)
+
+##############################################################################
+
+$model_1
+
+# Diagonal terms
+de1 = 0.02
+beta1 = 0.4
+re1 = 4.0
+c1 = 0.02
+
+de2 = 0.02
+beta2 = 0.65
+re2 = 4.5
+c2 = 0.0
+
+de3 = 0.02
+beta3 = 0.4
+re3 = 4.0
+c3 = 0.02
+
+# Off-diagonal terms
+A12 = 0.005
+as12 = 32.0
+r12 = 3.4
+
+A23 = 0.005
+as23 = 32.0
+r23 = 3.4
+
+$end
+
+##############################################################################
+
+$model_2
+
+# Diagonal terms
+de1 = 0.02
+beta1 = 0.4
+re1 = 4.0
+c1 = 0.02
+
+de2 = 0.02
+beta2 = 0.65
+re2 = 4.5
+c2 = 0.0
+
+de3 = 0.02
+beta3 = 0.4
+re3 = 4.0
+c3 = 0.02
+
+# Off-diagonal terms
+A12 = 0.005
+as12 = 32.0
+r12 = 3.4
+
+A13 = 0.005
+as13 = 32.0
+r13 = 3.4
+
+$end
+
+##############################################################################
+
+$model_3
+
+# Diagonal terms
+de1 = 0.02
+beta1 = 0.4
+re1 = 4.0
+c1 = 0.02
+
+de2 = 0.02
+beta2 = 0.65
+re2 = 4.5
+c2 = 0.0
+
+de3 = 0.02
+beta3 = 0.4
+re3 = 4.0
+c3 = 0.02
+
+# Off-diagonal terms
+A12 = 0.005
+as12 = 32.0
+r12 = 3.4
+
+A13 = 0.005
+as13 = 32.0
+r13 = 3.4
+
+$end
+
+##############################################################################

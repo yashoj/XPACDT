@@ -53,6 +53,20 @@ $end
 
 ##############################################################################
 
+$Dissociation2states  # must match the interface specified; specific to each interface
+
+model_type = strong_coupling         # Model type to be used (possible: strong_coupling, weak_coupling)
+$end
+
+##############################################################################
+
+$TullyModel  # must match the interface specified; specific to each interface
+
+model_type = model_A         # Model type to be used (possible: model_A, model_B, model_C)
+$end
+
+##############################################################################
+
 $rpmd                       # RPMD input
 
 beads = 4                   # Number of beads used; 1 or even numbers; TODO: different numbers

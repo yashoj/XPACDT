@@ -50,8 +50,8 @@ class OneDPolynomial(itemplate.PotentialInterface):
     """
 
     def __init__(self, max_n_beads, basis, **kwargs):
-        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1, 
-                                              max_n_beads, 'adiabatic')
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 
+                                              max_n_beads, 1, 'adiabatic')
 
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))

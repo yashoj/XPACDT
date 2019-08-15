@@ -91,7 +91,7 @@ class PotentialInterface:
 
     """
     # TODO: where to put protected or private attributes
-    def __init__(self, name, n_dof, n_states=1, max_n_beads,
+    def __init__(self, name, n_dof, max_n_beads, n_states=1,
                  bases_used='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof
@@ -335,6 +335,51 @@ class PotentialInterface:
         The gradient at the given geometry in hartree/au.
         """
         return self.gradient(np.array([R]), S)
+
+    def _get_adiabatic_from_diabatic(self, R, func_diabatic_energy=None):
+        """
+        Calculate and set adiabatic matrices for energies, gradients and
+        non-adiabatic coupling (NAC) for beads and centroid using diabatic
+        energies and gradients.
+
+        Parameters:
+        ----------
+        R : (n_dof, n_beads) ndarray of floats
+            The positions of all beads in the system. The first axis is the
+            degrees of freedom and the second axis the beads.
+        func_diabatic_energy : function
+            Function to get diabatic energies of shape (n_states, n_states)
+            or (n_states, n_states, n_beads) ndarrays of floats. Should take
+            bead or centroid positions as parameter.
+        """
+
+        if self.n_states == 2:
+            import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
+
+            self._gradient = dia2ad.get_adiabatic_gradient(
+                self._diabatic_energy, self._diabatic_gradient)
+            self._gradient_centroid = dia2ad.get_adiabatic_gradient(
+                self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
+
+        elif self.n_states == 3:
+            import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
+
+            assert (func_diabatic_energy is not None), \
+                   ("No function to obtain diabatic energies provided.")
+
+            self._gradient = dia2ad.get_adiabatic_gradient(
+                R, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
+
+            r_centroid = np.mean(R, axis=1)
+            self._gradient_centroid = dia2ad.get_adiabatic_gradient(
+                r_centroid, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
+
+        self._energy = dia2ad.get_adiabatic_energy(self._diabatic_energy)
+        self._energy_centroid = dia2ad.get_adiabatic_energy(self._diabatic_energy_centroid)
+
+        self._nac = dia2ad.get_NAC(self._diabatic_energy, self._diabatic_gradient)
+        self._nac_centroid = dia2ad.get_NAC(
+            self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
 
     def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method

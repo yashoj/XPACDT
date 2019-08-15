@@ -1,5 +1,6 @@
 # Two state model dissociation potential in one dimension
 # Reference: J. Chem. Phys. 150, 114105 (2019)
+# De = E, re = qo, r12c = qo12!!!
 
 ##############################################################################
 
@@ -17,8 +18,8 @@ De2 = 0.003417
 b2 = 0.003417
 
 # Off-diagonal term
-cvc = 0.008
-ac = 32.0
+V12c = 0.008
+a12c = 32.0
 r12c = 3.16
 
 $end
@@ -38,9 +39,9 @@ re2 = 5.5
 De2 = 0.003417
 b2 = 0.0
 
-# Off-diagonal terms
-cvc = 0.0005
-ac = 2.0
+# Off-diagonal term
+V12c = 0.0005
+a12c = 2.0
 r12c = 4.3
 
 $end

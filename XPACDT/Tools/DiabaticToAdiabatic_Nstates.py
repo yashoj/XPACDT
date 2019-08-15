@@ -39,12 +39,14 @@ def get_adiabatic_energy(V):
 
     Parameters:
     ----------
-    V : (n_states, n_states) ndarrays of floats /or/ (n_states, n_states, n_beads) ndarrays of floats
+    V : (n_states, n_states) ndarrays of floats
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
         Diabatic potential matrix.
 
     Returns:
     ----------
-    V_ad : (n_states) ndarrays of floats /or/ (n_states, n_beads) ndarrays of floats
+    V_ad : (n_states) ndarrays of floats
+           /or/ (n_states, n_beads) ndarrays of floats
         Adiabatic potential energies for each state.
     """
     if len(V.shape) == 3:
@@ -105,20 +107,37 @@ def get_adiabatic_gradient(R, func_diabatic_energy, step):
 def get_NAC(V, dV):
     """
     Obtain non-adiabatic coupling (NAC) vector from a given N level diabatic
-    matrix.
+    matrix. The NAC between the k-th and j-th state, labelled
+    :math:'d_{kj}', is given by
+    .. math::
+
+        d_{kj} = \\bra{\\phi^{adiab}_k} \\overrightarrow{\\nabla} \\ket{\\phi^{adiab}_j}
+               = \\frac{\\bra{\\phi^{adiab}_k} \\overrightarrow{\\nabla} \\hat{V} \\ket{\\phi^{adiab}_j}}
+                       {\\epsilon_j - \\epsilon_k}
+
+    where :math:'\\epsilon_k' and :math:'\ket{\phi^{adiab}_k}' are the k-th
+    state adiabatic energy and eigenstate respectively, and
+    :math:'\\overrightarrow{\\nabla} \\hat{V}' is the diabatic gradient.
+    
+    For reference, please see J. Chem. Phys. 101, 6 (1994).
 
     Parameters:
     ----------
-    V : (n_states, n_states) ndarrays of floats /or/ (n_states, n_states, n_beads) ndarrays of floats
+    V : (n_states, n_states) ndarrays of floats
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
         Diabatic potential energy matrix
-    dV :(n_states, n_states, n_dof) ndarrays of floats /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats
+    dV : (n_states, n_states, n_dof) ndarrays of floats
+         /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats
         Diabatic potential gradient matrix
 
     Returns:
     ----------
-    nac : (n_states, n_states, n_dof) ndarrays of floats /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats
+    nac : (n_states, n_states, n_dof) ndarrays of floats
+          /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats
         NAC for each state given in matrix form.
     """
+    # TODO: Comparing with 2 state dia2ad, the sign is negative, could be 
+    # possibly due to phase factor in adiabatic states. Does that matter??
     n_states = V.shape[0]
     nac = np.zeros_like(dV)
 
@@ -127,13 +146,15 @@ def get_NAC(V, dV):
     V_ad = get_adiabatic_energy(V)
     U = get_transformation_matrix(V)
 
-    # Gradients after applying transformation matrices
+    # Gradients after applying transformation matrices which contain the
+    # adiabatic states
     if len(V.shape) == 2:
-        transformed_grad = np.matmul(U.conjugate.T, np.matmul(dV.transpose(2, 0, 1), U))
+        transformed_grad = np.matmul((U.conjugate()).T, np.matmul(dV.transpose(2, 0, 1), U))
         # Changing from (n_dof, n_states, n_states) to (n_states, n_states, n_dof)
         transformed_grad = transformed_grad.transpose(1, 2, 0)
     else:
-        transformed_grad = np.matmul(U.conjugate.transpose(2, 1, 0), np.matmul(dV.transpose(2, 3, 0, 1), U.transpose(2, 0, 1)))
+        transformed_grad = np.matmul((U.conjugate()).transpose(2, 1, 0),
+                                     np.matmul(dV.transpose(2, 3, 0, 1), U.transpose(2, 0, 1)))
         # Changing from (n_dof, n_beads, n_states, n_states) to (n_states, n_states, n_dof, n_beads)
         transformed_grad = transformed_grad.transpose(2, 3, 0, 1)
 
@@ -155,12 +176,14 @@ def get_transformation_matrix(V):
 
     Parameters:
     ----------
-    V : (n_states, n_states) ndarrays of floats /or/ (n_states, n_states, n_beads) ndarrays of floats
+    V : (n_states, n_states) ndarrays of floats
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
         Diabatic potential matrix.
 
     Returns:
     ----------
-    U : (n_states, n_states) ndarrays of floats /or/ (n_states, n_states, n_beads) ndarrays of floats
+    U : (n_states, n_states) ndarrays of floats
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
         Unitary transformation matrix.
     """
 
@@ -174,3 +197,25 @@ def get_transformation_matrix(V):
         return U.transpose(1, 2, 0)
     else:
         return U
+
+
+if __name__ == '__main__':
+    import XPACDT.Interfaces.MorseDiabatic as morse
+    pot = morse.MorseDiabatic(4, 'adiabatic', **{'n_states': '3', 'model_type': 'model_1'})
+
+    R = np.array([[3.3, 3.4,  3.5, 3.6]])
+    #R = np.array([[2., 3.5, 4., 5.]])
+
+    pot._calculate_all(R)
+
+    #print(pot._energy)
+    #print(pot._gradient)
+    print(pot._nac, '\n\n')
+
+    print(get_adiabatic_energy(pot._diabatic_energy))
+    print(get_adiabatic_gradient(R, pot._get_diabatic_energy_3states, pot.DERIVATIVE_STEPSIZE))
+    print(get_NAC(pot._diabatic_energy, pot._diabatic_gradient), '\n\n')
+
+    print(np.allclose(get_adiabatic_energy(pot._diabatic_energy), pot._energy))
+    print(np.allclose(get_adiabatic_gradient(R, pot._get_diabatic_energy_3states, pot.DERIVATIVE_STEPSIZE), pot._gradient))
+    print(np.allclose(get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))

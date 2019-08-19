@@ -44,9 +44,10 @@ class Dissociation2states(itemplate.PotentialInterface):
     The diagonal terms are morse potential and dissociative potential,
     and off-diagonal coupling is gaussian.
     Reference: J. Chem. Phys. 150, 114105 (2019)
+    Please note the change in variables compared to the paper: E -> De,
+    qo -> re, qo12 -> r12c.
 
     !!! Add form of diagonal and off-diagonal terms; and aliases from paper!!!
-    De = E, re = qo, r12c = qo12
 
     Other Parameters
     ----------------
@@ -113,12 +114,6 @@ class Dissociation2states(itemplate.PotentialInterface):
             The current electronic state. This is not used in this potential
             and thus defaults to None.
         """
-        # TODO: Where to place asserts so that they are only checked once in the beginning.
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
-        assert (R.shape[0] == self.n_dof), "Degrees of freedom is not one!"
-        assert (R.shape[1] == self.max_n_beads), "Number of beads does not match!"
 
         self._calculate_diabatic_all(R)
 

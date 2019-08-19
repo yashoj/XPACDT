@@ -4,6 +4,14 @@ XPACDT.Bin package
 Submodules
 ----------
 
+XPACDT.Bin.compile\_xpacdt module
+---------------------------------
+
+.. automodule:: XPACDT.Bin.compile_xpacdt
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 XPACDT.Bin.genLog module
 ------------------------
 

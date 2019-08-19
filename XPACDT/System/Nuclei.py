@@ -80,7 +80,8 @@ class Nuclei(object):
 
     @property
     def electrons(self):
-        """ XPACDT.System.Electrons : The electrons used in the propagation."""
+        """ XPACDT.System.Electrons : The electrons used in the propagation.
+            Default: AdiabaticElectrons."""
         return self.__electrons
 
     @property
@@ -123,7 +124,7 @@ class Nuclei(object):
     @property
     def masses(self):
         """(n_dof) ndarray of floats : The masses of each degree of
-        freedom in au."""
+           freedom in au."""
         return self.__masses
 
     @masses.setter
@@ -224,8 +225,8 @@ class Nuclei(object):
                                                          'AdiabaticElectrons')
         __import__("XPACDT.System." + electronic_method)
         if (electronic_method != "AdiabaticElectrons"):
-            assert(electronic_method in parameters), ("No input parameters for"
-                  "chosen electronic method")
+            assert(electronic_method in parameters), \
+                  ("No input parameters for chosen electronic method.")
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
                                    electronic_method)(parameters, self.n_beads)
 

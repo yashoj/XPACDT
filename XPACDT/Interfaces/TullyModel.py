@@ -39,10 +39,8 @@ import XPACDT.Input.Inputfile as infile
 
 class TullyModel(itemplate.PotentialInterface):
     """
-    Two state Tully model potentials in one dimension.
+    Two state Tully model potentials (A, B and C) in one dimension.
     Reference: J. Chem. Phys. 93 (2), 1061 (1990)
-
-    !!! Add form of diagonal and off-diagonal terms!!!
 
     Other Parameters
     ----------------
@@ -92,7 +90,7 @@ class TullyModel(itemplate.PotentialInterface):
     @model_type.setter
     def model_type(self, m):
         assert (m in ['model_A', 'model_B', 'model_C']),\
-               ("Type of Tully model not available.")
+               ("Type of Tully model selected not available.")
         self.__model_type = m
 
     def _calculate_all(self, R, P=None, S=None):
@@ -113,12 +111,6 @@ class TullyModel(itemplate.PotentialInterface):
             The current electronic state. This is not used in this potential
             and thus defaults to None.
         """
-        # TODO: Where to place asserts so that they are only checked once in the beginning.
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
-        assert (R.shape[0] == self.n_dof), "Degrees of freedom is not one!"
-        assert (R.shape[1] == self.max_n_beads), "Number of beads does not match!"
 
         self._calculate_diabatic_all(R)
 
@@ -170,10 +162,6 @@ class TullyModel(itemplate.PotentialInterface):
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
 
-    # TODO: how to get rid of these small functions as without them, energies
-    # and gradients have to be set twice for beads and centroid
-    # Maybe use lambda functions??
-
     def _get_V11(self, R):
         """
         Get first diagonal diabatic energy term.
@@ -191,12 +179,14 @@ class TullyModel(itemplate.PotentialInterface):
         x = R[0]
 
         if (self.model_type == 'model_A'):
-            # Note: np.sign() returns the 0 if x == 0. That is still fine here.
+            # Note: np.sign() returns 0 if x == 0. That is still fine here
+            #       as it recovers proper limit of V11(0) = 0.
             return (np.sign(x) * self.__A * (1. - np.exp(-self.__B * np.absolute(x))))
         elif (self.model_type == 'model_B'):
             return (0. * x)
         elif (self.model_type == 'model_C'):
-            # !!!! How to do this more efficiently? if statement faster???
+            # This construction is done just to get the proper shape compatible
+            # with both float and array. This seems to be faster than 'if' statements.
             return (self.__A * (1. + 0. * x))
 
     def _get_V22(self, R):
@@ -219,7 +209,7 @@ class TullyModel(itemplate.PotentialInterface):
             return (-1. * self._get_V11(R))
         elif (self.model_type == 'model_B'):
             return (-self.__A * np.exp(-self.__B * x * x) + self.__Eo)
-        
+
     def _get_V12(self, R):
         """
         Get off-diagonal diabatic energy term.
@@ -239,6 +229,8 @@ class TullyModel(itemplate.PotentialInterface):
         if (self.model_type == 'model_A' or self.model_type == 'model_B'):
             return (self.__C * np.exp(-self.__D * x * x))
         elif (self.model_type == 'model_C'):
+            # Note: np.heaviside() returns 0.5 if x == 0. This is used here to
+            #       recover proper limit of V12(0) = B.
             return (self.__B * (2 * np.heaviside(x, 0.5) - np.sign(x)
                                 * np.exp(-self.__C * np.absolute(x))))
 

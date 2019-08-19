@@ -132,12 +132,6 @@ class MorseDiabatic(itemplate.PotentialInterface):
             The current electronic state. This is not used in this potential
             and thus defaults to None.
         """
-        # TODO: Where to place asserts so that they are only checked once in the beginning.
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
-        assert (R.shape[0] == self.n_dof), "Degrees of freedom is not one!"
-        assert (R.shape[1] == self.max_n_beads), "Number of beads does not match!"
 
         self._calculate_diabatic_all(R)
 
@@ -387,15 +381,16 @@ if __name__ == '__main__':
     import sys
     import matplotlib.pyplot as plt
 
-    model_type = sys.argv[1] # 'model_3'
-    n_states = int(sys.argv[2]) # 2
+    model_type = sys.argv[1]  # 'model_3'
+    n_states = int(sys.argv[2])  # 2
     nb = 1
     pot = MorseDiabatic(nb, 'adiabatic', **{'n_states': str(n_states),
                                             'model_type': model_type})
 
     bead_ind = 0  # Bead to be used for plotting
 
-    X = []  # len(linspace) array of positions
+    # len(linspace) array of positions
+    X = np.linspace(1.8, 12., num=1000)
     v1 = []
     v2 = []
     v3 = []
@@ -419,10 +414,9 @@ if __name__ == '__main__':
     nac13 = []
     nac23 = []
 
-    for i in np.linspace(1.8, 12., num=1000):
+    for i in X:
         pot._calculate_all(np.array([[i]]))
 
-        X.append(i)
         v1.append(pot._diabatic_energy[0, 0, 0])
         v2.append(pot._diabatic_energy[1, 1, 0])
         k1.append(pot._diabatic_energy[0, 1, 0])
@@ -450,21 +444,6 @@ if __name__ == '__main__':
             else:
                 k2.append(pot._diabatic_energy[0, 2, 0])
                 dk2.append(pot._diabatic_gradient[0, 2, 0, 0])
-
-    # Plot only diabatic energies
-#    fig, ax = plt.subplots(figsize=(8, 6))
-#    fig.suptitle('Morse diabatic potential: ' + model_type, fontsize=20)
-#
-#    ax.plot(X, v1, 'r-', label="V1")
-#    ax.plot(X, v2, 'k-', label="V2")
-#    ax.plot(X, k1, 'b--', label="K1")
-#    if (n_states == 3):
-#        ax.plot(X, v3, 'g-', label="V3")
-#        ax.plot(X, k2, 'g--', label="K2")
-#    ax.set_xlabel('x')
-#    ax.set_ylabel('Diabatic Potential')
-#    ax.legend(loc='best')
-#    ax.set_ylim((-0.001, 0.05))
 
     # Plot all
     fig, ax = plt.subplots(2, 3, figsize=(18, 12))

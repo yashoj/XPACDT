@@ -128,7 +128,7 @@ class MassiveAndersenTest(unittest.TestCase):
         # 1 dof, 4 beads, beta = 8.0
         pes1D_harmonic = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}})
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}
@@ -156,7 +156,7 @@ class MassiveAndersenTest(unittest.TestCase):
         np.random.seed(0)
         pes1D_harmonic = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}})
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}

@@ -1,6 +1,7 @@
-# Two state model dissociation potential in one dimension
-# Reference: J. Chem. Phys. 150, 114105 (2019)
-# De = E, re = qo, r12c = qo12!!!
+# Two state model dissociation potential in one dimension.
+# Reference: J. Chem. Phys. 150, 114105 (2019).
+# Please note the change in variables compared to the paper: E -> De, qo -> re,
+# qo12 -> r12c.
 
 ##############################################################################
 

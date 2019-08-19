@@ -50,8 +50,7 @@ class Nuclei(object):
     Attributes:
     -----------
     n_dof
-    n_beads : (n_dof) list of int
-        Number of beads for each degrees of freedom
+    n_beads
     time
     positions
     momenta
@@ -81,7 +80,8 @@ class Nuclei(object):
 
     @property
     def electrons(self):
-        """ XPACDT.System.Electrons : The electrons used in the propagation."""
+        """ XPACDT.System.Electrons : The electrons used in the propagation.
+            Default: AdiabaticElectrons."""
         return self.__electrons
 
     @property
@@ -114,7 +114,7 @@ class Nuclei(object):
 
     @property
     def n_beads(self):
-        """list of int : The number of beads for each degree of freedom."""
+        """(n_dof) list of int : The number of beads for each degree of freedom."""
         return self.__n_beads
 
     @n_beads.setter
@@ -124,7 +124,7 @@ class Nuclei(object):
     @property
     def masses(self):
         """(n_dof) ndarray of floats : The masses of each degree of
-        freedom in au."""
+           freedom in au."""
         return self.__masses
 
     @masses.setter
@@ -205,7 +205,7 @@ class Nuclei(object):
             Returns True if both objects have the same number of degrees of
             freedom, the same number of beads, thesame positions, momenta
             and masses. False else.
-            """
+        """
         return (self.n_dof == other.n_dof
                 and self.n_beads == other.n_beads
                 and (self.positions == other.positions).all()
@@ -221,10 +221,14 @@ class Nuclei(object):
             The inputfile object containing all input parameters.
         """
 
-        # TODO: make versatile and not only adiabatic
-        __import__("XPACDT.System.AdiabaticElectrons")
-        self.__electrons = getattr(sys.modules["XPACDT.System.AdiabaticElectrons"],
-                             "AdiabaticElectrons")(parameters)
+        electronic_method = parameters.get('system').get('electrons',
+                                                         'AdiabaticElectrons')
+        __import__("XPACDT.System." + electronic_method)
+        if (electronic_method != "AdiabaticElectrons"):
+            assert(electronic_method in parameters), \
+                  ("No input parameters for chosen electronic method.")
+        self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
+                                   electronic_method)(parameters, self.n_beads)
 
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If

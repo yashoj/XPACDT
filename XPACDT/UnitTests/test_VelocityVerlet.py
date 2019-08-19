@@ -39,25 +39,38 @@ import XPACDT.System.AdiabaticElectrons as adiabatic
 class VelocityVerletTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes1D_harmonic = adiabatic.AdiabaticElectrons(
+        self.pes1D_harmonic_classical = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}})
-        self.pes1D_shifted_harmonic = adiabatic.AdiabaticElectrons(
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [1])
+        self.pes1D_shifted_harmonic_classical = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}})
-        self.pes1D_anharmonic = adiabatic.AdiabaticElectrons(
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}}, [1])
+        self.pes1D_anharmonic_classical = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}})
-        self.pes1D_quartic = adiabatic.AdiabaticElectrons(
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}}, [1])
+        self.pes1D_quartic_classical = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}})
+                 'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}}, [1])
+    
+        self.pes1D_harmonic_4_nb = adiabatic.AdiabaticElectrons(
+                {'system': {'Interface': 'OneDPolynomial'},
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
+        self.pes1D_shifted_harmonic_4_nb = adiabatic.AdiabaticElectrons(
+                {'system': {'Interface': 'OneDPolynomial'},
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}}, [4])
+        self.pes1D_anharmonic_4_nb = adiabatic.AdiabaticElectrons(
+                {'system': {'Interface': 'OneDPolynomial'},
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}}, [4])
+        self.pes1D_quartic_4_nb = adiabatic.AdiabaticElectrons(
+                {'system': {'Interface': 'OneDPolynomial'},
+                 'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}}, [4])
 
         # TODO: also multi-D potential for more testing
         return
 
     def test_propagate(self):
         # Classical
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25]])
@@ -80,7 +93,7 @@ class VelocityVerletTest(unittest.TestCase):
         ###############
 
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]), [4],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
@@ -104,7 +117,7 @@ class VelocityVerletTest(unittest.TestCase):
 
     def test_step(self):
         # classical
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25]])
@@ -117,7 +130,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]), [4],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
@@ -132,7 +145,7 @@ class VelocityVerletTest(unittest.TestCase):
 
     def test_verlet_step(self):
         # classical
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25]])
@@ -145,7 +158,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]), [4],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
@@ -160,7 +173,7 @@ class VelocityVerletTest(unittest.TestCase):
         return
 
     def test_velocity_step(self):
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]), [1],
                                        **{'timestep': '0.2 au'})
 
         ###############
@@ -174,7 +187,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         propagator.beta = 8.0
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]), [4],
                                        **{'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
@@ -185,7 +198,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         ###############
 
-        propagator = vv.VelocityVerlet(self.pes1D_shifted_harmonic,
+        propagator = vv.VelocityVerlet(self.pes1D_shifted_harmonic_classical,
                                        np.array([2.0]), [1],
                                        **{'timestep': '0.2 au'})
 
@@ -199,7 +212,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         propagator.beta = 8.0
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_shifted_harmonic,
+        propagator = vv.VelocityVerlet(self.pes1D_shifted_harmonic_4_nb,
                                        np.array([2.0]), [4],
                                        **{'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
@@ -211,7 +224,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         ###############
 
-        propagator = vv.VelocityVerlet(self.pes1D_anharmonic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_anharmonic_classical, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
         # classical
         p = np.array([[0.25]])
@@ -222,7 +235,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
 
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_anharmonic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_anharmonic_4_nb, np.array([2.0]), [4],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
@@ -233,7 +246,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         ###############
 
-        propagator = vv.VelocityVerlet(self.pes1D_quartic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_quartic_classical, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         # classical
@@ -245,7 +258,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
 
         # 4 beads
-        propagator = vv.VelocityVerlet(self.pes1D_quartic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_quartic_4_nb, np.array([2.0]), [4],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
@@ -257,7 +270,7 @@ class VelocityVerletTest(unittest.TestCase):
         return
 
     def test_set_propagation_matrix(self):
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [1],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]), [1],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         classical_ref = np.array([[[[1.0, 0.0], [0.1, 1.0]]]])
@@ -265,7 +278,7 @@ class VelocityVerletTest(unittest.TestCase):
         classical_pm = propagator.propagation_matrix
         np.testing.assert_allclose(classical_pm, classical_ref, rtol=1e-7)
 
-        propagator = vv.VelocityVerlet(self.pes1D_harmonic, np.array([2.0]), [4],
+        propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]), [4],
                                        **{'beta': 8.0, 'timestep': '0.2 au'})
 
         four_beads_ref = np.array([[[[1.0, 0.0], [0.1, 1.0]],

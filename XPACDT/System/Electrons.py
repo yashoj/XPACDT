@@ -43,19 +43,36 @@ class Electrons:
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
+    n_beads : (n_dof) list of int
+        The number of beads for each degree of freedom.
+    basis : {'adiabatic', 'diabatic'}
+        Electronic state basis representation. Default: 'adiabatic'
     """
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, n_beads, basis='adiabatic'):
         # Set up potential interface
         pes_name = parameters.get("system").get("Interface", None)
         __import__("XPACDT.Interfaces." + pes_name)
+        
+        self.basis = basis
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(**parameters.get(pes_name))
+                             pes_name)( max(n_beads), basis, **parameters.get(pes_name))
 
     @property
     def pes(self):
         """XPACDT.Interfaces.InterfaceTemplate : Representation of the PES."""
         return self.__pes
+    
+    @property
+    def basis(self):
+        """{'adiabatic', 'diabatic'} : Electronic state basis representation."""
+        return self.__basis
+
+    @basis.setter
+    def basis(self, b):
+        assert (b in ['adiabatic', 'diabatic']),\
+               ("Electronic state basis representation not available.")
+        self.__basis = b
 
     def energy(self, R, centroid=False):
         """Calculate the electronic energy at the current geometry.

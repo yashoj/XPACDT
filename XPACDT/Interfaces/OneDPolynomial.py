@@ -37,7 +37,7 @@ import XPACDT.Interfaces.InterfaceTemplate as itemplate
 class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
-    V(x) = \sum_{i=0}^{N} a_i (x-x_0)^i.
+    :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
 
     Other Parameters
     ----------------
@@ -48,7 +48,15 @@ class OneDPolynomial(itemplate.PotentialInterface):
         expansion length is determined by the number of given coefficients
         here.
     """
-    def __init__(self, **kwargs):
+
+    def __init__(self, max_n_beads, basis='adiabatic', **kwargs):
+
+        assert (basis == 'adiabatic'), \
+        ("Electronic basis for one dimensional polynomial potential should be adiabatic.")
+
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1,
+                                              max_n_beads, 1, basis)
+
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))
         except ValueError as e:
@@ -66,8 +74,6 @@ class OneDPolynomial(itemplate.PotentialInterface):
                                    "not convertable to floats."
                                    " a is " + kwargs.get('a'))
 
-        itemplate.PotentialInterface.__init__(self, "OneDPolynomial")
-
     @property
     def a(self):
         """(N) ndarray of floats : Expansion coefficients for the polynomial
@@ -84,6 +90,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
+        ----------
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
@@ -96,12 +103,8 @@ class OneDPolynomial(itemplate.PotentialInterface):
             and thus defaults to None.
         """
 
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
-
         # centroid part if more than 1 bead
-        if R.shape[1] > 1:
+        if self.max_n_beads > 1:
             centroid = np.mean(R, axis=1)
             distance_centroid = centroid[0] - self.x0
             power_centroid = 1.0
@@ -121,15 +124,19 @@ class OneDPolynomial(itemplate.PotentialInterface):
             self._energy += a * power
 
             # centroid part if more than 1 bead
-            if R.shape[1] > 1:
+            if self.max_n_beads > 1:
                 self._gradient_centroid += float(i+1) * a * power_centroid
                 power_centroid *= distance_centroid
                 self._energy_centroid += a * power_centroid
 
-        self._gradient = self._gradient.reshape((1, -1))
+        self._energy = self._energy.reshape((1, -1))
+        self._gradient = self._gradient.reshape((1, 1, -1))
 
-        if R.shape[1] == 1:
-            self._energy_centroid = self._energy
-            self._gradient_centroid = self._gradient
+        if self.max_n_beads == 1:
+            self._energy_centroid = self._energy[:, 0]
+            self._gradient_centroid = self._gradient[:, :, 0]
+        else:
+            self._energy_centroid = self._energy_centroid.reshape((-1))
+            self._gradient_centroid = self._gradient_centroid.reshape((1, -1))
 
         return

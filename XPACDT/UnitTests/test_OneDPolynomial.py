@@ -40,74 +40,66 @@ class OneDPolynomialTest(unittest.TestCase):
 
     def test_creation(self):
         with self.assertRaises(AssertionError):
-            pes = oneDP.OneDPolynomial()
+            pes = oneDP.OneDPolynomial(1)
 
-        pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
         self.assertEqual(pes.name, 'OneDPolynomial')
         self.assertEqual(pes.x0, 0.0)
         self.assertSequenceEqual(pes.a, [0.0, 0.0, 0.5])
 
-        pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
         self.assertEqual(pes.name, 'OneDPolynomial')
         self.assertEqual(pes.x0, -1.0)
         self.assertSequenceEqual(pes.a, [1.0, 0.0, 0.5, 0.1])
 
         with self.assertRaises(ValueError):
-            pes = oneDP.OneDPolynomial(**{'a': 'miep'})
+            pes = oneDP.OneDPolynomial(1, **{'a': 'miep'})
 
         with self.assertRaises(ValueError):
-            pes = oneDP.OneDPolynomial(**{'x0': 'miep', 'a': '0.0'})
+            pes = oneDP.OneDPolynomial(1, **{'x0': 'miep', 'a': '0.0'})
 
         return
 
     def test_calculate_all(self):
-        pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})
-
-        # test the given parameters
-        with self.assertRaises(AssertionError):
-            pes._calculate_all([0.0], None)
-
-        with self.assertRaises(AssertionError):
-            pes._calculate_all(np.array([0.0]), None)
-
-        with self.assertRaises(AssertionError):
-            pes._calculate_all(np.array([[[0.0]]]), None)
+        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
 
         # test correct potential values and gradients
         pes._calculate_all(np.array([[0.0]]), None)
-        self.assertSequenceEqual(pes._energy, [0.0])
-        self.assertSequenceEqual(pes._gradient, [[0.0]])
+        self.assertSequenceEqual(pes._energy, [[0.0]])
+        self.assertSequenceEqual(pes._gradient, [[[0.0]]])
         self.assertSequenceEqual(pes._energy_centroid, [0.0])
         self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
 
-        pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
         pes._calculate_all(np.array([[-1.0]]), None)
-        self.assertSequenceEqual(pes._energy, [1.0])
-        self.assertSequenceEqual(pes._gradient, [[0.0]])
+        self.assertSequenceEqual(pes._energy, [[1.0]])
+        self.assertSequenceEqual(pes._gradient, [[[0.0]]])
         self.assertSequenceEqual(pes._energy_centroid, [1.0])
         self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
 
         pes._calculate_all(np.array([[1.0]]), None)
-        self.assertSequenceEqual(pes._energy, [1.0+2.0+0.8])
-        self.assertSequenceEqual(pes._gradient, [[2.0+1.2]])
+        self.assertSequenceEqual(pes._energy, [[1.0+2.0+0.8]])
+        self.assertSequenceEqual(pes._gradient, [[[2.0+1.2]]])
         self.assertSequenceEqual(pes._energy_centroid, [1.0+2.0+0.8])
         self.assertSequenceEqual(pes._gradient_centroid, [[2.0+1.2]])
 
         # test for multiple beads
-        pes._calculate_all(np.array([[1.0, -2.0, -1.0]]), None)
-        self.assertTrue(
-                np.alltrue(pes._energy
-                           == np.array([1.0+2.0+0.8, 1.0+0.5-0.1, 1.0])))
-        self.assertTrue(
-                np.alltrue(pes._gradient
-                           == np.array([[2.0+1.2, -1.0+0.3, 0.0]])))
+        pes_3_nb = oneDP.OneDPolynomial(3, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
 
-        np.testing.assert_allclose(pes._energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
-        np.testing.assert_allclose(pes._gradient_centroid, np.array([[0.33333333+0.0333333333]]))
+        pes_3_nb._calculate_all(np.array([[1.0, -2.0, -1.0]]), None)
+        self.assertTrue(
+                np.alltrue(pes_3_nb._energy
+                           == np.array([[1.0+2.0+0.8, 1.0+0.5-0.1, 1.0]])))
+        self.assertTrue(
+                np.alltrue(pes_3_nb._gradient
+                           == np.array([[[2.0+1.2, -1.0+0.3, 0.0]]])))
+
+        np.testing.assert_allclose(pes_3_nb._energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
+        np.testing.assert_allclose(pes_3_nb._gradient_centroid, np.array([[0.33333333+0.0333333333]]))
 
     def test_minimize_geom(self):
         # Harmonic oscillator
-        pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
         e_reference = 0.0
         R_reference = np.array([0.0])
 
@@ -117,7 +109,7 @@ class OneDPolynomialTest(unittest.TestCase):
         np.testing.assert_allclose(R, R_reference)
 
         # Shifted harmonic oscillator
-        pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5', 'x0': '2.0'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5', 'x0': '2.0'})
         e_reference = 1.0
         R_reference = np.array([2.0])
 
@@ -127,7 +119,7 @@ class OneDPolynomialTest(unittest.TestCase):
         np.testing.assert_allclose(R, R_reference)
 
     def test_plot1d(self):
-        pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5', 'x0': '2.0'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5', 'x0': '2.0'})
         pes.plot_1D(np.array([0.0]), 0, -10.0, 10.0, 2.0)
 
         points_reference = np.array([-10., -8., -6., -4., -2., 0., 2., 4., 6., 8., 10.])
@@ -139,14 +131,14 @@ class OneDPolynomialTest(unittest.TestCase):
         os.remove('pes_1d.dat')
 
     def test_get_Hessian(self):
-        pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
         Hessian_reference = np.array([[1.0]])
         R = np.array([0.0])
 
         Hessian = pes.get_Hessian(R)
         np.testing.assert_allclose(Hessian, Hessian_reference)
 
-        pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5 0.1 0.01'})
+        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5 0.1 0.01'})
         Hessian_reference = np.array([[1.0+0.6+0.12]])
         R = np.array([1.0])
 

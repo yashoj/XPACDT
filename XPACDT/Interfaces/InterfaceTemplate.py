@@ -104,6 +104,10 @@ class PotentialInterface:
         self._old_P = None
         self._old_S = None
 
+        # !!! Adiabatic matrices are set of proper size in their respective
+        # interfaces or from diabatic to adiabatic transformations; do they
+        # need to be initialized here?
+        # I'd say it's fine as it's only once and shows their proper shapes.
         if (self.bases_used == 'adiabatic') or (self.bases_used == 'dia2ad'):
             self._energy = np.zeros((self.n_states, self.max_n_beads))
             self._gradient = np.zeros((self.n_states, self.n_dof,

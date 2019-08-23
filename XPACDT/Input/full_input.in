@@ -25,7 +25,13 @@ $end
 
 $SurfaceHoppingElectrons  # must match the electrons specified; specific to each electronic method
 
-basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic)
+basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic; default: adiabatic)
+initial_state = 0         # Initial state of the system
+time_step_electron = 0.01 # Time step for electronic equations integration
+rpsh_type = beads         # Type of ring polymer surface hopping (RPSH) (possible: beads, centroid, density_matrix)
+rpsh_rescaling = beads    # Type of RPSH rescaling; this can be done to conserve 
+                          # bead or centroid energy (possible: beads, centroid; default: beads)
+rescaling_type = nac      # Type of velocity rescaling; (possible: nac, gradient; default: nac)
 $end
 
 ##############################################################################

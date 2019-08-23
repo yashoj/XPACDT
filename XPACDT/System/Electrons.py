@@ -53,7 +53,7 @@ class Electrons:
         # Set up potential interface
         pes_name = parameters.get("system").get("Interface", None)
         __import__("XPACDT.Interfaces." + pes_name)
-        
+
         self.basis = basis
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
                              pes_name)( max(n_beads), basis, **parameters.get(pes_name))

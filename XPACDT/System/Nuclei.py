@@ -272,7 +272,7 @@ class Nuclei(object):
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta,
                                         time_propagate)
-        self.electrons.step(time_propagate, **{'second': True})
+        self.electrons.step(time_propagate, **{'last': True})
 
         self.time += time_propagate
 

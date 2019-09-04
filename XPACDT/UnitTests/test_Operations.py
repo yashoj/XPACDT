@@ -45,9 +45,8 @@ class OperationsTest(unittest.TestCase):
         self.log_rpmd = nuclei.Nuclei(4, infile.Inputfile("FilesForTesting/OperationsTest/input_rpmdNuclei.in"), 0.0)
 
     def test_position(self):
-        pos = operations.position([], self.log_classical)
-        pos_ref = None
-        self.assertEqual(pos, pos_ref)
+        with self.assertRaises(RuntimeError):
+            pos = operations.position([], self.log_classical)
 
         # first single position operations
         pos = operations.position("-1 0".split(), self.log_classical)

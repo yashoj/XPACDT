@@ -53,6 +53,15 @@ error of the obtain results is evaluated employing bootstrapping.
 
 Results are printed to file for easy plotting with gnuplot.
 
+Please note that for each quantity one wishes to obtain, an individual
+'command'-block has to be defined in the input file. If n operation, i.e. A(t),
+B(0), returns more than one value, they all together enter the function f(x)
+and are treated as independet in the bootstrapping.
+This might be desired behavior for obtaining mean positions of the beads or
+obtaining a density plot of the ring polymer, but for most scenarios, this is
+not desired. Thus, whenever a command returns more than one value, a
+RuntimeWarning is printed for the first system and timestep.
+
 Some basic plotting commands for 2D plots in gnuplot: (TODO: where to actually
 put this, etc. Maybe generate a basic gnuplot script along the way?)
 
@@ -95,11 +104,16 @@ def do_analysis(parameters, systems=None):
     n_systems = 0
     # Calculate 'observables' for each system
     for system in get_systems(dirs, file_name, systems):
-        n_systems += 1
-
         # do different stuff for each command
         for key, command in parameters.commands.items():
+            if n_systems == 0:
+                # Consistency check for operations and print warning if more
+                # than one value is returned
+                check_command(command, system)
+
             apply_command(command, system)
+
+        n_systems += 1
 
     # Apply function for each 'observable'
     for key, command in parameters.commands.items():
@@ -276,6 +290,42 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
 
     else:
         raise RuntimeError("XPACDT: No or incorrect output format given: " + form)
+
+
+def check_command(command, system):
+    """ Check for return size of a command and print warning if longer than 1,
+    as this might often be unwanted, unless all returned values are of the same
+    type and independent. Then the warning can be ignored.
+
+    Parameters
+    ----------
+    command : dict
+        The definition of the command to be evaluated as given in the input
+        file.
+    system : XPACDT.System
+        The read in system containing its own log.
+    """
+    # Time zero operation for correlation functions, etc.
+    value_0 = 1.0
+    if 'op0' in command:
+        value_0 = apply_operation(command['op0'], system.log[0])
+
+    try:
+        if len(value_0 * apply_operation(command['op'], system.log[0])) > 1:
+            raise RuntimeWarning("XPACDT: The operation in analysis returns"
+                                 "more than one value. Please check if this"
+                                 "is the intended behavior. Please note that"
+                                 "all returned values will be used in the"
+                                 "subsequent operations (e.g., mean or"
+                                 "historgram) together and that they are"
+                                 "treated as independent in the"
+                                 "bootstrapping. op0:" + command['op0'] +
+                                 "; op:" + command['op'])
+    except ValueError as e:
+        raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
+                               " together it probably is due to incompatible"
+                               " array sizes returned by the 'op0' and 'op'"
+                               " operationsgiven. Please check!")
 
 
 def apply_command(command, system):

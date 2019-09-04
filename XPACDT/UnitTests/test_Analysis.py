@@ -69,6 +69,16 @@ class AnalysisTest(unittest.TestCase):
 #        raise NotImplementedError("Please implement a test here!!")
 #        pass
 #
+
+    def test_check_command(self):
+        with self.assertRaises(ValueError):
+            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'results': []}
+            analysis.check_command(command, self.systems[3])
+
+        with self.assertRaises(RuntimeWarning):
+            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1', 'step': '', 'results': []}
+            analysis.check_command(command, self.systems[3])
+
     def test_apply_command(self):
         with self.assertRaises(ValueError):
             command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'results': []}

@@ -143,7 +143,7 @@ class PotentialInterface:
 
     @property
     def max_n_beads(self):
-        """int : Number of electronic states."""
+        """int : Maximum number of beads from the list of n_beads."""
         return self.__max_n_beads
 
     @property

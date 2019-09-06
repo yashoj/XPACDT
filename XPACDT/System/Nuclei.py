@@ -166,8 +166,8 @@ class Nuclei(object):
     @property
     def energy(self):
         """ float : Total energy of the nuclei including the spring term.
-        i.e. \frac{1}{n}(\sum_i \sum_j (p^2_ij)(2m_j)) + SPINGS + V). TODO:
-        write out properly."""
+        i.e. :math:`\\frac{1}{n}(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + SPINGS + V)`.
+        TODO: write out properly."""
         return self.kinetic_energy + self.spring_energy + self.potential_energy
 
     @property
@@ -227,8 +227,9 @@ class Nuclei(object):
         if (electronic_method != "AdiabaticElectrons"):
             assert(electronic_method in parameters), \
                   ("No input parameters for chosen electronic method.")
+
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
-                                   electronic_method)(parameters, self.n_beads)
+                                   electronic_method)(parameters)
 
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If
@@ -268,11 +269,22 @@ class Nuclei(object):
             The time to advance the nuclei and electrons in au.
         """
 
-        self.electrons.step(time_propagate, **{'first': True})
+        # TODO: Is this checking of FSSH needed to pass velocity or should this be done for all?
+        #       Not all modules might need nuclear velocity so.
+
+        if (self.electrons.name == "SurfaceHoppingElectrons"):
+            pass
+        else:
+            self.electrons.step(time_propagate, **{'first': True})
+
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta,
                                         time_propagate)
-        self.electrons.step(time_propagate, **{'last': True})
+
+        if (self.electrons.name == "SurfaceHoppingElectrons"):
+            self.electrons.step(time_propagate, **{'last': True, 'momenta': self.momenta})
+        else:
+            self.electrons.step(time_propagate, **{'last': True})
 
         self.time += time_propagate
 

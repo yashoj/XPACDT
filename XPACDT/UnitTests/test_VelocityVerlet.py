@@ -51,7 +51,7 @@ class VelocityVerletTest(unittest.TestCase):
         self.pes1D_quartic_classical = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
                  'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}}, [1])
-    
+
         self.pes1D_harmonic_4_nb = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
                  'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
@@ -83,7 +83,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
-        # Two time step
+        # Two time steps
         p_ref = np.array([[0.04304]])
         r_ref = np.array([[0.5296]])
         rt, pt = propagator.propagate(r, p, 0.4)
@@ -106,7 +106,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
         
-        # Two time step
+        # Two time steps
         p_ref = np.array([[-0.06724218, -0.89683408,  0.55144043, 0.49871582]])
         r_ref = np.array([[0.51881322,  0.88294329,  0.10715463, -0.44971114]])
         rt, pt = propagator.propagate(r, p, 0.4)

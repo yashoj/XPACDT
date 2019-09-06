@@ -118,7 +118,7 @@ def get_NAC(V, dV):
     where :math:'\\epsilon_k' and :math:'\ket{\phi^{adiab}_k}' are the k-th
     state adiabatic energy and eigenstate respectively, and
     :math:'\\overrightarrow{\\nabla} \\hat{V}' is the diabatic gradient.
-    
+
     For reference, please see J. Chem. Phys. 101, 6 (1994).
 
     Parameters:

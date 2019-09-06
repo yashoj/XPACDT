@@ -50,7 +50,7 @@ class PotentialInterface:
     Parameters
     ----------
     name : str
-           The name of the specific interface implemented.
+        The name of the specific interface implemented.
     n_dof
     n_states
     max_n_beads
@@ -178,14 +178,10 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
-        P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) momenta representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system in au. The first index represents the degrees of freedom and
+            the second one the beads.
         S : integer, default None
             The current state of the system.
 
@@ -222,14 +218,10 @@ class PotentialInterface:
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
-        P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) momenta representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system in au. The first index represents the degrees of freedom and
+            the second one the beads.
         S : integer, default None
             The current state of the system.
 
@@ -320,10 +312,8 @@ class PotentialInterface:
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        SI : integer
-            First electronic state index.
-        SJ : integer
-            Second electronic state index.
+        SI, SJ : integer
+            First `SI` and second `SJ` electronic state index.
         centroid : bool, default False
             If NAC of centroid should be returned.
 
@@ -348,7 +338,7 @@ class PotentialInterface:
     def _energy_wrapper(self, R, S=0, centroid=True):
         """Wrapper function to do call energy with a one-dimensional array.
         This should only be used for directly accessing the PES and not for any
-        dynamics calculation!.
+        dynamics calculation!
 
         Parameters
         ----------
@@ -369,7 +359,7 @@ class PotentialInterface:
     def _gradient_wrapper(self, R, S=0, centroid=True):
         """Wrapper function to do call gradient with a one-dimensional array.
         This should only be used for directly accessing the PES and not for any
-        dynamics calculation!.
+        dynamics calculation!
 
         Parameters
         ----------
@@ -394,10 +384,8 @@ class PotentialInterface:
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        SI : integer
-            First electronic state index.
-        SJ : integer
-            Second electronic state index.
+        SI, SJ : integer
+            First `SI` and second `SJ` electronic state index.
         centroid : bool, default False
             If the energy of the centroid should be returned.
 
@@ -427,8 +415,8 @@ class PotentialInterface:
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        S : integer, default None
-            The current state of the system.
+        SI, SJ : integer
+            First `SI` and second `SJ` electronic state index.
         centroid : bool, default False
             If the gradient of the centroid should be returned.
 
@@ -465,10 +453,11 @@ class PotentialInterface:
         func_diabatic_energy : function
             Function to get diabatic energies of shape (n_states, n_states)
             or (n_states, n_states, n_beads) ndarrays of floats. Should take
-            bead or centroid positions as parameter.
+            bead or centroid positions as parameter. And should only be given
+            if `self.n_states` is more than 2.
         """
 
-        if self.n_states == 2:
+        if (self.n_states == 2):
             import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
 
             self._gradient = dia2ad.get_adiabatic_gradient(
@@ -476,7 +465,7 @@ class PotentialInterface:
             self._gradient_centroid = dia2ad.get_adiabatic_gradient(
                 self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
 
-        elif self.n_states == 3:
+        elif (self.n_states > 2):
             import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
 
             assert (func_diabatic_energy is not None), \
@@ -488,6 +477,11 @@ class PotentialInterface:
             r_centroid = np.mean(R, axis=1)
             self._gradient_centroid = dia2ad.get_adiabatic_gradient(
                 r_centroid, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
+
+        else:
+            raise ValueError("Number of states should be 2 or more to use "
+                             "diabatic to adiabatic transformation. Here "
+                             "number of states is: " + str(self.n_states))
 
         self._energy = dia2ad.get_adiabatic_energy(self._diabatic_energy)
         self._energy_centroid = dia2ad.get_adiabatic_energy(self._diabatic_energy_centroid)

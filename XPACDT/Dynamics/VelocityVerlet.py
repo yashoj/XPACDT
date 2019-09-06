@@ -184,23 +184,18 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
         time_propagation : float
             The amount of time to advance in au.
 
         Returns
         -------
-        Rn : (n_dof, n_beads) ndarray of floats
-             The positions of all beads after advancing in time. The first
-             axis is the degrees of freedom and the second axis the beads.
-        Pn : (n_dof, n_beads) ndarray of floats
-             The momenta of all beads after advancing in time. The first axis
-             is the degrees of freedom and the second axis the beads.
+        Rn, Pn : (n_dof, n_beads) ndarray of floats
+             The positions `Rn` and momenta `Pn` of all beads after advancing
+             in time. The first axis is the degrees of freedom and the second
+             axis is beads.
         """
         # TODO: possibly step size control here.
         # TODO: possibly multiple-timestepping here
@@ -222,21 +217,16 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
 
         Returns
         -------
-        rt : (n_dof, n_beads) ndarray of floats
-             The positions of all beads after advancing in time. The first
-             axis is the degrees of freedom and the second axis the beads.
-        pt : (n_dof, n_beads) ndarray of floats
-             The momenta of all beads after advancing in time. The first axis
-             is the degrees of freedom and the second axis the beads.
+        rt, pt : (n_dof, n_beads) ndarray of floats
+             The positions `rt` and momenta `pt` of all beads after advancing
+             in time. The first axis is the degrees of freedom and the second
+             axis is beads.
         """
         pt2 = self._velocity_step(P, R)
         if self.thermostat is not None:
@@ -262,12 +252,9 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
 
         Returns
         -------
@@ -284,12 +271,9 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
 
         Returns
         -------
@@ -343,7 +327,7 @@ class VelocityVerlet(object):
 
         Returns
         -------
-        Nothing, but self.__propagation matrix is initialized.
+        Nothing, but `self.__propagation matrix` is initialized.
         -------
         """
         # TODO: Make this compatible with different n_beads for each dof

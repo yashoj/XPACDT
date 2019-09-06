@@ -41,22 +41,38 @@ class Electrons:
 
     Parameters
     ----------
+    name : str
+        The name of the specific electronic method implemented.
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
     n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
     basis : {'adiabatic', 'diabatic'}
         Electronic state basis representation. Default: 'adiabatic'
+
+    Attributes
+    ----------
+    name
+    pes
+    basis
     """
 
-    def __init__(self, parameters, n_beads, basis='adiabatic'):
+    def __init__(self, name, parameters, basis='adiabatic'):
+
+        self.__name = name
+
         # Set up potential interface
         pes_name = parameters.get("system").get("Interface", None)
         __import__("XPACDT.Interfaces." + pes_name)
 
         self.basis = basis
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)( max(n_beads), basis, **parameters.get(pes_name))
+                             pes_name)(max(parameters.n_beads), basis, **parameters.get(pes_name))
+
+    @property
+    def name(self):
+        """str : The name of the specific electronic method implemented."""
+        return self.__name
 
     @property
     def pes(self):

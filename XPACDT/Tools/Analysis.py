@@ -30,6 +30,7 @@
 import os
 import pickle
 import numpy as np
+import warnings
 
 import XPACDT.Tools.Bootstrap as bs
 import XPACDT.Tools.Operations as op
@@ -312,15 +313,15 @@ def check_command(command, system):
 
     try:
         if len(value_0 * apply_operation(command['op'], system.log[0])) > 1:
-            raise RuntimeWarning("XPACDT: The operation in analysis returns"
-                                 "more than one value. Please check if this"
-                                 "is the intended behavior. Please note that"
-                                 "all returned values will be used in the"
-                                 "subsequent operations (e.g., mean or"
-                                 "historgram) together and that they are"
-                                 "treated as independent in the"
-                                 "bootstrapping. op0:" + command['op0'] +
-                                 "; op:" + command['op'])
+            warnings.warn("XPACDT: The operation in analysis returns"
+                          "more than one value. Please check if this"
+                          "is the intended behavior. Please note that"
+                          "all returned values will be used in the"
+                          "subsequent operations (e.g., mean or"
+                          "historgram) together and that they are"
+                          "treated as independent in the"
+                          "bootstrapping. op0:" + command['op0'] +
+                          "; op:" + command['op'], RuntimeWarning)
     except ValueError as e:
         raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
                                " together it probably is due to incompatible"

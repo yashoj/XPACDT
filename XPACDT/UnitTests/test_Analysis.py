@@ -36,6 +36,7 @@ import random
 import os
 import shutil
 import unittest
+import warnings
 
 import XPACDT.Tools.Analysis as analysis
 import XPACDT.System.System as xSystem
@@ -75,9 +76,15 @@ class AnalysisTest(unittest.TestCase):
             command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'results': []}
             analysis.check_command(command, self.systems[3])
 
-        with self.assertRaises(RuntimeWarning):
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
+            # Generate warning
             command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1', 'step': '', 'results': []}
             analysis.check_command(command, self.systems[3])
+            # Verify some things
+            assert len(w) == 1
+            assert issubclass(w[-1].category, RuntimeWarning)
 
     def test_apply_command(self):
         with self.assertRaises(ValueError):

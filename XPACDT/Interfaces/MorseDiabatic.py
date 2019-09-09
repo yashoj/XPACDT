@@ -114,7 +114,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
         """string : Model number to be used."""
         return self.__model_type
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate and set diabatic and adiabatic (if required) matrices for
         energies and gradients of beads and centroid. 

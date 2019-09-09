@@ -85,7 +85,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
         """float : The equilibrium position. Default is x0=0. """
         return self.__x0
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -108,35 +108,35 @@ class OneDPolynomial(itemplate.PotentialInterface):
             centroid = np.mean(R, axis=1)
             distance_centroid = centroid[0] - self.x0
             power_centroid = 1.0
-            self._gradient_centroid = np.zeros_like(distance_centroid)
-            self._energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
+            self._adiabatic_gradient_centroid = np.zeros_like(distance_centroid)
+            self._adiabatic_energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
 
         # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
-        self._gradient = np.zeros_like(distance)
-        self._energy = np.zeros_like(distance) + self.a[0]
+        self._adiabatic_gradient = np.zeros_like(distance)
+        self._adiabatic_energy = np.zeros_like(distance) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
             # beads part
-            self._gradient += float(i+1) * a * power
+            self._adiabatic_gradient += float(i+1) * a * power
             power *= distance
-            self._energy += a * power
+            self._adiabatic_energy += a * power
 
             # centroid part if more than 1 bead
             if self.max_n_beads > 1:
-                self._gradient_centroid += float(i+1) * a * power_centroid
+                self._adiabatic_gradient_centroid += float(i+1) * a * power_centroid
                 power_centroid *= distance_centroid
-                self._energy_centroid += a * power_centroid
+                self._adiabatic_energy_centroid += a * power_centroid
 
-        self._energy = self._energy.reshape((1, -1))
-        self._gradient = self._gradient.reshape((1, 1, -1))
+        self._adiabatic_energy = self._adiabatic_energy.reshape((1, -1))
+        self._adiabatic_gradient = self._adiabatic_gradient.reshape((1, 1, -1))
 
         if self.max_n_beads == 1:
-            self._energy_centroid = self._energy[:, 0]
-            self._gradient_centroid = self._gradient[:, :, 0]
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
         else:
-            self._energy_centroid = self._energy_centroid.reshape((-1))
-            self._gradient_centroid = self._gradient_centroid.reshape((1, -1))
+            self._adiabatic_energy_centroid = self._adiabatic_energy_centroid.reshape((-1))
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient_centroid.reshape((1, -1))
 
         return

@@ -45,14 +45,24 @@ class MorseDiabatic(itemplate.PotentialInterface):
     The diagonal terms are morse potential and off-diagonal couplings are gaussian.
     Reference: Chem. Phys. Lett. 349, 521-529 (2001)
 
-    !!! Add form of diagonal and off-diagonal terms!!!
+    TODO: Add form of diagonal and off-diagonal terms!
+
+    Parameters
+    ----------
+    basis : {'adiabatic', 'diabatic'}
+        Electronic state basis representations to be used. Default: 'adiabatic'.
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
     Other Parameters
     ----------------
-    model_type
+    model_type : {'model_1', 'model_2', 'model_3'}
+        String denoting model number to be used.
+    n_states : int or string of int
+        Number of morse diabatic states (possible: 2, 3).
     """
 
-    def __init__(self, max_n_beads, basis, **kwargs):
+    def __init__(self, basis, max_n_beads=1, **kwargs):
 
         if basis == 'diabatic':
             bases_used = 'diabatic'
@@ -71,7 +81,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
                ("Only 2 or 3 states possible for morse diabatic potential")
 
         itemplate.PotentialInterface.__init__(self, "MorseDiabatic", 1,
-                                              max_n_beads, n_states, bases_used)
+                                              n_states, max_n_beads, bases_used)
 
         assert (isinstance(kwargs.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
@@ -225,10 +235,6 @@ class MorseDiabatic(itemplate.PotentialInterface):
                     self._diabatic_gradient_centroid[0, 2] = self._get_off_diag_grad(
                         r_centroid, self.__A13, self.__as13, self.__r13)
                     self._diabatic_gradient_centroid[2, 0] = self._diabatic_gradient_centroid[0, 2].copy()
-
-    # TODO: how to get rid of these small functions as without them, energies
-    # and gradients have to be set twice for beads and centroid
-    # Maybe use lambda functions??
 
     def _get_diag_V(self, R, i):
         """

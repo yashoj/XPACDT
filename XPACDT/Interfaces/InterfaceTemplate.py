@@ -54,9 +54,9 @@ class PotentialInterface:
     n_dof : int
         Degrees of freedom.
     n_states : int
-        Number of electronic states.
-    max_n_beads : int
-        Maximum number of beads from the (n_dof) list of n_beads.
+        Number of electronic states. Default: 1.
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
     bases_used : {'adiabatic', 'diabatic', 'dia2ad'}
         Electronic state basis representations to be used. Default: 'adiabatic'.
 
@@ -68,7 +68,7 @@ class PotentialInterface:
     max_n_beads
     """
 
-    def __init__(self, name, n_dof, max_n_beads, n_states=1,
+    def __init__(self, name, n_dof, n_states=1, max_n_beads=1, 
                  bases_used='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof
@@ -78,6 +78,7 @@ class PotentialInterface:
         self.__max_n_beads = max_n_beads
         self.bases_used = bases_used
         self.__SAVE_THRESHOLD = 1e-8
+        self.__DERIVATIVE_STEPSIZE = 1e-4
 
         self._old_R = None
         self._old_P = None
@@ -107,6 +108,10 @@ class PotentialInterface:
 #            Centroid diabatic energy of the system for all states.
 #        _diabatic_gradient_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
 #            Centroid gradient of diabatic energy of the system for all states.
+        
+        # TODO: Is initializing adiabatic matrices needed as they are 
+        #       set in particular interfaces anyways?
+        #       However might be good to state them explicitly as it is only done once anyways.
 
         if (self.bases_used == 'adiabatic') or (self.bases_used == 'dia2ad'):
             self._adiabatic_energy = np.zeros((self.n_states, self.max_n_beads))
@@ -170,7 +175,7 @@ class PotentialInterface:
     @property
     def DERIVATIVE_STEPSIZE(self):
         """float : Step size for numerical derivatives in au."""
-        return 1e-4
+        return self.__DERIVATIVE_STEPSIZE
 
     def _calculate_adiabatic_all(self, R, P, S=None):
         """Calculate the adiabatic energy, gradient and possibly couplings at
@@ -285,7 +290,7 @@ class PotentialInterface:
             centroid for a particular state or all states.
         """
         if self._changed(R, None, S):
-            self._calculate_all(R, None, S)
+            self._calculate_adiabatic_all(R, None, S)
 
         if centroid:
             if return_matrix:
@@ -322,7 +327,7 @@ class PotentialInterface:
             at the centroid for a particular state or all states.
         """
         if self._changed(R, None, S):
-            self._calculate_all(R, None, S)
+            self._calculate_adiabatic_all(R, None, S)
             
         if centroid:
             if return_matrix:
@@ -372,7 +377,7 @@ class PotentialInterface:
             ("NAC is only defined for more than 1 electronic state.")
 
         if self._changed(R, None, None):
-            self._calculate_all(R, None, None)
+            self._calculate_adiabatic_all(R, None, None)
 
         if centroid:
             if return_matrix:
@@ -464,7 +469,7 @@ class PotentialInterface:
             ("Diabatic energy is not defined for the electronic basis used.")
 
         if self._changed(R, None, None):
-            self._calculate_all(R, None, None)
+            self._calculate_diabatic_all(R, None, None)
         
         if centroid:
             if return_matrix:
@@ -513,7 +518,7 @@ class PotentialInterface:
             ("Diabatic gradient is not defined for the electronic basis used.")
 
         if self._changed(R, None, None):
-            self._calculate_all(R, None, None)
+            self._calculate_diabatic_all(R, None, None)
             
         if centroid:
             if return_matrix:
@@ -552,8 +557,13 @@ class PotentialInterface:
 
             self._adiabatic_gradient = dia2ad.get_adiabatic_gradient(
                 self._diabatic_energy, self._diabatic_gradient)
-            self._adiabatic_gradient_centroid = dia2ad.get_adiabatic_gradient(
-                self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
+
+            if self.max_n_beads == 1:
+                self._adiabatic_gradient_centroid = (
+                    self._adiabatic_gradient.reshape((self.n_states, self.n_dof))).copy()
+            else:
+                self._adiabatic_gradient_centroid = dia2ad.get_adiabatic_gradient(
+                    self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
 
         elif self.n_states == 3:
             import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
@@ -564,16 +574,28 @@ class PotentialInterface:
             self._adiabatic_gradient = dia2ad.get_adiabatic_gradient(
                 R, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
 
-            r_centroid = np.mean(R, axis=1)
-            self._adiabatic_gradient_centroid = dia2ad.get_adiabatic_gradient(
-                r_centroid, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
+            if self.max_n_beads == 1:
+                self._adiabatic_gradient_centroid = (
+                    self._adiabatic_gradient.reshape((self.n_states, self.n_dof))).copy()
+            else:
+                r_centroid = np.mean(R, axis=1)
+                self._adiabatic_gradient_centroid = dia2ad.get_adiabatic_gradient(
+                    r_centroid, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
 
+        #### Bead part
         self._adiabatic_energy = dia2ad.get_adiabatic_energy(self._diabatic_energy)
-        self._adiabatic_energy_centroid = dia2ad.get_adiabatic_energy(self._diabatic_energy_centroid)
-
         self._nac = dia2ad.get_NAC(self._diabatic_energy, self._diabatic_gradient)
-        self._nac_centroid = dia2ad.get_NAC(
-            self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
+
+        #### Centroid part
+        if self.max_n_beads == 1:
+            self._adiabatic_energy_centroid = (
+                self._adiabatic_energy.reshape(self.n_states)).copy()
+            self._nac_centroid = (
+                self._nac.reshape((self.n_states, self.n_states, self.n_dof))).copy()
+        else:
+            self._adiabatic_energy_centroid = dia2ad.get_adiabatic_energy(self._diabatic_energy_centroid)
+            self._nac_centroid = dia2ad.get_NAC(
+                self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
 
     def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method

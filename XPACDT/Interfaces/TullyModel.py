@@ -42,12 +42,20 @@ class TullyModel(itemplate.PotentialInterface):
     Two state Tully model potentials (A, B and C) in one dimension.
     Reference: J. Chem. Phys. 93 (2), 1061 (1990)
 
+    Parameters
+    ----------
+    basis : {'adiabatic', 'diabatic'}
+        Electronic state basis representations to be used. Default: 'adiabatic'.
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+
     Other Parameters
     ----------------
-    model_type
+    model_type : {'model_A', 'model_B', 'model_C'}
+        String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads, basis, **kwargs):
+    def __init__(self, basis, max_n_beads=1, **kwargs):
 
         if basis == 'diabatic':
             bases_used = 'diabatic'
@@ -56,8 +64,8 @@ class TullyModel(itemplate.PotentialInterface):
         else:
             raise ValueError("Electronic state basis representation not available.")
 
-        itemplate.PotentialInterface.__init__(self, "TullyModel", 1,
-                                              max_n_beads, 2, bases_used)
+        itemplate.PotentialInterface.__init__(self, "TullyModel", 1, 2,
+                                              max_n_beads, bases_used)
 
         assert (isinstance(kwargs.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."

@@ -47,14 +47,22 @@ class Dissociation2states(itemplate.PotentialInterface):
     Please note the change in variables compared to the paper: E -> De,
     qo -> re, qo12 -> r12c.
 
-    !!! Add form of diagonal and off-diagonal terms; and aliases from paper!!!
+    TODO: Add form of diagonal and off-diagonal terms; and aliases from paper!
+
+    Parameters
+    ----------
+    basis : {'adiabatic', 'diabatic'}
+        Electronic state basis representations to be used. Default: 'adiabatic'.
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
     Other Parameters
     ----------------
-    model_type
+    model_type : {'strong_coupling', 'weak_coupling'}
+        String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads, basis, **kwargs):
+    def __init__(self, basis, max_n_beads=1, **kwargs):
 
         if basis == 'diabatic':
             bases_used = 'diabatic'
@@ -62,7 +70,7 @@ class Dissociation2states(itemplate.PotentialInterface):
             bases_used = 'dia2ad'
 
         itemplate.PotentialInterface.__init__(self, "Dissociation2states", 1,
-                                              max_n_beads, 2, bases_used)
+                                              2, max_n_beads, bases_used)
 
         assert (isinstance(kwargs.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
@@ -163,10 +171,6 @@ class Dissociation2states(itemplate.PotentialInterface):
             self._diabatic_gradient_centroid[0, 1] = self._get_off_diag_grad(r_centroid)
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
-
-    # TODO: how to get rid of these small functions as without them, energies
-    # and gradients have to be set twice for beads and centroid
-    # Maybe use lambda functions??
 
     def _get_diag_V(self, R, i):
         """

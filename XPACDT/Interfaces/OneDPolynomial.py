@@ -38,6 +38,14 @@ class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
     :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
+    
+    Parameters
+    ----------
+    basis : {'adiabatic'}
+        Electronic state basis representations to be used. Needs to be
+        'adiabatic' here.
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
     Other Parameters
     ----------------
@@ -49,13 +57,13 @@ class OneDPolynomial(itemplate.PotentialInterface):
         here.
     """
 
-    def __init__(self, max_n_beads, basis='adiabatic', **kwargs):
+    def __init__(self, basis='adiabatic', max_n_beads=1, **kwargs):
 
         assert (basis == 'adiabatic'), \
         ("Electronic basis for one dimensional polynomial potential should be adiabatic.")
 
-        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1,
-                                              max_n_beads, 1, basis)
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1,
+                                              max_n_beads, basis)
 
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))

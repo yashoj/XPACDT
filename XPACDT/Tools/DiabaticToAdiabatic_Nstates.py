@@ -92,8 +92,7 @@ def get_adiabatic_gradient(R, func_diabatic_energy, step):
         R_step[i] += step
         V_ad_plus = get_adiabatic_energy(func_diabatic_energy(R_step))
 
-        R_step = R.copy()
-        R_step[i] -= step
+        R_step[i] -= (2. * step)
         V_ad_minus = get_adiabatic_energy(func_diabatic_energy(R_step))
 
         dV_ad.append((V_ad_plus - V_ad_minus) / (2. * step))

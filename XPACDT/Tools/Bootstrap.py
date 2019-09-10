@@ -69,6 +69,9 @@ def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
                   for i in range(n_bootstrap)]
 
     m = np.mean(np.array(values).reshape(n_bootstrap, -1), axis=0)
-    s = np.std(np.array(values).reshape(n_bootstrap, -1), axis=0)
+    if n_bootstrap == 1:
+        s = np.zeros_like(m)
+    else:
+        s = np.std(np.array(values).reshape(n_bootstrap, -1), axis=0)
 
     return m, s

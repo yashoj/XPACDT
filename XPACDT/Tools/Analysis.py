@@ -183,7 +183,8 @@ def do_analysis(parameters, systems=None):
         reshaped_results = np.swapaxes(np.array(command['results']).
                                        reshape(n_systems, (2 if '2d' in command else 1), n_times, -1),
                                        0, 2).reshape(n_times, -1)
-        # bootstrap
+        # bootstrap; final_data: [n_times] with tuples(value, error)
+        #                                  where value, error 1d arrays
         final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
                       for data in reshaped_results]
 
@@ -205,12 +206,13 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
         - time: One line per timestep, all values and errors in that line. Or
             for 2D data, one block per timestep (separated by two blank lines)
             and the 2D data gridded (i.e. separated by one blank line for one
-                                     dimension)
+            dimension). 2D histograms have no error bars.
 
         - value: One line per value (with error), all times in that line.
 
-        - 2d: Blocked data for 2d plotting. All values for a given time
-            separated by a blank line.
+        - 2d: Blocked data for 2d plotting of a histogram over time. All values
+              for a given time separated by a blank line. No errors are written
+              in this format.
 
         Parameters
         ----------
@@ -223,15 +225,19 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             Allowed: time, value, 2d
         times : ndarray of floats
             The times for which the data was created
-        bins : list of ndarrays
+        bins : list of ndarrays or None
             If a histogram of the data was generated, bins contains the
             mid-points of each bin. For a 1d histogram, the list only has
-            1 element, for a 2d histogram it has two.
+            1 element, for a 2d histogram it has two. None if no histogram was
+            requested.
         results : ndarray
             The results to be written to file.
         two_d : bool, optional, default False
             Whether a 2d histogram was produced.
     """
+
+    # Formatting style
+    PREC = 8
 
     # Output format: one line or block per timestep
     if form == 'time':
@@ -246,11 +252,15 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             outfile.write(header)
             dd = np.c_[times, np.array(results)[:, 0, :]]
             for data in dd:
-                outfile.write("# time = " + str(data[0]) + " \n")
+                outfile.write("# time = {: .{prec}e} \n".format(data[0], prec=PREC))
+#                outfile.write("# time = " + str(data[0]) + " \n")
                 for i, b1 in enumerate(bins[0]):
                     for j, b2 in enumerate(bins[1]):
-                        outfile.write(str(b1) + " " + str(b2) + " " +
-                                      str(data[1+i*len(bins[1])+j]) + " \n")
+#                        outfile.write(str(b1) + " " + str(b2) + " " +
+#                                      str(data[1+i*len(bins[1])+j]) + " \n")
+                        outfile.write("{: .{prec}e} {: .{prec}e} {: .{prec}e} \n".format(b1, b2, data[1+i*len(bins[1])+j], prec=PREC))
+                        
+                        
                     outfile.write("\n")
                 outfile.write("\n \n")
 
@@ -259,14 +269,15 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             number_times = len(times)
             np.savetxt(file_output,
                        np.c_[times, np.array(results).reshape((number_times, -1))],
-                       header=header)
+                        fmt='% .' + str(PREC) + 'e', header=header)
 
-    # Output format: One line per value (e.g. per bin in histogram)
-    # each column represents one timestep
+    # Output format: One line per value/error pair (e.g. per bin in histogram)
+    # each 2 columns represents one timestep
     elif form == 'value':
         # add time values in header for later reference
         for t in times:
-            header += str(t) + "\t" + str(t) + "\t"
+#            header += str(t) + "\t" + str(t) + "\t"
+            header += "{: .{prec}e} \t {: .{prec}e} \t".format(t, t, prec=PREC)
         header += " \n"
 
         number_values = len(results[0][0])
@@ -274,7 +285,7 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             bins = np.zeros(number_values)
         np.savetxt(file_output,
                    np.c_[bins[0], np.array(results).reshape((-1, number_values)).T],
-                   header=header)
+                   fmt='% .' + str(PREC) + 'e', header=header)
 
     # Output format: For 2D plots of histograms vs. time
     elif form == '2d':
@@ -285,8 +296,9 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
         dd = np.c_[times, np.array(results).reshape((number_times, -1))]
         for data in dd:
             for i, b in enumerate(bins[0]):
-                outfile.write(str(data[0]) + " " + str(b) + " " +
-                              str(data[1+i]) + " \n")
+#                outfile.write(str(data[0]) + " " + str(b) + " " +
+#                              str(data[1+i]) + " \n")
+                outfile.write("{: .{prec}e} {: .{prec}e} {: .{prec}e} \n".format(data[0], b, data[1+i], prec=PREC))
             outfile.write("\n")
 
     else:
@@ -296,7 +308,8 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
 def check_command(command, system):
     """ Check for return size of a command and print warning if longer than 1,
     as this might often be unwanted, unless all returned values are of the same
-    type and independent. Then the warning can be ignored.
+    type and independent. Then the warning can be ignored. Also other\
+    consistency checks are performed.
 
     Parameters
     ----------
@@ -306,6 +319,16 @@ def check_command(command, system):
     system : XPACDT.System
         The read in system containing its own log.
     """
+    if ('2d' in command and command['format'] != 'time'):
+        warnings.warn("XPACDT: For a 2dhistogram is requested, 'form' has to"
+                      "have the value 'time'. This is now automatically set.")
+        command['format'] = 'time'
+    if (command['format'] == '2d' and command['value'][:9] != 'histogram'):
+        raise RuntimeError("XPACDT: If form is '2d', 'value' has to be"
+                           "'histogram' - i.e., a 1d histogram which will be"
+                           "plotted over time in a 2d gnuplot bloacked"
+                           "format.")
+
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
     if 'op0' in command:

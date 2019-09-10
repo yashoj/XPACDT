@@ -73,14 +73,14 @@ class AnalysisTest(unittest.TestCase):
 
     def test_check_command(self):
         with self.assertRaises(ValueError):
-            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'results': []}
+            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'format': 'time', 'results': []}
             analysis.check_command(command, self.systems[3])
 
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")
             # Generate warning
-            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1', 'step': '', 'results': []}
+            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1', 'step': '', 'format': 'time', 'results': []}
             analysis.check_command(command, self.systems[3])
             # Verify some things
             assert len(w) == 1
@@ -88,7 +88,7 @@ class AnalysisTest(unittest.TestCase):
 
     def test_apply_command(self):
         with self.assertRaises(ValueError):
-            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'results': []}
+            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'format': 'time', 'results': []}
             analysis.apply_command(command, self.systems[3])
 
         command = {'op': '+pos -1 0 +mom -1 0', 'step': '', 'results': []}
@@ -185,7 +185,7 @@ class AnalysisTest(unittest.TestCase):
         bins = None
         results = np.array([[-5.0], [2.0]])
 
-        compare_text = "# This is a stupid header\n# For my super test!\n0.000000000000000000e+00 -5.000000000000000000e+00\n2.000000000000000000e+00 2.000000000000000000e+00\n"
+        compare_text = "# This is a stupid header\n# For my super test!\n 0.00000000e+00 -5.00000000e+00\n 2.00000000e+00  2.00000000e+00\n"
 
         analysis.output_data(header, output_file, form, times, bins, results)
         text = ''
@@ -205,12 +205,12 @@ class AnalysisTest(unittest.TestCase):
 
         compare_text = "# This is a stupid header\n" + \
         "# For my super test!\n" + \
-        "# 0.0\t0.0\t2.0\t2.0\t \n" + \
-        "# \n-2.000000000000000000e+00 -5.000000000000000000e+00 5.000000000000000000e+00\n" + \
-        "-1.000000000000000000e+00 2.000000000000000000e+00 -2.000000000000000000e+00\n" + \
-        "0.000000000000000000e+00 3.000000000000000000e+00 -3.000000000000000000e+00\n" + \
-        "1.000000000000000000e+00 2.000000000000000000e+00 -2.000000000000000000e+00\n" + \
-        "2.000000000000000000e+00 1.500000000000000000e+00 -1.500000000000000000e+00\n"
+        "#  0.00000000e+00 \t  0.00000000e+00 \t 2.00000000e+00 \t  2.00000000e+00 \t \n" + \
+        "# \n-2.00000000e+00 -5.00000000e+00  5.00000000e+00\n" + \
+        "-1.00000000e+00  2.00000000e+00 -2.00000000e+00\n" + \
+        " 0.00000000e+00  3.00000000e+00 -3.00000000e+00\n" + \
+        " 1.00000000e+00  2.00000000e+00 -2.00000000e+00\n" + \
+        " 2.00000000e+00  1.50000000e+00 -1.50000000e+00\n"
 
         analysis.output_data(header, output_file, form, times, bins, results)
         text = ''
@@ -230,17 +230,17 @@ class AnalysisTest(unittest.TestCase):
 
         compare_text = "# This is a stupid header\n" + \
         "# For my super test!\n" + \
-        "0.0 -2.0 -5.0 \n" + \
-        "0.0 -1.0 2.0 \n" + \
-        "0.0 0.0 3.0 \n" + \
-        "0.0 1.0 2.0 \n" + \
-        "0.0 2.0 1.5 \n" + \
+        " 0.00000000e+00 -2.00000000e+00 -5.00000000e+00 \n" + \
+        " 0.00000000e+00 -1.00000000e+00  2.00000000e+00 \n" + \
+        " 0.00000000e+00  0.00000000e+00  3.00000000e+00 \n" + \
+        " 0.00000000e+00  1.00000000e+00  2.00000000e+00 \n" + \
+        " 0.00000000e+00  2.00000000e+00  1.50000000e+00 \n" + \
         "\n" + \
-        "2.0 -2.0 5.0 \n" + \
-        "2.0 -1.0 -2.0 \n" + \
-        "2.0 0.0 -3.0 \n" + \
-        "2.0 1.0 -2.0 \n" + \
-        "2.0 2.0 -1.5 \n\n"
+        " 2.00000000e+00 -2.00000000e+00  5.00000000e+00 \n" + \
+        " 2.00000000e+00 -1.00000000e+00 -2.00000000e+00 \n" + \
+        " 2.00000000e+00  0.00000000e+00 -3.00000000e+00 \n" + \
+        " 2.00000000e+00  1.00000000e+00 -2.00000000e+00 \n" + \
+        " 2.00000000e+00  2.00000000e+00 -1.50000000e+00 \n\n"
 
         analysis.output_data(header, output_file, form, times, bins, results)
         text = ''

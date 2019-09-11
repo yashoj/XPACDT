@@ -57,8 +57,9 @@ class PotentialInterface:
         Number of electronic states. Default: 1.
     max_n_beads : int, optional
         Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
-    bases_used : {'adiabatic', 'diabatic', 'dia2ad'}
-        Electronic state basis representations to be used. Default: 'adiabatic'.
+    primary_basis : {'adiabatic', 'diabatic'}
+        Electronic state basis representation in which the interface is
+        primarily based on. Default: 'adiabatic'.
 
     Attributes
     ----------
@@ -69,51 +70,52 @@ class PotentialInterface:
     """
 
     def __init__(self, name, n_dof, n_states=1, max_n_beads=1, 
-                 bases_used='adiabatic', **kwargs):
+                 primary_basis='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof
         self.__n_states = n_states
         # Note that here all dof having same number of beads is assumed
         # or at least that the effective position matrix having the max. nbeads
         self.__max_n_beads = max_n_beads
-        self.bases_used = bases_used
+        self.primary_basis = primary_basis
         self.__SAVE_THRESHOLD = 1e-8
         self.__DERIVATIVE_STEPSIZE = 1e-4
 
+        self._is_adiabatic_calculated = False
         self._old_R = None
         self._old_P = None
         self._old_S = None
 
-        # TODO: where to place these? Is here fine?
-#         _adiabatic_energy : (n_states, n_beads) ndarrays of floats
-#            Adiabatic energy of the system for all states and beads.
-#        _adiabatic_gradient : (n_states, n_dof, n_beads) ndarrays of floats
-#            Gradient of adiabatic energy of the system for all states and beads.
-#        _nac : (n_states, n_states, n_dof, n_beads) ndarrays of floats, optional
-#            Non-adiabatic coupling vector of the system for all states and beads.
-#    
-#        _adiabatic_energy_centroid : (n_states) ndarrays of floats
-#            Centroid adiabatic energy of the system for all states.
-#        _adiabatic_gradient_centroid : (n_states, n_dof) ndarrays of floats
-#            Centroid gradient of adiabatic energy of the system for all states.
-#        _nac_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
-#            Centroid non-adiabatic coupling vector of the system for all states.
-#    
-#        _diabatic_energy : (n_states, n_states, n_beads) ndarrays of floats, optional
-#            Diabatic energy of the system for all states and beads.
-#        _diabatic_gradient : (n_states, n_states, n_dof, n_beads) ndarrays of floats, optional
-#            Gradient of diabatic energy of the system for all states and beads.
-#    
-#        _diabatic_energy_centroid : (n_states, n_states) ndarrays of floats, optional
-#            Centroid diabatic energy of the system for all states.
-#        _diabatic_gradient_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
-#            Centroid gradient of diabatic energy of the system for all states.
-        
-        # TODO: Is initializing adiabatic matrices needed as they are 
-        #       set in particular interfaces anyways?
-        #       However might be good to state them explicitly as it is only done once anyways.
+        # Stating some protected variables (starting with '_') explicitly.
+        # These are energy, gradient and NAC for beads and centroid in
+        # adiabatic and diabatic basis. These should not be accessed on its
+        # own as there should be functions that provide them.
+        #
+        # _adiabatic_energy : (n_states, n_beads) ndarrays of floats
+        #     Adiabatic energy of the system for all states and beads.
+        # _adiabatic_gradient : (n_states, n_dof, n_beads) ndarrays of floats
+        #     Gradient of adiabatic energy of the system for all states and beads.
+        # _nac : (n_states, n_states, n_dof, n_beads) ndarrays of floats, optional
+        #     Non-adiabatic coupling vector of the system for all states and beads.
+        #
+        # _adiabatic_energy_centroid : (n_states) ndarrays of floats
+        #     Centroid adiabatic energy of the system for all states.
+        # _adiabatic_gradient_centroid : (n_states, n_dof) ndarrays of floats
+        #     Centroid gradient of adiabatic energy of the system for all states.
+        # _nac_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
+        #     Centroid non-adiabatic coupling vector of the system for all states.
+        #
+        # _diabatic_energy : (n_states, n_states, n_beads) ndarrays of floats, optional
+        #     Diabatic energy of the system for all states and beads.
+        # _diabatic_gradient : (n_states, n_states, n_dof, n_beads) ndarrays of floats, optional
+        #     Gradient of diabatic energy of the system for all states and beads.
+        #
+        # _diabatic_energy_centroid : (n_states, n_states) ndarrays of floats, optional
+        #     Centroid diabatic energy of the system for all states.
+        # _diabatic_gradient_centroid : (n_states, n_states, n_dof) ndarrays of floats, optional
+        #     Centroid gradient of diabatic energy of the system for all states.
 
-        if (self.bases_used == 'adiabatic') or (self.bases_used == 'dia2ad'):
+        if (self.primary_basis == 'adiabatic'):
             self._adiabatic_energy = np.zeros((self.n_states, self.max_n_beads))
             self._adiabatic_gradient = np.zeros((self.n_states, self.n_dof,
                                        self.max_n_beads))
@@ -126,7 +128,7 @@ class PotentialInterface:
                 self._nac_centroid = np.zeros((self.n_states, self.n_states,
                                                self.n_dof))
 
-        if (self.bases_used == 'diabatic') or (self.bases_used == 'dia2ad'):
+        if (self.primary_basis == 'diabatic'):
             self._diabatic_energy = np.zeros((self.n_states, self.n_states,
                                               self.max_n_beads))
             self._diabatic_gradient = np.zeros((self.n_states, self.n_states,
@@ -156,15 +158,18 @@ class PotentialInterface:
         return self.__max_n_beads
 
     @property
-    def bases_used(self):
-        """{'adiabatic', 'diabatic', 'dia2ad'} : Electronic state basis representations to be used."""
-        return self.__bases_used
+    def primary_basis(self):
+        """{'adiabatic', 'diabatic'} : Electronic state basis representation in
+        which the interface is primarily based on. This should be 'diabatic' if
+        the interface uses diabatic basis at all, else it is should be
+        'adiabatic'. Default: 'adiabatic'.."""
+        return self.__primary_basis
 
-    @bases_used.setter
-    def bases_used(self, b):
-        assert (b in ['adiabatic', 'diabatic', 'dia2ad']),\
+    @primary_basis.setter
+    def primary_basis(self, b):
+        assert (b in ['adiabatic', 'diabatic']),\
                ("Electronic state basis representation not available.")
-        self.__bases_used = b
+        self.__primary_basis = b
 
     @property
     def SAVE_THESHOLD(self):
@@ -236,7 +241,7 @@ class PotentialInterface:
             The (ring-polymer) momenta representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
-        S : integer, default None
+        S : integer, default: None
             The current state of the system.
 
         Returns
@@ -265,6 +270,29 @@ class PotentialInterface:
         else:
             self._old_R = R.copy()
             return True
+    
+    # Is this name fine or better to use just '_recalculate_adiabatic'.
+    def _need_to_recalculate_adiabatic(self, R, S=None):
+        """Check if adiabatic properties need to be recalulated due to change
+        in positions or since only diabatic properties were calculated. If yes,
+        then calculate them.
+
+        Parameters
+        ----------
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au.
+        S : integer, default: None
+            The current state of the system.
+        """
+        if self._changed(R, None, S):
+            self._calculate_adiabatic_all(R, None, S)
+            self._is_adiabatic_calculated = True
+
+        elif (self.primary_basis == 'diabatic') and (not(self._is_adiabatic_calculated)):
+            self._get_adiabatic_from_diabatic(R, self._get_diabatic_energy_matrix)
+            self._is_adiabatic_calculated = True
+        else:
+            pass
 
     def adiabatic_energy(self, R, S=None, centroid=False, return_matrix=False):
         """Obtain adiabatic energy of the system in the current state.
@@ -289,8 +317,7 @@ class PotentialInterface:
             The energy of the system in hartree at each bead position or at the
             centroid for a particular state or all states.
         """
-        if self._changed(R, None, S):
-            self._calculate_adiabatic_all(R, None, S)
+        self._need_to_calculate_adiabatic(R, S)
 
         if centroid:
             if return_matrix:
@@ -394,50 +421,6 @@ class PotentialInterface:
                     ("State labels or return matrix not specified for obtaining NAC.")
                 return self._nac[SI, SJ]
 
-    # TODO: should these wrappers have option to return adiabatic or diabatic
-    #       energies, in case we decide to plot either one? Or maybe create separate functions for them?
-    def _energy_wrapper(self, R, S=0, centroid=True):
-        """Wrapper function to do call energy with a one-dimensional array.
-        This should only be used for directly accessing the PES and not for any
-        dynamics calculation!.
-
-        Parameters
-        ----------
-        R : (n_dof) ndarray of floats
-            The positions representing the system in au.
-        S : integer, default 0
-            The current state of the system.
-        centroid : bool, default True
-            If the energy of the centroid should be returned.
-
-        Returns
-        -------
-        float:
-        The energy at the given geometry in hartree.
-        """
-        return self.adiabatic_energy(R.reshape(-1, 1), S, centroid)
-
-    def _gradient_wrapper(self, R, S=0, centroid=True):
-        """Wrapper function to do call gradient with a one-dimensional array.
-        This should only be used for directly accessing the PES and not for any
-        dynamics calculation!.
-
-        Parameters
-        ----------
-        R : (n_dof) ndarray of floats
-            The positions representing the system in au.
-        S : integer, default 0
-            The current state of the system.
-        centroid : bool, default True
-            If the gradient of the centroid should be returned.
-
-        Returns
-        -------
-        (n_dof) ndarray of floats:
-        The gradient at the given geometry in hartree/au.
-        """
-        return self.adiabatic_gradient(R.reshape(-1, 1), S, centroid)
-
     def diabatic_energy(self, R, SI=None, SJ=None, centroid=False, return_matrix=False):
         """Obtain diabatic energy matrix element of the system.
 
@@ -465,11 +448,12 @@ class PotentialInterface:
         """
         # Is this assert statement even needed? Diabatic energy isn't initialized if
         # this isn't fulfilled anyways?
-        assert ((self.bases_used == 'diabatic') or (self.bases_used == 'dia2ad')),\
+        assert (self.primary_basis == 'diabatic'),\
             ("Diabatic energy is not defined for the electronic basis used.")
 
         if self._changed(R, None, None):
             self._calculate_diabatic_all(R, None, None)
+            self._is_adiabatic_calculated = False
         
         if centroid:
             if return_matrix:
@@ -514,11 +498,12 @@ class PotentialInterface:
         """
         # Is this assert statement even needed? Diabatic gradient isn't initialized if
         # this isn't fulfilled anyways?
-        assert ((self.bases_used == 'diabatic') or (self.bases_used == 'dia2ad')),\
+        assert (self.primary_basis == 'diabatic'), \
             ("Diabatic gradient is not defined for the electronic basis used.")
 
         if self._changed(R, None, None):
             self._calculate_diabatic_all(R, None, None)
+            self._is_adiabatic_calculated = False
             
         if centroid:
             if return_matrix:
@@ -534,6 +519,70 @@ class PotentialInterface:
                 assert ((SI is not None) and (SJ is not None)), \
                     ("State labels or return matrix not specified for obtaining diabatic gradient.")
                 return self._diabatic_gradient[SI, SJ]
+
+    # TODO: should these wrappers have option to return adiabatic or diabatic
+    #       energies, in case we decide to plot either one? Or maybe create separate functions for them?
+    def _energy_wrapper(self, R, S=0, centroid=True):
+        """Wrapper function to do call energy with a one-dimensional array.
+        This should only be used for directly accessing the PES and not for any
+        dynamics calculation!.
+
+        Parameters
+        ----------
+        R : (n_dof) ndarray of floats
+            The positions representing the system in au.
+        S : integer, default 0
+            The current state of the system.
+        centroid : bool, default True
+            If the energy of the centroid should be returned.
+
+        Returns
+        -------
+        float:
+        The energy at the given geometry in hartree.
+        """
+        return self.adiabatic_energy(R.reshape(-1, 1), S, centroid)
+
+    def _gradient_wrapper(self, R, S=0, centroid=True):
+        """Wrapper function to do call gradient with a one-dimensional array.
+        This should only be used for directly accessing the PES and not for any
+        dynamics calculation!.
+
+        Parameters
+        ----------
+        R : (n_dof) ndarray of floats
+            The positions representing the system in au.
+        S : integer, default 0
+            The current state of the system.
+        centroid : bool, default True
+            If the gradient of the centroid should be returned.
+
+        Returns
+        -------
+        (n_dof) ndarray of floats:
+        The gradient at the given geometry in hartree/au.
+        """
+        return self.adiabatic_gradient(R.reshape(-1, 1), S, centroid)
+
+    def _get_diabatic_energy_matrix(self, R):
+        """
+        Obtain diabatic energy matrix for beads or centroid.
+        This function is needed to pass onto adiabatic transformation for
+        interfaces with more than 2 electronic states. So should not be used
+        independently and should only be implemented in child interface classes
+        with more than 2 states.
+
+        Parameters:
+        ----------
+        R : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
+            The positions of all centroids or beads in the system.
+
+        Returns
+        -------
+        This function throws and NotImplemented Error and needs to be
+        implemented by any child class.
+        """
+        raise NotImplementedError
 
     def _get_adiabatic_from_diabatic(self, R, func_diabatic_energy=None):
         """

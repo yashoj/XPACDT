@@ -99,8 +99,8 @@ class Dissociation2states(itemplate.PotentialInterface):
 
     def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
-        Calculate and set diabatic and adiabatic (if required) matrices for
-        energies and gradients of beads and centroid.
+        Calculate and set diabatic and adiabatic matrices for energies and
+        gradients of beads and centroid.
 
         Parameters:
         ----------

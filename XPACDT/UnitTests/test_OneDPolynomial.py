@@ -60,42 +60,42 @@ class OneDPolynomialTest(unittest.TestCase):
 
         return
 
-    def test_calculate_all(self):
+    def test_calculate_adiabatic_all(self):
         pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
 
         # test correct potential values and gradients
-        pes._calculate_all(np.array([[0.0]]), None)
-        self.assertSequenceEqual(pes._energy, [[0.0]])
-        self.assertSequenceEqual(pes._gradient, [[[0.0]]])
-        self.assertSequenceEqual(pes._energy_centroid, [0.0])
-        self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
+        pes._calculate_adiabatic_all(np.array([[0.0]]), None)
+        self.assertSequenceEqual(pes._adiabatic_energy, [[0.0]])
+        self.assertSequenceEqual(pes._adiabatic_gradient, [[[0.0]]])
+        self.assertSequenceEqual(pes._adiabatic_energy_centroid, [0.0])
+        self.assertSequenceEqual(pes._adiabatic_gradient_centroid, [[0.0]])
 
         pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
-        pes._calculate_all(np.array([[-1.0]]), None)
-        self.assertSequenceEqual(pes._energy, [[1.0]])
-        self.assertSequenceEqual(pes._gradient, [[[0.0]]])
-        self.assertSequenceEqual(pes._energy_centroid, [1.0])
-        self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
+        pes._calculate_adiabatic_all(np.array([[-1.0]]), None)
+        self.assertSequenceEqual(pes._adiabatic_energy, [[1.0]])
+        self.assertSequenceEqual(pes._adiabatic_gradient, [[[0.0]]])
+        self.assertSequenceEqual(pes._adiabatic_energy_centroid, [1.0])
+        self.assertSequenceEqual(pes._adiabatic_gradient_centroid, [[0.0]])
 
-        pes._calculate_all(np.array([[1.0]]), None)
-        self.assertSequenceEqual(pes._energy, [[1.0+2.0+0.8]])
-        self.assertSequenceEqual(pes._gradient, [[[2.0+1.2]]])
-        self.assertSequenceEqual(pes._energy_centroid, [1.0+2.0+0.8])
-        self.assertSequenceEqual(pes._gradient_centroid, [[2.0+1.2]])
+        pes._calculate_adiabatic_all(np.array([[1.0]]), None)
+        self.assertSequenceEqual(pes._adiabatic_energy, [[1.0+2.0+0.8]])
+        self.assertSequenceEqual(pes._adiabatic_gradient, [[[2.0+1.2]]])
+        self.assertSequenceEqual(pes._adiabatic_energy_centroid, [1.0+2.0+0.8])
+        self.assertSequenceEqual(pes._adiabatic_gradient_centroid, [[2.0+1.2]])
 
         # test for multiple beads
         pes_3_nb = oneDP.OneDPolynomial(3, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
 
-        pes_3_nb._calculate_all(np.array([[1.0, -2.0, -1.0]]), None)
+        pes_3_nb._calculate_adiabatic_all(np.array([[1.0, -2.0, -1.0]]), None)
         self.assertTrue(
-                np.alltrue(pes_3_nb._energy
+                np.alltrue(pes_3_nb._adiabatic_energy
                            == np.array([[1.0+2.0+0.8, 1.0+0.5-0.1, 1.0]])))
         self.assertTrue(
-                np.alltrue(pes_3_nb._gradient
+                np.alltrue(pes_3_nb._adiabatic_gradient
                            == np.array([[[2.0+1.2, -1.0+0.3, 0.0]]])))
 
-        np.testing.assert_allclose(pes_3_nb._energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
-        np.testing.assert_allclose(pes_3_nb._gradient_centroid, np.array([[0.33333333+0.0333333333]]))
+        np.testing.assert_allclose(pes_3_nb._adiabatic_energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
+        np.testing.assert_allclose(pes_3_nb._adiabatic_gradient_centroid, np.array([[0.33333333+0.0333333333]]))
 
     def test_minimize_geom(self):
         # Harmonic oscillator

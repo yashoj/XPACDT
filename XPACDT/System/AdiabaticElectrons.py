@@ -74,7 +74,7 @@ class AdiabaticElectrons(electrons.Electrons):
         The energy of the systems PES at each bead position or at the centroid
         in hartree.
         """
-        return self.pes.energy(R, centroid=centroid)
+        return self.pes.adiabatic_energy(R, centroid=centroid)
 
     def gradient(self, R, centroid=False):
         """Calculate the gradient of the electronic energy at the current
@@ -96,4 +96,4 @@ class AdiabaticElectrons(electrons.Electrons):
         centroid in hartree/au.
         """
 
-        return self.pes.gradient(R, centroid=centroid)
+        return self.pes.adiabatic_gradient(R, centroid=centroid)

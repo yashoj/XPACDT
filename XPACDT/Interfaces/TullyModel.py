@@ -219,7 +219,7 @@ class TullyModel(itemplate.PotentialInterface):
                 dV *= -1.
         elif (self.model_type == 'model_B'):
             exp_term = np.exp(-self.__B * R * R)
-            V = -self.__A * exp_term + self.__Eo
+            V = -self.__A * exp_term[0] + self.__Eo
             dV = 2 * R * self.__A * self.__B * exp_term
         return V, dV
 

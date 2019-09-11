@@ -181,11 +181,11 @@ class Dissociation2states(itemplate.PotentialInterface):
         """
         exp_term = np.exp(-self.__a[i] * (R - self.__re[i]))
         if (i == 0):
-            V = (self.__De[i] * (1. - exp_term[0])**2 - self.__b[i])
-            dV = (2. * self.__a[i] * self.__De[i] * exp_term * (1. - exp_term))
+            V = self.__De[i] * (1. - exp_term[0])**2 - self.__b[i]
+            dV = 2. * self.__a[i] * self.__De[i] * exp_term * (1. - exp_term)
         else:
-            V = (self.__De[i] * exp_term[0] + self.__b[i])
-            dV = (-self.__a[i] * self.__De[i] * exp_term)
+            V = self.__De[i] * exp_term[0] + self.__b[i]
+            dV = -self.__a[i] * self.__De[i] * exp_term
         return V, dV
 
     def _get_off_diag_V_grad(self, R):
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     # Plotting
     import matplotlib.pyplot as plt
     nb = 1
-    model_type = 'strong_coupling'  # 'weak_coupling'
+    model_type = 'weak_coupling'  # 'strong_coupling'
     pot = Dissociation2states(nb, **{'model_type': model_type})
 
     # len(linspace) array of positions

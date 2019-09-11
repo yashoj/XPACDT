@@ -317,7 +317,7 @@ class PotentialInterface:
             The energy of the system in hartree at each bead position or at the
             centroid for a particular state or all states.
         """
-        self._need_to_calculate_adiabatic(R, S)
+        self._need_to_recalculate_adiabatic(R, S)
 
         if centroid:
             if return_matrix:
@@ -353,8 +353,7 @@ class PotentialInterface:
             The gradient of the system in hartree/au at each bead position or
             at the centroid for a particular state or all states.
         """
-        if self._changed(R, None, S):
-            self._calculate_adiabatic_all(R, None, S)
+        self._need_to_recalculate_adiabatic(R, S)
             
         if centroid:
             if return_matrix:
@@ -403,8 +402,7 @@ class PotentialInterface:
         assert (self.n_states > 1),\
             ("NAC is only defined for more than 1 electronic state.")
 
-        if self._changed(R, None, None):
-            self._calculate_adiabatic_all(R, None, None)
+        self._need_to_recalculate_adiabatic(R, None)
 
         if centroid:
             if return_matrix:

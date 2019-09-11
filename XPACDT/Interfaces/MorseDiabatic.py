@@ -45,21 +45,22 @@ class MorseDiabatic(itemplate.PotentialInterface):
     The diagonal terms are morse potential and off-diagonal couplings are gaussian.
     Reference: Chem. Phys. Lett. 349, 521-529 (2001)
 
-    !!! Add form of diagonal and off-diagonal terms!!!
+    TODO: Add form of diagonal and off-diagonal terms!
+
+    Parameters
+    ----------
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
     Other Parameters
     ----------------
-    model_type
+    model_type : {'model_1', 'model_2', 'model_3'}
+        String denoting model number to be used.
+    n_states : int or string of int
+        Number of morse diabatic states (possible: 2, 3).
     """
 
-    def __init__(self, max_n_beads, basis, **kwargs):
-
-        if basis == 'diabatic':
-            bases_used = 'diabatic'
-        elif basis == 'adiabatic':
-            bases_used = 'dia2ad'
-        else:
-            raise ValueError("Electronic state basis representation not available.")
+    def __init__(self, max_n_beads=1, **kwargs):
 
         try:
             n_states = int(kwargs.get('n_states', 3))
@@ -71,7 +72,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
                ("Only 2 or 3 states possible for morse diabatic potential")
 
         itemplate.PotentialInterface.__init__(self, "MorseDiabatic", 1,
-                                              max_n_beads, n_states, bases_used)
+                                              n_states, max_n_beads, 'diabatic')
 
         assert (isinstance(kwargs.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
@@ -114,10 +115,10 @@ class MorseDiabatic(itemplate.PotentialInterface):
         """string : Model number to be used."""
         return self.__model_type
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
-        Calculate and set diabatic and adiabatic (if required) matrices for
-        energies and gradients of beads and centroid.
+        Calculate and set diabatic and adiabatic matrices for energies and
+        gradients of beads and centroid.
 
         Parameters:
         ----------
@@ -132,9 +133,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
         """
 
         self._calculate_diabatic_all(R)
-
-        if (self.bases_used == 'dia2ad'):
-             self._get_adiabatic_from_diabatic(R, self._get_diabatic_energy_matrix)
+        self._get_adiabatic_from_diabatic(R, self._get_diabatic_energy_matrix)
 
     def _calculate_diabatic_all(self, R):
         """
@@ -149,34 +148,23 @@ class MorseDiabatic(itemplate.PotentialInterface):
         """
 
         # Bead part
+        self._diabatic_energy = self._get_diabatic_energy_matrix(R)
+
         for i in range(self.n_states):
-            self._diabatic_energy[i, i] = self._get_diag_V(R, i)
             self._diabatic_gradient[i, i] = self._get_diag_grad(R, i)
 
         # Taking into account that the potential matrix is real and Hermitian
-        self._diabatic_energy[0, 1] = self._get_off_diag_V(
-            R, self.__A12, self.__as12, self.__r12)
-        self._diabatic_energy[1, 0] = self._diabatic_energy[0, 1].copy()
-
         self._diabatic_gradient[0, 1] = self._get_off_diag_grad(
             R, self.__A12, self.__as12, self.__r12)
         self._diabatic_gradient[1, 0] = self._diabatic_gradient[0, 1].copy()
 
         if self.n_states == 3:
             if self.model_type == 'model_1':
-                self._diabatic_energy[1, 2] = self._get_off_diag_V(
-                    R, self.__A23, self.__as23, self.__r23)
-                self._diabatic_energy[2, 1] = self._diabatic_energy[1, 2].copy()
-    
                 self._diabatic_gradient[1, 2] = self._get_off_diag_grad(
                     R, self.__A23, self.__as23, self.__r23)
                 self._diabatic_gradient[2, 1] = self._diabatic_gradient[1, 2].copy() 
 
             elif (self.model_type == 'model_2') or (self.model_type == 'model_3'):
-                self._diabatic_energy[0, 2] = self._get_off_diag_V(
-                    R, self.__A13, self.__as13, self.__r13)
-                self._diabatic_energy[2, 0] = self._diabatic_energy[0, 2].copy()
-
                 self._diabatic_gradient[0, 2] = self._get_off_diag_grad(
                     R, self.__A13, self.__as13, self.__r13)
                 self._diabatic_gradient[2, 0] = self._diabatic_gradient[0, 2].copy()
@@ -189,14 +177,11 @@ class MorseDiabatic(itemplate.PotentialInterface):
                 self._diabatic_gradient.reshape((self.n_states, self.n_states, self.n_dof))).copy()
         else:
             r_centroid = np.mean(R, axis=1)
-            for i in range(self.n_states):
-                self._diabatic_energy_centroid[i, i] = self._get_diag_V(r_centroid, i)
-                self._diabatic_gradient_centroid[i, i] = self._get_diag_grad(r_centroid, i)
+            self._diabatic_energy_centroid = \
+                self._get_diabatic_energy_matrix(r_centroid)
 
-            self._diabatic_energy_centroid[0, 1] = self._get_off_diag_V(
-                r_centroid, self.__A12, self.__as12, self.__r12)
-            self._diabatic_energy_centroid[1, 0] = \
-                self._diabatic_energy_centroid[0, 1]
+            for i in range(self.n_states):
+                self._diabatic_gradient_centroid[i, i] = self._get_diag_grad(r_centroid, i)
 
             self._diabatic_gradient_centroid[0, 1] = self._get_off_diag_grad(
                 r_centroid, self.__A12, self.__as12, self.__r12)
@@ -205,26 +190,14 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
             if self.n_states == 3:
                 if self.model_type == 'model_1':
-                    self._diabatic_energy_centroid[1, 2] = self._get_off_diag_V(
-                        r_centroid, self.__A23, self.__as23, self.__r23)
-                    self._diabatic_energy_centroid[2, 1] = self._diabatic_energy_centroid[1, 2]
-
                     self._diabatic_gradient_centroid[1, 2] = self._get_off_diag_grad(
                         r_centroid, self.__A23, self.__as23, self.__r23)
                     self._diabatic_gradient_centroid[2, 1] = self._diabatic_gradient_centroid[1, 2].copy()
 
                 elif (self.model_type == 'model_2') or (self.model_type == 'model_3'):
-                    self._diabatic_energy_centroid[0, 2] = self._get_off_diag_V(
-                        r_centroid, self.__A13, self.__as13, self.__r13)
-                    self._diabatic_energy_centroid[2, 0] = self._diabatic_energy_centroid[0, 2]
-
                     self._diabatic_gradient_centroid[0, 2] = self._get_off_diag_grad(
                         r_centroid, self.__A13, self.__as13, self.__r13)
                     self._diabatic_gradient_centroid[2, 0] = self._diabatic_gradient_centroid[0, 2].copy()
-
-    # TODO: how to get rid of these small functions as without them, energies
-    # and gradients have to be set twice for beads and centroid
-    # Maybe use lambda functions??
 
     def _get_diag_V(self, R, i):
         """
@@ -309,7 +282,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
         """
         Obtain diabatic energy matrix for beads or centroid.
         This function is needed to pass onto adiabatic transformation and
-        should not be used independently.
+        should not be used independently outside of this class.
 
         Parameters:
         ----------
@@ -353,12 +326,12 @@ if __name__ == '__main__':
     # !!! Should these plotting scripts be left here for future plotting?
 
     import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
-    pot = MorseDiabatic(4, 'adiabatic', **{'n_states': '3', 'model_type': 'model_3'})
+    pot = MorseDiabatic(4, **{'n_states': '3', 'model_type': 'model_3'})
 
     # R = np.array([[3.3, 3.4,  3.5, 3.6]])
     R = np.array([[2., 3.5, 4., 5.]])
 
-    pot._calculate_all(R)
+    pot._calculate_adiabatic_all(R)
 
     # print(pot._energy)
     # print(pot._gradient, '\n\n')
@@ -368,8 +341,8 @@ if __name__ == '__main__':
     # print(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE))
     # print(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), '\n\n')
 
-    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._energy))
-    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._gradient))
+    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
+    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
     print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
 
 
@@ -380,8 +353,7 @@ if __name__ == '__main__':
     model_type = sys.argv[1]  # 'model_3'
     n_states = int(sys.argv[2])  # 2
     nb = 1
-    pot = MorseDiabatic(nb, 'adiabatic', **{'n_states': str(n_states),
-                                            'model_type': model_type})
+    pot = MorseDiabatic(nb, **{'n_states': str(n_states), 'model_type': model_type})
 
     bead_ind = 0  # Bead to be used for plotting
 
@@ -411,7 +383,7 @@ if __name__ == '__main__':
     nac23 = []
 
     for i in X:
-        pot._calculate_all(np.array([[i]]))
+        pot._calculate_adiabatic_all(np.array([[i]]))
 
         v1.append(pot._diabatic_energy[0, 0, 0])
         v2.append(pot._diabatic_energy[1, 1, 0])
@@ -420,17 +392,17 @@ if __name__ == '__main__':
         dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
         dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
 
-        V1_ad.append(pot._energy[0, 0])
-        V2_ad.append(pot._energy[1, 0])
-        dV1_ad.append(pot._gradient[0, 0, 0])
-        dV2_ad.append(pot._gradient[1, 0, 0])
+        V1_ad.append(pot._adiabatic_energy[0, 0])
+        V2_ad.append(pot._adiabatic_energy[1, 0])
+        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
+        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
         nac12.append(pot._nac[0, 1, 0, 0])
 
         if (n_states == 3):
             v3.append(pot._diabatic_energy[2, 2, 0])
             dv3.append(pot._diabatic_gradient[2, 2, 0, 0])
-            V3_ad.append(pot._energy[2, 0])
-            dV3_ad.append(pot._gradient[2, 0, 0])
+            V3_ad.append(pot._adiabatic_energy[2, 0])
+            dV3_ad.append(pot._adiabatic_gradient[2, 0, 0])
             nac13.append(pot._nac[0, 2, 0, 0])
             nac23.append(pot._nac[1, 2, 0, 0])
 

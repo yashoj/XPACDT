@@ -47,22 +47,23 @@ class Dissociation2states(itemplate.PotentialInterface):
     Please note the change in variables compared to the paper: E -> De,
     qo -> re, qo12 -> r12c.
 
-    !!! Add form of diagonal and off-diagonal terms!!!
+    TODO: Add form of diagonal and off-diagonal terms; and aliases from paper!
+
+    Parameters
+    ----------
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
     Other Parameters
     ----------------
-    model_type
+    model_type : {'strong_coupling', 'weak_coupling'}
+        String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads, basis, **kwargs):
-
-        if basis == 'diabatic':
-            bases_used = 'diabatic'
-        elif basis == 'adiabatic':
-            bases_used = 'dia2ad'
+    def __init__(self, max_n_beads=1, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "Dissociation2states", 1,
-                                              max_n_beads, 2, bases_used)
+                                              2, max_n_beads, 'diabatic')
 
         assert (isinstance(kwargs.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
@@ -96,10 +97,10 @@ class Dissociation2states(itemplate.PotentialInterface):
         """string : Model number to be used."""
         return self.__model_type
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
-        Calculate and set diabatic and adiabatic (if required) matrices for
-        energies and gradients of beads and centroid.
+        Calculate and set diabatic and adiabatic matrices for energies and
+        gradients of beads and centroid.
 
         Parameters:
         ----------
@@ -114,9 +115,7 @@ class Dissociation2states(itemplate.PotentialInterface):
         """
 
         self._calculate_diabatic_all(R)
-
-        if (self.bases_used == 'dia2ad'):
-            self._get_adiabatic_from_diabatic(R)
+        self._get_adiabatic_from_diabatic(R)
 
     def _calculate_diabatic_all(self, R):
         """
@@ -132,14 +131,13 @@ class Dissociation2states(itemplate.PotentialInterface):
 
         # Bead part
         for i in range(self.n_states):
-            self._diabatic_energy[i, i] = self._get_diag_V(R, i)
-            self._diabatic_gradient[i, i] = self._get_diag_grad(R, i)
+            self._diabatic_energy[i, i], self._diabatic_gradient[i, i] = \
+                self._get_diag_V_grad(R, i)
 
         # Taking into account that the potential matrix is real and Hermitian
-        self._diabatic_energy[0, 1] = self._get_off_diag_V(R)
+        self._diabatic_energy[0, 1], self._diabatic_gradient[0, 1] = \
+            self._get_off_diag_V_grad(R)
         self._diabatic_energy[1, 0] = self._diabatic_energy[0, 1].copy()
-
-        self._diabatic_gradient[0, 1] = self._get_off_diag_grad(R)
         self._diabatic_gradient[1, 0] = self._diabatic_gradient[0, 1].copy()
 
         # Centroid part
@@ -151,24 +149,19 @@ class Dissociation2states(itemplate.PotentialInterface):
         else:
             r_centroid = np.mean(R, axis=1)
             for i in range(self.n_states):
-                self._diabatic_energy_centroid[i, i] = self._get_diag_V(r_centroid, i)
-                self._diabatic_gradient_centroid[i, i] = self._get_diag_grad(r_centroid, i)
+                self._diabatic_energy_centroid[i, i], self._diabatic_gradient_centroid[i, i] = \
+                    self._get_diag_V_grad(r_centroid, i)
 
-            self._diabatic_energy_centroid[0, 1] = self._get_off_diag_V(r_centroid)
+            self._diabatic_energy_centroid[0, 1], self._diabatic_gradient_centroid[0, 1] = \
+                self._get_off_diag_V_grad(r_centroid)
             self._diabatic_energy_centroid[1, 0] = \
                 self._diabatic_energy_centroid[0, 1]
-
-            self._diabatic_gradient_centroid[0, 1] = self._get_off_diag_grad(r_centroid)
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
 
-    # TODO: how to get rid of these small functions as without them, energies
-    # and gradients have to be set twice for beads and centroid
-    # Maybe use lambda functions??
-
-    def _get_diag_V(self, R, i):
+    def _get_diag_V_grad(self, R, i):
         """
-        Get diagonal diabatic energy term of 'i'-th state.
+        Get diagonal diabatic energy and gradient term of `i`-th state.
 
         Parameters:
         ----------
@@ -179,56 +172,23 @@ class Dissociation2states(itemplate.PotentialInterface):
 
         Returns:
         ----------
-        float /or/ (n_beads) ndarrays of floats
+        V : float /or/ (n_beads) ndarrays of floats
             Diagonal diabatic energy term.
-        """
-        exp_term = np.exp(-self.__a[i] * (R[0] - self.__re[i]))
-        if (i == 0):
-            return (self.__De[i] * (1. - exp_term)**2 - self.__b[i])
-        else:
-            return (self.__De[i] * exp_term + self.__b[i])
-
-    def _get_off_diag_V(self, R):
-        """
-        Get off-diagonal diabatic energy term.
-
-        Parameters:
-        ----------
-        R : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            The positions of all centroids or beads in the system.
-
-        Returns:
-        ----------
-        float /or/ (n_beads) ndarrays of floats
-            Off-diagonal diabatic energy term.
-        """
-        return (self.__V12c * np.exp(-self.__a12c * (R[0] - self.__r12c)**2))
-
-    def _get_diag_grad(self, R, i):
-        """
-        Get diagonal diabatic gradient term of 'i'-th state.
-
-        Parameters:
-        ----------
-        R : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            The positions of all centroids or beads in the system.
-        i: int
-            State index.
-
-        Returns:
-        ----------
-        (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
+        dV : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
             Diagonal diabatic gradient term.
         """
         exp_term = np.exp(-self.__a[i] * (R - self.__re[i]))
         if (i == 0):
-            return (2. * self.__a[i] * self.__De[i] * exp_term * (1. - exp_term))
+            V = self.__De[i] * (1. - exp_term[0])**2 - self.__b[i]
+            dV = 2. * self.__a[i] * self.__De[i] * exp_term * (1. - exp_term)
         else:
-            return (-self.__a[i] * self.__De[i] * exp_term)
+            V = self.__De[i] * exp_term[0] + self.__b[i]
+            dV = -self.__a[i] * self.__De[i] * exp_term
+        return V, dV
 
-    def _get_off_diag_grad(self, R):
+    def _get_off_diag_V_grad(self, R):
         """
-        Get off-diagonal diabatic gradient term.
+        Get off-diagonal diabatic energy and gradient term.
 
         Parameters:
         ----------
@@ -237,10 +197,15 @@ class Dissociation2states(itemplate.PotentialInterface):
 
         Returns:
         ----------
-        (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
+        V : float /or/ (n_beads) ndarrays of floats
+            Off-diagonal diabatic energy term.
+        dV : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
             Off-diagonal diabatic gradient term.
         """
-        return (-2. * self.__a12c * self.__V12c * (R - self.__r12c) * np.exp(-self.__a12c * (R - self.__r12c)**2))
+        exp_term = np.exp(-self.__a12c * (R - self.__r12c)**2)
+        V = self.__V12c * exp_term[0]
+        dV = -2. * self.__a12c * self.__V12c * (R - self.__r12c) * exp_term
+        return V, dV
 
 
 if __name__ == '__main__':
@@ -249,7 +214,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     nb = 1
     model_type = 'weak_coupling'  # 'strong_coupling'
-    pot = Dissociation2states(nb, 'adiabatic', **{'model_type': model_type})
+    pot = Dissociation2states(nb, **{'model_type': model_type})
 
     # len(linspace) array of positions
     # X = np.linspace(1.5, 5., num=1000)
@@ -269,7 +234,7 @@ if __name__ == '__main__':
     nac1 = []
 
     for i in X:
-        pot._calculate_all(np.array([[i]]))
+        pot._calculate_adiabatic_all(np.array([[i]]))
 
         v1.append(pot._diabatic_energy[0, 0, 0])
         v2.append(pot._diabatic_energy[1, 1, 0])
@@ -278,10 +243,10 @@ if __name__ == '__main__':
         dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
         dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
 
-        V1_ad.append(pot._energy[0, 0])
-        V2_ad.append(pot._energy[1, 0])
-        dV1_ad.append(pot._gradient[0, 0, 0])
-        dV2_ad.append(pot._gradient[1, 0, 0])
+        V1_ad.append(pot._adiabatic_energy[0, 0])
+        V2_ad.append(pot._adiabatic_energy[1, 0])
+        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
+        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
         nac1.append(pot._nac[0, 1, 0, 0])
 
     # Plot all

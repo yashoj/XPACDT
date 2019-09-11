@@ -41,22 +41,21 @@ class TullyModel(itemplate.PotentialInterface):
     Two state Tully model potentials (A, B and C) in one dimension.
     Reference: J. Chem. Phys. 93 (2), 1061 (1990)
 
+    Parameters
+    ----------
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+
     Other Parameters
     ----------------
-    model_type
+    model_type : {'model_A', 'model_B', 'model_C'}
+        String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads, basis, **kwargs):
+    def __init__(self, max_n_beads=1, **kwargs):
 
-        if basis == 'diabatic':
-            bases_used = 'diabatic'
-        elif basis == 'adiabatic':
-            bases_used = 'dia2ad'
-        else:
-            raise ValueError("Electronic state basis representation not available.")
-
-        itemplate.PotentialInterface.__init__(self, "TullyModel", 1,
-                                              max_n_beads, 2, bases_used)
+        itemplate.PotentialInterface.__init__(self, "TullyModel", 1, 2,
+                                              max_n_beads, 'diabatic')
 
         assert (isinstance(kwargs.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
@@ -92,10 +91,10 @@ class TullyModel(itemplate.PotentialInterface):
                ("Type of Tully model selected not available.")
         self.__model_type = m
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
-        Calculate and set diabatic and adiabatic (if required) matrices for
-        energies and gradients of beads and centroid.
+        Calculate and set diabatic and adiabatic matrices for energies and
+        gradients of beads and centroid.
 
         Parameters:
         ----------
@@ -110,9 +109,7 @@ class TullyModel(itemplate.PotentialInterface):
         """
 
         self._calculate_diabatic_all(R)
-
-        if (self.bases_used == 'dia2ad'):
-            self._get_adiabatic_from_diabatic(R)
+        self._get_adiabatic_from_diabatic(R)
 
     def _calculate_diabatic_all(self, R):
         """
@@ -126,16 +123,15 @@ class TullyModel(itemplate.PotentialInterface):
             degrees of freedom and the second axis the beads.
         """
         # Bead part
-        self._diabatic_energy[0, 0] = self._get_V11(R)
-        self._diabatic_energy[1, 1] = self._get_V22(R)
-        self._diabatic_gradient[0, 0] = self._get_grad_dV11(R)
-        self._diabatic_gradient[1, 1] = self._get_grad_dV22(R)
+        self._diabatic_energy[0, 0], self._diabatic_gradient[0, 0] = \
+            self._get_V_dV_11(R)
+        self._diabatic_energy[1, 1], self._diabatic_gradient[1, 1] = \
+            self._get_V_dV_22(R)
 
         # Taking into account that the potential matrix is real and Hermitian
-        self._diabatic_energy[0, 1] = self._get_V12(R)
+        self._diabatic_energy[0, 1], self._diabatic_gradient[0, 1] = \
+            self._get_V_dV_12(R)
         self._diabatic_energy[1, 0] = self._diabatic_energy[0, 1].copy()
-
-        self._diabatic_gradient[0, 1] = self._get_grad_dV12(R)
         self._diabatic_gradient[1, 0] = self._diabatic_gradient[0, 1].copy()
 
         # Centroid part
@@ -146,22 +142,21 @@ class TullyModel(itemplate.PotentialInterface):
                 self._diabatic_gradient.reshape((self.n_states, self.n_states, self.n_dof))).copy()
         else:
             r_centroid = np.mean(R, axis=1)
-            self._diabatic_energy_centroid[0, 0] = self._get_V11(r_centroid)
-            self._diabatic_energy_centroid[1, 1] = self._get_V22(r_centroid)
-            self._diabatic_gradient_centroid[0, 0] = self._get_grad_dV11(r_centroid)
-            self._diabatic_gradient_centroid[1, 1] = self._get_grad_dV22(r_centroid)
+            self._diabatic_energy_centroid[0, 0], self._diabatic_gradient_centroid[0, 0] = \
+                self._get_V_dV_11(r_centroid)
+            self._diabatic_energy_centroid[1, 1], self._diabatic_gradient_centroid[1, 1] = \
+                self._get_V_dV_22(r_centroid)
 
-            self._diabatic_energy_centroid[0, 1] = self._get_V12(r_centroid)
+            self._diabatic_energy_centroid[0, 1], self._diabatic_gradient_centroid[0, 1] = \
+                self._get_V_dV_12(r_centroid)
             self._diabatic_energy_centroid[1, 0] = \
                 self._diabatic_energy_centroid[0, 1]
-
-            self._diabatic_gradient_centroid[0, 1] = self._get_grad_dV12(r_centroid)
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
 
-    def _get_V11(self, R):
+    def _get_V_dV_11(self, R):
         """
-        Get first diagonal diabatic energy term.
+        Get diagonal diabatic energy and gradient term for first state.
 
         Parameters:
         ----------
@@ -170,25 +165,37 @@ class TullyModel(itemplate.PotentialInterface):
 
         Returns:
         ----------
-        float /or/ (n_beads) ndarrays of floats
+        V : float /or/ (n_beads) ndarrays of floats
             Diagonal diabatic energy term.
+        dV : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
+            Diagonal diabatic gradient term.
         """
         x = R[0]
 
         if (self.model_type == 'model_A'):
             # Note: np.sign() returns 0 if x == 0. That is still fine here
             #       as it recovers proper limit of V11(0) = 0.
-            return (np.sign(x) * self.__A * (1. - np.exp(-self.__B * np.absolute(x))))
+            exp_term = np.exp(-self.__B * np.absolute(R))
+            V = np.sign(x) * self.__A * (1. - exp_term[0])
+            dV = self.__A * self.__B * exp_term
         elif (self.model_type == 'model_B'):
-            return (0. * x)
+            # 'np.zeros_like' is not used since simple multiplication seems to
+            # be faster at least for small ndarrays.
+            zeros_term = 0. * R
+            V = zeros_term[0]
+            dV = zeros_term
         elif (self.model_type == 'model_C'):
             # This construction is done just to get the proper shape compatible
-            # with both float and array. This seems to be faster than 'if' statements.
-            return (self.__A * (1. + 0. * x))
+            # with both float and array. This seems to be faster than 'if'
+            # statements combined with 'np.ones_like'
+            zeros_term = 0. * R
+            V = self.__A * (1. + zeros_term[0])
+            dV = zeros_term
+        return V, dV
 
-    def _get_V22(self, R):
+    def _get_V_dV_22(self, R):
         """
-        Get second diagonal diabatic energy term.
+        Get diagonal diabatic energy and gradient term for second state.
 
         Parameters:
         ----------
@@ -197,19 +204,25 @@ class TullyModel(itemplate.PotentialInterface):
 
         Returns:
         ----------
-        float /or/ (n_beads) ndarrays of floats
+        V : float /or/ (n_beads) ndarrays of floats
             Diagonal diabatic energy term.
+        dV : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
+            Diagonal diabatic gradient term.
         """
-        x = R[0]
-
         if (self.model_type == 'model_A' or self.model_type == 'model_C'):
-            return (-1. * self._get_V11(R))
+            V, dV = self._get_V_dV_11(R)
+            V *= -1.
+            if (self.model_type == 'model_A'):
+                dV *= -1.
         elif (self.model_type == 'model_B'):
-            return (-self.__A * np.exp(-self.__B * x * x) + self.__Eo)
+            exp_term = np.exp(-self.__B * R * R)
+            V = -self.__A * exp_term[0] + self.__Eo
+            dV = 2 * R * self.__A * self.__B * exp_term
+        return V, dV
 
-    def _get_V12(self, R):
+    def _get_V_dV_12(self, R):
         """
-        Get off-diagonal diabatic energy term.
+        Get off-diagonal diabatic energy and gradient term.
 
         Parameters:
         ----------
@@ -218,77 +231,24 @@ class TullyModel(itemplate.PotentialInterface):
 
         Returns:
         ----------
-        float /or/ (n_beads) ndarrays of floats
+        V : float /or/ (n_beads) ndarrays of floats
             Off-diagonal diabatic energy term.
+        dV : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
+            Off-diagonal diabatic gradient term.
         """
         x = R[0]
 
         if (self.model_type == 'model_A' or self.model_type == 'model_B'):
-            return (self.__C * np.exp(-self.__D * x * x))
+            exp_term = np.exp(-self.__D * R * R)
+            V = self.__C * exp_term[0]
+            dV = -2. * self.__C * self.__D * R * exp_term
         elif (self.model_type == 'model_C'):
             # Note: np.heaviside() returns 0.5 if x == 0. This is used here to
             #       recover proper limit of V12(0) = B.
-            return (self.__B * (2 * np.heaviside(x, 0.5) - np.sign(x)
-                                * np.exp(-self.__C * np.absolute(x))))
-
-    def _get_grad_dV11(self, R):
-        """
-        Get diagonal diabatic gradient term for first state.
-
-        Parameters:
-        ----------
-        R : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            The positions of all centroids or beads in the system.
-
-        Returns:
-        ----------
-        (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            Diagonal diabatic gradient term.
-        """
-        if (self.model_type == 'model_A'):
-            return (self.__A * self.__B * np.exp(-self.__B * np.absolute(R)))
-        elif (self.model_type == 'model_B' or self.model_type == 'model_C'):
-            return (0. * R)
-
-    def _get_grad_dV22(self, R):
-        """
-        Get diagonal diabatic gradient term for second state.
-
-        Parameters:
-        ----------
-        R : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            The positions of all centroids or beads in the system.
-
-        Returns:
-        ----------
-        (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            Diagonal diabatic gradient term.
-        """
-        if (self.model_type == 'model_A'):
-            return (-1. * self._get_grad_dV11(R))
-        elif (self.model_type == 'model_B'):
-            return (2 * R * self.__A * self.__B * np.exp(-self.__B * R * R))
-        elif (self.model_type == 'model_C'):
-            return (0. * R)
-
-    def _get_grad_dV12(self, R):
-        """
-        Get off-diagonal diabatic gradient term.
-
-        Parameters:
-        ----------
-        R : (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            The positions of all centroids or beads in the system.
-
-        Returns:
-        ----------
-        (n_dof) ndarray of floats /or/ (n_dof, n_beads) ndarray of floats
-            Off-diagonal diabatic gradient term.
-        """
-        if (self.model_type == 'model_A' or self.model_type == 'model_B'):
-            return (-2. * self.__C * self.__D * R * np.exp(-self.__D * R * R))
-        elif (self.model_type == 'model_C'):
-            return (self.__B * self.__C * np.exp(-self.__C * np.absolute(R)))
+            exp_term = np.exp(-self.__C * np.absolute(R))
+            V = self.__B * (2 * np.heaviside(x, 0.5) - np.sign(x) * exp_term[0])
+            dV = self.__B * self.__C * exp_term
+        return V, dV
 
 
 if __name__ == '__main__':
@@ -299,7 +259,7 @@ if __name__ == '__main__':
 
     nb = 1
     model_type = sys.argv[1]  # 'model_A'
-    pot = TullyModel(nb, 'adiabatic', **{'model_type': model_type})
+    pot = TullyModel(nb, **{'model_type': model_type})
 
     # len(linspace) array of positions
     X = np.linspace(-10., 10., num=1000)
@@ -325,7 +285,7 @@ if __name__ == '__main__':
         scaling_nac = 1.
 
     for i in X:
-        pot._calculate_all(np.array([[i]]))
+        pot._calculate_adiabatic_all(np.array([[i]]))
 
         v1.append(pot._diabatic_energy[0, 0, 0])
         v2.append(pot._diabatic_energy[1, 1, 0])
@@ -334,10 +294,10 @@ if __name__ == '__main__':
         dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
         dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
 
-        V1_ad.append(pot._energy[0, 0])
-        V2_ad.append(pot._energy[1, 0])
-        dV1_ad.append(pot._gradient[0, 0, 0])
-        dV2_ad.append(pot._gradient[1, 0, 0])
+        V1_ad.append(pot._adiabatic_energy[0, 0])
+        V2_ad.append(pot._adiabatic_energy[1, 0])
+        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
+        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
         nac1.append(pot._nac[0, 1, 0, 0])
 
     # Plot all

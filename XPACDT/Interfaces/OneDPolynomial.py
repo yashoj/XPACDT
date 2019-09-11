@@ -41,9 +41,6 @@ class OneDPolynomial(itemplate.PotentialInterface):
     
     Parameters
     ----------
-    basis : {'adiabatic'}
-        Electronic state basis representations to be used. Needs to be
-        'adiabatic' here.
     max_n_beads : int, optional
         Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
@@ -57,13 +54,10 @@ class OneDPolynomial(itemplate.PotentialInterface):
         here.
     """
 
-    def __init__(self, basis='adiabatic', max_n_beads=1, **kwargs):
-
-        assert (basis == 'adiabatic'), \
-        ("Electronic basis for one dimensional polynomial potential should be adiabatic.")
+    def __init__(self, max_n_beads=1, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1,
-                                              max_n_beads, basis)
+                                              max_n_beads, 'adiabatic')
 
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))

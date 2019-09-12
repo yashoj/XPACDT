@@ -67,7 +67,7 @@ class Nuclei(object):
         self.positions = input_parameters.coordinates
         self.momenta = input_parameters.momenta
 
-        self.n_beads = [self.positions.shape[1]]
+        self.n_beads = input_parameters.n_beads
 
         # Set up electrons
         self.__init_electrons(input_parameters)
@@ -118,15 +118,7 @@ class Nuclei(object):
 
     @n_beads.setter
     def n_beads(self, l):
-        # TODO: add check for atoms to give only one bead number per atom.
-        assert (len(l) == 1 or len(l) == self.n_dof), "Wrong number of \
-beads given."
-
-        if len(l) == 1:
-            self.__n_beads = l * self.n_dof
-        else:
-            self.__n_beads = l
-        # TODO: add check for multiple of twos
+        self.__nbeads = l
 
     @property
     def masses(self):

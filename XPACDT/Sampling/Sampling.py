@@ -40,7 +40,7 @@ import sys
 def sample(system, parameters):
     """
     Basic sampling method. This function creates the folder given in the input
-    to put the sampled data to. If the folder already exists, either override
+    to put the sampled data to. If the folder already exists, either overwrite
     or add has to be given for removing all old trajectories or adding to the
     existing trajectories, respectively. If none of the two is given, a
     RuntimeError is raised.
@@ -83,7 +83,7 @@ def sample(system, parameters):
         # todo: add sort
         trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*')).sort()
 
-        if 'override' in system_parameters:
+        if 'overwrite' in system_parameters:
             if trj_folder_list is not None:
                 for folder in trj_folder_list:
                     shutil.rmtree(folder)
@@ -92,7 +92,7 @@ def sample(system, parameters):
             n_samples_required -= len(trj_folder_list)
         else:
             raise RuntimeError("The trajectory folder already exists and no "
-                               "directive for overriding old data or adding "
+                               "directive for overwriting old data or adding "
                                "trajectories is given.")
 
     # Run sampling method

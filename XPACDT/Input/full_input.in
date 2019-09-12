@@ -5,43 +5,55 @@
 
 $system                     # general parameters
 
-seed = 0                    # Seed for random number generator
-dof = 4                     # the number of degrees of freedom
-job = sample	                # The job type (possible: sample, propagate, analyze, plot)
-Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
-folder = test               # the folder for the trajectories
+# Required parameters
+dof = 4                     # integer, required: the number of degrees of freedom
+job = sample	                # (sample, propagate, analyze, plot), required: The job type.
+Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, EckartBarrier), required: The interface to the potential to be used.
+folder = test               # string, required: Base folder for the trajectories.
 
-# optional:
-picklefile = NameHere.dat   # optional name of pickle file - else: pickle.dat
-time = 0 fs                 # the current time of the system in either fs or au
+# Optional parameters
+seed = 0                    # integer, optional : Seed for random number generator
+picklefile = NameHere.dat   # string, optional: Name of pickle file - else: pickle.dat
+time = 0 fs                 # float, optional: The current time of the system in either fs or au.
+overwrite                   # optional: For sampling with existing folder: overwrite old files; either add or overwrite can be given
+add                         # optional: For sampling with existing folder: add samples up to required number; either add or overwrite can be given
+continue                    # optional: If given, the propagation is continue.
+intermediate_write          # optional: If givenm the pickle file is write every output timestep
 
-# override or add (for sampling with existing folder)
-# continue (for continueing a propagation)
-# intermediate_write (for writing the pickle file every output timestep)
 $end
 
 ##############################################################################
 
 $OneDPolynomial # must match the interface specified; specific to each interface
 
-a = 0 0 0.5
-x0 = 0
+# Required parameters
+a = 0 0 0.5     # several float, required: Expansion coefficients for the polynomial.
+
+# Optional parameters
+x0 = 0          # float, optional: Equilibrium position of the polynomial.
+
 $end
 
 ##############################################################################
 
 $rpmd                       # RPMD input
 
-beads = 4                   # Number of beads used; 1 or even numbers; TODO: different numbers
-beta = 8.0                  # Beta used for the springs
+# Required parameters
+beads = 4                   # integer, required: Number of beads used; 1 or even numbers
+beta = 8.0                  # float, required: Beta used for the springs in au.
+
 $end
 
 ##############################################################################
 
 $thermostat                 # thermostat input
 
+# Required parameters
 method = MassiveAndersen    # Thermostat method (possible: MassiveAndersen; desired:...)
 time = 100 fs               # timescale for thermostattting
+
+# Optional parameters
+
 $end
 
 ##############################################################################

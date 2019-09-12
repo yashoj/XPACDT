@@ -66,9 +66,9 @@ class System(object):
 
     @property
     def log(self):
-        """list of dicts : Log of the system history as a list. Each list entry
-        is a dictonary contraining the stored information, e.g., time, nuclei,
-        etc."""
+        """list of XPACDT.System.Nuclei : Log of the system history as a list
+        of the states of the nuclei, which also carry the information on the
+        electrons, times, etc."""
         return self.__log
 
     @property
@@ -91,17 +91,17 @@ class System(object):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
 
-    def step(self, time):
+    def step(self, time_propagate):
         """ Step the whole system forward in time. Also keep a log of the
         system state at these times.
 
         Parameters
         ----------
-        time : float
+        time_propagate : float
             Time to advance the system in au.
         """
 
-        self.__nuclei.propagate(time)
+        self.__nuclei.propagate(time_propagate)
         self.do_log()
 
     def reset(self, time=None):
@@ -141,5 +141,4 @@ class System(object):
             self.__log = []
 
         self.__log.append(copy.deepcopy(self.nuclei))
-
         # TODO: remove certain parts to not consume too much memory

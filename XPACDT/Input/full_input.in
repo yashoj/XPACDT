@@ -34,6 +34,7 @@ $rpmd                       # RPMD input
 
 beads = 4                   # Number of beads used; 1 or even numbers; TODO: different numbers
 beta = 8.0                  # Beta used for the springs
+nm_transform = matrix       # Optional; ring polymer normal mode transformation type (possible: 'matrix' (default), 'fft')
 $end
 
 ##############################################################################

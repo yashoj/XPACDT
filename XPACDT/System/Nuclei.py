@@ -50,7 +50,8 @@ class Nuclei(object):
     Attributes:
     -----------
     n_dof
-    n_beads
+    n_beads : (n_dof) list of int
+        Number of beads for each degrees of freedom
     time
     positions
     momenta
@@ -67,7 +68,7 @@ class Nuclei(object):
         self.positions = input_parameters.coordinates
         self.momenta = input_parameters.momenta
 
-        self.n_beads = [self.positions.shape[1]]
+        self.n_beads = input_parameters.n_beads
 
         # Set up electrons
         self.__init_electrons(input_parameters)
@@ -118,15 +119,7 @@ class Nuclei(object):
 
     @n_beads.setter
     def n_beads(self, l):
-        # TODO: add check for atoms to give only one bead number per atom.
-        assert (len(l) == 1 or len(l) == self.n_dof), "Wrong number of \
-beads given."
-
-        if len(l) == 1:
-            self.__n_beads = l * self.n_dof
-        else:
-            self.__n_beads = l
-        # TODO: add check for multiple of twos
+        self.__n_beads = l
 
     @property
     def masses(self):
@@ -199,7 +192,7 @@ beads given."
         """Test if an object is equal to the current nuclei object. A nuclei
         object is assumed to be equal to another nuclei object if they have
         the same number of degrees of freedom, the same number of beads,
-        thesame positions, momenta and masses.
+        the same positions, momenta and masses.
 
         Parameters:
         -----------
@@ -322,12 +315,14 @@ beads given."
             assert('beta' in parameters.get("rpmd")), "No beta " \
                    "given for RPMD."
             prop_parameters['beta'] = parameters.get("rpmd").get('beta')
+            prop_parameters['rp_transform_type'] = parameters.get('rpmd').get(
+                    "nm_transform", "matrix")
 
         prop_method = prop_parameters.get('method')
         __import__("XPACDT.Dynamics." + prop_method)
         self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
                                   prop_method)(self.electrons, self.masses,
-                                               **prop_parameters)
+                                               self.n_beads, **prop_parameters)
 
         if 'thermostat' in parameters:
             self.propagator.attach_thermostat(parameters, self.masses)

@@ -40,12 +40,12 @@ def position(arguments, log_nuclei):
 
     Valid options are as follows:
 
-    -x1 <a> given: Position value of a given degree of freedom, e.g., -x1 0,
-                   gives the first position, or -x1 0,3,7 gives the first,
+    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
+                   gives the first position, or -1 0,3,7 gives the first,
                    fourth and seventh position. Alternatively, also the
                    center of mass position can be obtained by giving m and a
                    comma separated list of degrees of freedom.
-    -x2 <b> given: Like x1. If both given, then the distance between them is
+    -2 <b> given:  Like 1. If both given, then the distance between them is
                    used.
     -p <a> given: if a single value is calculated (i.e. a distance or single
                   position) this option projects it onto a certain range.
@@ -136,12 +136,12 @@ def momentum(arguments, log_nuclei):
     Valid options are as follows:
 
     -v given: Use velocities instead of momenta.
-    -x1 <a> given: momentum value of a given degree of freedom, e.g., -x1 0,
-                   gives the first momentum, or -x1 0,3,7 gives the first,
+    -1 <a> given: momentum value of a given degree of freedom, e.g., -1 0,
+                   gives the first momentum, or -1 0,3,7 gives the first,
                    fourth and seventh momentum. Alternatively, also the
                    center of mass momentum can be obtained by giving m and a
                    comma separated list of degrees of freedom.
-    -x2 <b> given: Like x1. If both given, then the relative momentum between
+    -2 <b> given: Like 1. If both given, then the relative momentum between
                    them is used.
     -p <a> given: if a single value is calculated (i.e. a relative or single
                   momentum) this option projects it onto a certain range.

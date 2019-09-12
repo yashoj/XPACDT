@@ -29,6 +29,7 @@
 
 """Implementation of the velocity verlet propagator."""
 
+import math
 import numpy as np
 import sys
 
@@ -53,14 +54,26 @@ class VelocityVerlet(object):
         Representation of the electrons that gives the gradients.
     mass : (n_dof) ndarray of floats
         Masses of the system in au.
+    nbeads : (n_dof) list of int
+        The number of beads for each degree of freedom.
 
     Other Parameters
     ----------------
     beta : float, optional, default None
         Inverse temperature for ring polymer springs in a.u.
+    rp_transform_type : string, optional, default: 'matrix'
+        Type of ring polymer normal mode transformation to be used; this can
+        be 'matrix' or 'fft'.
+
+    Attributes:
+    -----------
+    electrons
+    mass
+    n_beads : (n_dof) list of int
+        Number of beads for each degrees of freedom
     """
 
-    def __init__(self, electrons, mass, **kwargs):
+    def __init__(self, electrons, mass, n_beads, **kwargs):
         # TODO: basic argument parsing here
 
         assert (isinstance(electrons, elecInterface.Electrons)), \
@@ -69,6 +82,7 @@ class VelocityVerlet(object):
 
         self.electrons = electrons
         self.mass = mass
+        self.n_beads = n_beads
 
         self.timestep = units.parse_time(kwargs.get("timestep"))
 
@@ -77,12 +91,15 @@ class VelocityVerlet(object):
             self.beta = float(kwargs.get('beta'))
         else:
             self.__beta = -1.0
+        rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
 
         self.__thermostat = None
         self.__constraints = None
 
         # basic initialization
-        self.__propagation_matrix = None
+        self._set_propagation_matrix()
+        self.RPtransform = RPtrafo.RingPolymerTransformations(self.n_beads,
+                                                              rp_transform_type)
         return
 
     @property
@@ -286,11 +303,8 @@ class VelocityVerlet(object):
         """
 
         # TODO: profile and optimize, and generalize to more D; docu properly
-        rnm = RPtrafo.to_RingPolymer_normalModes(R)
-        pnm = RPtrafo.to_RingPolymer_normalModes(P)
-
-        n_beads = R.shape[1]
-        self._set_propagation_matrix(n_beads)
+        rnm = self.RPtransform.to_RingPolymer_normalModes(R)
+        pnm = self.RPtransform.to_RingPolymer_normalModes(P)
 
         # three-dimensional array; For each physical degree of freedom and
         # each ring polymer bead the normal mode position and momentum is
@@ -311,10 +325,10 @@ class VelocityVerlet(object):
             pnm_t[k] = tt[:, 0]
             rnm_t[k] = tt[:, 1]
 
-        return RPtrafo.from_RingPolymer_normalModes(rnm_t),\
-            RPtrafo.from_RingPolymer_normalModes(pnm_t)
+        return self.RPtransform.from_RingPolymer_normalModes(rnm_t),\
+            self.RPtransform.from_RingPolymer_normalModes(pnm_t)
 
-    def _set_propagation_matrix(self, n):
+    def _set_propagation_matrix(self):
         """Set the propagation matrices for the momenta and internal ring
         polymer coordinates. It is an array of arrays of two-dimensional
         arrays. The first dimension is the physical degrees of freedom, the
@@ -328,33 +342,25 @@ class VelocityVerlet(object):
 
         See also: https://aip.scitation.org/doi/10.1063/1.3489925
 
-        Parameters
-        ----------
-        n: int
-            The number of beads in the ring polymer.
-
         Returns
         -------
         Nothing, but self.__propagation matrix is initialized.
         -------
         """
-
-        if self.propagation_matrix is not None:
-            return
-
-        w = np.array([2.0 * (n / self.beta) * np.sin(k * np.pi / n)
+        # TODO: Make this compatible with different n_beads for each dof
+        n = max(self.n_beads)
+        w = np.array([2.0 * (float(n) / self.beta) * math.sin(k * math.pi / float(n))
                       for k in range(1, n)])
-
         ps = []
         for m in self.mass:
             pm = [np.array([[1.0, 0.0], [self.timestep / m, 1.0]])]
 
             for wk in w:
                 pm.append(np.array(
-                        [[np.cos(wk*self.timestep),
-                          -m * wk * np.sin(wk*self.timestep)],
-                         [1.0/(wk*m) * np.sin(wk*self.timestep),
-                          np.cos(wk * self.timestep)]]))
+                        [[math.cos(wk*self.timestep),
+                          -m * wk * math.sin(wk*self.timestep)],
+                         [1.0/(wk*m) * math.sin(wk*self.timestep),
+                          math.cos(wk * self.timestep)]]))
             ps.append(pm)
 
         self.__propagation_matrix = np.array(ps)

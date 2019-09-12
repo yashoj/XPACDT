@@ -5,6 +5,7 @@ blah
 # line 
 # comment
 blubb
+dof = 4
 $end 
 
 ## in between comment

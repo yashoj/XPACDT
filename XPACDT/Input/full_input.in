@@ -27,17 +27,17 @@ $SurfaceHoppingElectrons  # must match the electrons specified; specific to each
 
 basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic; default: adiabatic)
 initial_state = 0         # Initial state of the system (Counting starts from 0)
-time_step_electron = 0.01 # Time step for electronic equations integration
+#time_step_electron = 0.01 # Time step for electronic equations integration
+timestep_scaling_factor = 0.01  # Scaling factor to determine electronic timestep from nuclear step
+
 rpsh_type = bead          # Type of ring polymer surface hopping (RPSH) 
                           # (possible: bead, centroid, density_matrix; default: bead)
 rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve 
                           # bead or centroid energy (possible: bead, centroid; default: bead)
-rescaling_type = nac      # Type of velocity rescaling; (possible: nac, gradient; default: nac)
+rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
 
-
-evolution_picture = interaction
-timescaling_factor = 0.01
-ode_solver = rk4
+evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schrodinger)
+ode_solver = rk4          # ODE solver to be used for propagation (possible: scipy_solver (default), rk4)
 $end
 
 ##############################################################################

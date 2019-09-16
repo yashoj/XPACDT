@@ -89,7 +89,9 @@ class VelocityVerlet(object):
         if 'beta' in kwargs:
             self.beta = float(kwargs.get('beta'))
         else:
-            self.__beta = -1.0
+            # In the case when RPMD is not used (i.e. n_beads=1), 'beta' should
+            # not be used anywhere, so setting it to NaN.
+            self.__beta = np.nan
         rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
 
         self.__thermostat = None

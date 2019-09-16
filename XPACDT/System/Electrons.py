@@ -57,7 +57,7 @@ class Electrons:
     basis
     """
 
-    def __init__(self, name, parameters, basis='adiabatic'):
+    def __init__(self, name, parameters, n_beads, basis='adiabatic'):
 
         self.__name = name
 
@@ -66,8 +66,11 @@ class Electrons:
         __import__("XPACDT.Interfaces." + pes_name)
 
         self.basis = basis
+        # TODO: 'n_beads' doesn't need to be passed as parameter but instead
+        #       can be inferred from 'parameters.n_beads'; however how to use
+        #       this format in unittest? Get input from file?
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(max(parameters.n_beads), **parameters.get(pes_name))
+                             pes_name)(max(n_beads), **parameters.get(pes_name))
 
     @property
     def name(self):

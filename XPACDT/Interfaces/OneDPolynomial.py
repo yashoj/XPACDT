@@ -38,7 +38,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
     :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
-    
+
     Parameters
     ----------
     max_n_beads : int, optional

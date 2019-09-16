@@ -34,6 +34,7 @@ ring polymer surface hopping (RPSH)."""
 import numpy as np
 
 import XPACDT.System.Electrons as electrons
+import XPACDT.Tools.Units as units
 
 
 class SurfaceHoppingElectrons(electrons.Electrons):
@@ -41,7 +42,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     Tully's fewest switches surface hopping (FSSH) from his original paper [1]_
     is implemented for electronic dynamics with modifications to incorporate
     nuclear quantum effects using ring polymer molecular dynamics. This
-    extension, termed ring polymer surface hopping (RPSH), follows from 
+    extension, termed ring polymer surface hopping (RPSH), follows from
     another paper from Tully [2]_ and some own modifications to it.
 
     Parameters
@@ -50,59 +51,74 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         Dictonary-like presentation of the input file.
     n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
-    
+
     References
     ----------
     .. [1] J. Chem. Phys. 93, 1061 (1990)
     .. [2] J. Chem. Phys. 137, 22S549 (2012)
-    
+
     """
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, n_beads):
 
         electronic_parameters = parameters.get("SurfaceHoppingElectrons")
         basis = electronic_parameters.get("basis", "adiabatic")
 
-        electrons.Electrons.__init__(self, "SurfaceHoppingElectrons", parameters, basis)
+        electrons.Electrons.__init__(self, "SurfaceHoppingElectrons",
+                                     parameters, n_beads, basis)
         print("Initiating surface hopping in ", self.basis, " basis")
 
         # TODO: decide what should be the default, for nb=1 does that shouldn't matter though
         self.rpsh_type = electronic_parameters.get("rpsh_type", "bead")
         self.rpsh_rescaling = electronic_parameters.get("rpsh_rescaling", "bead")
         self.rescaling_type = electronic_parameters.get("rescaling_type", "nac")
-        
+
         self.__masses_nuclei = parameters.masses
-        positions = parameters.coordinates
-        momenta = parameters.momenta
+
+        timestep_scaling_factor = float(electronic_parameters.get("timestep_scaling_factor"))
+        nuclear_timestep = units.parse_time(parameters.get("nuclei_propagator").get("timestep"))
+        self.__timestep = timestep_scaling_factor * nuclear_timestep
+
+        self.evolution_picture = electronic_parameters.get("evolution_picture", "interaction")
+        self.ode_solver = electronic_parameters.get("ode_solver", "rk4")
 
         n_states = self.pes.n_states
         max_n_beads = self.pes.max_n_beads
+        positions = parameters.coordinates
+        momenta = parameters.momenta
         try:
             initial_state = int(parameters.get("SurfaceHoppingElectrons").get("initial_state"))
             assert ((initial_state >= 0) and (initial_state < n_states)), \
                 ("Initial state is either less 0 or exceeds total number of "
                  "states")
-        except TypeError:
+        except (TypeError, ValueError):
             print("Initial state for surface hopping not given or not "
                   "convertible to int. Setting to default value: 0")
             initial_state = 0
 
         self.current_state = initial_state
 
+        # The order chosen is opposite of what is obtained from the interfaces
+        # for more efficient memory access.
         if (self.rpsh_type == 'density_matrix'):
             self._c_coeff = np.zeros((max_n_beads, n_states), dtype=complex)
             self._D = np.zeros((max_n_beads, n_states, n_states), dtype=float)
             self._H_e_total = np.zeros((max_n_beads, n_states, n_states), dtype=complex)
+            self._old_D = self._get_kinetic_coupling_matrix(positions)
+            self._old_D = self._get_kinetic_coupling_matrix(positions)
+
             # Check if picture is interaction, also in propagation and density matrix creation in hopping
             # This is only needed in interaction picture
-            self._phase = np.zeros(max_n_beads, n_states, n_states, dtype=complex)
+            if (self.evolution_picture == 'interaction'):
+                self._diag_diff_V = np.zeros(max_n_beads, n_states, n_states, dtype=complex)
         else:
             self._c_coeff = np.zeros((1, n_states), dtype=complex)
             self._D = np.zeros((1, n_states, n_states), dtype=float)
             self._H_e_total = np.zeros((1, n_states, n_states), dtype=complex)
-            self._phase = np.zeros((1, n_states, n_states), dtype=complex)
+            if (self.evolution_picture == 'interaction'):
+                self._phase = np.zeros((1, n_states, n_states), dtype=complex)
 
-        self.c_coeff[:, self.current_state] = 1.0 + 0.0j
+        self._c_coeff[:, self.current_state] = 1.0 + 0.0j
         
 
     @property
@@ -122,6 +138,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         """(n_dof) ndarray of floats : The masses of each nuclear degree of
            freedom in au."""
         return self.__masses_nuclei
+
+    @property
+    def timestep(self):
+        """float : The timestep for electronic propagation in a.u. """
+        return self.__timestep
 
     @property
     def rpsh_type(self):
@@ -150,15 +171,39 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     @property
     def rescaling_type(self):
-        """{'nac', 'gradient'} : Type of velocity rescaling to be used."""
+        """{'nac', 'gradient'} : Type of momentum rescaling to be used."""
         # TODO: possibly add 'nac_with_momenta_reversal' if needed
         return self.__rescaling_type
 
     @rescaling_type.setter
     def rescaling_type(self, r):
         assert (r in ['nac', 'gradient']),\
-               ("Velocity rescaling type not available.")
+               ("Momentum rescaling type not available.")
         self.__rescaling_type = r
+
+    @property
+    def evolution_picture(self):
+        """{'interaction'} : Representation/picture for quantum evolution."""
+        # TODO: possibly add 'schrodinger' if needed
+        return self.__evolution_picture
+
+    @evolution_picture.setter
+    def evolution_picture(self, p):
+        assert (p in ['interaction']),\
+               ("Evolution picture not available.")
+        self.__evolution_picture = p
+
+    @property
+    def ode_solver(self):
+        """{'rk4'} : Type of velocity rescaling to be used."""
+        # TODO: 'scipy_solver' if needed
+        return self.__ode_solver
+
+    @rescaling_type.setter
+    def ode_solver(self, s):
+        assert (s in ['rk4']),\
+               ("ODE solver not available.")
+        self.__ode_solver = s
 
     def energy(self, R, centroid=False):
         """Return the electronic energy at the current geometry and active
@@ -168,20 +213,18 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         Parameters
         ----------
         R : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
+            The (ring-polymer) positions representing the system in au.
         centroid : bool, default False
             If the energy of the centroid should be returned.
 
         Returns
         -------
         (n_beads) ndarray of float /or/ float
-        The energy of the systems PES at each bead position or at the centroid
-        in hartree.
+            The energy of the systems PES at each bead position or at the
+        centroid in hartree.
         """
         if (self.basis == 'adiabatic'):
-            return self.pes.energy(R, self.current_state, centroid=centroid)
+            return self.pes.adiabatic_energy(R, self.current_state, centroid=centroid)
         else:
             return self.pes.diabatic_energy(R, self.current_state, self.current_state, centroid=centroid)
 
@@ -193,20 +236,18 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         Parameters
         ----------
         R : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
+            The (ring-polymer) positions representing the system in au.
         centroid : bool, default False
             If the energy of the centroid should be returned.
 
         Returns
         -------
         (n_dof, n_beads) ndarray of floats /or/ (n_dof) ndarray of floats
-        The gradient of the systems PES at each bead position or at the
+            The gradient of the systems PES at each bead position or at the
         centroid in hartree/au.
         """
         if (self.basis == 'adiabatic'):
-            return self.pes.gradient(R, self.current_state, centroid=centroid)
+            return self.pes.adiabatic_gradient(R, self.current_state, centroid=centroid)
         else:
             return self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid)
 
@@ -223,15 +264,156 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         
         return
 
-    def _get_kinetic_coupling_matrix(self, P):
-        # v . d_kj
-        np.matmul()
-        return
+    def _get_velocity(self, P):
+        """Obtain nuclear velocities of the system.
 
-    def _get_H_matrix(self):
-        # Give V - i D matrix
-        return
-    
-    def _get_phase_matrix(self):
-        # Tile adiabatic energies and
-        return
+        Parameters
+        ----------
+        P : (n_dof, n_beads) ndarray of floats /or/ (n_dof) ndarray of floats
+            The ring-polymer beads or centroid momenta in au.
+
+        Returns
+        -------
+        (n_dof, n_beads) ndarray of floats /or/ (n_dof) ndarray of floats
+            The velocities of the systems for each bead position or centroid in au.
+        """
+        # Is it better to have checks for len(P.shape) == 1 or 2?
+        # This works also for centroid but has unnecessary .T
+        return (P.T / self.masses_nuclei).T
+
+    def _get_modified_V(self, R):
+        """Obtain proper potential energies fit for surface hopping.
+
+        Parameters
+        ----------
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au.
+
+        Returns
+        -------
+        V : (n_beads, n_states, n_states) ndarray of floats if 'rpsh_type' == 'bead' or 'centroid'
+            /or/ (1, n_states, n_states) ndarray of floats if 'rpsh_type' == 'density_matrix'
+            Energy matrix.
+        """
+        if (self.basis == 'adiabatic'):
+            # Create diagonal matrices with 1D array of adiabatic energies.
+            if (self.rpsh_type == 'centroid'):
+                V = [np.diag(self.pes.adiabatic_energy(R, centroid=True, return_matrix=True))]
+            else:
+                # (n_states, n_beads).T done!
+                V = np.array([np.diag(i) for i in 
+                              (self.pes.adiabatic_energy(R, centroid=False, return_matrix=True).T)])
+        else:
+            if (self.rpsh_type == 'centroid'):
+                V = self.pes.diabatic_energy(R, centroid=True, return_matrix=True)
+            else:
+                # (n_states, n_states, n_beads) -> (n_beads, n_states, n_states) 
+                V = self.pes.diabatic_energy(R, centroid=False, return_matrix=True).transpose(2, 0, 1)
+
+        if (self.rpsh_type == 'bead'):
+            V = np.array([np.mean(V, axis=0)])
+        return V
+
+    def _get_kinetic_coupling_matrix(self, R, P):
+        """Calculate kinetic coupling matrix.
+        D_kj = v \dot d_kj
+        TODO: Add equation for each case.
+              Also rename it as derivative coupling
+
+        Parameters
+        ----------
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system in au.
+
+        Returns
+        -------
+        D : (n_beads, n_states, n_states) ndarray of floats if 'rpsh_type' == 'bead' or 'centroid'
+            /or/ (1, n_states, n_states) ndarray of floats if 'rpsh_type' == 'density_matrix'
+            Kinetic coupling matrix.
+        """
+        # Here NAC is assumed to be real
+        # nac is (n_states, n_states, n_dof(, n_beads) ) ndarrays
+        vel = self._get_velocity(P)
+        if (self.rpsh_type == 'centroid'):
+            # Add assert for R and P shapes?
+            nac = self.pes.nac(R, centroid=True, return_matrix=True)
+            D = np.array([np.dot(nac, vel)])
+        else:
+            # Transposes are done for faster memory accessing to make 'nbeads' first axis.
+            vel = vel.T
+            nac = (self.pes.nac(R, centroid=False, return_matrix=True)).transpose(3, 0, 1, 2)
+
+            # D here is (n_beads) list of (n_states, n_states)
+            D_list = []
+            for i, v in enumerate(vel):
+                D_list.append(np.dot(nac[i], v))
+
+            if (self.rpsh_type == 'bead'):
+                D = np.mean(np.array(D_list), axis=0)
+            else:
+                D = np.array(D_list)
+        return D
+
+    def _get_H_matrix(self, R, D=None):
+        """Calculate total non-adiabatic electronic Hamiltonian.
+
+        Parameters
+        ----------
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au.
+        D : (n_beads, n_states, n_states) ndarray of floats if rpsh_type == 'bead' or 'centroid'
+            /or/ (1, n_states, n_states) ndarray of floats if rpsh_type == 'density_matrix'
+            Kinetic coupling matrix. (Optional: only needed when 'basis' is adiabatic.)
+
+        Returns
+        -------
+        H : (n_beads, n_states, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
+            /or/ (1, n_states, n_states) ndarray of complex if rpsh_type == 'density_matrix'
+            Total non-adiabatic electronic Hamiltonian.
+        """
+        if (self.basis == 'adiabatic'):
+            # Is this assert needed as this function is only accessed internally.
+            assert (D is not None), ("Kinetic coupling matrix not provided.")
+        
+        V = self._get_modified_V(R)
+        
+        if D is not None:
+            H = np.array(V) - 1j * D
+        else:
+            # .astype' creates a copy so '.copy()' isn't needed
+            H = V.astype(complex)
+
+        return H
+
+    def _get_diff_diag_V_matrix(self, R):
+        """Calculate the matrix representing the differences between the
+        diagonal energy terms needed to make in interaction picture.
+
+        Parameters
+        ----------
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au.
+
+        Returns
+        -------
+        diff : (n_beads, n_states, n_states) ndarray of floats if
+            /or/ (1, n_states, n_states) ndarray of floats
+            Diagonal energy difference matrix.
+        """
+        # Maybe put the assert in the initialization
+        assert (self.evolution_picture == "interaction"), \
+               ("Phase in electronic coefficients only makes sense in interaction picture.")
+        diff = []
+        n_states = self.pes.n_states
+        # V needs to be (n_beads, n_states, n_states) ndarray of float
+        #    /or/ (1, n_states, n_states) ndarray of float
+        V = self._get_modified_V(R)
+
+
+        # Is looping over and using anti-Hermitian property better?
+        for i in V:
+            V_diag = np.diag(i)
+            diff.append(np.tile(V_diag.reshape(1, -1), (n_states, 1))
+                         - np.tile(V_diag.reshape(-1, 1), (1, n_states)))
+        return diff

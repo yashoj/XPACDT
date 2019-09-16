@@ -333,10 +333,22 @@ if __name__ == '__main__':
 
     pot._calculate_adiabatic_all(R)
 
-    # print(pot._energy)
-    # print(pot._gradient, '\n\n')
-    print(pot._nac, '\n\n')
+    #print(pot._adiabatic_energy)
+    #print(pot._adiabatic_gradient, '\n\n')
+    #print(pot._nac, '\n\n')
 
+    # Test to see if 'is_adiabatic_calculated' working
+#    R = np.array([[3.3, 3.4,  3.5, 3.6]])
+#    pot._calculate_diabatic_all(R)
+#    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
+#    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
+#    print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
+#
+#    pot._calculate_adiabatic_all(R)
+#    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
+#    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
+#    print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
+#    
     # print(dia2ad.get_adiabatic_energy(pot._diabatic_energy))
     # print(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE))
     # print(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), '\n\n')

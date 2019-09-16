@@ -229,7 +229,7 @@ class Nuclei(object):
                   ("No input parameters for chosen electronic method.")
 
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
-                                   electronic_method)(parameters)
+                                   electronic_method)(parameters, self.n_beads)
 
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If

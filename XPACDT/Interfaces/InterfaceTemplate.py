@@ -620,7 +620,7 @@ class PotentialInterface:
                 self._adiabatic_gradient_centroid = dia2ad.get_adiabatic_gradient(
                     r_centroid, func_diabatic_energy, self.DERIVATIVE_STEPSIZE)
 
-	else:
+        else:
             raise ValueError("Number of states should be 2 or more to use "
                              "diabatic to adiabatic transformation. Here "
                              "number of states is: " + str(self.n_states))

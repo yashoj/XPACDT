@@ -132,12 +132,15 @@ class Electrons:
         """
         raise NotImplementedError
 
-    def step(self, time, **kwargs):
+    def step(self, R, P, time_propagate, **kwargs):
         """Advance the electronic subsytem by a given time.
 
         Parameters
         ----------
-        time : float
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system nuclei in au.
+        time_propagate : float
             The time to advance the electrons in au.
 
         Returns

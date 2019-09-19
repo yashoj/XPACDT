@@ -49,7 +49,7 @@ class AdiabaticElectrons(electrons.Electrons):
         electrons.Electrons.__init__(self, "AdiabaticElectrons", parameters,
                                      n_beads, "adiabatic")
 
-    def step(self, time, **kwargs):
+    def step(self, R, P, time_propagate, **kwargs):
         """ Dummy implementation of the step, as adiabatic electrons have no
         explicit time-dependence.
         """

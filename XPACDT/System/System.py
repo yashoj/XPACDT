@@ -115,6 +115,11 @@ class System(object):
         for i in range(n_steps):
             self.__nuclei.propagate(timestep_nuclei)
 
+        # TODO : For now assert that there is no remainder between output_step
+        # and nuclear step; needed for surface hopping
+        assert(np.isclose((time_plus % timestep_nuclei), 0.)), \
+              ("Output time is not multiple of nuclear timestep.")
+
         # Propagate for remaining time
         if (np.isclose((time_plus % timestep_nuclei), 0.)):
             pass

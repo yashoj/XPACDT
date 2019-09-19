@@ -268,23 +268,15 @@ class Nuclei(object):
         time_propagate : float
             The time to advance the nuclei and electrons in au.
         """
-
-        # TODO: Is this checking of FSSH needed to pass velocity or should this be done for all?
-        #       Not all modules might need nuclear velocity so.
-
-        if (self.electrons.name == "SurfaceHoppingElectrons"):
-            pass
-        else:
-            self.electrons.step(time_propagate, **{'first': True})
+        # TODO : choose a better name than 'step_index'. Also do we need to
+        #        pass both R and P for all electronic methods?
+        self.electrons.step(self.positions, self.momenta, time_propagate, **{'step_index': 'first'})
 
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta,
                                         time_propagate)
 
-        if (self.electrons.name == "SurfaceHoppingElectrons"):
-            self.electrons.step(time_propagate, **{'last': True, 'momenta': self.momenta})
-        else:
-            self.electrons.step(time_propagate, **{'last': True})
+        self.electrons.step(self.positions, self.momenta, time_propagate, **{'step_index': 'last'})
 
         self.time += time_propagate
 

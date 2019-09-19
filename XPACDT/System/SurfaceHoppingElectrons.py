@@ -74,7 +74,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         self.rescaling_type = electronic_parameters.get("rescaling_type", "nac")
 
         self.__masses_nuclei = parameters.masses
-        # Add try and exception here?
+        # Add try and exception here for the factor?
         timestep_scaling_factor = float(electronic_parameters.get("timestep_scaling_factor"))
         nuclear_timestep = units.parse_time(parameters.get("nuclei_propagator").get("timestep"))
         self.__timestep = timestep_scaling_factor * nuclear_timestep
@@ -96,10 +96,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             initial_state = 0
 
         self.current_state = initial_state
-        
-        # Again are these initializations needed?
+
+        # Again are these initializations needed? Also add density matrix?
         # The order chosen is opposite of what is obtained from the interfaces
-        # for more efficient memory access.
+        # for more efficient memory access and matrix multiplications.
+
+        # The wavefunction coefficients are in interaction or Schroedinger
+        # picture depending upon 'evolution_picture' selected.
         if (self.rpsh_type == 'density_matrix'):
             self._c_coeff = np.zeros((max_n_beads, n_states), dtype=complex)
             self._D = np.zeros((max_n_beads, n_states, n_states), dtype=float)
@@ -256,69 +259,6 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         else:
             return self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid)
 
-    def step(self, time, R, P, **kwargs):
-        """ Propagate electronic wavefunction coefficients 
-        """
-        # TODO: Add option to subtract large diagonal term
-        # Need phase matrix, and getting the density matrix back
-        # Solve coefficient eq using rk4 or scipy solve_ivp or scipy ode?
-        # Check for interaction rep.
-        # If evolution_pic == 'interaction'
-        # Get phase matrix and propagate that
-        # Propagation equation is fnc: -1j*np.matmul(H, np.matmul(phase, c))
-        # Use linear interpolation to get H matrix at particular times
-        self._D = self._get_kinetic_coupling_matrix(R, P)
-        self._H = self._get_H_matrix(R, self._D)
-        if (self.evolution_picture == 'interaction'):
-            self._diff_diag_V = self._get_diff_diag_V_matrix(R)
-        
-        
-        
-        # At the end
-        self._old_D = self._D.copy()
-        self._old_H = self._H.copy()
-        if (self.evolution_picture == 'interaction'):
-            self._old_diff_diag_V = self._diff_diag_V.copy()
-
-        return
-
-    def _propagation_equation_interaction_picture(self, t_frac, c):
-        # Matrix product of -i/hbar np.matmul(H, np.matmul(phase, c))
-        # Perform linear interoplation using old_H and H_e
-        # At each step, t_o = 0?
-        H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
-        # Need old phase? from beginning of nuclear or e- step? nuclear step is easier
-        # Rectangular integration scheme w/ overestimation: add dt * y_req
-        #phase = self._phase + self._linear_interpolation_1d(frac, self._old_diff_diag_V, self._diff_diag_V) * t
-
-        # Trapeziodal integration scheme: add 1/2 * dt * (y_ini + y_req)
-        # This is better due to linear interpolation
-        # changing self.phase itself might be dangerous due to intermediate steps in integration
-        phase = self._phase + 0.5 * t * (self._old_diff_diag_V + 
-                                         self._linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
-        return (-1.0j * np.matmul(H, np.matmul(np.exp(-1.0j * phase), c)))
-
-    def _propagation_equation_schroedinger_picture(self, t_frac, c):
-        # Matrix product of -i/hbar np.matmul(H, c)
-        H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
-        return (-1.0j * np.matmul(H, c))
-
-    # Maybe put this also in math module
-    def _linear_interpolation_1d(self, x_fraction, y_initial, y_final):
-        # x_fraction = (x_required - x_initial) / (x_final - x_initial)
-        # y can be any dimension array, x_fraction is float
-        return ((1. - x_fraction) * y_initial + x_fraction * y_final)
-
-    def _integrator_runga_kutta(self, t, t_step, time_propagate, c, prop_func):
-        # Classical Runga-Kutta RK4 algorithm for quantum coefficients
-        c_k1 = t_step * prop_func(t / time_propagate, c)
-        c_k2 = t_step * prop_func((t + 0.5 * t_step) / time_propagate, c + 0.5 * c_k1)
-        c_k3 = t_step * prop_func((t + 0.5 * t_step) / time_propagate, c + 0.5 * c_k2)
-        c_k4 = t_step * prop_func((t + t_step) / time_propagate, c + c_k3)
-
-        c_new = c + 1.0 / 6.0 *(c_k1 + c_k4) + 1.0 / 3.0 *(c_k2 + c_k3)
-        return c_new
-
     def _get_velocity(self, P):
         """Obtain nuclear velocities of the system.
 
@@ -333,7 +273,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             The velocities of the system for each bead position or centroid in au.
         """
         # Is it better to have checks for len(P.shape) == 1 or 2?
-        # This works also for centroid but has unnecessary .T
+        # This works also for centroid but has unnecessary .T, however this is not usually done.
         return (P.T / self.masses_nuclei).T
 
     def _get_modified_V(self, R):
@@ -355,7 +295,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             if (self.rpsh_type == 'centroid'):
                 V = np.array([np.diag(self.pes.adiabatic_energy(R, centroid=True, return_matrix=True))])
             else:
-                # (n_states, n_beads).T done!
+                # (n_states, n_beads).T done for pes.energy!
                 V = np.array([np.diag(i) for i in 
                               (self.pes.adiabatic_energy(R, centroid=False, return_matrix=True).T)])
         else:
@@ -389,16 +329,16 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             Kinetic coupling matrix.
         """
         if (self.basis == 'adiabatic'):
-            # Here NAC is assumed to be real
-            # nac is (n_states, n_states, n_dof(, n_beads) ) ndarrays
-            vel = self._get_velocity(P)
+            # Here NAC is assumed to be real.
+            # Add assert for R and P shapes?
+            # nac is (n_states, n_states, n_dof(, n_beads)) ndarrays
             if (self.rpsh_type == 'centroid'):
-                # Add assert for R and P shapes?
+                v_centroid = self._get_velocity(np.mean(P, axis=1))
                 nac = self.pes.nac(R, centroid=True, return_matrix=True)
-                D = np.array([np.dot(nac, vel)])
+                D = np.array([np.dot(nac, v_centroid)])
             else:
-                # Transposes are done for faster memory accessing to make 'nbeads' first axis.
-                vel = vel.T
+                # Transposes are done for faster memory accessing by making 'nbeads' first axis.
+                vel = self._get_velocity(P).T
                 nac = (self.pes.nac(R, centroid=False, return_matrix=True)).transpose(3, 0, 1, 2)
 
                 # D here is (n_beads) list of (n_states, n_states)
@@ -417,6 +357,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     def _get_H_matrix(self, R, D=None):
         """Calculate total non-adiabatic electronic Hamiltonian.
+        The diagonal part is set to 0 in interaction picture.
 
         Parameters
         ----------
@@ -443,12 +384,19 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         else:
             # .astype' creates a copy so '.copy()' isn't needed
             H = V.astype(complex)
+        
+        if (self.evolution_picture == "interaction"):
+            # Should this be done here, or later in the interpolation?
+            # This depends upon if we need the Hamiltonian stored.
+            for i in H:
+                np.fill_diagonal(i, 0.0 + 0.0j)
 
         return H
 
     def _get_diff_diag_V_matrix(self, R):
         """Calculate the matrix representing the differences between the
         diagonal energy terms needed to make in interaction picture.
+        delta_V_kj = V_jj (columns) - V_kk (rows)
 
         Parameters
         ----------
@@ -464,15 +412,171 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # Maybe put the assert in the initialization
         assert (self.evolution_picture == "interaction"), \
                ("Phase in electronic coefficients only makes sense in interaction picture.")
+
         diff = []
         n_states = self.pes.n_states
-        # V needs to be (n_beads, n_states, n_states) ndarray of float
-        #    /or/ (1, n_states, n_states) ndarray of float
         V = self._get_modified_V(R)
 
-        # Is looping over and using anti-Hermitian property better?
+        # Is looping over all state indices and using anti-Hermitian property better?
         for i in V:
-            V_diag = np.diag(i)
-            diff.append(np.tile(V_diag.reshape(1, -1), (n_states, 1))
-                         - np.tile(V_diag.reshape(-1, 1), (1, n_states)))
+            # Taking only the diagonal part
+            i_diag = np.diag(i)
+            diff.append(np.tile(i_diag.reshape(1, -1), (n_states, 1))
+                         - np.tile(i_diag.reshape(-1, 1), (1, n_states)))
         return np.array(diff)
+
+    def step(self, R, P, time_propagate, **kwargs):
+        """ Advance the electronic subsytem by a given time. This is done here
+        by propagating electronic wavefunction coefficients.
+
+        Parameters
+        ----------
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system nuclei in au.
+        time_propagate : float
+            The time to advance the electrons in au.
+
+        Other Parameters
+        ----------------
+        step_index : {'first', last'}
+        """
+        # TODO: again too many asserts?
+        assert ('step_index' in kwargs), ("Step index not provided for surface"
+                                          " hopping propagtion.")
+
+        if (kwargs.get('step_index') != 'last'):
+            return
+
+        # TODO: Add option to subtract large diagonal term
+        # Need phase matrix, and getting the density matrix back
+        # Solve coefficient eq using rk4 or scipy solve_ivp or scipy ode?
+        # Get phase matrix and propagate that
+        self._D = self._get_kinetic_coupling_matrix(R, P)
+        self._H_e_total = self._get_H_matrix(R, self._D)
+        if (self.evolution_picture == 'interaction'):
+            self._diff_diag_V = self._get_diff_diag_V_matrix(R)
+
+        # For now consider only multiple of nuclear steps, hence also imposing
+        # that output times be multiple of nucelar step
+        n_steps = int((time_propagate + 1e-8) // self.timestep)
+        # Only relative time matters, right? set initial t = 0
+        t_list = [0.0]
+        c_list = [self._c_coeff]
+        H_list = [self._H_e_total]
+        
+        # Using for loop has better accuracy than while loop with adding step, right?
+        for i in range(n_steps):
+            if (self.ode_solver == 'rk4'):
+                if (self.evolution_picture == 'interaction'):
+                    prop_func = self._propagation_equation_interaction_picture
+                elif (self.evolution_picture == 'schroedinger'):
+                    prop_func = self._propagation_equation_schroedinger_picture
+
+                self._c_coeff = self._integrator_runga_kutta(i * self.timestep, time_propagate,
+                                                             self._c_coeff, prop_func)
+                t_list.append(i * self.timestep)
+                # Maybe just get b_jk here??!
+                
+                c_list.append(self._c_coeff)
+                # How to avoid interpolating again and store at once? Maybe make a self._H_list?
+                
+                # Make this as a attribute
+                H_list.append(self._linear_interpolation_1d(i * self.timestep / time_propagate, self._old_H_e, self._H_e_total))
+                # !!! Need phase list as well
+                
+        # Perform Surface hops, for this need to get integrated b_jk for which we need list of c_coeff and H at those steps
+        # However only need to calculate prob from current state to all other states.
+        # !!! maybe better to give b_jk and a_jk??
+        self._surface_hopping(R, P, t_list, c_list, H_list)
+        
+        if (self.evolution_picture == 'interaction'):
+            # At the end, add to phase (by trapezoidal integration) and update values
+            self._phase = self._phase + 0.5 * time_propagate * (self._old_diff_diag_V + self._diff_diag_V)
+            self._old_diff_diag_V = self._diff_diag_V.copy()
+
+        self._old_D = self._D.copy()
+        self._old_H_e = self._H_e_total.copy()
+
+        return
+
+    def _integrator_runga_kutta(self, t, time_propagate, c, prop_func):
+        # Classical Runga-Kutta RK4 algorithm for electronic quantum coefficients
+        # Should rk4 calculate and return all of the interpolated values???
+        t_step = self.timestep
+        c_1 = t_step * prop_func(t, time_propagate, c)
+        c_2 = t_step * prop_func((t + 0.5 * t_step), time_propagate, c + 0.5 * c_1)
+        c_3 = t_step * prop_func((t + 0.5 * t_step), time_propagate, c + 0.5 * c_2)
+        c_4 = t_step * prop_func((t + t_step), time_propagate, c + c_3)
+
+        c_new = c + 1.0 / 6.0 * (c_1 + c_4) + 1.0 / 3.0 * (c_2 + c_3)
+
+        return c_new
+    
+    # Get wrapper function to give interpolated H
+    def _integrator_scipy(self, ):
+        return
+
+    def _propagation_equation_interaction_picture(self, t, t_prop, c):
+        """Propagation equation in interaction picture.
+
+        Parameters
+        ----------
+        c : (n_beads, n_states) ndarray of floats
+            /or/ (1, n_states) ndarray of floats
+            Electronic wavefuntion coefficients in interaction or Schroedinger
+            picture depending upon 'evolution_picture' selected.
+
+        Returns
+        -------
+        (n_beads, n_states) ndarray of floats
+        /or/ (1, n_states) ndarray of floats
+            New electronic wavefuntion coefficients after propagation.
+        """
+        # Matrix product of -i/hbar np.matmul(H, np.matmul(phase, c))
+        # Perform linear interoplation using old_H and H_e
+        # Is this better or to use scipy interp1d function?
+        t_frac = t / t_prop
+        H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+
+        # Trapeziodal integration scheme: add 1/2 * dt * (y_ini + y_req)
+        # This is better due to linear interpolation
+        # changing self.phase itself might be dangerous due to intermediate steps in integration
+        phase = self._phase + 0.5 * t * (self._old_diff_diag_V + 
+                                         self._linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
+        # 'np.expand_dims' used to add a dimension for proper matrix multiplication
+        return (-1.0j * np.matmul(H, np.matmul(np.exp(-1.0j * phase),
+                                               np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states)))
+
+    def _propagation_equation_schroedinger_picture(self, t, t_prop, c):
+        # Matrix product of -i/hbar np.matmul(H, c)
+        t_frac = t / t_prop
+        H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+        return (-1.0j * np.matmul(H, np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states))
+
+    # Maybe put this also in math module
+    def _linear_interpolation_1d(self, x_fraction, y_initial, y_final):
+        # x_fraction = (x_required - x_initial) / (x_final - x_initial)
+        # y can be any dimension array, x_fraction is float
+        return ((1. - x_fraction) * y_initial + x_fraction * y_final)
+
+    def _surface_hopping(self, R, P, t_list, c_list, H_list):
+        # Perform surface hopping if required
+        # Create density matrix/ reduced (averaged one)
+        # Integrate to get b_jk
+        # Get prob to hop, set to 0 if less than zero
+        # State switch if needed, have another function for momentum rescaling
+        
+        # Here k is the current state
+        # First get a_kj
+        # a_jk = c * (np.conj(c[self.current_state]) * exp(1j * phase[self.current_state])
+        # Is it better to integrate using scipy.integrate.trapez
+        # b_jk = 2 * (np.conj(a) * V[:, self.current_state]).imag if diabatic
+        # b_jk = 2 * (np.conj(a) * D[:, self.current_state]).real if adiabatic
+        
+        
+        return
+    
+    def _momentum_rescaling(self,):
+        # Perform momentum rescaling if needed.
+        return

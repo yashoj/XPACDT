@@ -32,6 +32,7 @@ electronic dynamics, extended to ring polymer molecular dynamics to give
 ring polymer surface hopping (RPSH)."""
 
 import numpy as np
+import random
 
 import XPACDT.System.Electrons as electrons
 import XPACDT.Tools.Units as units
@@ -296,7 +297,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 V = np.array([np.diag(self.pes.adiabatic_energy(R, centroid=True, return_matrix=True))])
             else:
                 # (n_states, n_beads).T done for pes.energy!
-                V = np.array([np.diag(i) for i in 
+                V = np.array([np.diag(i) for i in
                               (self.pes.adiabatic_energy(R, centroid=False, return_matrix=True).T)])
         else:
             if (self.rpsh_type == 'centroid'):
@@ -427,7 +428,9 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     def step(self, R, P, time_propagate, **kwargs):
         """ Advance the electronic subsytem by a given time. This is done here
-        by propagating electronic wavefunction coefficients.
+        by propagating electronic wavefunction coefficients. In the end, this
+        determines which electronic state to propagate the nuclei. So essentially
+        there is a check whether to stay in the current state or change it.
 
         Parameters
         ----------
@@ -464,18 +467,23 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         t_list = [0.0]
         c_list = [self._c_coeff]
         H_list = [self._H_e_total]
+        diff_diag_V_list = [self._diff_diag_V if (self.evolution_picture == 'interaction')
+                      else None]
         
         # Using for loop has better accuracy than while loop with adding step, right?
         for i in range(n_steps):
             if (self.ode_solver == 'rk4'):
+                t = i * self.timestep
                 if (self.evolution_picture == 'interaction'):
                     prop_func = self._propagation_equation_interaction_picture
                 elif (self.evolution_picture == 'schroedinger'):
                     prop_func = self._propagation_equation_schroedinger_picture
 
-                self._c_coeff = self._integrator_runga_kutta(i * self.timestep, time_propagate,
-                                                             self._c_coeff, prop_func)
-                t_list.append(i * self.timestep)
+                self._c_coeff = self._integrator_runga_kutta(t, time_propagate, self._c_coeff, prop_func,
+                                                             H_list[-1], diff_diag_V_list[-1])
+                
+
+                t_list.append(t)
                 # Maybe just get b_jk here??!
                 
                 c_list.append(self._c_coeff)
@@ -500,24 +508,41 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         return
 
-    def _integrator_runga_kutta(self, t, time_propagate, c, prop_func):
+    def _integrator_runga_kutta(self, t, time_propagate, c, prop_func, old_H, old_diff_diag_V=None):
         # Classical Runga-Kutta RK4 algorithm for electronic quantum coefficients
         # Should rk4 calculate and return all of the interpolated values???
+        # Yes returns c_new as well as H_new value, phase is just appended in self.phase
+        if (self.evolution_picture == 'schroedinger'):
+            assert (old_diff_diag_V == None), ("Phase matrix doesn't make sense in Schroedinger picture.")
+
         t_step = self.timestep
-        c_1 = t_step * prop_func(t, time_propagate, c)
-        c_2 = t_step * prop_func((t + 0.5 * t_step), time_propagate, c + 0.5 * c_1)
-        c_3 = t_step * prop_func((t + 0.5 * t_step), time_propagate, c + 0.5 * c_2)
+        
+        # First rk4 step
+        c_1 = t_step * prop_func(c, old_H, self._phase)
+
+        # Linear interpolation from nuclear timestep points
+        # Is this better or to use scipy interp1d function?
+        t_frac = (t + 0.5 * t_step) / time_propagate
+        H_mid_point = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+        # Trapeziodal integration scheme: add 1/2 * dt * (y_ini + y_req)
+        phase_mid_point = self._phase + 0.5 * t * (self._old_diff_diag_V + 
+                                         self._linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
+        
+        # Second and third rk4 step
+        c_2 = t_step * prop_func(c + 0.5 * c_1, H_mid_point, phase_mid_point)
+        c_3 = t_step * prop_func(c + 0.5 * c_2, H_mid_point, phase_mid_point)
+
         c_4 = t_step * prop_func((t + t_step), time_propagate, c + c_3)
 
         c_new = c + 1.0 / 6.0 * (c_1 + c_4) + 1.0 / 3.0 * (c_2 + c_3)
 
         return c_new
-    
-    # Get wrapper function to give interpolated H
+
+    # Get wrapper function to give interpolated H and use with scipy
     def _integrator_scipy(self, ):
         return
 
-    def _propagation_equation_interaction_picture(self, t, t_prop, c):
+    def _propagation_equation_interaction_picture(self, c, H, phase):
         """Propagation equation in interaction picture.
 
         Parameters
@@ -534,24 +559,16 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             New electronic wavefuntion coefficients after propagation.
         """
         # Matrix product of -i/hbar np.matmul(H, np.matmul(phase, c))
-        # Perform linear interoplation using old_H and H_e
-        # Is this better or to use scipy interp1d function?
-        t_frac = t / t_prop
-        H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
-
-        # Trapeziodal integration scheme: add 1/2 * dt * (y_ini + y_req)
-        # This is better due to linear interpolation
-        # changing self.phase itself might be dangerous due to intermediate steps in integration
-        phase = self._phase + 0.5 * t * (self._old_diff_diag_V + 
-                                         self._linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
+        
         # 'np.expand_dims' used to add a dimension for proper matrix multiplication
         return (-1.0j * np.matmul(H, np.matmul(np.exp(-1.0j * phase),
                                                np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states)))
 
-    def _propagation_equation_schroedinger_picture(self, t, t_prop, c):
+    def _propagation_equation_schroedinger_picture(self, c, H, phase=None):
         # Matrix product of -i/hbar np.matmul(H, c)
-        t_frac = t / t_prop
-        H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+        #t_frac = t / t_prop
+        #H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+        
         return (-1.0j * np.matmul(H, np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states))
 
     # Maybe put this also in math module
@@ -574,9 +591,36 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # b_jk = 2 * (np.conj(a) * V[:, self.current_state]).imag if diabatic
         # b_jk = 2 * (np.conj(a) * D[:, self.current_state]).real if adiabatic
         
-        
+        prob = np.zeros(self.pes.n_states)
+        new_state = None
+        # For now assume we have g_kj (prob) with g_kk = 0 so prob is a Nstate array
+        rand_num = random.random()
+        sum_prob = 0.
+        for i, p in enumerate(prob):
+            if (rand_num >= sum_prob and rand_num < (sum_prob + p)):
+                new_state = i
+                break
+            sum_prob += p
+
+        if (new_state is not None):
+            should_change = self._momentum_rescaling(R, P, new_state)
+            if should_change:
+                self.current_state = new_state
+
         return
-    
-    def _momentum_rescaling(self,):
+
+    def _momentum_rescaling(self, R, P, new_state):
         # Perform momentum rescaling if needed.
+        # Should this be velocity or momentum rescaling? p makes sense.
+        # Need to check energy conservaton and return whether to change v or not
+        if (self.rescaling_type == 'nac'):
+            # Get list of nacs for each dof and beads or centroid
+        else:
+            # Get list of gradient differences for each dof and beads or centroid
+            
+        if (self.rpsh_rescaling == 'centroid'):
+            # Use centroid V to conserve H_centroid
+        else:
+            # Use sum of V to conserve Hn
+
         return

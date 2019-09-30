@@ -511,10 +511,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                                                      + self._linear_interpolation_1d(
                                                      t_frac, self._old_diff_diag_V, self._diff_diag_V))
                     b_list.append(self._get_b_jk(self._c_coeff, H, phase))
-                    self._print_a_kj(self._c_coeff, self._phase)
+                    #self._print_a_kj(self._c_coeff, self._phase)
                 else:
                     b_list.append(self._get_b_jk(self._c_coeff, H))
-                    self._print_a_kj(self._c_coeff)
+                    #self._print_a_kj(self._c_coeff)
                 
         # Perform Surface hops, for this need to get integrated b_jk for which we need list of c_coeff and H at those steps
         # However only need to calculate prob from current state to all other states.
@@ -567,6 +567,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     def _integrator_runga_kutta(self, t, time_propagate, c, prop_func):
         # Classical Runga-Kutta RK4 algorithm for electronic quantum coefficients
         # Should rk4 calculate and return all of the interpolated values???
+        # c_coeffs are (max_n_beads or 1, n_states)
+        
+        # TODO : Normalize the wavefunction in the end (not done in CDTK though),
+        # or do unitary dynamics using midpoint H.
         t_step = self.timestep
         c_1 = t_step * prop_func(t, time_propagate, c)
         c_2 = t_step * prop_func((t + 0.5 * t_step), time_propagate, c + 0.5 * c_1)
@@ -574,11 +578,19 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         c_4 = t_step * prop_func((t + t_step), time_propagate, c + c_3)
 
         c_new = c + 1.0 / 6.0 * (c_1 + c_4) + 1.0 / 3.0 * (c_2 + c_3)
+        
+        for i in c_new:
+            normalization = np.linalg.norm(i)
+            i /= normalization
 
         return c_new
 
     # Get wrapper function to give interpolated H and use with scipy
     def _integrator_scipy(self, ):
+        return
+    
+    def _integrator_unitary(self, ):
+        # unitary dynamics using midpoint H.
         return
 
     def _propagation_equation_interaction_picture(self, t, t_prop, c):
@@ -690,7 +702,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         else:
             a_kj = np.outer(c, np.conj(c))
         
-        # print(a_kj)
+        #print(a_kj)
         
         # Print the trace instead
         print(np.trace(np.absolute((a_kj)) ) )
@@ -704,7 +716,7 @@ if __name__ == '__main__':
     parameters = infile.Inputfile("SH_test_input.in")
 
     sh_e = SurfaceHoppingElectrons(parameters, parameters.n_beads)
-    time_propagate = sh_e.timestep * 100.
+    time_propagate = sh_e.timestep * 1000.
     #sh_e.evolution_picture = "interaction"
     #sh_e.evolution_picture = "schroedinger"
     

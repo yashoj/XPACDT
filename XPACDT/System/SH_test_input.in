@@ -24,7 +24,8 @@ rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient
 
 evolution_picture = schroedinger
 #evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schroedinger)
-ode_solver = rk4          # ODE solver to be used for propagation (possible: scipy_solver (default), rk4)
+#ode_solver = rk4
+ode_solver = unitary
 $end
 
 ##############################################################################

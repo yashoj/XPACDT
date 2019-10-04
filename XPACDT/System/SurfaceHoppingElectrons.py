@@ -33,6 +33,9 @@ ring polymer surface hopping (RPSH)."""
 
 import numpy as np
 import random
+from scipy.linalg import expm
+
+# TODO : where to place this scipy import? Only needed for ceratin inputs.
 
 import XPACDT.System.Electrons as electrons
 import XPACDT.Tools.Units as units
@@ -84,6 +87,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         self.ode_solver = electronic_parameters.get("ode_solver", "rk4")
         
         print("Representation is ", self.evolution_picture)
+        print("ODE solver is ", self.ode_solver)
 
         n_states = self.pes.n_states
         max_n_beads = self.pes.max_n_beads
@@ -206,13 +210,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     @property
     def ode_solver(self):
-        """{'rk4'} : Type of velocity rescaling to be used."""
+        """{'rk4', 'unitary'} : Type of velocity rescaling to be used."""
         # TODO: 'scipy_solver' if needed
         return self.__ode_solver
 
     @ode_solver.setter
     def ode_solver(self, s):
-        assert (s in ['rk4']),\
+        assert (s in ['rk4', 'unitary']),\
                ("ODE solver not available.")
         self.__ode_solver = s
 
@@ -498,23 +502,24 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
                 self._c_coeff = self._integrator_runga_kutta(t, time_propagate,
                                                              self._c_coeff, prop_func)
-                
-                t = (i + 1) * self.timestep
 
-                t_list.append(t)
-                # How to avoid interpolating again and store at once? For now, this should work.
-                t_frac = t / time_propagate
-                H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+            elif (self.ode_solver == 'unitary'):
+                self._c_coeff = self._integrator_unitary(t, time_propagate, self._c_coeff)
 
-                if (self.evolution_picture == 'interaction'):
-                    phase = self._phase + 0.5 * t * (self._old_diff_diag_V
-                                                     + self._linear_interpolation_1d(
-                                                     t_frac, self._old_diff_diag_V, self._diff_diag_V))
-                    b_list.append(self._get_b_jk(self._c_coeff, H, phase))
-                    #self._print_a_kj(self._c_coeff, self._phase)
-                else:
-                    b_list.append(self._get_b_jk(self._c_coeff, H))
-                    #self._print_a_kj(self._c_coeff)
+            t = (i + 1) * self.timestep
+
+            t_list.append(t)
+            # How to avoid interpolating again and store at once? For now, this should work.
+            t_frac = t / time_propagate
+            H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+
+            if (self.evolution_picture == 'interaction'):
+                phase = self._phase + 0.5 * t * (self._old_diff_diag_V
+                                                 + self._linear_interpolation_1d(
+                                                 t_frac, self._old_diff_diag_V, self._diff_diag_V))
+                b_list.append(self._get_b_jk(self._c_coeff, H, phase))
+            else:
+                b_list.append(self._get_b_jk(self._c_coeff, H))
                 
         # Perform Surface hops, for this need to get integrated b_jk for which we need list of c_coeff and H at those steps
         # However only need to calculate prob from current state to all other states.
@@ -525,6 +530,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             # At the end, add to phase (by trapezoidal integration) and update values
             self._phase = self._phase + 0.5 * time_propagate * (self._old_diff_diag_V + self._diff_diag_V)
             self._old_diff_diag_V = self._diff_diag_V.copy()
+            
+            self._print_a_kj(self._c_coeff, self._phase)
+        else:
+            self._print_a_kj(self._c_coeff)
 
         self._old_D = self._D.copy()
         self._old_H_e = self._H_e_total.copy()
@@ -564,6 +573,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             b_jk = b_jk[0].copy()
         return b_jk
 
+    # TODO : Should this be put in its own module? This would be needed by Ehrenfest as well if we implement that.
     def _integrator_runga_kutta(self, t, time_propagate, c, prop_func):
         # Classical Runga-Kutta RK4 algorithm for electronic quantum coefficients
         # Should rk4 calculate and return all of the interpolated values???
@@ -578,7 +588,8 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         c_4 = t_step * prop_func((t + t_step), time_propagate, c + c_3)
 
         c_new = c + 1.0 / 6.0 * (c_1 + c_4) + 1.0 / 3.0 * (c_2 + c_3)
-        
+
+        # Artificially normalizing to conserve norm, is this proper???
         for i in c_new:
             normalization = np.linalg.norm(i)
             i /= normalization
@@ -588,10 +599,26 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     # Get wrapper function to give interpolated H and use with scipy
     def _integrator_scipy(self, ):
         return
-    
-    def _integrator_unitary(self, ):
-        # unitary dynamics using midpoint H.
-        return
+
+    def _integrator_unitary(self, t, time_propagate, c):
+        
+        # unitary dynamics using midpoint H. Error in the order of dt^3
+        # ???? Is this a unitary transformation???
+        t_step = self.timestep
+        t_frac_mid = (t + 0.5 * t_step) / time_propagate
+
+        H_mid = self._linear_interpolation_1d(t_frac_mid, self._old_H_e, self._H_e_total)
+        
+        #propagator = np.exp(-1j * H_mid * t_step)
+        propagator = np.array([expm(-1j * h * t_step) for h in H_mid])
+        
+        #print(np.allclose(H_mid, np.conj(H_mid.transpose(0, 2, 1))))
+        #print(np.absolute(propagator))
+        #print(np.absolute(np.matmul(propagator, propagator.transpose(0, 2, 1))))
+        
+        c_new = np.matmul(propagator, np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states)
+
+        return c_new
 
     def _propagation_equation_interaction_picture(self, t, t_prop, c):
         """Propagation equation in interaction picture.
@@ -651,6 +678,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         
         
         # Setting negative probability and probability to hop to current state to 0.
+        # TODO : have cutoff for small probabilities! (determine value!)
         for i in range(len(prob)):
             if (prob[i] < 0. or i == self.current_state):
                 prob[i] = 0.
@@ -702,7 +730,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         else:
             a_kj = np.outer(c, np.conj(c))
         
-        #print(a_kj)
+        #print(a_kj, '\n')
         
         # Print the trace instead
         print(np.trace(np.absolute((a_kj)) ) )
@@ -721,12 +749,36 @@ if __name__ == '__main__':
     #sh_e.evolution_picture = "schroedinger"
     
     R = np.array([[3.]])
-    P = np.array([[0.02]])
+    P = np.array([[0.002]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
     print(sh_e.current_state)
     #sys.exit()
     
+    
+    R = np.array([[3.1]])
+    P = np.array([[0.0021]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
+    
+    
+    R = np.array([[3.2]])
+    P = np.array([[0.0022]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
+    
+    
+    R = np.array([[3.3]])
+    P = np.array([[0.0023]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
     print(sh_e.current_state)
+    
+    sys.exit()
+    
+    R = np.array([[3.4]])
+    P = np.array([[0.0024]])
+    sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
+    print(sh_e.current_state)
+    
+    R = np.array([[3.5]])
+    P = np.array([[0.0025]])
+    sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
+    print(sh_e.current_state)
+

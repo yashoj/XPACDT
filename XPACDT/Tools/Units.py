@@ -41,6 +41,9 @@ boltzmann = physical_constants['electron volt-hartree relationship'][0] * physic
 # Normal mode eigenvalues to wave numbers
 nm_to_cm = centi/physical_constants['Bohr radius'][0]/physical_constants['inverse fine-structure constant'][0] / 2.0 / pi
 
+# Conversion of Hartree energy to eV and vice versa
+hartree_to_eV = physical_constants['Hartree energy in eV'][0]
+eV_to_hartree = 1.0 / hartree_to_eV
 
 def parse_time(time_string):
     """ Takes a string with a time and converts it to the numerical value

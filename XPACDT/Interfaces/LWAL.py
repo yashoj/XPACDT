@@ -27,24 +27,26 @@
 #
 #  **************************************************************************
 
-""" This module connects to the BKMP2 H3 PES.
-A. I. Boothroyd, W. J. Keogh, P. G. Martin, and M. R. Peterson, J. Chem. Phys. 104, 7139 (1996).
+""" This module connects to the LWAL F+H2 PES.
+G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
 """
 
 import numpy as np
-import XPACDT.Interfaces.BKMP2_module.pot as pot
+import os
+import XPACDT.Interfaces.LWAL_module.pot as pot
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
 
 
-class BKMP2(itemplate.PotentialInterface):
+class LWAL(itemplate.PotentialInterface):
     """
-    BKMP2 PES. No parameters required.
+    LWAL PES. No parameters required.
     """
     def __init__(self, **kwargs):
+        self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "BKMP2")
+        itemplate.PotentialInterface.__init__(self, "LWAL")
 
     def _calculate_all(self, R, P=None, S=None):
         """
@@ -77,7 +79,7 @@ class BKMP2(itemplate.PotentialInterface):
             self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
 
         for i, r in enumerate(R.T):
-            self._energy[i], self._gradient[:, i] = pot.pot(r)
+            self._energy[i], self._gradient[:, i] = pot.pot(r, self.__data_path)
 
         if R.shape[1] == 1:
             self._energy_centroid = self._energy
@@ -89,8 +91,8 @@ class BKMP2(itemplate.PotentialInterface):
         """Transform from full cartesian coordinates to internal Jacobi
         coordinates. The Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
-            R = internal[1] = Distance between the thrid H and the center of
-                              the first two H's in au.
+            R = internal[1] = Distance between the F and the center of
+                              the two H's in au.
             phi = internal[2] = angle between the two vectors that define
                                 r and R.
 
@@ -108,16 +110,16 @@ class BKMP2(itemplate.PotentialInterface):
         internal = np.zeros(3)
 
         # r
-        r_vec = R[0:3]-R[3:6]
+        r_vec = R[3:6]-R[6:9]
         internal[0] = np.linalg.norm(r_vec)
 
         # R
-        R_vec = 0.5 * (R[0:3]+R[3:6]) - R[6:9]
+        R_vec = 0.5 * (R[3:6]+R[6:9]) - R[0:3]
         internal[1] = np.linalg.norm(R_vec)
 
         # phi
         internal[2] = geom.angle(r_vec, R_vec)
-        if R[7] < 0.0:
+        if R[1] < 0.0:
             internal[2] = 2.0*np.pi-internal[2]
 
         return internal
@@ -126,14 +128,14 @@ class BKMP2(itemplate.PotentialInterface):
         """Transform from Jacobi coordinates to full cartesian coordinates. The
         Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
-            R = internal[1] = Distance between the thrid H and the center of
-                              the first two H's in au.
+            R = internal[1] = Distance between the F and the center of
+                              the two H's in au.
             phi = internal[2] = angle between the two vectors that define
                                 r and R.
         The output cartesian coordinates are in the xy plane. The center of 
-        mass of H2 is fixed to the origin. The first two H are displaced along
-        the x-axis in negative and positive direction, respectively. The third
-        H is then placed in the xy-plane according to 'R' and 'phi'.
+        mass of H2 is fixed to the origin. The two H are displaced along the
+        x-axis in negative and positive direction, respectively. The F is then
+        placed in the xy-plane according to 'R' and 'phi'.
 
         Parameters
         ----------
@@ -150,33 +152,33 @@ class BKMP2(itemplate.PotentialInterface):
         R = np.zeros(9)
 
         # from r, fixed to x-axis
-        R[0] = -0.5*internal[0]
-        R[3] = 0.5*internal[0]
+        R[3] = -0.5 * internal[0]
+        R[6] = 0.5 * internal[0]
 
         # from R and phi, fixed to x-y-plane
-        R[6] = (internal[1]) * np.cos(internal[2])
-        R[7] = (internal[1]) * np.sin(internal[2])
+        R[0] = (internal[1]) * np.cos(internal[2])
+        R[1] = (internal[1]) * np.sin(internal[2])
 
         return R
 
 
-#if __name__ == "__main__":
-#    pes = BKMP2()
-#    print(pes.name)
-#    x=np.zeros(9)
-#    for i in range(1000):
-#        phi = np.random.rand(1)*2.0*np.pi
-#        x[0] = -1.0
-#        x[1] = 0.0
-#        x[2] = 0.0 
-#        x[3] = 1.0
-#        x[4] = 0.0
-#        x[5] = 0.0
-#        x[6] = 3.0*np.cos(phi)
-#        x[7] = 3.0*np.sin(phi)
-#        x[8] = 0.0
-#        
-#        
+if __name__ == "__main__":
+    pes = LWAL()
+    print(pes.name)
+    x=np.zeros(9)
+    for i in range(1000):
+        phi = np.random.rand(1)*2.0*np.pi
+        x[0] = 3.0*np.cos(phi)
+        x[1] = 3.0*np.sin(phi)
+        x[2] = 0.0 
+        x[3] = -1.0
+        x[4] = 0.0
+        x[5] = 0.0
+        x[6] = 1.0
+        x[7] = 0.0
+        x[8] = 0.0
+        
+        
 #        if phi > -11.0:
 #            inte = pes._to_internal(x)
 ##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
@@ -185,14 +187,14 @@ class BKMP2(itemplate.PotentialInterface):
 #   
 #            print((abs(x-y) < 1e-8).all())
 ##            print()
-#    
-#    pes._calculate_all(x[:, None])
-#    print(pes._energy, pes._gradient)
-#    print(pes.energy(x[:, None]))
-#    internal = np.array([2.0, 5.0, 0.1])
-#    pes.plot_1D(internal, 1, 4.0, 7.0, 0.1, relax=True, internal=True)
-##    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
-#    
+    
+    pes._calculate_all(x[:, None])
+    print(pes._energy, pes._gradient)
+    print(pes.energy(x[:, None]))
+    internal = np.array([2.0, 5.0, 0.0])
+    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
+#    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
+    
+    pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
 #    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
-##    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
-##    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)
+#    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

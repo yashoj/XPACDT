@@ -130,9 +130,8 @@ value = histogram -3.0 3.0 10   # way to analyze the data; possible: 'mean', 'st
 # optional:
 op0 = +pos                      # t=0 operation for correlation functions; see help for details!
 filename = blah                 # Name for output file
-2d                              # 2d histogram requested
 2op0 = +pos                     # t=0 operation for 2d histogram
-2op = +pos                      # operation for 2d histogram
+2op = +pos                      # second operation for 2d histogram
 step = 1 2 5                    # List of time steps (indices, not actual times) to be used for the analysis
 
 $end

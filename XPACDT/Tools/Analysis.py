@@ -165,6 +165,9 @@ def do_analysis(parameters, systems=None):
                 raise RuntimeError("XPACDT: No function for 'value'"
                                    " defined in the analysis part")
 
+        # Check for 2d histograms
+        is_2d = '2op' in command
+
         # The resuts array is reshaped to look like (n_times, n_values).
         #
         # After performing all commands the results array looks is of the
@@ -181,11 +184,11 @@ def do_analysis(parameters, systems=None):
         # system are given.
         n_times = len(command['times'])
         reshaped_results = np.swapaxes(np.array(command['results']).
-                                       reshape(n_systems, (2 if '2d' in command else 1), n_times, -1),
+                                       reshape(n_systems, (2 if is_2d else 1), n_times, -1),
                                        0, 2).reshape(n_times, -1)
         # bootstrap; final_data: [n_times] with tuples(value, error)
         #                                  where value, error 1d arrays
-        final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
+        final_data = [bs.bootstrap(data, func, is_2D=is_2d)
                       for data in reshaped_results]
 
         # Generate header
@@ -197,7 +200,7 @@ def do_analysis(parameters, systems=None):
         # Output data:
         file_output = os.path.join(folder, command.get('filename', key + '.dat'))
         output_data(header, file_output, command['format'], command['times'],
-                    bins, final_data, two_d=('2d' in command))
+                    bins, final_data, two_d=is_2d)
 
 
 def output_data(header, file_output, form, times, bins, results, two_d=False):
@@ -319,7 +322,7 @@ def check_command(command, system):
     system : XPACDT.System
         The read in system containing its own log.
     """
-    if ('2d' in command and command['format'] != 'time'):
+    if ('2op' in command and command['format'] != 'time'):
         warnings.warn("XPACDT: For a 2dhistogram is requested, 'form' has to"
                       "have the value 'time'. This is now automatically set.")
         command['format'] = 'time'
@@ -385,7 +388,7 @@ def apply_command(command, system):
                                " operationsgiven. Please check!")
 
     # For a 2d histogram another 'obeservable' needs to be computed
-    if '2d' in command:
+    if '2op' in command:
         value_0 = 1.0
         if '2op0' in command:
             value_0 = apply_operation(command['2op0'], system.log[0])

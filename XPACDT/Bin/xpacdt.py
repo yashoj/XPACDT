@@ -44,6 +44,7 @@ import time
 import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Sampling.Sampling as sampling
 import XPACDT.Tools.Analysis as analysis
+import XPACDT.Tools.Operations as operations
 import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
 
@@ -74,17 +75,45 @@ def start():
     print("Commit: " + hexsha)
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
+
+    parser.add_argument('-h', '--help', nargs='?',
+                        type=str, dest="help", const='nothing',
+                        help='Prints this help page and additional information for certain keywords: Analysis, TODO_MORE.')
 
     i_help = "Name of the XPACDT input file. Please refer to the general " \
              "documentation for instructions on how this has to be structured."
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
-                        required=True, help=i_help)
+                        required=False, help=i_help)
 
     # TODO: Add more command line arguments as fit
     args = parser.parse_args()
 
+    if args.help is not None:
+        parser.print_help()
+        if args.help == 'Analysis':
+            print()
+            print()
+            print("Printing additional help for " + args.help + ":")
+            print()
+            print("Module to perform analysis on a set of XPACDT.Systems. The most general cases that can be calculated are: \n \t Expectation values <A(t)>, \n \t Correlation functions <B(0)A(t)>, \n \t One- and Two-dimensional histograms \n\nIn the input file one defines: \n\t A(t), B(0):  Quantities of interest, e.g., the position of a certain atom, a bond length, the charge, etc.\n\t f(x): A function to be calculated over the quantities obtained from all trajectories, i.e., the mean or standard devitaion, a histogram. \n\nThe analysis then iterates over all XPACDT.Systems and calculates A(t), B(0) for each system. Then the function f(x) is evaluated, i.e., the mean of the quantity is obtained or a histogram of the quantity is obtained. The standard error of the obtain results is evaluated employing bootstrapping. \n\nResults are printed to file for easy plotting with gnuplot. \n\nPlease note that for each quantity one wishes to obtain, an individual 'command'-block has to be defined in the input file. If n operation, i.e. A(t), B(0), returns more than one value, they all together enter the function f(x) and are treated as independet in the bootstrapping. This might be desired behavior for obtaining mean positions of the beads or obtaining a density plot of the ring polymer, but for most scenarios, this is not desired. Thus, whenever a command returns more than one value, a RuntimeWarning is printed for the first system and timestep.\n\n\n")
+            print("An Example input block for a position-position correlation function looks like:\n\n$commandCxx\nop0 = +pos\nop = +pos\nformat = time\nvalue = mean\n\n$end \n\n")
+            print("An Example input block for a histogram of the positions of a one-d system looks like:\n\n$commandPos\nop = +pos\nvalue = histogram -3.0 3.0 10\nformat = value\n$end \n\n")
+            print("Please refer to the example input files for more options!\n\n")
+            print("Possible operations for A and B are: \n")
+            operations.position(["-h"], None)
+            print()
+            operations.momentum(["-h"], None)
+        elif args.help == 'nothing':
+            pass
+        else:
+            print("Incorect keyword given to -h :" + args.help)
+        return
+
     # Get input file
+    if args.InputFile is None:
+        print("Input file required!")
+        return
     print("The inputfile '" + args.InputFile + "' is read! \n")
     input_parameters = infile.Inputfile(args.InputFile)
 

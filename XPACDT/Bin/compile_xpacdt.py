@@ -32,21 +32,32 @@
 """Convert XPACDT to an packed executable using pyinstaller.
 """
 
+import git
+import inspect
+import os
 import subprocess as sp
 
 
 if __name__ == "__main__":
 
-    # TODO read some stuff from command line
+    # TODO read some stuff from command line ?
 
+    # Get branch and version info. Write to file that will be included in bundle
+    current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
+    repo = git.Repo(path=current_path, search_parent_directories=True)
+    branch_name = repo.active_branch.name
+    hexsha =  repo.head.object.hexsha
+    version_file = open('.version', 'w')
+    version_file.write("Branch: " + branch_name + " \n")
+    version_file.write("Commit: " + hexsha + " \n")
+    version_file.close()
+    
+    ## TODO: check for more hidden imports, check for more data files
     command = "cd $XPACDTPATH/Bin; "
-    command += "pyinstaller --onefile --runtime-tmpdir=\".\" -n genLog.exe genLog.py; "
-    command += "pyinstaller --onefile --runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
+    command += "pyinstaller --add-data '.version:.' --onefile --hidden-import='XPACDT' --runtime-tmpdir=\".\" -n genLog.exe genLog.py; "
+    command += "pyinstaller --add-data '.version:.' --onefile  --hidden-import='git' --hidden-import='XPACDT.System.AdiabaticElectrons' --hidden-import='XPACDT.Dynamics.MassiveAndersen' --hidden-import='XPACDT.Dynamics.VelocityVerlet' --hidden-import='XPACDT.Sampling.FixedSampling' --hidden-import='XPACDT.Sampling.QuasiclassicalSampling' --hidden-import='XPACDT.Sampling.ThermostattedSampling' --hidden-import='XPACDT.Sampling.WignerSampling' --hidden-import='XPACDT.Interfaces.BKMP2' --hidden-import='XPACDT.Interfaces.EckartBarrier' --hidden-import='XPACDT.Interfaces.OneDPolynomial' --runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
 
     p = sp.Popen(command, shell=True, executable="bash")
     p.wait()
 
     exit
-
-# --hidden-import='git'
-# --hidden-import='git'

@@ -39,11 +39,13 @@ def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
 
     Parameters
     ----------
-    data : (nsamples) ndarray of floats
-        The data.
+    data : (nsamples, nvalues) ndarray of floats
+        The data to be used in the bootstrapping.
     function : function
         The function for which the bootstrapping should be calculate, e.g..
         np.mean, np.percentile, histogram, ...
+        The function is assumed to return 'nfunc' values. A histogram for
+        example will return 'nbins' values.
     n_bootstrap : int, optional
         Number of bootstrapping resamples to take. Default: 1000
     is_2D : bool, optional
@@ -51,9 +53,9 @@ def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
         currently.
 
     Returns:
-        m : (nsamples) ndarray of floats
+        m : (nfunc) ndarray of floats
             The mean value of the function over the sample
-        s : (nsamples) ndarray of floats
+        s : (nfunc) ndarray of floats
             The standard error as obtained from the bootstrapping for the
             values in m.
     """
@@ -67,6 +69,9 @@ def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
                   for i in range(n_bootstrap)]
 
     m = np.mean(np.array(values).reshape(n_bootstrap, -1), axis=0)
-    s = np.std(np.array(values).reshape(n_bootstrap, -1), axis=0)
+    if n_bootstrap == 1:
+        s = np.zeros_like(m)
+    else:
+        s = np.std(np.array(values).reshape(n_bootstrap, -1), axis=0)
 
     return m, s

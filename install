@@ -73,6 +73,16 @@ if isCompile == 'y':
        	  sys.stdout.write("\nError occured while compiling. Please check " + direc + "/output_make for more details. \n")
        else:
           sys.stdout.write(" done. \n")
+       f.close()
+sys.stdout.write("\n")
+
+# Ask if XPACDT should be PyInstalled
+isBundle = input("Do you want to run PyInstaller to bundle the XPACDT bin? (y/n) ")
+
+if isBundle == 'y':
+   f = open("./output_pyinstall", 'w')
+   spoutput = sp.run(["compile_xpacdt.py"], cwd="XPACDT/Bin/", stdout=f, stderr=f)
+   f.close()
 sys.stdout.write("\n")
 
 # Write variables to file.
@@ -90,14 +100,31 @@ sys.stdout.write("To set the required XPACDT environment "
 sys.stdout.write("source " + activationFilePath + " \n \n")
 sys.stdout.write("For permanent activation add that line to "
                  "your ~/.bashrc, ~/.bash_profile, etc. \n")
+sys.stdout.write("\n")
 
-sys.stdout.write("\nTo generate the general documentation "
-                 "please execute the following commands: \n \n"
-                 "cd docs \n"
-                 "make html \n \n"
-                 "The documentation can then be accessed using "
-                 "a standard browser to open "
-                 "'docs/build/html/index.html' \n"
-                 "Documentation can also be build in other "
-                 "formats. Please run 'make' in the "
-                 "docs folder to learn more. \n")
+# Ask if XPACDT should be PyInstalled
+isDocu = input("Do you want to generate the general documentation? (y/n) ")
+
+if isDocu == 'y':
+   f = open("./output_docu", 'w')
+   spoutput = sp.run(["make", "html"], cwd="docs/", stdout=f, stderr=f)
+   f.close()
+   sys.stdout.write("\n")
+   sys.stdout.write("The documentation can then be accessed using "
+                    "a standard browser to open "
+                    "'docs/build/html/index.html' \n")
+else:
+   sys.stdout.write("\n")
+   sys.stdout.write("\nTo generate the general documentation at any point "
+   		    "please execute the following commands: \n \n"
+                    "cd docs \n"
+                    "make html \n \n"
+                    "The documentation can then be accessed using "
+                    "a standard browser to open "
+                    "'docs/build/html/index.html' \n"
+                    "Documentation can also be build in other "
+                    "formats. Please run 'make' in the "
+                    "docs folder to learn more. \n")
+
+
+

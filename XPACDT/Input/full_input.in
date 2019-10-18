@@ -36,6 +36,13 @@ $end
 
 ##############################################################################
 
+# $TODO_OTHER_PES
+# 
+# 
+# $end
+
+##############################################################################
+
 $rpmd                       # RPMD input
 
 # Required parameters
@@ -56,6 +63,7 @@ method = MassiveAndersen    # Thermostat method (possible: MassiveAndersen; desi
 time = 100 fs               # timescale for thermostattting
 
 # Optional parameters
+temperature = 300           # in Kelvin; this is the first option to take temperature from
 
 $end
 
@@ -67,10 +75,10 @@ method = Wigner         # method to be used for sampling (possible: Wigner, Quas
 samples = 1000          # number of samples to be collected
 
 # optional:
-modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty)
-quantum_numbers = 0 0 2 # the quantum number used in Quasiclassical sampling for each mode
-temperature = 300       # in Kelvin
-time = 10 fs            # time between samples in fs or au
+modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty); option for 'Wigner', 'Quasiclassical'
+quantum_numbers = 0 0 2 # the quantum number used in 'Quasiclassical' sampling for each mode
+temperature = 300       # in Kelvin; this is the second option to take temperature from, option for 'Wigner', 'Thermostatted'
+time = 10 fs            # time between samples in fs or au; option for 'Thermostatted'
 
 $end
 
@@ -81,8 +89,6 @@ $nuclei_propagator             # nuclei propagator input
 method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
 timestep = 0.01 fs      # timestep in fs or au
 
-# optional:
-# TODO
 $end
 
 ##############################################################################
@@ -100,7 +106,7 @@ $end
 
 $coordinates	           # coordinates given here
 
-type = mass-value      # coordinate format (possible: mass-value, xyz); TODO: description here
+type = mass-value      # coordinate format (possible: mass-value, xyz); mass-value is a mass with all bead positions per line; xyz is a atom name and x-, y-, and z-coordinate per line
 1.0 2.0 3.0
 2.0 1.0 4.0
 $end
@@ -115,11 +121,20 @@ $end
 
 ##############################################################################
 
-$command1 # commands are used for analysis - command name is also used for output file name
-op = +pos # operations
-op0 = +pos
-value = histogram -3.0 3.0 10 # way to analyze the data; could be 'mean', 'std' 'percentile x', 'histogram min max n'
-format = value # format for printing: time - one line per timestep; value - one line per value
+$commandNAME                    # commands are used for analysis - command name is also used for output file name if no other name given.
+
+op = +pos                       # operation to be performed; see help for details!
+format = value                  # format for file output: (possible: 'time', 'value', '2d'); time - one line per timestep; value - one line per value; '2d' - Blocked data for 2d plotting of a histogram over time
+value = histogram -3.0 3.0 10   # way to analyze the data; possible: 'mean', 'std' 'percentile x', 'histogram min_value max_value number_bins', '2dhistogram min_value_1 max_value_1 number_bins_1 min_value_2 max_value_2 number_bins_2')
+
+# optional:
+op0 = +pos                      # t=0 operation for correlation functions; see help for details!
+filename = blah                 # Name for output file
+2d                              # 2d histogram requested
+2op0 = +pos                     # t=0 operation for 2d histogram
+2op = +pos                      # operation for 2d histogram
+step = 1 2 5                    # List of time steps (indices, not actual times) to be used for the analysis
+
 $end
 
 ### more comments!!

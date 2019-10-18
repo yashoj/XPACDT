@@ -93,9 +93,9 @@ class InputfileTest(unittest.TestCase):
         parameters.n_dof = 6
         parameters.n_beads = '1'
 
-        mass_ref = np.array([1837.362363054474, 1837.362363054474, 
-                             1837.362363054474, 34631.97313115233,
-                             34631.97313115233, 34631.97313115233])
+        mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
+                             34631.970366, 34631.970366, 34631.970366])
+
         coordinate_ref = np.array([[1.0], [2.0], [3.0], [2.0], [1.0], [4.0]])
         input_string = "H 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
@@ -144,6 +144,8 @@ class InputfileTest(unittest.TestCase):
         # test unknwon element
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
+
+#        with self.assertRaises(AttributeError):
         with self.assertRaises(RuntimeError):
             parameters._parse_xyz(input_string)
 
@@ -185,7 +187,7 @@ class InputfileTest(unittest.TestCase):
             + "34631.9731 2.0 \n"
 
         parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
 
@@ -228,9 +230,8 @@ class InputfileTest(unittest.TestCase):
         parameters.beta = 1
         parameters['rpmd'] = {'nm_transform': 'matrix'}
 
-        mass_ref = np.array([1837.362363054474, 1837.362363054474, 
-                             1837.362363054474, 34631.97313115233,
-                             34631.97313115233, 34631.97313115233])
+        mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
+                             34631.970366, 34631.970366, 34631.970366])
         centroid_ref = np.array([1.0, 2.0, 3.0, 2.0, 1.0, 4.0])
         input_string = "H 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
@@ -240,7 +241,7 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
                                    centroid_ref, rtol=1e-7)
         self.assertTrue(parameters.momenta is None)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
+        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         return
 

@@ -45,23 +45,33 @@ import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Sampling.Sampling as sampling
 import XPACDT.Tools.Analysis as analysis
 import XPACDT.System.System as xSystem
-
 import XPACDT.Input.Inputfile as infile
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller. """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 def start():
     """Start any XPACDT calculation."""
 
-    # TODO find possibility to include something with pyinstaller
-    # Save version used for later reference
-    current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
-    repo = git.Repo(path=current_path, search_parent_directories=True)
+    # Save version used for later reference; either from git repository or from .version file included by the PyInstaller program
+    try:
+        current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
+        repo = git.Repo(path=current_path, search_parent_directories=True)
+        branch_name = repo.active_branch.name
+        hexsha =  repo.head.object.hexsha
+    except:  # TODO: better specific errors!
+        with open(resource_path("") + '.version', 'r') as input_file:
+            branch_name = input_file.readline().split()[1]
+            hexsha = input_file.readline().split()[1] 
+
     version_file = open('.version', 'w')
-    version_file.write("Branch: " + repo.active_branch.name + " \n")
-    version_file.write("Commit: " + repo.head.object.hexsha + " \n")
+    version_file.write("Branch: " + branch_name + " \n")
+    version_file.write("Commit: " + hexsha + " \n")
     version_file.close()
-    print("Branch: " + repo.active_branch.name)
-    print("Commit: " + repo.head.object.hexsha)
+    print("Branch: " + branch_name)
+    print("Commit: " + hexsha)
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()
@@ -118,4 +128,3 @@ def start():
 # This is a wrapper for the setup function!
 if __name__ == "__main__":
     start()
-    exit

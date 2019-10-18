@@ -50,7 +50,8 @@ class Nuclei(object):
     Attributes:
     -----------
     n_dof
-    n_beads
+    n_beads : (n_dof) list of int
+        Number of beads for each degrees of freedom
     time
     positions
     momenta
@@ -118,7 +119,7 @@ class Nuclei(object):
 
     @n_beads.setter
     def n_beads(self, l):
-        self.__nbeads = l
+        self.__n_beads = l
 
     @property
     def masses(self):
@@ -191,7 +192,7 @@ class Nuclei(object):
         """Test if an object is equal to the current nuclei object. A nuclei
         object is assumed to be equal to another nuclei object if they have
         the same number of degrees of freedom, the same number of beads,
-        thesame positions, momenta and masses.
+        the same positions, momenta and masses.
 
         Parameters:
         -----------
@@ -266,8 +267,9 @@ class Nuclei(object):
 
         Returns
         -------
-        ndarray of floats
-           Array of position, momentum or velocity values requested.
+        (selected dof) ndarray of floats if beads is False;
+        (selected dof, nbeads) ndarray of floats else
+            Array of positions, momenta or velocity values requested.
         """
         dofs = dof_string.split(',')
 
@@ -282,16 +284,19 @@ class Nuclei(object):
                         values.append(self.positions[dof])
                     else:
                         values.append(self.x_centroid[dof])
-                if quantity == 'p':
+                elif quantity == 'p':
                     if beads:
                         values.append(self.momenta[dof])
                     else:
                         values.append(self.p_centroid[dof])
-                if quantity == 'v':
+                elif quantity == 'v':
                     if beads:
                         values.append(self.momenta[dof] / self.masses[dof])
                     else:
                         values.append(self.p_centroid[dof] / self.masses[dof])
+                else:
+                    raise RuntimeError("XPACDT: Requested quantity not"
+                                       " implemented: " + quantity)
 
         return np.array(values)
 
@@ -310,12 +315,14 @@ class Nuclei(object):
             assert('beta' in parameters.get("rpmd")), "No beta " \
                    "given for RPMD."
             prop_parameters['beta'] = parameters.get("rpmd").get('beta')
+            prop_parameters['rp_transform_type'] = parameters.get('rpmd').get(
+                    "nm_transform", "matrix")
 
         prop_method = prop_parameters.get('method')
         __import__("XPACDT.Dynamics." + prop_method)
         self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
                                   prop_method)(self.electrons, self.masses,
-                                               **prop_parameters)
+                                               self.n_beads, **prop_parameters)
 
         if 'thermostat' in parameters:
             self.propagator.attach_thermostat(parameters, self.masses)

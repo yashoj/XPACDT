@@ -45,6 +45,9 @@ class OperationsTest(unittest.TestCase):
         self.log_rpmd = nuclei.Nuclei(4, infile.Inputfile("FilesForTesting/OperationsTest/input_rpmdNuclei.in"), 0.0)
 
     def test_position(self):
+        with self.assertRaises(RuntimeError):
+            pos = operations.position([], self.log_classical)
+
         # first single position operations
         pos = operations.position("-1 0".split(), self.log_classical)
         pos_ref = np.array([2.0])
@@ -78,42 +81,42 @@ class OperationsTest(unittest.TestCase):
 
         # test distances
         pos = operations.position("-1 0 -2 1".split(), self.log_classical)
-        pos_ref = 1.0
-        np.testing.assert_equal(pos, pos_ref)
+        pos_ref = np.array([1.0])
+        np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -2 2,3".split(), self.log_classical)
-        pos_ref = np.sqrt(4.0+9.0)
-        np.testing.assert_equal(pos, pos_ref)
+        pos_ref = np.array([np.sqrt(4.0+9.0)])
+        np.testing.assert_array_equal(pos, pos_ref)
 
         # test projections
         pos = operations.position("-1 0 -p <,1.0".split(), self.log_classical)
-        pos_ref = 0.0
+        pos_ref = np.array([0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0 -p >,1.0".split(), self.log_classical)
-        pos_ref = 1.0
+        pos_ref = np.array([1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0 -p 0.0,<,3.0".split(), self.log_classical)
-        pos_ref = 1.0
+        pos_ref = np.array([1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
 
         pos = operations.position("-1 0,1 -p 1.5,<,3.0".split(), self.log_classical)
-        pos_ref = [1.0, 0.0]
+        pos_ref = np.array([1.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -p >,3.0".split(), self.log_classical)
-        pos_ref = [0.0, 0.0]
+        pos_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -p  <,3.0".split(), self.log_classical)
-        pos_ref = [1.0, 1.0]
+        pos_ref = np.array([1.0, 1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -2 2,3 -p <,4.0".split(), self.log_classical)
-        pos_ref = 1.0
-        np.testing.assert_equal(pos, pos_ref)
+        pos_ref = np.array([1.0])
+        np.testing.assert_array_equal(pos, pos_ref)
 
         # Different parsing errors
         with self.assertRaises(RuntimeError):
@@ -162,42 +165,42 @@ class OperationsTest(unittest.TestCase):
 
         # test distances
         pos = operations.position("-1 0 -2 1".split(), self.log_rpmd)
-        pos_ref = 1.5
-        np.testing.assert_equal(pos, pos_ref)
+        pos_ref = np.array([1.5])
+        np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -2 2,3".split(), self.log_rpmd)
-        pos_ref = np.sqrt(4.0+3.0625)
-        np.testing.assert_equal(pos, pos_ref)
+        pos_ref = np.array([np.sqrt(4.0+3.0625)])
+        np.testing.assert_array_equal(pos, pos_ref)
 
         # test projections
         pos = operations.position("-1 0 -p <,1.0".split(), self.log_rpmd)
-        pos_ref = 0.0
+        pos_ref = np.array([0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0 -p >,0.5".split(), self.log_rpmd)
-        pos_ref = 1.0
+        pos_ref = np.array([1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0 -p 0.0,<,3.0".split(), self.log_rpmd)
-        pos_ref = 1.0
+        pos_ref = np.array([1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
 
         pos = operations.position("-1 0,1 -p 0.5,<,3.0".split(), self.log_rpmd)
-        pos_ref = [1.0, 0.0]
+        pos_ref = np.array([1.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -p >,3.0".split(), self.log_rpmd)
-        pos_ref = [0.0, 0.0]
+        pos_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -p  <,3.0".split(), self.log_rpmd)
-        pos_ref = [1.0, 1.0]
+        pos_ref = np.array([1.0, 1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -2 2,3 -p <,4.0".split(), self.log_rpmd)
-        pos_ref = 1.0
-        np.testing.assert_equal(pos, pos_ref)
+        pos_ref = np.array([1.0])
+        np.testing.assert_array_equal(pos, pos_ref)
 
         # Different parsing errors
         with self.assertRaises(RuntimeError):
@@ -215,19 +218,19 @@ class OperationsTest(unittest.TestCase):
         # RPMD stuff - beads
         # first single position operations
         pos = operations.position("-1 0 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[2.0, 3.0, -1.0, 0.0]])
+        pos_ref = np.array([2.0, 3.0, -1.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 1 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[1.0, 2.0, -2.0, -3.0]])
+        pos_ref = np.array([1.0, 2.0, -2.0, -3.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 2 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[4.0, 5.0, 2.0, 1.0]])
+        pos_ref = np.array([4.0, 5.0, 2.0, 1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 3 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[-2.0, -3.0, -4.0, 0.0]])
+        pos_ref = np.array([-2.0, -3.0, -4.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         with self.assertRaises(IndexError):
@@ -235,7 +238,7 @@ class OperationsTest(unittest.TestCase):
 
         # test combinations
         pos = operations.position("-1 0,1,2,3 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[2.0, 3.0, -1.0, 0.0], [1.0, 2.0, -2.0, -3.0], [4.0, 5.0, 2.0, 1.0], [-2.0, -3.0, -4.0, 0.0]])
+        pos_ref = np.array([2.0, 3.0, -1.0, 0.0, 1.0, 2.0, -2.0, -3.0, 4.0, 5.0, 2.0, 1.0, -2.0, -3.0, -4.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         # TODO: add test for COM once implemented
@@ -247,41 +250,41 @@ class OperationsTest(unittest.TestCase):
         # test distances
         pos = operations.position("-1 0 -2 1 -r".split(), self.log_rpmd)
         pos_ref = np.array([1.0, 1.0, 1.0, 3.0])
-        np.testing.assert_equal(pos, pos_ref)
+        np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -2 2,3 -r".split(), self.log_rpmd)
         pos_ref = np.sqrt(np.array([4.0+9.0, 4.0+25.0, 9.0+4.0, 1.0+9.0]))
-        np.testing.assert_equal(pos, pos_ref)
+        np.testing.assert_array_equal(pos, pos_ref)
 
         # test projections
         pos = operations.position("-1 0 -p <,1.0 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[0.0, 0.0, 1.0, 1.0]])
+        pos_ref = np.array([0.0, 0.0, 1.0, 1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0 -p >,0.5 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[1.0, 1.0, 0.0, 0.0]])
+        pos_ref = np.array([1.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0 -p 0.0,<,3.0 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[1.0, 0.0, 0.0, 0.0]])
+        pos_ref = np.array([1.0, 0.0, 0.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
 
         pos = operations.position("-1 0,1 -p 0.5,<,3.0 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 0.0]])
+        pos_ref = np.array([1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -p >,3.0 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+        pos_ref = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -p  <,3.0 -r".split(), self.log_rpmd)
-        pos_ref = np.array([[1.0, 0.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]])
+        pos_ref = np.array([1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         np.testing.assert_array_equal(pos, pos_ref)
 
         pos = operations.position("-1 0,1 -2 2,3 -p <,4.0 -r".split(), self.log_rpmd)
         pos_ref = np.array([1.0, 0.0, 1.0, 1.0])
-        np.testing.assert_equal(pos, pos_ref)
+        np.testing.assert_array_equal(pos, pos_ref)
 
         # Different parsing errors
         with self.assertRaises(RuntimeError):
@@ -328,7 +331,7 @@ class OperationsTest(unittest.TestCase):
             mom_ref = np.array([np.NaN])
             np.testing.assert_array_equal(mom, mom_ref)
 
-        # test distances
+        # test relative momenta
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0 -2 1".split(), self.log_classical)
 
@@ -337,27 +340,27 @@ class OperationsTest(unittest.TestCase):
 
         # test projections
         mom = operations.momentum("-1 0 -p <,1.0".split(), self.log_classical)
-        mom_ref = 1.0
+        mom_ref = np.array([1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p >,1.0".split(), self.log_classical)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p 0.0,<,3.0".split(), self.log_classical)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p 0.0,<,3.0".split(), self.log_classical)
-        mom_ref = [0.0, 1.0]
+        mom_ref = np.array([0.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p >,3.0".split(), self.log_classical)
-        mom_ref = [0.0, 0.0]
+        mom_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p  <,3.0".split(), self.log_classical)
-        mom_ref = [1.0, 1.0]
+        mom_ref = np.array([1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(NotImplementedError):
@@ -408,7 +411,7 @@ class OperationsTest(unittest.TestCase):
             mom_ref = np.array([np.NaN])
             np.testing.assert_array_equal(mom, mom_ref)
 
-        # test distances
+        # test relative momenta
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0 -2 1".split(), self.log_rpmd)
 
@@ -417,27 +420,27 @@ class OperationsTest(unittest.TestCase):
 
         # test projections
         mom = operations.momentum("-1 0 -p <,1.0".split(), self.log_rpmd)
-        mom_ref = 1.0
+        mom_ref = np.array([1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p >,0.5".split(), self.log_rpmd)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p 0.0,<,3.0".split(), self.log_rpmd)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p 0.5,<,3.0".split(), self.log_rpmd)
-        mom_ref = [0.0, 1.0]
+        mom_ref = np.array([0.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p >,3.0".split(), self.log_rpmd)
-        mom_ref = [0.0, 0.0]
+        mom_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p  <,3.0".split(), self.log_rpmd)
-        mom_ref = [1.0, 1.0]
+        mom_ref = np.array([1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(NotImplementedError):
@@ -459,19 +462,19 @@ class OperationsTest(unittest.TestCase):
         # RPMD stuff - beads
         # first single momentum operations
         mom = operations.momentum("-1 0 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[-1.0, 2.0, 0.2, -2.0]])
+        mom_ref = np.array([-1.0, 2.0, 0.2, -2.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 1 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[0.1, 1.5, 0.5, 0.3]])
+        mom_ref = np.array([0.1, 1.5, 0.5, 0.3])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 2 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[2.0, 3.0, 4.0, 5.0]])
+        mom_ref = np.array([2.0, 3.0, 4.0, 5.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 3 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[1.25, 0.0, -0.5, 0.5]])
+        mom_ref = np.array([1.25, 0.0, -0.5, 0.5])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(IndexError):
@@ -479,7 +482,7 @@ class OperationsTest(unittest.TestCase):
 
         # test combinations
         mom = operations.momentum("-1 0,1,2,3 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[-1.0, 2.0, 0.2, -2.0], [0.1, 1.5, 0.5, 0.3], [2.0, 3.0, 4.0, 5.0], [1.25, 0.0, -0.5, 0.5]])
+        mom_ref = np.array([-1.0, 2.0, 0.2, -2.0, 0.1, 1.5, 0.5, 0.3, 2.0, 3.0, 4.0, 5.0, 1.25, 0.0, -0.5, 0.5])
         np.testing.assert_array_equal(mom, mom_ref)
 
         # TODO: add test for COM once implemented
@@ -488,7 +491,7 @@ class OperationsTest(unittest.TestCase):
             mom_ref = np.array([np.NaN])
             np.testing.assert_array_equal(mom, mom_ref)
 
-        # test distances
+        # test relative momenta
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0 -2 1 -r".split(), self.log_rpmd)
 
@@ -497,28 +500,28 @@ class OperationsTest(unittest.TestCase):
 
         # test projections
         mom = operations.momentum("-1 0 -p <,1.0 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[1.0, 0.0, 1.0, 1.0]])
+        mom_ref = np.array([1.0, 0.0, 1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p >,0.5 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 0.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p 0.0,<,3.0 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 1.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 1.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
 
         mom = operations.momentum("-1 0,1 -p 0.5,<,3.0 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p >,1.0 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p  <,3.0 -r".split(), self.log_rpmd)
-        mom_ref = np.array([[1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]])
+        mom_ref = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(NotImplementedError):
@@ -569,7 +572,7 @@ class OperationsTest(unittest.TestCase):
             mom_ref = np.array([np.NaN])
             np.testing.assert_array_equal(mom, mom_ref)
 
-        # test distances
+        # test relative velocites
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0 -2 1 -v".split(), self.log_classical)
 
@@ -578,27 +581,27 @@ class OperationsTest(unittest.TestCase):
 
         # test projections
         mom = operations.momentum("-1 0 -p <,1.0 -v".split(), self.log_classical)
-        mom_ref = 1.0
+        mom_ref = np.array([1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p >,1.0 -v".split(), self.log_classical)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p 0.0,<,3.0 -v".split(), self.log_classical)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p 0.0,<,3.0 -v".split(), self.log_classical)
-        mom_ref = [0.0, 1.0]
+        mom_ref = np.array([0.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p >,3.0 -v".split(), self.log_classical)
-        mom_ref = [0.0, 0.0]
+        mom_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p  <,3.0 -v".split(), self.log_classical)
-        mom_ref = [1.0, 1.0]
+        mom_ref = np.array([1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(NotImplementedError):
@@ -649,7 +652,7 @@ class OperationsTest(unittest.TestCase):
             mom_ref = np.array([np.NaN])
             np.testing.assert_array_equal(mom, mom_ref)
 
-        # test distances
+        # test relative velocities
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0 -2 1 -v".split(), self.log_rpmd)
 
@@ -658,27 +661,27 @@ class OperationsTest(unittest.TestCase):
 
         # test projections
         mom = operations.momentum("-1 0 -p <,1.0 -v".split(), self.log_rpmd)
-        mom_ref = 1.0
+        mom_ref = np.array([1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p >,0.5 -v".split(), self.log_rpmd)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p 0.0,<,3.0 -v".split(), self.log_rpmd)
-        mom_ref = 0.0
+        mom_ref = np.array([0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p 0.5,<,3.0 -v".split(), self.log_rpmd)
-        mom_ref = [0.0, 0.0]
+        mom_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p >,3.0 -v".split(), self.log_rpmd)
-        mom_ref = [0.0, 0.0]
+        mom_ref = np.array([0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p  <,3.0 -v".split(), self.log_rpmd)
-        mom_ref = [1.0, 1.0]
+        mom_ref = np.array([1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(NotImplementedError):
@@ -700,19 +703,19 @@ class OperationsTest(unittest.TestCase):
         # RPMD stuff - beads
         # first single momentum operations
         mom = operations.momentum("-1 0 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[-1.0, 2.0, 0.2, -2.0]])
+        mom_ref = np.array([-1.0, 2.0, 0.2, -2.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 1 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[0.1, 1.5, 0.5, 0.3]]) / 2.0
+        mom_ref = np.array([0.1, 1.5, 0.5, 0.3]) / 2.0
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 2 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[2.0, 3.0, 4.0, 5.0]]) / 12.0
+        mom_ref = np.array([2.0, 3.0, 4.0, 5.0]) / 12.0
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 3 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[1.25, 0.0, -0.5, 0.5]]) / 2.1
+        mom_ref = np.array([1.25, 0.0, -0.5, 0.5]) / 2.1
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(IndexError):
@@ -720,7 +723,7 @@ class OperationsTest(unittest.TestCase):
 
         # test combinations
         mom = operations.momentum("-1 0,1,2,3 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[-1.0, 2.0, 0.2, -2.0], [0.1, 1.5, 0.5, 0.3], [2.0, 3.0, 4.0, 5.0], [1.25, 0.0, -0.5, 0.5]]) / np.array([[1.0], [2.0], [12.0], [2.1]])
+        mom_ref = np.array([-1.0, 2.0, 0.2, -2.0, 0.05, 0.75, 0.25, 0.15, 2.0/12.0, 3.0/12.0, 4.0/12.0, 5.0/12.0, 1.25/2.1, 0.0, -0.5/2.1, 0.5/2.1])
         np.testing.assert_array_equal(mom, mom_ref)
 
         # TODO: add test for COM once implemented
@@ -729,7 +732,7 @@ class OperationsTest(unittest.TestCase):
             mom_ref = np.array([np.NaN])
             np.testing.assert_array_equal(mom, mom_ref)
 
-        # test distances
+        # test relative velocities
         with self.assertRaises(NotImplementedError):
             mom = operations.momentum("-1 0 -2 1 -r -v".split(), self.log_rpmd)
 
@@ -738,27 +741,27 @@ class OperationsTest(unittest.TestCase):
 
         # test projections
         mom = operations.momentum("-1 0 -p <,1.0 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[1.0, 0.0, 1.0, 1.0]])
+        mom_ref = np.array([1.0, 0.0, 1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p >,0.5 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 0.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0 -p 0.0,<,3.0 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 1.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 1.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p 0.5,<,3.0 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p >,1.0 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+        mom_ref = np.array([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         mom = operations.momentum("-1 0,1 -p  <,3.0 -r -v".split(), self.log_rpmd)
-        mom_ref = np.array([[1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]])
+        mom_ref = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         np.testing.assert_array_equal(mom, mom_ref)
 
         with self.assertRaises(NotImplementedError):
@@ -780,50 +783,50 @@ class OperationsTest(unittest.TestCase):
     def test_projection(self):
         # below a value
         values = operations._projection("<,0.0", -1.0)
-        values_ref = 1.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([1.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection("<,0.0", 0.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection("<,0.0", 1.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         # above a value
         values = operations._projection(">,0.0", -1.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection(">,0.0", 0.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection(">,0.0", 1.0)
-        values_ref = 1.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([1.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         # within a range
         values = operations._projection("0.0,<,1.0", -1.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection("0.0,<,1.0", 0.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection("0.0,<,1.0", 0.3)
-        values_ref = 1.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([1.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection("0.0,<,1.0", 1.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         values = operations._projection("0.0,<,1.0", 3.0)
-        values_ref = 0.0
-        np.testing.assert_equal(values, values_ref)
+        values_ref = np.array([0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         # below a value - 1d array
         values = operations._projection("<,0.0", np.array([-1.0, 0.0, 1.0]))
@@ -833,27 +836,27 @@ class OperationsTest(unittest.TestCase):
         # above a value - 1d array
         values = operations._projection(">,0.0", np.array([-1.0, 0.0, 1.0]))
         values_ref = np.array([0.0, 0.0, 1.0])
-        np.testing.assert_equal(values, values_ref)
+        np.testing.assert_array_equal(values, values_ref)
 
         # within a range - 1d array
         values = operations._projection("0.0,<,1.0", np.array([-1.0, 0.0, 0.3, 1.0, 2.0]))
         values_ref = np.array([0.0, 0.0, 1.0, 0.0, 0.0])
-        np.testing.assert_equal(values, values_ref)
+        np.testing.assert_array_equal(values, values_ref)
 
         # below a value - 2d array
-        values = operations._projection("<,0.0", np.array([[-1.0], [0.0], [1.0]]))
-        values_ref = np.array([[1.0], [0.0], [0.0]])
+        values = operations._projection("<,0.0", np.array([-1.0, 0.0, 1.0]))
+        values_ref = np.array([1.0, 0.0, 0.0])
         np.testing.assert_array_equal(values, values_ref)
 
         # above a value - 2d array
-        values = operations._projection(">,0.0", np.array([[-1.0], [0.0], [1.0]]))
-        values_ref = np.array([[0.0], [0.0], [1.0]])
-        np.testing.assert_equal(values, values_ref)
+        values = operations._projection(">,0.0", np.array([-1.0, 0.0, 1.0]))
+        values_ref = np.array([0.0, 0.0, 1.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         # within a range - 2d array
-        values = operations._projection("0.0,<,1.0", np.array([[-1.0, 0.0, 0.2], [0.3, 1.0, 2.0]]))
-        values_ref = np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
-        np.testing.assert_equal(values, values_ref)
+        values = operations._projection("0.0,<,1.0", np.array([-1.0, 0.0, 0.2, 0.3, 1.0, 2.0]))
+        values_ref = np.array([0.0, 0.0, 1.0, 1.0, 0.0, 0.0])
+        np.testing.assert_array_equal(values, values_ref)
 
         # Different parsing errors
         with self.assertRaises(RuntimeError):

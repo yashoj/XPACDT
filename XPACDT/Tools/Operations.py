@@ -31,21 +31,21 @@
 and perform analysis. """
 
 import numpy as np
-from optparse import OptionParser
+import argparse
 
 
-def position(arguments, log):
+def position(arguments, log_nuclei):
     """Does perform operations related to positions. If no options given it
     will return None.
 
     Valid options are as follows:
 
-    -x1 <a> given: Position value of a given degree of freedom, e.g., -x 0,
-                   gives the first position, or -x 0,3,7 gives the first,
+    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
+                   gives the first position, or -1 0,3,7 gives the first,
                    fourth and seventh position. Alternatively, also the
                    center of mass position can be obtained by giving m and a
                    comma separated list of degrees of freedom.
-    -x2 <b> given: Like x1. If both given, then the distance between them is
+    -2 <b> given:  Like 1. If both given, then the distance between them is
                    used.
     -p <a> given: if a single value is calculated (i.e. a distance or single
                   position) this option projects it onto a certain range.
@@ -58,54 +58,64 @@ def position(arguments, log):
     ----------
     arguments: list of strings
         Command line type options given to the position command. See above.
-    log: dict containing the system information (i.e., from the log).
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
 
     Output:
-        values obtained from the position operation.
+        (n_values) ndarray of floats
+            values obtained from the position operation. The length depends on
+            the operation to be performed. If, e.g., all bead positions of a
+            single degree of freedom is requested, n_values will be n_beads of
+            that degree of freedom. If no arguments are given the function
+            returns None.
     """
 
-    obsparser = OptionParser(usage="Options for +pos", add_help_option=False)
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +pos", add_help=False)
 
-    obsparser.add_option('-h', '--help',
-                         dest='help',
-                         action='store_true',
-                         default=False,
-                         help='Prints this help page.')
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
 
-    obsparser.add_option('-1', '--x1',
-                         dest='x1',
-                         type='str',
-                         default=None,
-                         help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included.')
+    parser.add_argument('-1', '--x1',
+                        dest='x1',
+                        type=str,
+                        default=None,
+                        help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included. Please note that the numbering starts a 0.')
 
-    obsparser.add_option('-2', '--x2',
-                         dest='x2',
-                         type='str',
-                         default=None,
-                         help='If given, the distance between the two given (x1 and x2) sites should be calculated.')
+    parser.add_argument('-2', '--x2',
+                        dest='x2',
+                        type=str,
+                        default=None,
+                        help='If given, the distance between the two given (x1 and x2) sites should be calculated.')
 
-    obsparser.add_option('-p', '--project',
-                         dest='proj',
-                         type='str',
-                         default=None,
-                         help='Take the distance or coordinate value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
+    parser.add_argument('-p', '--project',
+                        dest='proj',
+                        type=str,
+                        default=None,
+                        help='Take the distance or coordinate value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
 
-    obsparser.add_option('-r', '--rpmd',
-                         dest='rpmd',
-                         action='store_true',
-                         default=False,
-                         help='Use beads instead of centroids.')
+    parser.add_argument('-r', '--rpmd',
+                        dest='rpmd',
+                        action='store_true',
+                        default=False,
+                        help='Use beads instead of centroids.')
 
-    opts, args = obsparser.parse_args(arguments)
+    if len(arguments) == 0:
+        raise RuntimeError("XPACDT: No arguments given to position operation.")
+
+    opts = parser.parse_args(arguments)
 
     if opts.help is True:
-        obsparser.print_help()
+        parser.print_help()
         return None
 
     # get coordinate values under consideration here!
-    current_value = log.parse_dof(opts.x1, 'x', opts.rpmd)
+    current_value = log_nuclei.parse_dof(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log.parse_dof(opts.x2, 'x', opts.rpmd)
+        coordinate_2 = log_nuclei.parse_dof(opts.x2, 'x', opts.rpmd)
         # Also calculated per beads
         try:
             current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
@@ -116,22 +126,22 @@ def position(arguments, log):
     if opts.proj is not None:
         current_value = _projection(opts.proj, current_value)
 
-    return current_value
+    return np.array(current_value).flatten()
 
 
-def momentum(arguments, log):
+def momentum(arguments, log_nuclei):
     """Does perform operations related to momenta. If no options given it
     will return None.
 
     Valid options are as follows:
 
     -v given: Use velocities instead of momenta.
-    -x1 <a> given: momentum value of a given degree of freedom, e.g., -x 0,
-                   gives the first momentum, or -x 0,3,7 gives the first,
+    -1 <a> given: momentum value of a given degree of freedom, e.g., -1 0,
+                   gives the first momentum, or -1 0,3,7 gives the first,
                    fourth and seventh momentum. Alternatively, also the
                    center of mass momentum can be obtained by giving m and a
                    comma separated list of degrees of freedom.
-    -x2 <b> given: Like x1. If both given, then the relative momentum between
+    -2 <b> given: Like 1. If both given, then the relative momentum between
                    them is used.
     -p <a> given: if a single value is calculated (i.e. a relative or single
                   momentum) this option projects it onto a certain range.
@@ -144,63 +154,73 @@ def momentum(arguments, log):
     ----------
     arguments: list of strings
         Command line type options given to the position command. See above.
-    log: dict containing the system information (i.e., from the log).
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
 
     Output:
-        values obtained from the momentum operation.
+        (n_values) ndarray of floats
+            Values obtained from the momentum operation. The length depends on
+            the operation to be performed. If, e.g., all bead momenta of a
+            single degree of freedom is requested, n_values will be n_beads of
+            that degree of freedom. If no arguments are given the function
+            returns None.
     """
 
-    obsparser = OptionParser(usage="Options for +mom", add_help_option=False)
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +mom", add_help=False)
 
-    obsparser.add_option('-h', '--help',
-                         dest='help',
-                         action='store_true',
-                         default=False,
-                         help='Prints this help page.')
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
 
-    obsparser.add_option('-v', '--velocities',
-                         dest='vel',
-                         action='store_true',
-                         default=False,
-                         help='Use velocities instead of momenta.')
+    parser.add_argument('-v', '--velocities',
+                        dest='vel',
+                        action='store_true',
+                        default=False,
+                        help='Use velocities instead of momenta.')
 
-    obsparser.add_option('-1', '--x1',
-                         dest='x1',
-                         type='str',
-                         default=None,
-                         help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included.')
+    parser.add_argument('-1', '--x1',
+                        dest='x1',
+                        type=str,
+                        default=None,
+                        help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included. Please note that the numbering starts a 0.')
 
-    obsparser.add_option('-2', '--x2',
-                         dest='x2',
-                         type='str',
-                         default=None,
-                         help='If given, the relative momentum between the two given (x1 and x2) sites should be calculated.')
+    parser.add_argument('-2', '--x2',
+                        dest='x2',
+                        type=str,
+                        default=None,
+                        help='If given, the relative momentum between the two given (x1 and x2) sites should be calculated.')
 
-    obsparser.add_option('-p', '--project',
-                         dest='proj',
-                         type='str',
-                         default=None,
-                         help='Take the momentum value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
+    parser.add_argument('-p', '--project',
+                        dest='proj',
+                        type=str,
+                        default=None,
+                        help='Take the momentum value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
 
-    obsparser.add_option('-r', '--rpmd',
-                         dest='rpmd',
-                         action='store_true',
-                         default=False,
-                         help='Use beads instead of centroids.')
+    parser.add_argument('-r', '--rpmd',
+                        dest='rpmd',
+                        action='store_true',
+                        default=False,
+                        help='Use beads instead of centroids.')
 
-    opts, args = obsparser.parse_args(arguments)
+    if len(arguments) == 0:
+        raise RuntimeError("XPACDT: No arguments given to momentum operation.")
+
+    opts = parser.parse_args(arguments)
 
     if opts.help is True:
-        obsparser.print_help()
+        parser.print_help()
         return None
 
     quantity = 'v' if opts.vel else 'p'
 
     # get coordinate values under consideration here!
-    current_value = log.parse_dof(opts.x1, quantity, opts.rpmd)
+    current_value = log_nuclei.parse_dof(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
         raise NotImplementedError("Implement relative momentum calculations, etc.")
-#        coordinate_2 = log.parse_coordinate(opts.x2, quantity, opts.rpmd)
+#        coordinate_2 = log_nuclei.parse_coordinate(opts.x2, quantity, opts.rpmd)
 #        try:
 #            current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
 #        except ValueError as e:
@@ -210,7 +230,7 @@ def momentum(arguments, log):
     if opts.proj is not None:
         current_value = _projection(opts.proj, current_value)
 
-    return current_value
+    return np.array(current_value).flatten()
 
 
 def _projection(options, values):
@@ -227,7 +247,7 @@ def _projection(options, values):
         The values to be checked.
     Returns
     -------
-    float or ndarray of floats - same shape as values
+    values.shape ndarray of floats
         1.0 if given value is within the range, 0.0 otherwise.
     """
 

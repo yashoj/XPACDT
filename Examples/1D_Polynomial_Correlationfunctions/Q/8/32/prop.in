@@ -12,7 +12,7 @@ x0 = 0
 $end
 
 $rpmd
-n = 32
+beads = 32
 beta = 8.0
 $end
 

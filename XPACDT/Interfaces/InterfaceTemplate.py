@@ -353,6 +353,8 @@ class PotentialInterface:
         Throws RuntimeError if relax is True and minimization failed.
         """
 
+        # TODO: output respective GNUPLOT script
+
         # TODO: add some asserts
         e = []
         if relax:
@@ -427,6 +429,8 @@ class PotentialInterface:
         Nothing, but writes a data file 'pes_2d.dat' or 'pes_2d_opti.dat'.
         Throws RuntimeError if relax is True and minimization failed.
         """
+
+        # TODO: output respective GNUPLOT script
 
         old_thresh = self.__SAVE_THRESHOLD
         self.__SAVE_THRESHOLD = 1e-15

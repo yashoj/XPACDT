@@ -33,12 +33,120 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.BKMP2 as bkmp2
+import XPACDT.Tools.NormalModes as nm
+import XPACDT.Tools.Units as units
 
 
 class BKMP2Test(unittest.TestCase):
 
+    def setUp(self):
+        self.pes = bkmp2.BKMP2()
+
     def test_creation(self):
-        pass
+        self.assertEqual(self.pes.name, 'BKMP2')
+
+    def test_calculate_all(self):
+        # Full Asymptote
+        energy_ref = np.zeros((1, 1))
+        gradient_ref = np.zeros((1, 9, 1))
+        self.pes._calculate_all(self.pes._from_internal([400.0, 800.0, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-10)
+
+        # H2 minimum 
+        energy_ref = np.zeros((1, 1)) + -0.17449577
+        gradient_ref = np.zeros((1, 9, 1))
+        self.pes._calculate_all(self.pes._from_internal([1.4014718, 80.0, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._energy, energy_ref)
+        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-6)
+
+        # TST
+        energy_ref = np.zeros((1, 1)) + -0.17449577 + 0.01532
+        gradient_ref = np.zeros((1, 9, 1))
+        self.pes._calculate_all(self.pes._from_internal([1.757, 2.6355, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
+        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-10)
+
+    def test_minimize(self):
+        fun_ref = -0.17449577
+        x_ref = np.array([0.70073594, 0.0, 0.0, -0.70073594, 0.0, 0.0, 40.0, 0.0, 0.0])
+        fun, x = self.pes.minimize_geom(self.pes._from_internal([2.0, 40.0, 0.0]))
+        self.assertAlmostEqual(fun_ref, fun)
+        np.testing.assert_allclose(x, x_ref)
+
+    def test_get_Hessian(self):
+        freq_ref = np.zeros(9)
+        freq_ref[8] = 4403
+        r = self.pes._from_internal([1.4014718, 80.0, 0.0])
+        hessian = self.pes.get_Hessian(r)
+        freq = nm.get_normal_modes(hessian, [units.atom_mass('H')]*9)[0]*units.nm_to_cm
+        np.testing.assert_allclose(freq, freq_ref, atol=3.0)
+
+        freq_ref = np.zeros(9)
+        freq_ref[0] = -1510
+        freq_ref[6] = 907
+        freq_ref[7] = 907
+        freq_ref[8] = 2055
+        r = self.pes._from_internal([1.757, 2.6355, 0.0])
+        hessian = self.pes.get_Hessian(r)
+        freq = nm.get_normal_modes(hessian, [units.atom_mass('H')]*9)[0]*units.nm_to_cm
+        np.testing.assert_allclose(freq, freq_ref, atol=3.0)
+
+    def test_from_internal(self):
+        # colinear
+        internal = np.array([2.0, 4.0, 0.0])
+        cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0, 0.0, 0.0])
+        cartesian = self.pes._from_internal(internal)
+        np.testing.assert_allclose(cartesian, cartesian_ref)
+        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+
+        # perpendicular
+        internal = np.array([2.0, 4.0, np.pi/2.0])
+        cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 4.0, 0.0])
+        cartesian = self.pes._from_internal(internal)
+        np.testing.assert_allclose(cartesian, cartesian_ref, atol=1e-10)
+        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+
+        # 45 degrees off
+        internal = np.array([2.0, 4.0, np.pi/4.0])
+        cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0/np.sqrt(2.0), 4.0/np.sqrt(2.0), 0.0])
+        cartesian = self.pes._from_internal(internal)
+        np.testing.assert_allclose(cartesian, cartesian_ref)
+        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+
+        # -45 degrees off
+        internal = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
+        cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0])
+        cartesian = self.pes._from_internal(internal)
+        np.testing.assert_allclose(cartesian, cartesian_ref)
+        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+
+    def test_to_internal(self):
+        # colinear
+        cartesian = np.array([-1.2, 0.0, 0.0, 1.2, 0.0, 0.0, 3.8, 0.0, 0.0])
+        internal_ref = np.array([2.4, 3.8, 0.0])
+        internal = self.pes._to_internal(cartesian)
+        np.testing.assert_allclose(internal, internal_ref)
+        np.testing.assert_allclose(cartesian, self.pes._from_internal(internal))
+
+        # perpendicular
+        cartesian = np.array([0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 4.0, 0.0, 0.0])
+        internal_ref = np.array([2.0, 4.0, np.pi/2.0])
+        internal = self.pes._to_internal(cartesian)
+        np.testing.assert_allclose(internal, internal_ref)
+
+        # 'random' in space, 3rd H along axis
+        cartesian = np.array([1.0, -1.0, 2.0, 0.5, -1.5, 2.0-1.0/np.sqrt(2.0), -1.25 , -3.25, -1.18198052])
+        internal_ref = np.array([1.0, 4.0, 2.0*np.pi])
+        internal = self.pes._to_internal(cartesian)
+        np.testing.assert_allclose(internal, internal_ref)
+
+        # -45 degrees off
+        cartesian = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0])
+        internal_ref = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
+        internal = self.pes._to_internal(cartesian)
+        np.testing.assert_allclose(internal, internal_ref)
+        np.testing.assert_allclose(cartesian, self.pes._from_internal(internal))
 
 
 if __name__ == "__main__":

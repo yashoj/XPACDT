@@ -75,21 +75,21 @@ class OneDPolynomialTest(unittest.TestCase):
 
         # test correct potential values and gradients
         pes._calculate_all(np.array([[0.0]]), None)
-        self.assertSequenceEqual(pes._energy, [0.0])
-        self.assertSequenceEqual(pes._gradient, [[0.0]])
+        self.assertSequenceEqual(pes._energy, [[0.0]])
+        self.assertSequenceEqual(pes._gradient, [[[0.0]]])
         self.assertSequenceEqual(pes._energy_centroid, [0.0])
         self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
 
         pes = oneDP.OneDPolynomial(**{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
         pes._calculate_all(np.array([[-1.0]]), None)
-        self.assertSequenceEqual(pes._energy, [1.0])
-        self.assertSequenceEqual(pes._gradient, [[0.0]])
+        self.assertSequenceEqual(pes._energy, [[1.0]])
+        self.assertSequenceEqual(pes._gradient, [[[0.0]]])
         self.assertSequenceEqual(pes._energy_centroid, [1.0])
         self.assertSequenceEqual(pes._gradient_centroid, [[0.0]])
 
         pes._calculate_all(np.array([[1.0]]), None)
-        self.assertSequenceEqual(pes._energy, [1.0+2.0+0.8])
-        self.assertSequenceEqual(pes._gradient, [[2.0+1.2]])
+        self.assertSequenceEqual(pes._energy, [[1.0+2.0+0.8]])
+        self.assertSequenceEqual(pes._gradient, [[[2.0+1.2]]])
         self.assertSequenceEqual(pes._energy_centroid, [1.0+2.0+0.8])
         self.assertSequenceEqual(pes._gradient_centroid, [[2.0+1.2]])
 
@@ -97,10 +97,10 @@ class OneDPolynomialTest(unittest.TestCase):
         pes._calculate_all(np.array([[1.0, -2.0, -1.0]]), None)
         self.assertTrue(
                 np.alltrue(pes._energy
-                           == np.array([1.0+2.0+0.8, 1.0+0.5-0.1, 1.0])))
+                           == np.array([[1.0+2.0+0.8, 1.0+0.5-0.1, 1.0]])))
         self.assertTrue(
                 np.alltrue(pes._gradient
-                           == np.array([[2.0+1.2, -1.0+0.3, 0.0]])))
+                           == np.array([[[2.0+1.2, -1.0+0.3, 0.0]]])))
 
         np.testing.assert_allclose(pes._energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
         np.testing.assert_allclose(pes._gradient_centroid, np.array([[0.33333333+0.0333333333]]))

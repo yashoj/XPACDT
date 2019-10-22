@@ -162,39 +162,39 @@ class CW(itemplate.PotentialInterface):
         return R
 
 
-if __name__ == "__main__":
-    pes = CW()
-    print(pes.name)
-    x=np.zeros(9)
-    for i in range(1000):
-        phi = np.random.rand(1)*2.0*np.pi
-        x[0] = 3.0*np.cos(phi)
-        x[1] = 3.0*np.sin(phi)
-        x[2] = 0.0 
-        x[3] = -1.0
-        x[4] = 0.0
-        x[5] = 0.0
-        x[6] = 1.0
-        x[7] = 0.0
-        x[8] = 0.0
-        
-        
-        if phi > -11.0:
-            inte = pes._to_internal(x)
-#            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
-            y = pes._from_internal(inte)
-#            print(x, y)
-   
-            print((abs(x-y) < 1e-8).all())
-#            print()
-    
-    pes._calculate_all(x[:, None])
-    print(pes._energy, pes._gradient)
-    print(pes.energy(x[:, None]))
-    internal = np.array([2.0, 5.0, 0.0])
-    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
-#    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
-    
-    pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
-#    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
-#    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)
+#if __name__ == "__main__":
+#    pes = CW()
+#    print(pes.name)
+#    x=np.zeros(9)
+#    for i in range(1000):
+#        phi = np.random.rand(1)*2.0*np.pi
+#        x[0] = 3.0*np.cos(phi)
+#        x[1] = 3.0*np.sin(phi)
+#        x[2] = 0.0 
+#        x[3] = -1.0
+#        x[4] = 0.0
+#        x[5] = 0.0
+#        x[6] = 1.0
+#        x[7] = 0.0
+#        x[8] = 0.0
+#        
+#        
+#        if phi > -11.0:
+#            inte = pes._to_internal(x)
+##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
+#            y = pes._from_internal(inte)
+##            print(x, y)
+#   
+#            print((abs(x-y) < 1e-8).all())
+##            print()
+#    
+#    pes._calculate_all(x[:, None])
+#    print(pes._energy, pes._gradient)
+#    print(pes.energy(x[:, None]))
+#    internal = np.array([2.0, 5.0, 0.0])
+#    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
+##    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
+#    
+#    pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
+##    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
+##    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

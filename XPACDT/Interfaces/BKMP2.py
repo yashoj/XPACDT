@@ -28,7 +28,8 @@
 #  **************************************************************************
 
 """ This module connects to the BKMP2 H3 PES.
-A. I. Boothroyd, W. J. Keogh, P. G. Martin, and M. R. Peterson, J. Chem. Phys. 104, 7139 (1996).
+A. I. Boothroyd, W. J. Keogh, P. G. Martin, and M. R. Peterson,
+J. Chem. Phys. 104, 7139 (1996).
 """
 
 import numpy as np
@@ -68,8 +69,8 @@ class BKMP2(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros(R.shape[1])
-        self._gradient = np.zeros(R.shape)
+        self._energy = np.zeros((1, R.shape[1]))
+        self._gradient = np.zeros_like(R[np.newaxis, :])
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
@@ -77,11 +78,11 @@ class BKMP2(itemplate.PotentialInterface):
             self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
 
         for i, r in enumerate(R.T):
-            self._energy[i], self._gradient[:, i] = pot.pot(r)
+            self._energy[0, i], self._gradient[0, :, i] = pot.pot(r)
 
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy
-            self._gradient_centroid = self._gradient
+            self._energy_centroid = self._energy[:, 0]
+            self._gradient_centroid = self._gradient[:, :, 0]
 
         return
 
@@ -130,7 +131,7 @@ class BKMP2(itemplate.PotentialInterface):
                               the first two H's in au.
             phi = internal[2] = angle between the two vectors that define
                                 r and R.
-        The output cartesian coordinates are in the xy plane. The center of 
+        The output cartesian coordinates are in the xy plane. The center of
         mass of H2 is fixed to the origin. The first two H are displaced along
         the x-axis in negative and positive direction, respectively. The third
         H is then placed in the xy-plane according to 'R' and 'phi'.

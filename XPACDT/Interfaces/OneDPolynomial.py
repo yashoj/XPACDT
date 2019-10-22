@@ -111,8 +111,8 @@ class OneDPolynomial(itemplate.PotentialInterface):
         # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
-        self._gradient = np.zeros_like(distance)
-        self._energy = np.zeros_like(distance) + self.a[0]
+        self._gradient = np.zeros_like(distance[np.newaxis,np.newaxis,:])
+        self._energy = np.zeros_like(distance[np.newaxis,:]) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
             # beads part
@@ -126,10 +126,8 @@ class OneDPolynomial(itemplate.PotentialInterface):
                 power_centroid *= distance_centroid
                 self._energy_centroid += a * power_centroid
 
-        self._gradient = self._gradient.reshape((1, -1))
-
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy
-            self._gradient_centroid = self._gradient
+            self._energy_centroid = self._energy[:, 0]
+            self._gradient_centroid = self._gradient[:, :, 0]
 
         return

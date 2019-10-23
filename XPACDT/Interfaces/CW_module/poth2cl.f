@@ -49,36 +49,36 @@ c
       rclh1=rbond(2)
       rclh2=rbond(3)
 c
-      if(iflag.le.1) then
+!      if(iflag.le.1) then
         if(inicw.eq.0) then
           call inifit_cw
           inicw=1
         end if
         call jacobi(rclh1,rh2,rclh2,rr,r,theta)
-      end if
+!      end if
 c
-      if(iflag.eq.0) then
-c
-c... Capecchi-Werner diabatic potentials
-c
-        do icase=1,6
-          vev(icase)=cwpot(rr,r,theta,icase)*toev
-        end do
-        vev(4)=vev(4)*sq2i
-        vev(5)=vev(5)/tocm
-        vev(6)=vev(6)/tocm
-        return
-c
-      else if(iflag.eq.1) then
+c$$$      if(iflag.eq.0) then
+c$$$c
+c$$$c... Capecchi-Werner diabatic potentials
+c$$$c
+c$$$        do icase=1,6
+c$$$          vev(icase)=cwpot(rr,r,theta,icase)*toev
+c$$$        end do
+c$$$        vev(4)=vev(4)*sq2i
+c$$$        vev(5)=vev(5)/tocm
+c$$$        vev(6)=vev(6)/tocm
+c$$$        return
+c$$$c
+c$$$      else if(iflag.eq.1) then
 c
 c... Capecchi-Werner adiabatic potentials
-c
+
         vsig=cwpot(rr,r,theta,1)
         vpi =cwpot(rr,r,theta,2)
         v2=cwpot(rr,r,theta,3)
         v1=cwpot(rr,r,theta,4)*sq2i
         a= cwpot(rr,r,theta,5)/tocm
-        b=-cwpot(rr,r,theta,6)*sq2/tocm
+        b= -cwpot(rr,r,theta,6)*sq2/tocm
 c
         h(1,1)=vsig
         h(2,1)=0
@@ -131,15 +131,19 @@ c
            vev(3)=e(6)*toev
         endif
         vev(2)=e(3)*toev
+        
+        vev(1)=vev(1)/toev
+        vev(2)=vev(2)/toev
+        vev(3)=vev(3)/toev
         return
 c
-      else if(iflag.eq.2) then
-c
-c... Bian-Werner potential
-c
-        vev(1)=bwpotex(rclh1,rh2,rclh2)*toev
-        return
-      end if
+c$$$      else if(iflag.eq.2) then
+c$$$c
+c$$$c... Bian-Werner potential
+c$$$c
+c$$$        vev(1)=bwpotex(rclh1,rh2,rclh2)*toev
+c$$$        return
+c$$$      end if
       end
 c----------------------------------------------------------------------
       subroutine inifit_cw

@@ -76,6 +76,8 @@ class BKMP2(itemplate.PotentialInterface):
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
             self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
+            self._energy_centroid = self._energy_centroid[np.newaxis, :]
+            self._gradient_centroid = self._gradient_centroid[np.newaxis, :]
 
         for i, r in enumerate(R.T):
             self._energy[0, i], self._gradient[0, :, i] = pot.pot(r)

@@ -47,6 +47,8 @@ class CW(itemplate.PotentialInterface):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
         itemplate.PotentialInterface.__init__(self, "CW")
+        # For proper Hessian derivatives!
+        self._DERIVATIVE_STEPSIZE = 7e-3
 
     def _calculate_all(self, R, P=None, S=None):
         """
@@ -70,20 +72,22 @@ class CW(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros(R.shape[1])
-        self._gradient = np.zeros(R.shape)
+        self._energy = np.zeros((1, R.shape[1]))
+        self._gradient = np.zeros_like(R[np.newaxis, :])
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
             self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
+            self._energy_centroid = self._energy_centroid[np.newaxis, :]
+            self._gradient_centroid = self._gradient_centroid[np.newaxis, :]
 
         for i, r in enumerate(R.T):
-            self._energy[i], self._gradient[:, i] = pot.pot(r, self.__data_path)
+            self._energy[0, i], self._gradient[0, :, i] = pot.pot(r, self.__data_path)
 
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy
-            self._gradient_centroid = self._gradient
+            self._energy_centroid = self._energy[:, 0]
+            self._gradient_centroid = self._gradient[:, :, 0]
 
         return
 

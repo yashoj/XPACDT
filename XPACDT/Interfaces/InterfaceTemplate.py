@@ -67,6 +67,7 @@ class PotentialInterface:
         self._gradient_gradient = None
 
         self.__SAVE_THRESHOLD = 1e-8
+        self._DERIVATIVE_STEPSIZE = 1e-4
 
     @property
     def name(self):
@@ -82,7 +83,7 @@ class PotentialInterface:
     @property
     def DERIVATIVE_STEPSIZE(self):
         """float : Step size for numerical derivatives in au."""
-        return 1e-4
+        return self._DERIVATIVE_STEPSIZE
 
     def _calculate_all(self, R, P, S=None):
         """Calculate the energy, gradient and possibly couplings at the current
@@ -505,6 +506,8 @@ class PotentialInterface:
             Hessian of the potential at the given geometry.
         """
 
+#        old_thresh = self.__SAVE_THRESHOLD
+#        self.__SAVE_THRESHOLD = 1e-15
         n = len(R)
         H = np.zeros((n, n))
         R_step = R.copy()
@@ -521,4 +524,5 @@ class PotentialInterface:
 
             R_step[i] += self.DERIVATIVE_STEPSIZE
 
+#        self.__SAVE_THRESHOLD = old_thresh
         return H

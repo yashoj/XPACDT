@@ -74,12 +74,13 @@ def atom_mass(symbol):
     if symbol == 'D':
         standard_symbol = 'H-2'
     else:
-        symbol_groups = re.search(r"(\d*)-?([a-zA-Z])-?(\d*)", symbol)
+        symbol_groups = re.search(r"(\d*)-?([a-zA-Z]*)-?(\d*)", symbol)
         number = symbol_groups.group(1).strip() + symbol_groups.group(3).strip()
         atom = symbol_groups.group(2).strip()
         standard_symbol = atom
         if len(number) > 0:
             standard_symbol += "-" + number
+        
 
     conversion = physical_constants['atomic mass constant'][0] / physical_constants['atomic unit of mass'][0]
     try:

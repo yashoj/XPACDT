@@ -506,8 +506,6 @@ class PotentialInterface:
             Hessian of the potential at the given geometry.
         """
 
-#        old_thresh = self.__SAVE_THRESHOLD
-#        self.__SAVE_THRESHOLD = 1e-15
         n = len(R)
         H = np.zeros((n, n))
         R_step = R.copy()
@@ -524,5 +522,4 @@ class PotentialInterface:
 
             R_step[i] += self.DERIVATIVE_STEPSIZE
 
-#        self.__SAVE_THRESHOLD = old_thresh
         return H

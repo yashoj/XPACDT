@@ -241,7 +241,7 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
     """
 
     # For the gnuplot output!
-    dirname = os.path.dirname(file_output) + "/"
+    dirname = os.path.dirname(file_output)
     basename = os.path.basename(file_output).replace(".dat", "")
 
     # Formatting style

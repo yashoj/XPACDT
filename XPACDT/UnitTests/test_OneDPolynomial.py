@@ -137,6 +137,7 @@ class OneDPolynomialTest(unittest.TestCase):
         np.testing.assert_allclose(points_values[:, 0], points_reference)
         np.testing.assert_allclose(points_values[:, 1], values_reference)
         os.remove('pes_1d.dat')
+        os.remove("pes_1d.plt")
 
     def test_get_Hessian(self):
         pes = oneDP.OneDPolynomial(**{'a': '0.0 0.0 0.5'})

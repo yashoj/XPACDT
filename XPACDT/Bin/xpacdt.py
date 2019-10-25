@@ -40,6 +40,7 @@ import os
 import pickle
 import random
 import time
+import sys
 
 import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Sampling.Sampling as sampling
@@ -48,24 +49,38 @@ import XPACDT.Tools.Operations as operations
 import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
 
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller. """
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+
+def resource_path(relativePath):
+    """ Get absolute path to resource, works for dev and for PyInstaller.
+
+    Parameters
+    ----------
+    relativePath: string
+        Relative path of the required file to the file currently executed.
+
+    Returns
+    -------
+    Absolute path to the file currently executed.
+    """
+    base_path = getattr(sys, '_MEIPASS',
+                        os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relativePath)
+
 
 def start():
     """Start any XPACDT calculation."""
 
-    # Save version used for later reference; either from git repository or from .version file included by the PyInstaller program
+    # Save version used for later reference; either from git repository or from
+    # .version file included by the PyInstaller program
     try:
         current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
         repo = git.Repo(path=current_path, search_parent_directories=True)
         branch_name = repo.active_branch.name
-        hexsha =  repo.head.object.hexsha
+        hexsha = repo.head.object.hexsha
     except:  # TODO: better specific errors!
         with open(resource_path("") + '.version', 'r') as input_file:
             branch_name = input_file.readline().split()[1]
-            hexsha = input_file.readline().split()[1] 
+            hexsha = input_file.readline().split()[1]
 
     version_file = open('.version', 'w')
     version_file.write("Branch: " + branch_name + " \n")
@@ -128,9 +143,33 @@ def start():
         analysis.do_analysis(input_parameters)
         return
     elif job == "plot":
-        #    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, False)
-        #    pes.plot_1D(np.array([0.0]), 0, -1.0, 1.0, 0.5, True)
-        raise NotImplementedError("Plotting of PES needs to be implemented!")
+        pes_name = input_parameters.get("system").get("Interface", None)
+        __import__("XPACDT.Interfaces." + pes_name)
+        pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
+                      pes_name)(**input_parameters.get(pes_name))
+
+        dof = [int(i) for i in input_parameters.get("plot").get("dof").split()]
+        start = [float(i) for i in input_parameters.get("plot").get("start").split()]
+        end = [float(i) for i in input_parameters.get("plot").get("end").split()]
+        step = [float(i) for i in input_parameters.get("plot").get("step").split()]
+
+        assert(len(dof) == len(start)), "Number of degrees of freedom and start values for grids differ!" + str(len(dof)) + " != " + str(len(start))
+        assert(len(dof) == len(end)), "Number of degrees of freedom and end values for grids differ!" + str(len(dof)) + " != " + str(len(end))
+        assert(len(dof) == len(step)), "Number of degrees of freedom and step values for grids differ!" + str(len(dof)) + " != " + str(len(step))
+
+        if len(dof) == 1:
+            pes.plot_1D(input_parameters.coordinates[:, 0], dof[0],
+                        start[0], end[0], step[0],
+                        relax=("optimize" in input_parameters.get("plot")),
+                        internal=("internal" in input_parameters.get("plot")))
+        elif len(dof) == 2:
+            pes.plot_2D(input_parameters.coordinates, dof[0], dof[1],
+                        start, end, step,
+                        relax=("optimize" in input_parameters.get("plot")),
+                        internal=("internal" in input_parameters.get("plot")))
+
+        else:
+            raise RuntimeError("Cannot plot PES other than for 1 or 2 degrees of freedom.")
         return
 
     # read from pickle file if exists

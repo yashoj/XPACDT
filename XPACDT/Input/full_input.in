@@ -8,7 +8,7 @@ $system                     # general parameters
 # Required parameters
 dof = 4                     # integer, required: the number of degrees of freedom
 job = sample	                # (sample, propagate, analyze, plot), required: The job type.
-Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, EckartBarrier), required: The interface to the potential to be used.
+Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier), required: The interface to the potential to be used.
 folder = test               # string, required: Base folder for the trajectories.
 
 # Optional parameters
@@ -36,9 +36,28 @@ $end
 
 ##############################################################################
 
-# $TODO_OTHER_PES
+# These fitted PES don't have any parameters.
+# $BKMP
+# $end
+# $CW
+# $end
+# $LWAL
+# $end
+
+##############################################################################
+
+# $EckartBarrier # must match the interface specified; specific to each interface
 # 
+# # Required parameter set 1 - please see the definition of the Eckart barrier
+# A = 0.0     # float
+# B = 0.25    # float
+# L = 1.0     # float
 # 
+# # Alternative parameter set - please see the definition of the Eckart barrier
+# w = 0.001   # float
+# h = 0.2     # float
+# d = 0.0     # float
+# m = 1836    # float
 # $end
 
 ##############################################################################

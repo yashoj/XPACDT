@@ -60,7 +60,8 @@ class InputfileTest(unittest.TestCase):
                                       "dof": "4"},
                            "trajectory": {"blubb": "1.3 fs"},
                            "pes": {"blibb": "1.3 fs", "hot": "",
-                                   "temp": "300 K"}}
+                                   "temp": "300 K"},
+                           "miep": {"": ""}}
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_works.in")
         self.assertDictEqual(input_reference, parameters.store)
 
@@ -191,13 +192,12 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
 
-
         input_string = "1837.3624 1.0 2.0 \n" \
             + "34631.9731 2.0 1.0 4.0 \n"
         with self.assertRaises(ValueError):
             parameters._parse_mass_value(input_string)
         pass
-    
+
     def test_parse_mass_value_free_rp_sampling(self):
         # So far only shape of output and centroid value tested; maybe add
         # test for distribution?

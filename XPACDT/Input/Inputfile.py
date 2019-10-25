@@ -277,10 +277,13 @@ class Inputfile(collections.MutableMapping):
                 d = StringIO(section[14:])
                 self.__momentumShift = np.loadtxt(d)
             else:
-                match = re.search(r"\$(\w+).*?\n(.*)", section,
+                match = re.search(r"\$(\w+)\W*(.*)", section,
                                   flags=re.DOTALL)
                 keyword = match.group(1)
-                values = match.group(2)
+                try:
+                    values = match.group(2)
+                except IndexError:
+                    values = ""
 
                 if keyword in self.store:
                     # TODO: Use Better Error

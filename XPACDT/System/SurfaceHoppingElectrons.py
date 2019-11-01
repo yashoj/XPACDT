@@ -480,10 +480,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # maybe make phase = None if in schroedinger picture?
         if (self.evolution_picture == 'interaction'):
             b_list = [self._get_b_jk(self._c_coeff, self._old_H_e, self._phase)]
-            self._print_a_kj(self._c_coeff, self._phase)
+            #self._print_a_kj(self._c_coeff, self._phase)
         else:
             b_list = [self._get_b_jk(self._c_coeff, self._old_H_e)]
-            self._print_a_kj(self._c_coeff)
+            #self._print_a_kj(self._c_coeff)
         
         # c_coeffs are (max_n_beads or 1, n_states), phases cancel out for populations
         if (self.rpsh_type == 'density_matrix'):
@@ -534,9 +534,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             self._print_a_kj(self._c_coeff, self._phase)
         else:
             self._print_a_kj(self._c_coeff)
-
-        self._old_D = self._D.copy()
+        
         self._old_H_e = self._H_e_total.copy()
+        if (self.basis == 'adiabatic'):
+            self._old_D = self._D.copy()
+        else:
+            self._old_D = None
+        
 
         return
 
@@ -603,18 +607,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     def _integrator_unitary(self, t, time_propagate, c):
         
         # unitary dynamics using midpoint H. Error in the order of dt^3
-        # ???? Is this a unitary transformation???
         t_step = self.timestep
         t_frac_mid = (t + 0.5 * t_step) / time_propagate
 
         H_mid = self._linear_interpolation_1d(t_frac_mid, self._old_H_e, self._H_e_total)
-        
-        #propagator = np.exp(-1j * H_mid * t_step)
         propagator = np.array([expm(-1j * h * t_step) for h in H_mid])
-        
-        #print(np.allclose(H_mid, np.conj(H_mid.transpose(0, 2, 1))))
-        #print(np.absolute(propagator))
-        #print(np.absolute(np.matmul(propagator, propagator.transpose(0, 2, 1))))
         
         c_new = np.matmul(propagator, np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states)
 
@@ -659,7 +656,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         
         return (-1.0j * np.matmul(H, np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states))
 
-    # Maybe put this also in math module
+    # TODO : Maybe put this also in math module
     def _linear_interpolation_1d(self, x_fraction, y_initial, y_final):
         # x_fraction = (x_required - x_initial) / (x_final - x_initial)
         # y can be any dimension array, x_fraction is float
@@ -686,13 +683,18 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         print("Printing probability: ",prob, '\n')
         # State switch if needed, have another function for momentum rescaling
         new_state = None
-        rand_num = random.random()
+        #rand_num = random.random()
+        # TODO : Remove this test later
+        rand_num = 0.1
+        
         sum_prob = 0.
         for i, p in enumerate(prob):
             if (rand_num >= sum_prob and rand_num < (sum_prob + p)):
                 new_state = i
                 break
             sum_prob += p
+            
+        print('new state is ', new_state)
 
         if (new_state is not None):
             should_change = self._momentum_rescaling(R, P, new_state)
@@ -707,33 +709,49 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # Need to check energy conservaton and return whether to change v or not
         # Need to return true or false for changing state? or do that already here
         # How to give back momenta? Does changing it here also change in nuclei??
+        
+        if (self.rpsh_rescaling == 'centroid'):
+            centroid = True
+        else:
+            centroid = False
+
         if (self.rescaling_type == 'nac'):
             # Get list of nacs for each dof and beads or centroid
-            pass
+            dd = self.pes.nac(R, self.current_state, new_state, centroid=centroid)
         else:
             # Get list of gradient differences for each dof and beads or centroid
-            pass
+            if (self.basis == 'adiabatic'):
+                dd = self.pes.adiabatic_gradient(R, self.current_state, centroid=centroid) \
+                    - self.pes.adiabatic_gradient(R, new_state, centroid=centroid)
+            else:
+                dd = self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid) \
+                    - self.pes.diabatic_gradient(R, new_state, new_state, centroid=centroid)
+
         if (self.rpsh_rescaling == 'centroid'):
             # Use centroid V to conserve H_centroid
             pass
         else:
             # Use sum of V to conserve Hn
             pass
-        return
+        return True
     
-    def _print_a_kj(self, c, phase=None):
+    def _print_a_kj(self, c_coeff, phase=None):
         # Print the density matrix of first bead in schroedinger representation
-        # c is (max_n_beads or 1, n_states)
+        # c is (max_n_beads or 1, n_states) and phase is (1 or max_n_beads, n_states, n_states)
         # a_kj should be (max_n_beads or 1, n_states, n_states)
         if (self.evolution_picture == 'interaction'):
-            a_kj = np.outer(c[0], np.conj(c[0])) * np.exp(1j * phase[0])
+            for i, c in enumerate(c_coeff):
+                a_kj = np.array([np.outer(c, np.conj(c)) * np.exp(1j * phase[i]) for i, c in enumerate(c_coeff)])
         else:
-            a_kj = np.outer(c, np.conj(c))
+            a_kj = np.array([np.outer(c, np.conj(c)) for c in c_coeff])
+            
+        print('Printing density matrix')
         
         #print(a_kj, '\n')
         
         # Print the trace instead
-        print(np.trace(np.absolute((a_kj)) ) )
+        for a in a_kj:
+            print(np.trace(np.absolute((a))))
         return
 
 
@@ -748,27 +766,27 @@ if __name__ == '__main__':
     #sh_e.evolution_picture = "interaction"
     #sh_e.evolution_picture = "schroedinger"
     
-    R = np.array([[3.]])
-    P = np.array([[0.002]])
+    R = np.array([[3., 3.5]])
+    P = np.array([[0.002, 0.0025]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
-    print(sh_e.current_state)
+    print("Current state is: ", sh_e.current_state)
     #sys.exit()
     
     
-    R = np.array([[3.1]])
-    P = np.array([[0.0021]])
+    R = np.array([[3.1, 3.6]])
+    P = np.array([[0.0021, 0.0026]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
+    print("Current state is: ", sh_e.current_state)
     
-    
-    R = np.array([[3.2]])
-    P = np.array([[0.0022]])
+    R = np.array([[3.2, 3.7]])
+    P = np.array([[0.0022, 0.0027]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
+    print("Current state is: ", sh_e.current_state)
     
-    
-    R = np.array([[3.3]])
-    P = np.array([[0.0023]])
+    R = np.array([[3.3, 3.8]])
+    P = np.array([[0.0023, 0.0028]])
     sh_e.step(R, P, time_propagate, **{'step_index': 'last'})
-    print(sh_e.current_state)
+    print("Current state is: ", sh_e.current_state)
     
     sys.exit()
     

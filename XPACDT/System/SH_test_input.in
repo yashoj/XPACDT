@@ -20,12 +20,12 @@ rpsh_type = bead          # Type of ring polymer surface hopping (RPSH)
                           # (possible: bead, centroid, density_matrix; default: bead)
 rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve 
                           # bead or centroid energy (possible: bead, centroid; default: bead)
-rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
+rescaling_type = gradient      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
 
 evolution_picture = schroedinger
 #evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schroedinger)
-#ode_solver = rk4
-ode_solver = unitary
+ode_solver = rk4
+#ode_solver = unitary
 $end
 
 ##############################################################################
@@ -34,6 +34,14 @@ $MorseDiabatic  # must match the interface specified; specific to each interface
 
 model_type = model_3         # Model number to be used (possible: model_1, model_2, model_3)
 n_states = 2                 # Number of morse diabatic states (possible: 2, 3)
+$end
+
+##############################################################################
+
+$rpmd                       # RPMD input
+
+beads = 2                   # Number of beads used; 1 or even numbers; TODO: different numbers
+beta = 1052.0                  # Beta used for the springs
 $end
 
 ##############################################################################
@@ -60,14 +68,14 @@ $end
 $coordinates	           # coordinates given here
 
 type = mass-value      # coordinate format (possible: mass-value, xyz); TODO: description here
-1.0 2.5
+1.0 2.5 2.6
 $end
 
 ##############################################################################
 
 $momenta               # momenta, must be the same ordering as coordinates
 
-0.001
+0.001 0.002
 $end
 
 ##############################################################################

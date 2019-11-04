@@ -31,6 +31,7 @@
 
 import re
 from scipy.constants import physical_constants, femto, pico, atto, centi, pi
+import numpy as np
 
 # Alternative periodic tables
 # from mendeleev import element
@@ -93,13 +94,45 @@ def atom_mass(symbol):
         raise RuntimeError("Error obtaining element weight: " + standard_symbol)
 
 
+def atom_symbol(mass):
+    """ Return the symbol of an atom.
+
+    Parameters
+    ----------
+    mass : float
+        Mass of the atom in au.
+
+    Returns
+    -------
+    symbol : string
+        The symbol of the atom. Any reference to isotopes is removed.
+    """
+
+    # au to amu
+    conversion = physical_constants['atomic unit of mass'][0] \
+        / physical_constants['atomic mass constant'][0]
+    mass_amu = mass*conversion
+
+    dist = np.Inf
+    for s, m in atoms.items():
+        if abs(m - mass_amu) < dist:
+            symbol = s
+            dist = abs(m - mass_amu)
+
+    return_symbol = symbol.split("-")[0]
+    if return_symbol == 'Mu' or return_symbol == 'e':
+        return_symbol = 'H'
+    return return_symbol
+
+
 # from http://www.ciaaw.org/atomic-masses.htm
 # Weight of the most common isotope given for just the atom symbol
 # Non-Common Isotopes are labeled: X-N, where X is the atom symbol and N is the
 # Isotope Mass Number. Deuterium would, e.g., be H-2.
 # TODO: expand (see below)
 # TODO: good source for Mu mass; http://goldbook.iupac.org/terms/view/M04069 ?
-atoms = {'H': 1.0078250322, 'H-2': 2.0141017781, 'Mu': 0.113977478,
+atoms = {'e': 0.0005485799093287202,
+         'H': 1.0078250322, 'H-2': 2.0141017781, 'Mu': 0.113977478,
          'He': 4.0026032545, 'He-3': 3.016029322,
          'Li': 7.01600344, 'Li-6': 6.01512289,
          'Be': 9.0121831,

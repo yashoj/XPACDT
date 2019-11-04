@@ -65,6 +65,7 @@ class LWALTest(unittest.TestCase):
         gradient_ref = np.zeros((1, 9, 1))
         self.pes._calculate_all(self.pes._from_internal([1.443, 2.936+0.5*1.443, 0.0]).reshape(-1, 1), None)
         np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
+        save_gradient = self.pes._gradient_centroid
 
         # TST
         energy_ref = np.zeros((1, 1)) + 0.002616
@@ -73,6 +74,19 @@ class LWALTest(unittest.TestCase):
         gamma = np.arccos((2.932**2 - R**2 - (1.457/2.0)**2) / (-R * 1.457))
         self.pes._calculate_all(self.pes._from_internal([1.457, R, gamma]).reshape(-1, 1), None)
         np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
+        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
+
+        # RPMD
+        x0 = self.pes._from_internal([1.401168, 40.0, 0.0])
+        x1 = self.pes._from_internal([80.0, 40.0+1.7335, 0.0])
+        x2 = self.pes._from_internal([1.443, 2.936+0.5*1.443, 0.0])
+        x3 = self.pes._from_internal([1.457, R, gamma])
+        x = np.column_stack((x0, x1, x2, x3))
+        self.pes._calculate_all(x, None)
+        energy_ref = np.array([[0.0, -0.050454, 0.003428, 0.002616]])
+        gradient_ref = np.zeros((1, 9, 4))
+        gradient_ref[0, :, 2] = save_gradient[0]
+        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
         np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
 
     def test_minimize(self):

@@ -47,7 +47,7 @@ class CWTest(unittest.TestCase):
 
     def test_calculate_all(self):
         # H2 minimum 
-        energy_ref = np.zeros((1, 1)) - 0.00139 # lowered by SO
+        energy_ref = np.zeros((1, 1)) - 0.00139  # lowered by SO
         gradient_ref = np.zeros((1, 9, 1))
         self.pes._calculate_all(self.pes._from_internal([1.4005706, 40.0, 0.0]).reshape(-1, 1), None)
         np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
@@ -64,6 +64,18 @@ class CWTest(unittest.TestCase):
         energy_ref = np.zeros((1, 1)) + 0.012107
         gradient_ref = np.zeros((1, 9, 1))
         self.pes._calculate_all(self.pes._from_internal([1.854, 3.631, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
+
+        # RPMD
+        x0 = self.pes._from_internal([1.854, 3.631, 0.0])
+        x1 = self.pes._from_internal([1.4005706, 40.0, 0.0])
+        x2 = self.pes._from_internal([120.0, 60.0+2.41003, 0.0])
+        x3 = self.pes._from_internal([1.854, 3.631, 0.0])
+        x = np.column_stack((x0, x1, x2, x3))
+        self.pes._calculate_all(x, None)
+        energy_ref = np.array([[0.012107, -0.00139, 0.004114, 0.012107]])
+        gradient_ref = np.zeros((1, 9, 4))
         np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
         np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
 

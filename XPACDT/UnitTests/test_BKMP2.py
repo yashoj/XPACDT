@@ -67,6 +67,18 @@ class BKMP2Test(unittest.TestCase):
         np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
         np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-10)
 
+        # RPMD
+        x0 = self.pes._from_internal([1.757, 2.6355, 0.0])
+        x1 = self.pes._from_internal([400.0, 800.0, 0.0])
+        x2 = self.pes._from_internal([1.4014718, 80.0, 0.0])
+        x3 = self.pes._from_internal([1.757, 2.6355, 0.0])
+        x = np.column_stack((x0, x1, x2, x3))
+        self.pes._calculate_all(x, None)
+        energy_ref = np.array([[-0.15917577, 0.0, -0.17449577, -0.15917577]])
+        gradient_ref = np.zeros((1, 9, 4))
+        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-6)
+
     def test_minimize(self):
         fun_ref = -0.17449577
         x_ref = np.array([0.70073594, 0.0, 0.0, -0.70073594, 0.0, 0.0, 40.0, 0.0, 0.0])

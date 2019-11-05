@@ -119,6 +119,8 @@ class Dissociation2states(itemplate.PotentialInterface):
         self._calculate_diabatic_all(R)
         self._get_adiabatic_from_diabatic(R)
 
+        return
+
     def _calculate_diabatic_all(self, R):
         """
         Calculate and set diabatic matrices for energies and gradients for
@@ -160,6 +162,8 @@ class Dissociation2states(itemplate.PotentialInterface):
                 self._diabatic_energy_centroid[0, 1]
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
+
+        return
 
     def _get_diag_V_grad(self, R, i):
         """

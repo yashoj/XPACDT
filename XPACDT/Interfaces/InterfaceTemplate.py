@@ -271,8 +271,7 @@ class PotentialInterface:
             self._old_R = R.copy()
             return True
     
-    # Is this name fine or better to use just '_recalculate_adiabatic'.
-    def _need_to_recalculate_adiabatic(self, R, S=None):
+    def _recalculate_adiabatic(self, R, S=None):
         """Check if adiabatic properties need to be recalulated due to change
         in positions or since only diabatic properties were calculated. If yes,
         then calculate them.
@@ -293,6 +292,8 @@ class PotentialInterface:
             self._is_adiabatic_calculated = True
         else:
             pass
+
+        return
 
     def adiabatic_energy(self, R, S=None, centroid=False, return_matrix=False):
         """Obtain adiabatic energy of the system in the current state.
@@ -317,7 +318,7 @@ class PotentialInterface:
             The energy of the system in hartree at each bead position or at the
             centroid for a particular state or all states.
         """
-        self._need_to_recalculate_adiabatic(R, S)
+        self._recalculate_adiabatic(R, S)
 
         if centroid:
             if return_matrix:
@@ -353,7 +354,7 @@ class PotentialInterface:
             The gradient of the system in hartree/au at each bead position or
             at the centroid for a particular state or all states.
         """
-        self._need_to_recalculate_adiabatic(R, S)
+        self._recalculate_adiabatic(R, S)
             
         if centroid:
             if return_matrix:
@@ -402,7 +403,7 @@ class PotentialInterface:
         assert (self.n_states > 1),\
             ("NAC is only defined for more than 1 electronic state.")
 
-        self._need_to_recalculate_adiabatic(R, None)
+        self._recalculate_adiabatic(R, None)
 
         if centroid:
             if return_matrix:
@@ -643,6 +644,8 @@ class PotentialInterface:
             self._adiabatic_energy_centroid = dia2ad.get_adiabatic_energy(self._diabatic_energy_centroid)
             self._nac_centroid = dia2ad.get_NAC(
                 self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
+
+        return
 
     def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method

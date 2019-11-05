@@ -78,6 +78,13 @@ class InterfaceTemplateTest(unittest.TestCase):
         self.assertTrue(np.alltrue(self.interface._old_R == R))
 
         return
+    
+    def test_recalculate_adiabatic(self):
+        # test for one or more potentials
+        
+    def test_get_adiabatic_from_diabatic(self):
+        # test for 2 and 3 state potentials, maybe use morse diabatic
+        
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(InterfaceTemplateTest)

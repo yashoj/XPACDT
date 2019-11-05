@@ -137,6 +137,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
         self._calculate_diabatic_all(R)
         self._get_adiabatic_from_diabatic(R, self._get_diabatic_energy_matrix)
 
+        return
+
     def _calculate_diabatic_all(self, R):
         """
         Calculate and set diabatic matrices for energies and gradients for
@@ -200,6 +202,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
                     self._diabatic_gradient_centroid[0, 2] = self._get_off_diag_grad(
                         r_centroid, self.__A13, self.__as13, self.__r13)
                     self._diabatic_gradient_centroid[2, 0] = self._diabatic_gradient_centroid[0, 2].copy()
+
+        return
 
     def _get_diag_V(self, R, i):
         """

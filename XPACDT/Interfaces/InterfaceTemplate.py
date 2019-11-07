@@ -451,7 +451,7 @@ class PotentialInterface:
             ("Diabatic energy is not defined for the electronic basis used.")
 
         if self._changed(R, None, None):
-            self._calculate_diabatic_all(R, None, None)
+            self._calculate_diabatic_all(R)
             self._is_adiabatic_calculated = False
         
         if centroid:
@@ -501,7 +501,7 @@ class PotentialInterface:
             ("Diabatic gradient is not defined for the electronic basis used.")
 
         if self._changed(R, None, None):
-            self._calculate_diabatic_all(R, None, None)
+            self._calculate_diabatic_all(R)
             self._is_adiabatic_calculated = False
             
         if centroid:

@@ -38,6 +38,7 @@ import XPACDT.Interfaces.Morse1D as morse1d
 class Morse1DTest(unittest.TestCase):
 
     def setUp(self):
+        # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
         De = 0.02278
         a = 0.686
         re = 2.0
@@ -70,17 +71,25 @@ class Morse1DTest(unittest.TestCase):
 
         # At large x, energy should be approx. (De - b) and zero gradient
         self.pes_1_nb._calculate_adiabatic_all(np.array([[100000.0]]))
-        np.testing.assert_allclose(self.pes_1_nb._adiabatic_energy, [[0.02278]],  rtol=1e-7)
-        np.testing.assert_allclose(self.pes_1_nb._adiabatic_gradient, [[[0.0]]],  rtol=1e-7)
-        np.testing.assert_allclose(self.pes_1_nb._adiabatic_energy_centroid, [0.02278],  rtol=1e-7)
-        np.testing.assert_allclose(self.pes_1_nb._adiabatic_gradient_centroid, [[0.0]],  rtol=1e-7)
+        np.testing.assert_allclose(self.pes_1_nb._adiabatic_energy,
+                                   [[0.02278]], rtol=1e-7)
+        np.testing.assert_allclose(self.pes_1_nb._adiabatic_gradient,
+                                   [[[0.0]]], rtol=1e-7)
+        np.testing.assert_allclose(self.pes_1_nb._adiabatic_energy_centroid,
+                                   [0.02278], rtol=1e-7)
+        np.testing.assert_allclose(self.pes_1_nb._adiabatic_gradient_centroid,
+                                   [[0.0]], rtol=1e-7)
 
         # test for multiple beads
         self.pes_2_nb._calculate_adiabatic_all(np.array([[1.5, 2.5]]))
-        np.testing.assert_allclose(self.pes_2_nb._adiabatic_energy, [[0.00381381, 0.00192058]],  atol=1e-8)
-        np.testing.assert_allclose(self.pes_2_nb._adiabatic_gradient, [[[-0.01802077, 0.00643998]]],  atol=1e-8)
-        np.testing.assert_allclose(self.pes_2_nb._adiabatic_energy_centroid, [0.0],  rtol=1e-7)
-        np.testing.assert_allclose(self.pes_2_nb._adiabatic_gradient_centroid, [[0.0]],  rtol=1e-7)        
+        np.testing.assert_allclose(self.pes_2_nb._adiabatic_energy,
+                                   [[0.00381381, 0.00192058]], atol=1e-8)
+        np.testing.assert_allclose(self.pes_2_nb._adiabatic_gradient,
+                                   [[[-0.01802077, 0.00643998]]], atol=1e-8)
+        np.testing.assert_allclose(self.pes_2_nb._adiabatic_energy_centroid,
+                                   [0.0], rtol=1e-7)
+        np.testing.assert_allclose(self.pes_2_nb._adiabatic_gradient_centroid,
+                                   [[0.0]], rtol=1e-7)
 
     def test_minimize_geom(self):
         e_reference = 0.0

@@ -196,25 +196,3 @@ def get_transformation_matrix(V):
         return U.transpose(1, 2, 0)
     else:
         return U
-
-
-if __name__ == '__main__':
-    import XPACDT.Interfaces.MorseDiabatic as morse
-    pot = morse.MorseDiabatic(4, 'adiabatic', **{'n_states': '3', 'model_type': 'model_1'})
-
-    R = np.array([[3.3, 3.4,  3.5, 3.6]])
-    #R = np.array([[2., 3.5, 4., 5.]])
-
-    pot._calculate_all(R)
-
-    #print(pot._energy)
-    #print(pot._gradient)
-    print(pot._nac, '\n\n')
-
-    print(get_adiabatic_energy(pot._diabatic_energy))
-    print(get_adiabatic_gradient(R, pot._get_diabatic_energy_3states, pot.DERIVATIVE_STEPSIZE))
-    print(get_NAC(pot._diabatic_energy, pot._diabatic_gradient), '\n\n')
-
-    print(np.allclose(get_adiabatic_energy(pot._diabatic_energy), pot._energy))
-    print(np.allclose(get_adiabatic_gradient(R, pot._get_diabatic_energy_3states, pot.DERIVATIVE_STEPSIZE), pot._gradient))
-    print(np.allclose(get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))

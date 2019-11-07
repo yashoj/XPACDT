@@ -219,7 +219,7 @@ if __name__ == '__main__':
     # Plotting
     import matplotlib.pyplot as plt
     nb = 1
-    model_type = 'weak_coupling'  # 'strong_coupling'
+    model_type = 'strong_coupling'  # 'weak_coupling'
     pot = Dissociation2states(nb, **{'model_type': model_type})
 
     # len(linspace) array of positions

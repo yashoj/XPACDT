@@ -34,7 +34,6 @@
 import numpy as np
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
-import XPACDT.Input.Inputfile as infile
 
 
 class TullyModel(itemplate.PotentialInterface):
@@ -260,7 +259,10 @@ class TullyModel(itemplate.PotentialInterface):
 
 if __name__ == '__main__':
 
-    # Plotting
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python TullyModel.py <model_type>" where <model_type> can be model_A,
+    # model_B or model_C.
     import sys
     import matplotlib.pyplot as plt
 

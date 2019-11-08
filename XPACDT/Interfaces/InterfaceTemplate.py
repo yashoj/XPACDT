@@ -69,7 +69,7 @@ class PotentialInterface:
     max_n_beads
     """
 
-    def __init__(self, name, n_dof, n_states=1, max_n_beads=1, 
+    def __init__(self, name, n_dof, n_states=1, max_n_beads=1,
                  primary_basis='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof

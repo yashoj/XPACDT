@@ -216,10 +216,14 @@ class Dissociation2states(itemplate.PotentialInterface):
 
 if __name__ == '__main__':
 
-    # Plotting
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python Dissociation2states.py <model_type>" where <model_type> can be
+    # strong_coupling or weak_coupling.
+    import sys
     import matplotlib.pyplot as plt
     nb = 1
-    model_type = 'strong_coupling'  # 'weak_coupling'
+    model_type = sys.argv[1]  # 'strong_coupling
     pot = Dissociation2states(nb, **{'model_type': model_type})
 
     # len(linspace) array of positions

@@ -87,13 +87,21 @@ class InterfaceTemplateTest(unittest.TestCase):
         # test for 2 state potential
         pes = tullym.TullyModel(1, **{'model_type': 'model_C'})
 
-        # Checking if trying to access adiabatic energy runs
+        ### Testing if trying to access adiabatic energy runs
         # '_recalculate_adiabatic' function which in turn calculates all the
         # adiabatic properties.
         R = np.array([[0.]])
-        pes._calculate_diabatic_all(R)
+        V = pes.diabatic_energy(R, SI=None, SJ=None, centroid=False,
+                                return_matrix=True)
+
+        # Checking if all diabatic properties have been calculated
+        np.testing.assert_allclose(pes._diabatic_energy, [[[0.0006], [0.1]],
+                                                          [[0.1], [-0.0006]]], rtol=1e-7)
+        np.testing.assert_allclose(pes._diabatic_gradient, [[[[0.0]], [[0.09]]],
+                                                            [[[0.09]], [[0.0]]]], rtol=1e-7)
+        # Now accessing adiabatic energy to calculate all adiabatic properties
         V_ad = pes.adiabatic_energy(R, 0, centroid=False, return_matrix=True)
-        
+
         np.testing.assert_allclose(V_ad, [[-math.sqrt(0.01 + 3.6e-07)],
                                           [math.sqrt(0.01 + 3.6e-07)]], rtol=1e-7)
         np.testing.assert_allclose(
@@ -115,12 +123,12 @@ class InterfaceTemplateTest(unittest.TestCase):
                 pes._nac_centroid, [[[0.0], [-2.7e-05/(0.01 + 3.6e-07)]],
                                     [[2.7e-05/(0.01 + 3.6e-07)], [0.0]]], rtol=1e-7)
 
-        # Checking again with different position whether the change is computed.
+        ### Testing again with different position whether the change is computed.
         R = np.array([[-1.0e5]])
-        # This doesn't change the 'old_R' value yet
+        # This doesn't change the 'old_R' value yet.
         pes._calculate_diabatic_all(R)
 
-        # Checking if at this point the adiabatic properties haven't been changed.
+        # Checking if at this point the adiabatic properties haven't been changed yet.
         np.testing.assert_allclose(pes._adiabatic_energy,
                                    [[-math.sqrt(0.01 + 3.6e-07)],
                                     [math.sqrt(0.01 + 3.6e-07)]], rtol=1e-7)
@@ -143,8 +151,9 @@ class InterfaceTemplateTest(unittest.TestCase):
         np.testing.assert_allclose(
                 pes._nac_centroid, [[[0.0], [0.0]], [[0.0], [0.0]]], rtol=1e-7)
 
-        # Again checking if changing position again and accessing diabatic
-        # energy to change 'old_R' also changes adiabatic properties
+        ### Testing if changing position again and accessing diabatic
+        # energy, which changes 'old_R', also leads to change in adiabatic
+        # properties if they are accessed
         R = np.array([[0.]])
         # This changes the 'old_R' value
         V = pes.diabatic_energy(R, SI=None, SJ=None, centroid=False, return_matrix=True)
@@ -153,6 +162,8 @@ class InterfaceTemplateTest(unittest.TestCase):
         # changed but the diabatic have.
         np.testing.assert_allclose(pes._diabatic_energy, [[[0.0006], [0.1]],
                                                           [[0.1], [-0.0006]]], rtol=1e-7)
+        np.testing.assert_allclose(pes._diabatic_gradient, [[[[0.0]], [[0.09]]],
+                                                            [[[0.09]], [[0.0]]]], rtol=1e-7)
         np.testing.assert_allclose(pes._adiabatic_energy, [[-0.0006], [0.0006]], rtol=1e-7)
 
         # Now checking if the adiabatic properties have been changed due to

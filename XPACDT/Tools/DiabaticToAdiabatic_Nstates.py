@@ -97,7 +97,8 @@ def get_adiabatic_gradient(R, func_diabatic_energy, step):
 
         dV_ad.append((V_ad_plus - V_ad_minus) / (2. * step))
 
-    # Initially dV_ad is n_dof list of (n_states) /or/ (n_states, n_beads) ndarrays of floats 
+    # Initially dV_ad is n_dof list of (n_states) /or/ (n_states, n_beads)
+    # ndarrays of floats
     dV_ad = np.swapaxes(np.array(dV_ad), 0, 1)
 
     return dV_ad
@@ -114,10 +115,10 @@ def get_NAC(V, dV):
                = \\frac{\\bra{\\phi^{adiab}_k} \\overrightarrow{\\nabla} \\hat{V} \\ket{\\phi^{adiab}_j}}
                        {\\epsilon_j - \\epsilon_k}
 
-    where :math:'\\epsilon_k' and :math:'\ket{\phi^{adiab}_k}' are the k-th
+    where :math:'\\epsilon_k' and :math:'\\ket{\\phi^{adiab}_k}' are the k-th
     state adiabatic energy and eigenstate respectively, and
     :math:'\\overrightarrow{\\nabla} \\hat{V}' is the diabatic gradient.
-    
+
     For reference, please see J. Chem. Phys. 101, 6 (1994).
 
     Parameters:
@@ -135,7 +136,7 @@ def get_NAC(V, dV):
           /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats
         NAC for each state given in matrix form.
     """
-    # TODO: Comparing with 2 state dia2ad, the sign is negative, could be 
+    # TODO: Comparing with 2 state dia2ad, the sign is negative, could be
     # possibly due to phase factor in adiabatic states. Does that matter??
     n_states = V.shape[0]
     nac = np.zeros_like(dV)
@@ -187,7 +188,7 @@ def get_transformation_matrix(V):
     """
 
     if len(V.shape) == 3:
-        # Get shape (n_beads, n_states, n_states) for vectorized diagonalization
+        # Get shape (n_beads, n_states, n_states) for vectorized diagonalization.
         V = V.transpose(2, 0, 1)
 
     V_ad, U = np.linalg.eigh(V)

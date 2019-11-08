@@ -328,31 +328,11 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
 
 if __name__ == '__main__':
-    
-    # !!! Should these plotting scripts be left here for future plotting?
-    
-    import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
-    pot = MorseDiabatic(4, **{'n_states': '3', 'model_type': 'model_3'})
 
-    # R = np.array([[3.3, 3.4,  3.5, 3.6]])
-    R = np.array([[2., 3.5, 4., 5.]])
-
-    pot._calculate_adiabatic_all(R)
-
-    # print(pot._energy)
-    # print(pot._gradient, '\n\n')
-    print(pot._nac, '\n\n')
-
-    # print(dia2ad.get_adiabatic_energy(pot._diabatic_energy))
-    # print(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE))
-    # print(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), '\n\n')
-
-    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
-    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
-    print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
-
-
-    # Plotting
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python MorseDiabatic.py <model_type> <n_states>" where <model_type> can
+    # be model_1, model_2, model_3 and <n_states> can be 2 or 3.
     import sys
     import matplotlib.pyplot as plt
 

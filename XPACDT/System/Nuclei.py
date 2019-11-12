@@ -70,7 +70,7 @@ class Nuclei(object):
         self.n_beads = input_parameters.n_beads
 
         # Set up electrons
-        self.__init_electrons(input_parameters)
+        self.init_electrons(input_parameters)
 
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
@@ -212,7 +212,7 @@ class Nuclei(object):
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
-    def __init_electrons(self, parameters):
+    def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system.
 
         Parameters
@@ -229,7 +229,8 @@ class Nuclei(object):
                   ("No input parameters for chosen electronic method.")
 
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
-                                   electronic_method)(parameters, self.n_beads)
+                                   electronic_method)(parameters, self.n_beads,
+                                                      self.masses, self.positions, self.momenta)
 
     def attach_nuclei_propagator(self, parameters):
         """ Create and attach a propagator to this nuclei representation. If

@@ -100,6 +100,7 @@ def start():
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
         system = pickle.load(open(path_file, 'rb'))
+        # TODO: update new input parameters
     else:
         system = xSystem.System(input_parameters)
 

@@ -20,7 +20,7 @@ rpsh_type = bead          # Type of ring polymer surface hopping (RPSH)
                           # (possible: bead, centroid, density_matrix; default: bead)
 rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve 
                           # bead or centroid energy (possible: bead, centroid; default: bead)
-rescaling_type = gradient      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
+rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
 
 evolution_picture = schroedinger
 #evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schroedinger)

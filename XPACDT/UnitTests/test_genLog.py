@@ -38,6 +38,11 @@ import XPACDT.Bin.genLog as genLog
 import XPACDT.System.Nuclei as nuclei
 
 
+class log_nuclei(object):
+    def __init__(self, time):
+        self.time = time
+
+
 class genLogTest(unittest.TestCase):
 
     def setUp(self):
@@ -47,16 +52,19 @@ class genLogTest(unittest.TestCase):
         self.nuclei_classical = nuclei.Nuclei(4, self.parameters_classical, None)
         self.nuclei_rpmd = nuclei.Nuclei(4, self.parameters_rpmd, None)
 
+       
+
     def test_write_R(self):
         time_reference = np.random.rand()
         r_reference = np.random.rand(4, 1)
         rc_reference = np.average(r_reference, axis=1)
 
         self.nuclei_classical.positions = r_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_classical}
+        log = log_nuclei(time_reference)
+        log.x_centroid = self.nuclei_classical.x_centroid
 
         outfile = open("R.log", 'w')
-        genLog.write_R(logdict, outfile, 16, 8)
+        genLog.write_R(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("R.log")
@@ -67,10 +75,11 @@ class genLogTest(unittest.TestCase):
         rc_reference = np.average(r_reference, axis=1)
 
         self.nuclei_rpmd.positions = r_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_rpmd}
+        log = log_nuclei(time_reference)
+        log.x_centroid = self.nuclei_rpmd.x_centroid
 
         outfile = open("R.log", 'w')
-        genLog.write_R(logdict, outfile, 16, 8)
+        genLog.write_R(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("R.log")
@@ -81,16 +90,17 @@ class genLogTest(unittest.TestCase):
 
         return
 
-    def test_wpite_P(self):
+    def test_write_P(self):
         time_reference = np.random.rand()
         p_reference = np.random.rand(4, 1)
         pc_reference = np.average(p_reference, axis=1)
 
         self.nuclei_classical.momenta = p_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_classical}
+        log = log_nuclei(time_reference)
+        log.p_centroid = self.nuclei_classical.p_centroid
 
         outfile = open("P.log", 'w')
-        genLog.write_P(logdict, outfile, 16, 8)
+        genLog.write_P(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("P.log")
@@ -101,10 +111,11 @@ class genLogTest(unittest.TestCase):
         pc_reference = np.average(p_reference, axis=1)
 
         self.nuclei_rpmd.momenta = p_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_rpmd}
+        log = log_nuclei(time_reference)
+        log.p_centroid = self.nuclei_rpmd.p_centroid
 
         outfile = open("P.log", 'w')
-        genLog.write_P(logdict, outfile, 16, 8)
+        genLog.write_P(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("P.log")
@@ -120,10 +131,11 @@ class genLogTest(unittest.TestCase):
         r_reference = np.random.rand(4, 1)
 
         self.nuclei_classical.positions = r_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_classical}
+        log = log_nuclei(time_reference)
+        log.positions = self.nuclei_classical.positions
 
         outfile = open("Rrp.log", 'w')
-        genLog.write_Rrp(logdict, outfile, 16, 8)
+        genLog.write_Rrp(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("Rrp.log")
@@ -133,10 +145,11 @@ class genLogTest(unittest.TestCase):
         r_reference = np.random.rand(4, 3)
 
         self.nuclei_rpmd.positions = r_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_rpmd}
+        log = log_nuclei(time_reference)
+        log.positions = self.nuclei_rpmd.positions
 
         outfile = open("Rrp.log", 'w')
-        genLog.write_Rrp(logdict, outfile, 16, 8)
+        genLog.write_Rrp(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("Rrp.log")
@@ -147,15 +160,16 @@ class genLogTest(unittest.TestCase):
 
         return
 
-    def test_wpite_Prp(self):
+    def test_write_Prp(self):
         time_reference = np.random.rand()
         p_reference = np.random.rand(4, 1)
 
         self.nuclei_classical.momenta = p_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_classical}
+        log = log_nuclei(time_reference)
+        log.momenta = self.nuclei_classical.momenta
 
         outfile = open("Prp.log", 'w')
-        genLog.write_Prp(logdict, outfile, 16, 8)
+        genLog.write_Prp(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("Prp.log")
@@ -165,10 +179,11 @@ class genLogTest(unittest.TestCase):
         p_reference = np.random.rand(4, 3)
 
         self.nuclei_rpmd.momenta = p_reference
-        logdict = {'time': time_reference, 'nuclei': self.nuclei_rpmd}
+        log = log_nuclei(time_reference)
+        log.momenta = self.nuclei_rpmd.momenta
 
         outfile = open("Prp.log", 'w')
-        genLog.write_Prp(logdict, outfile, 16, 8)
+        genLog.write_Prp(log, outfile, 16, 8)
         outfile.close()
 
         written_data = np.genfromtxt("Prp.log")
@@ -176,6 +191,26 @@ class genLogTest(unittest.TestCase):
         np.testing.assert_allclose(p_reference.flatten(), written_data[1:], atol=1e-7)
 
         os.remove("Prp.log")
+
+        return
+
+    def test_write_electronic_state(self):
+        time_reference = np.random.rand()
+        state_reference = 1
+
+        self.nuclei_classical.electrons.current_state = state_reference
+        log = log_nuclei(time_reference)
+        log.electrons = self.nuclei_classical.electrons
+
+        outfile = open("state.log", 'w')
+        genLog.write_electronic_state(log, outfile, 16, 8)
+        outfile.close()
+
+        written_data = np.genfromtxt("state.log")
+        np.testing.assert_allclose(time_reference, written_data[0], atol=1e-7)
+        np.testing.assert_allclose(state_reference, written_data[1:], atol=1e-7)
+
+        os.remove("state.log")
 
         return
 

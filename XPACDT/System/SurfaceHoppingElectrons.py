@@ -31,6 +31,7 @@
 electronic dynamics, extended to ring polymer molecular dynamics to give
 ring polymer surface hopping (RPSH)."""
 
+import math
 import numpy as np
 import random
 from scipy.linalg import expm
@@ -55,6 +56,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         Dictonary-like presentation of the input file.
     n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
+    masses_nuclei : (n_dof) ndarray of floats
+        The masses of each nuclear degree of freedom in au.
+    R, P : (n_dof, n_beads) ndarray of floats
+        The (ring-polymer) positions `R` and momenta `P` representing the
+        system nuclei in au.
 
     References
     ----------
@@ -536,9 +542,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             self._phase = self._phase + 0.5 * time_propagate * (self._old_diff_diag_V + self._diff_diag_V)
             self._old_diff_diag_V = self._diff_diag_V.copy()
             
-            self._print_a_kj(self._c_coeff, self._phase)
+            #self._print_a_kj(self._c_coeff, self._phase)
         else:
-            self._print_a_kj(self._c_coeff)
+            #self._print_a_kj(self._c_coeff)
+            pass
         
         self._old_H_e = self._H_e_total.copy()
         if (self.basis == 'adiabatic'):
@@ -684,12 +691,12 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             if (prob[i] < 0. or i == self.current_state):
                 prob[i] = 0.
          
-        print("Printing probability: ",prob, '\n')
+        #print("Printing probability: ",prob, '\n')
         # State switch if needed, have another function for momentum rescaling
         new_state = None
-        #rand_num = random.random()
+        rand_num = random.random()
         # TODO : Remove this test later
-        rand_num = 0.006
+        # rand_num = 0.006
         
         sum_prob = 0.
         for i, p in enumerate(prob):
@@ -697,14 +704,15 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 new_state = i
                 break
             sum_prob += p
-            
-        print('new state is ', new_state)
 
         if (new_state is not None):
+            print("Current momenta: ", P)
             should_change = self._momentum_rescaling(R, P, new_state)
             print("enough energy: ", should_change)
             if should_change:
                 self.current_state = new_state
+                print("new momenta: ", P)
+            print('State is ', self.current_state)
 
         return
 
@@ -739,6 +747,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             else:
                 dd = self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid) \
                     - self.pes.diabatic_gradient(R, new_state, new_state, centroid=centroid)
+        print(dd)
 
         # Need inv_mass as a property? Since mult is faster than division.
         if (self.rpsh_rescaling == 'centroid'):
@@ -766,14 +775,19 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         else:
             # Take the least possible change
             if (b_kj < 0.):
-                factor = (b_kj + root) / (2. * a_kj)
+                factor = (b_kj + math.sqrt(root)) / (2. * a_kj)
             else:
-                factor = (b_kj - root) / (2. * a_kj)
-
+                factor = (b_kj - math.sqrt(root)) / (2. * a_kj)
+            
+            print("old momenta inside func: ", P)
+            print("change factor: ", factor)
             # Does changing P here, also change for nuclei????
             # Should work for both centroid and bead rescaling?
             for i, p_A in enumerate(P):
+                print("factor * dd: ", factor * dd[i])
                 p_A -= factor * dd[i]
+                
+            print("new momenta inside func: ", P)
 
             return True
     

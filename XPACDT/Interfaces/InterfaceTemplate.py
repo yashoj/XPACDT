@@ -855,19 +855,19 @@ class PotentialInterface:
 
         n = len(R)
         H = np.zeros((n, n))
-        original_R = R.copy()
+        R_step = R.copy()
 
         for i in range(len(R)):
             # TODO: maybe put into some numerics module?
-            R[i] += self.DERIVATIVE_STEPSIZE
-            grad_plus = self._gradient_wrapper(R)
+            R_step[i] += self.DERIVATIVE_STEPSIZE
+            grad_plus = self._gradient_wrapper(R_step)
 
-            R = original_R.copy()
-            R[i] -= self.DERIVATIVE_STEPSIZE
-            grad_minus = self._gradient_wrapper(R)
+            R_step = R.copy()
+            R_step[i] -= self.DERIVATIVE_STEPSIZE
+            grad_minus = self._gradient_wrapper(R_step)
 
             H[i] = (grad_plus - grad_minus) / (2.0 * self.DERIVATIVE_STEPSIZE)
 
-            R = original_R.copy()
+            R_step = R.copy()
 
         return H

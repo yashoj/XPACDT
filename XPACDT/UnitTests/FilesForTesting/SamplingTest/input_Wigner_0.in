@@ -21,7 +21,7 @@ $end
 $sampling               # sampling input
 
 method = Wigner         # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
-samples = 100000        # number of samples to be collected
+samples = 20000        # number of samples to be collected
 $end
 
 ##############################################################################

@@ -64,6 +64,8 @@ class InputfileTest(unittest.TestCase):
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_works.in")
         self.assertDictEqual(input_reference, parameters.store)
 
+        # TODO: add a test for 'commands'
+
         return
 
     def test_parse_values(self):
@@ -93,6 +95,7 @@ class InputfileTest(unittest.TestCase):
 
         mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
                              34631.970366, 34631.970366, 34631.970366])
+
         coordinate_ref = np.array([[1.0], [2.0], [3.0], [2.0], [1.0], [4.0]])
         input_string = "H 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"

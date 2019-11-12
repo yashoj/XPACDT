@@ -8,9 +8,17 @@ XPACDT.Tools.Analysis module
 ----------------------------
 
 .. automodule:: XPACDT.Tools.Analysis
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+XPACDT.Tools.Bootstrap module
+-----------------------------
+
+.. automodule:: XPACDT.Tools.Bootstrap
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 XPACDT.Tools.DiabaticToAdiabatic\_2states module
 ------------------------------------------------
@@ -32,9 +40,25 @@ XPACDT.Tools.NormalModes module
 -------------------------------
 
 .. automodule:: XPACDT.Tools.NormalModes
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+XPACDT.Tools.Operations module
+------------------------------
+
+.. automodule:: XPACDT.Tools.Operations
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+XPACDT.Tools.Units module
+-------------------------
+
+.. automodule:: XPACDT.Tools.Units
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 XPACDT.Tools.Units module
 -------------------------
@@ -49,6 +73,6 @@ Module contents
 ---------------
 
 .. automodule:: XPACDT.Tools
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

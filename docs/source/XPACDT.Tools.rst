@@ -20,6 +20,22 @@ XPACDT.Tools.Bootstrap module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.Tools.DiabaticToAdiabatic\_2states module
+------------------------------------------------
+
+.. automodule:: XPACDT.Tools.DiabaticToAdiabatic_2states
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+XPACDT.Tools.DiabaticToAdiabatic\_Nstates module
+------------------------------------------------
+
+.. automodule:: XPACDT.Tools.DiabaticToAdiabatic_Nstates
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 XPACDT.Tools.NormalModes module
 -------------------------------
 
@@ -43,6 +59,14 @@ XPACDT.Tools.Units module
    :members:
    :undoc-members:
    :show-inheritance:
+
+XPACDT.Tools.Units module
+-------------------------
+
+.. automodule:: XPACDT.Tools.Units
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 Module contents

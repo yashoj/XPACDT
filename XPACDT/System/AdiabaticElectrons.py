@@ -41,10 +41,12 @@ class AdiabaticElectrons(electrons.Electrons):
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
+    n_beads : (n_dof) list of int
+        The number of beads for each degree of freedom.
     """
 
-    def __init__(self, parameters):
-        electrons.Electrons.__init__(self, parameters)
+    def __init__(self, parameters, n_beads):
+        electrons.Electrons.__init__(self, parameters, n_beads, 'adiabatic')
 
     def step(self, time, **kwargs):
         """ Dummy implementation of the step, as adiabatic electrons have no
@@ -72,7 +74,7 @@ class AdiabaticElectrons(electrons.Electrons):
         The energy of the systems PES at each bead position or at the centroid
         in hartree.
         """
-        return self.pes.energy(R, centroid=centroid)
+        return self.pes.adiabatic_energy(R, centroid=centroid)
 
     def gradient(self, R, centroid=False):
         """Calculate the gradient of the electronic energy at the current
@@ -94,4 +96,4 @@ class AdiabaticElectrons(electrons.Electrons):
         centroid in hartree/au.
         """
 
-        return self.pes.gradient(R, centroid=centroid)
+        return self.pes.adiabatic_gradient(R, centroid=centroid)

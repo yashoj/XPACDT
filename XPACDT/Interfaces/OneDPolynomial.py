@@ -37,7 +37,12 @@ import XPACDT.Interfaces.InterfaceTemplate as itemplate
 class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
-    V(x) = \sum_{i=0}^{N} a_i (x-x_0)^i.
+    :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
+    
+    Parameters
+    ----------
+    max_n_beads : int, optional
+        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
     Other Parameters
     ----------------
@@ -48,7 +53,12 @@ class OneDPolynomial(itemplate.PotentialInterface):
         expansion length is determined by the number of given coefficients
         here.
     """
-    def __init__(self, **kwargs):
+
+    def __init__(self, max_n_beads=1, **kwargs):
+
+        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1,
+                                              max_n_beads, 'adiabatic')
+
         try:
             self.__x0 = float(kwargs.get('x0', 0.0))
         except ValueError as e:
@@ -66,8 +76,6 @@ class OneDPolynomial(itemplate.PotentialInterface):
                                    "not convertable to floats."
                                    " a is " + kwargs.get('a'))
 
-        itemplate.PotentialInterface.__init__(self, "OneDPolynomial")
-
     @property
     def a(self):
         """(N) ndarray of floats : Expansion coefficients for the polynomial
@@ -79,11 +87,12 @@ class OneDPolynomial(itemplate.PotentialInterface):
         """float : The equilibrium position. Default is x0=0. """
         return self.__x0
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
+        ----------
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
@@ -96,40 +105,40 @@ class OneDPolynomial(itemplate.PotentialInterface):
             and thus defaults to None.
         """
 
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
-
         # centroid part if more than 1 bead
-        if R.shape[1] > 1:
+        if self.max_n_beads > 1:
             centroid = np.mean(R, axis=1)
             distance_centroid = centroid[0] - self.x0
             power_centroid = 1.0
-            self._gradient_centroid = np.zeros_like(distance_centroid)
-            self._energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
+            self._adiabatic_gradient_centroid = np.zeros_like(distance_centroid)
+            self._adiabatic_energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
 
         # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
-        self._gradient = np.zeros_like(distance)
-        self._energy = np.zeros_like(distance) + self.a[0]
+        self._adiabatic_gradient = np.zeros_like(distance)
+        self._adiabatic_energy = np.zeros_like(distance) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
             # beads part
-            self._gradient += float(i+1) * a * power
+            self._adiabatic_gradient += float(i+1) * a * power
             power *= distance
-            self._energy += a * power
+            self._adiabatic_energy += a * power
 
             # centroid part if more than 1 bead
-            if R.shape[1] > 1:
-                self._gradient_centroid += float(i+1) * a * power_centroid
+            if self.max_n_beads > 1:
+                self._adiabatic_gradient_centroid += float(i+1) * a * power_centroid
                 power_centroid *= distance_centroid
-                self._energy_centroid += a * power_centroid
+                self._adiabatic_energy_centroid += a * power_centroid
 
-        self._gradient = self._gradient.reshape((1, -1))
+        self._adiabatic_energy = self._adiabatic_energy.reshape((1, -1))
+        self._adiabatic_gradient = self._adiabatic_gradient.reshape((1, 1, -1))
 
-        if R.shape[1] == 1:
-            self._energy_centroid = self._energy
-            self._gradient_centroid = self._gradient
+        if self.max_n_beads == 1:
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
+        else:
+            self._adiabatic_energy_centroid = self._adiabatic_energy_centroid.reshape((-1))
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient_centroid.reshape((1, -1))
 
         return

@@ -8,17 +8,17 @@ XPACDT.System.AdiabaticElectrons module
 ---------------------------------------
 
 .. automodule:: XPACDT.System.AdiabaticElectrons
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 XPACDT.System.Electrons module
 ------------------------------
 
 .. automodule:: XPACDT.System.Electrons
-   :members:
-   :undoc-members:
-   :show-inheritance:
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 XPACDT.System.Nuclei module
 ---------------------------
@@ -27,6 +27,14 @@ XPACDT.System.Nuclei module
    :members:
    :undoc-members:
    :show-inheritance:
+
+XPACDT.System.SurfaceHoppingElectrons module
+--------------------------------------------
+
+.. automodule:: XPACDT.System.SurfaceHoppingElectrons
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 XPACDT.System.System module
 ---------------------------

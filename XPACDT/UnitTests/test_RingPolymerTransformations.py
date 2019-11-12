@@ -268,13 +268,20 @@ class RingPolymerTransformationsTest(unittest.TestCase):
     def test_nm_transformation_matrix(self):
         RPtransform = RPtrafo.RingPolymerTransformations([1], 'matrix')
         C_ref_1 = np.array([[1]])
+        C_inv_ref_1 = np.array([[1]])
         np.testing.assert_allclose(RPtransform.C_matrices[1], C_ref_1,
+                                   rtol=1e-7)
+        np.testing.assert_allclose(RPtransform.C_inv_matrices[1], C_inv_ref_1,
                                    rtol=1e-7)
 
         RPtransform = RPtrafo.RingPolymerTransformations([2], 'matrix')
         C_ref_2 = np.array([[1.0 / np.sqrt(2.0), 1.0 / np.sqrt(2.0)],
                             [1.0 / np.sqrt(2.0), -1.0 / np.sqrt(2.0)]])
+        C_inv_ref_2 = np.array([[1.0 / np.sqrt(2.0), 1.0 / np.sqrt(2.0)],
+                                [1.0 / np.sqrt(2.0), -1.0 / np.sqrt(2.0)]])
         np.testing.assert_allclose(RPtransform.C_matrices[2], C_ref_2,
+                                   rtol=1e-7)
+        np.testing.assert_allclose(RPtransform.C_inv_matrices[2], C_inv_ref_2,
                                    rtol=1e-7)
 
         RPtransform = RPtrafo.RingPolymerTransformations([4], 'matrix')
@@ -282,24 +289,39 @@ class RingPolymerTransformationsTest(unittest.TestCase):
                             [1.0 / np.sqrt(2.0), 0.0, -1.0 / np.sqrt(2.0), 0.0],
                             [1.0 / 2.0, -1.0 / 2.0, 1.0 / 2.0, -1.0 / 2.0],
                             [0.0, -1.0 / np.sqrt(2.0), 0.0, 1.0 / np.sqrt(2.0)]])
+        C_inv_ref_4 = np.array([[1.0 / 2.0, 1.0 / np.sqrt(2.0), 1.0 / 2.0, 0.],
+                                [1.0 / 2.0, 0.0, -1.0 / 2.0, -1.0 / np.sqrt(2.0)],
+                                [1.0 / 2.0, -1.0 / np.sqrt(2.0), 1.0 / 2.0, 0.],
+                                [1.0 / 2.0, 0.0, -1.0 / 2.0, 1.0 / np.sqrt(2.0)]])
         np.testing.assert_allclose(RPtransform.C_matrices[4], C_ref_4,
+                                   atol=1e-8)
+        np.testing.assert_allclose(RPtransform.C_inv_matrices[4], C_inv_ref_4,
                                    atol=1e-8)
 
         # Test if only one key-value pair for repeating number of beads
         RPtransform = RPtrafo.RingPolymerTransformations([1, 1, 1], 'matrix')
         self.assertTrue(list(RPtransform.C_matrices.keys()) == [1])
+        self.assertTrue(list(RPtransform.C_inv_matrices.keys()) == [1])
         np.testing.assert_allclose(RPtransform.C_matrices[1], C_ref_1,
+                                   rtol=1e-7)
+        np.testing.assert_allclose(RPtransform.C_inv_matrices[1], C_inv_ref_1,
                                    rtol=1e-7)
 
         # Test for different number of beads for each dof
         RPtransform = RPtrafo.RingPolymerTransformations([1, 2, 4], 'matrix')
         self.assertTrue(list(RPtransform.C_matrices.keys()) == [1, 2, 4])
+        self.assertTrue(list(RPtransform.C_inv_matrices.keys()) == [1, 2, 4])
         np.testing.assert_allclose(RPtransform.C_matrices[1], C_ref_1,
                                    rtol=1e-7)
         np.testing.assert_allclose(RPtransform.C_matrices[2], C_ref_2,
                                    rtol=1e-7)
         np.testing.assert_allclose(RPtransform.C_matrices[4], C_ref_4,
                                    atol=1e-8)
+
+        # Test for None if 'fft' used
+        RPtransform = RPtrafo.RingPolymerTransformations([1], 'fft')
+        self.assertTrue(RPtransform.C_matrices is None)
+        self.assertTrue(RPtransform.C_inv_matrices is None)
 
         return
 

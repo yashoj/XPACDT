@@ -8,6 +8,7 @@ $system                     # general parameters
 seed = 0                    # Seed for random number generator
 dof = 4                     # the number of degrees of freedom
 job = sample	                # The job type (possible: sample, propagate, analyze, plot)
+electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
 Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
 folder = test               # the folder for the trajectories
 
@@ -22,10 +23,56 @@ $end
 
 ##############################################################################
 
+$SurfaceHoppingElectrons  # must match the electrons specified; specific to each electronic method
+
+basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic)
+$end
+
+##############################################################################
+
+$NRPMDElectrons      # must match the electrons specified; specific to each electronic method
+
+basis = diabatic     # Electronic state basis representation (possible: adiabatic, diabatic)
+$end
+
+##############################################################################
+
 $OneDPolynomial # must match the interface specified; specific to each interface
 
 a = 0 0 0.5
 x0 = 0
+$end
+
+##############################################################################
+
+$Morse1D   # must match the interface specified; specific to each interface
+
+De = 0.04556
+a = 1.94  # 0.97
+re = 2.50  # 1.70
+b = 0.04556
+$end
+
+##############################################################################
+
+$MorseDiabatic  # must match the interface specified; specific to each interface
+
+model_type = model_1         # Model number to be used (possible: model_1, model_2, model_3)
+n_states = 3                 # Number of morse diabatic states (possible: 2, 3)
+$end
+
+##############################################################################
+
+$Dissociation2states  # must match the interface specified; specific to each interface
+
+model_type = strong_coupling         # Model type to be used (possible: strong_coupling, weak_coupling)
+$end
+
+##############################################################################
+
+$TullyModel  # must match the interface specified; specific to each interface
+
+model_type = model_A         # Model type to be used (possible: model_A, model_B, model_C)
 $end
 
 ##############################################################################

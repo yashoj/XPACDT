@@ -12,6 +12,14 @@ XPACDT.Interfaces.InterfaceTemplate module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.Interfaces.MorseDiabatic module
+--------------------------------------
+
+.. automodule:: XPACDT.Interfaces.MorseDiabatic
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 XPACDT.Interfaces.OneDPolynomial module
 ---------------------------------------
 

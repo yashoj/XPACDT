@@ -28,6 +28,14 @@ XPACDT.UnitTests.test\_Analysis module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.UnitTests.test\_AdiabaticElectrons module
+------------------------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_AdiabaticElectrons
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 XPACDT.UnitTests.test\_FixedSampling module
 -------------------------------------------
 
@@ -52,6 +60,14 @@ XPACDT.UnitTests.test\_InterfaceTemplate module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.UnitTests.test\_MassiveAndersen module
+---------------------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_MassiveAndersen
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 XPACDT.UnitTests.test\_NormalModes module
 -----------------------------------------
 
@@ -67,6 +83,14 @@ XPACDT.UnitTests.test\_Nuclei module
    :members:
    :undoc-members:
    :show-inheritance:
+
+XPACDT.UnitTests.test\_Nuclei module
+------------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_Nuclei
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 XPACDT.UnitTests.test\_OneDPolynomial module
 --------------------------------------------
@@ -132,6 +156,14 @@ XPACDT.UnitTests.test\_Units module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.UnitTests.test\_Units module
+-----------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_Units
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 XPACDT.UnitTests.test\_VelocityVerlet module
 --------------------------------------------
 
@@ -155,6 +187,14 @@ XPACDT.UnitTests.test\_genLog module
    :members:
    :undoc-members:
    :show-inheritance:
+
+XPACDT.UnitTests.test\_genLog module
+------------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_genLog
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 
 Module contents

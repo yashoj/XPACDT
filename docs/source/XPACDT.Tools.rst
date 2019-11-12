@@ -28,6 +28,14 @@ XPACDT.Tools.Geometry module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.Tools.Gnuplot module
+---------------------------
+
+.. automodule:: XPACDT.Tools.Gnuplot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 XPACDT.Tools.NormalModes module
 -------------------------------
 

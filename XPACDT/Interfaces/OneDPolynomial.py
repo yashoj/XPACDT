@@ -111,8 +111,8 @@ class OneDPolynomial(itemplate.PotentialInterface):
         # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
-        self._gradient = np.zeros_like(distance[np.newaxis,np.newaxis,:])
-        self._energy = np.zeros_like(distance[np.newaxis,:]) + self.a[0]
+        self._gradient = np.zeros_like(distance[np.newaxis,np.newaxis, :])
+        self._energy = np.zeros_like(distance[np.newaxis, :]) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
             # beads part

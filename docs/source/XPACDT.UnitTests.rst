@@ -36,6 +36,14 @@ XPACDT.UnitTests.test\_BKMP2 module
    :undoc-members:
    :show-inheritance:
 
+XPACDT.UnitTests.test\_CW module
+--------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_CW
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 XPACDT.UnitTests.test\_EckartBarrier module
 -------------------------------------------
 
@@ -72,6 +80,14 @@ XPACDT.UnitTests.test\_InterfaceTemplate module
 -----------------------------------------------
 
 .. automodule:: XPACDT.UnitTests.test_InterfaceTemplate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+XPACDT.UnitTests.test\_LWAL module
+----------------------------------
+
+.. automodule:: XPACDT.UnitTests.test_LWAL
    :members:
    :undoc-members:
    :show-inheritance:

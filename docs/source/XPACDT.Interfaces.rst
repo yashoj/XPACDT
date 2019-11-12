@@ -7,6 +7,8 @@ Subpackages
 .. toctree::
 
    XPACDT.Interfaces.BKMP2_module
+   XPACDT.Interfaces.CW_module
+   XPACDT.Interfaces.LWAL_module
 
 Submodules
 ----------
@@ -15,6 +17,14 @@ XPACDT.Interfaces.BKMP2 module
 ------------------------------
 
 .. automodule:: XPACDT.Interfaces.BKMP2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+XPACDT.Interfaces.CW module
+---------------------------
+
+.. automodule:: XPACDT.Interfaces.CW
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,6 +41,14 @@ XPACDT.Interfaces.InterfaceTemplate module
 ------------------------------------------
 
 .. automodule:: XPACDT.Interfaces.InterfaceTemplate
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+XPACDT.Interfaces.LWAL module
+-----------------------------
+
+.. automodule:: XPACDT.Interfaces.LWAL
    :members:
    :undoc-members:
    :show-inheritance:

@@ -24,7 +24,7 @@ rescaling_type = gradient      # Type of momentum rescaling; (possible: nac, gra
 
 evolution_picture = schroedinger
 #evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schroedinger)
-ode_solver = rk4
+#ode_solver = rk4
 #ode_solver = unitary
 $end
 

@@ -8,8 +8,10 @@ $system                     # general parameters
 seed = 0                    # Seed for random number generator
 dof = 4                     # the number of degrees of freedom
 job = sample	                # The job type (possible: sample, propagate, analyze, plot)
-electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
-Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
+electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: AdiabaticElectrons (default),
+                                     #      SurfaceHoppingElectrons, NRPMDElectrons)
+Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial, Morse1D,
+                            #       MorseDiabatic, Dissociation2states, TullyModel)
 folder = test               # the folder for the trajectories
 
 # optional:
@@ -36,7 +38,8 @@ rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve
 rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
 
 evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schroedinger)
-ode_solver = rk4          # ODE solver to be used for propagation (possible: scipy_solver (default), rk4, unitary)
+ode_solver = rk4          # ODE solver to be used for propagation (possible: rk4 (default), scipy_solver,
+                          #     unitary (this needs 'evolution_picture' = schroedinger))
 $end
 
 ##############################################################################

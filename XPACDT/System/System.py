@@ -52,8 +52,6 @@ class System(object):
 
         self.__parameters = input_parameters
 
-        assert('Interface' in self.parameters.get("system")), "Interface " \
-            "not specified!"
         assert('dof' in self.parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 

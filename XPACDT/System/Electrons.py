@@ -63,6 +63,12 @@ class Electrons:
 
         # Set up potential interface
         pes_name = parameters.get("system").get("Interface", None)
+
+        assert(pes_name is not None), \
+            ("Potential energy surface interface not specified.")
+        assert(pes_name in parameters), \
+            ("No input parameters for chosen potential energy surface interface.")
+
         __import__("XPACDT.Interfaces." + pes_name)
 
         self.basis = basis

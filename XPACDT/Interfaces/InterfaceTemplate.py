@@ -69,7 +69,7 @@ class PotentialInterface:
     max_n_beads
     """
 
-    def __init__(self, name, n_dof, n_states=1, max_n_beads=1, 
+    def __init__(self, name, n_dof, n_states=1, max_n_beads=1,
                  primary_basis='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof
@@ -263,8 +263,7 @@ class PotentialInterface:
             self._old_R = R.copy()
             return True
     
-    # Is this name fine or better to use just '_recalculate_adiabatic'.
-    def _need_to_recalculate_adiabatic(self, R, S=None):
+    def _recalculate_adiabatic(self, R, S=None):
         """Check if adiabatic properties need to be recalulated due to change
         in positions or since only diabatic properties were calculated. If yes,
         then calculate them.
@@ -285,6 +284,8 @@ class PotentialInterface:
             self._is_adiabatic_calculated = True
         else:
             pass
+
+        return
 
     def adiabatic_energy(self, R, S=None, centroid=False, return_matrix=False):
         """Obtain adiabatic energy of the system in the current state.
@@ -309,7 +310,7 @@ class PotentialInterface:
             The energy of the system in hartree at each bead position or at the
             centroid for a particular state or all states.
         """
-        self._need_to_recalculate_adiabatic(R, S)
+        self._recalculate_adiabatic(R, S)
 
         if centroid:
             if return_matrix:
@@ -345,7 +346,7 @@ class PotentialInterface:
             The gradient of the system in hartree/au at each bead position or
             at the centroid for a particular state or all states.
         """
-        self._need_to_recalculate_adiabatic(R, S)
+        self._recalculate_adiabatic(R, S)
             
         if centroid:
             if return_matrix:
@@ -392,7 +393,7 @@ class PotentialInterface:
         assert (self.n_states > 1),\
             ("NAC is only defined for more than 1 electronic state.")
 
-        self._need_to_recalculate_adiabatic(R, None)
+        self._recalculate_adiabatic(R, None)
 
         if centroid:
             if return_matrix:
@@ -640,6 +641,8 @@ class PotentialInterface:
             self._nac_centroid = dia2ad.get_NAC(
                 self._diabatic_energy_centroid, self._diabatic_gradient_centroid)
 
+        return
+
     def minimize_geom(self, R0):
         """Find the potential minimum employing the Newton-CG method
         as implemented in Scipy.
@@ -848,19 +851,19 @@ class PotentialInterface:
 
         n = len(R)
         H = np.zeros((n, n))
-        original_R = R.copy()
+        R_step = R.copy()
 
         for i in range(len(R)):
             # TODO: maybe put into some numerics module?
-            R[i] += self.DERIVATIVE_STEPSIZE
-            grad_plus = self._gradient_wrapper(R)
+            R_step[i] += self.DERIVATIVE_STEPSIZE
+            grad_plus = self._gradient_wrapper(R_step)
 
-            R = original_R.copy()
-            R[i] -= self.DERIVATIVE_STEPSIZE
-            grad_minus = self._gradient_wrapper(R)
+            R_step = R.copy()
+            R_step[i] -= self.DERIVATIVE_STEPSIZE
+            grad_minus = self._gradient_wrapper(R_step)
 
             H[i] = (grad_plus - grad_minus) / (2.0 * self.DERIVATIVE_STEPSIZE)
 
-            R = original_R.copy()
+            R_step = R.copy()
 
         return H

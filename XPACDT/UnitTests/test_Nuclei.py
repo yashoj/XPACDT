@@ -102,6 +102,76 @@ class NucleiTest(unittest.TestCase):
                                              rpmd_centroid)
         pass
 
+    def test_parse_dof(self):
+        with self.assertRaises(NotImplementedError):
+            self.nuclei_classical.parse_dof("m,0,1")
+
+        with self.assertRaises(NotImplementedError):
+            self.nuclei_classical.parse_dof("m,0,1", quantity='p')
+
+        with self.assertRaises(NotImplementedError):
+            self.nuclei_classical.parse_dof("m,0,1", quantity='v')
+
+            self.nuclei_classical.parse_dof("m,0,1", beads=True)
+
+        with self.assertRaises(NotImplementedError):
+            self.nuclei_classical.parse_dof("m,0,1", quantity='p', beads=True)
+
+        with self.assertRaises(NotImplementedError):
+            self.nuclei_classical.parse_dof("m,0,1", quantity='v', beads=True)
+
+        with self.assertRaises(RuntimeError):
+            self.nuclei_classical.parse_dof("0,2", quantity='y')
+
+        values_ref = np.array([2.0, 4.0])
+        values = self.nuclei_classical.parse_dof("0,2")
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([0.05, 1.25/2.1])
+        values = self.nuclei_classical.parse_dof("1,3", quantity='v')
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([-1.0, 2.0, 1.25])
+        values = self.nuclei_classical.parse_dof("0,2,3", quantity='p')
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([[2.0], [4.0]])
+        values = self.nuclei_classical.parse_dof("0,2", beads=True)
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([[0.05], [1.25/2.1]])
+        values = self.nuclei_classical.parse_dof("1,3", quantity='v', beads=True)
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([[-1.0], [2.0], [1.25]])
+        values = self.nuclei_classical.parse_dof("0,2,3", quantity='p', beads=True)
+        np.testing.assert_array_equal(values_ref, values)
+
+        # RPMD
+        values_ref = np.array([8.4/4, 1.9/4])
+        values = self.nuclei_rpmd.parse_dof("0,2")
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([-0.3/4/2, 0.85/4/2.1])
+        values = self.nuclei_rpmd.parse_dof("1,3", quantity='v')
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([2.2/4, 7.4/4, 0.85/4])
+        values = self.nuclei_rpmd.parse_dof("0,2,3", quantity='p')
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([[2.0, 3.0, 1.0, 2.4], [4.0, -2.0, -0.1, 0.0]])
+        values = self.nuclei_rpmd.parse_dof("0,2", beads=True)
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([[0.05, -0.05, -0.25, 0.1], [1.25/2.1, -0.5/2.1, 0.1/2.1, 0.0]])
+        values = self.nuclei_rpmd.parse_dof("1,3", quantity='v', beads=True)
+        np.testing.assert_array_equal(values_ref, values)
+
+        values_ref = np.array([[-1.0, 1.2, 2.0, 0.0], [2.0, -0.1, 2.5, 3.0], [1.25, -0.5, 0.1, 0.0]])
+        values = self.nuclei_rpmd.parse_dof("0,2,3", quantity='p', beads=True)
+        np.testing.assert_array_equal(values_ref, values)
+
     def test_energy(self):
         raise NotImplementedError("Please implement a test here once "
                                   "the function is implemented!!")

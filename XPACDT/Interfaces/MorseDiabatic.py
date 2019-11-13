@@ -135,6 +135,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
         self._calculate_diabatic_all(R)
         self._get_adiabatic_from_diabatic(R, self._get_diabatic_energy_matrix)
 
+        return
+
     def _calculate_diabatic_all(self, R):
         """
         Calculate and set diabatic matrices for energies and gradients for
@@ -198,6 +200,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
                     self._diabatic_gradient_centroid[0, 2] = self._get_off_diag_grad(
                         r_centroid, self.__A13, self.__as13, self.__r13)
                     self._diabatic_gradient_centroid[2, 0] = self._diabatic_gradient_centroid[0, 2].copy()
+
+        return
 
     def _get_diag_V(self, R, i):
         """
@@ -323,42 +327,10 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
 if __name__ == '__main__':
 
-    # !!! Should these plotting scripts be left here for future plotting?
-
-    import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
-    pot = MorseDiabatic(4, **{'n_states': '3', 'model_type': 'model_3'})
-
-    # R = np.array([[3.3, 3.4,  3.5, 3.6]])
-    R = np.array([[2., 3.5, 4., 5.]])
-
-    pot._calculate_adiabatic_all(R)
-
-    #print(pot._adiabatic_energy)
-    #print(pot._adiabatic_gradient, '\n\n')
-    #print(pot._nac, '\n\n')
-
-    # Test to see if 'is_adiabatic_calculated' working
-#    R = np.array([[3.3, 3.4,  3.5, 3.6]])
-#    pot._calculate_diabatic_all(R)
-#    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
-#    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
-#    print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
-#
-#    pot._calculate_adiabatic_all(R)
-#    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
-#    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
-#    print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
-#    
-    # print(dia2ad.get_adiabatic_energy(pot._diabatic_energy))
-    # print(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE))
-    # print(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), '\n\n')
-
-    print(np.allclose(dia2ad.get_adiabatic_energy(pot._diabatic_energy), pot._adiabatic_energy))
-    print(np.allclose(dia2ad.get_adiabatic_gradient(R, pot._get_diabatic_energy_matrix, pot.DERIVATIVE_STEPSIZE), pot._adiabatic_gradient))
-    print(np.allclose(dia2ad.get_NAC(pot._diabatic_energy, pot._diabatic_gradient), pot._nac, atol=1e-5))
-
-
-    # Plotting
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python MorseDiabatic.py <model_type> <n_states>" where <model_type> can
+    # be model_1, model_2, model_3 and <n_states> can be 2 or 3.
     import sys
     import matplotlib.pyplot as plt
 

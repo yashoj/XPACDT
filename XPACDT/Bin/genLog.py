@@ -79,10 +79,11 @@ def start():
     outfiles = setup_outfiles(args)
 
     # iterate over log
-    for d in system.log:
+    for logged_nuclei in system.log:
         # for each required output, write the current line to the file
         for key, outfile in outfiles.items():
-            getattr(sys.modules[__name__], "write_" + key)(d, outfile,
+            getattr(sys.modules[__name__], "write_" + key)(logged_nuclei,
+                                                           outfile,
                                                            WIDTH, PREC)
 
     for outfile in outfiles.values():

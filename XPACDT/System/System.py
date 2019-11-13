@@ -65,9 +65,9 @@ class System(object):
 
     @property
     def log(self):
-        """list of dicts : Log of the system history as a list. Each list entry
-        is a dictonary contraining the stored information, e.g., time, nuclei,
-        etc."""
+        """list of XPACDT.System.Nuclei : Log of the system history as a list
+        of the states of the nuclei, which also carry the information on the
+        electrons, times, etc."""
         return self.__log
 
     @property
@@ -90,13 +90,13 @@ class System(object):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
 
-    def step(self, time):
+    def step(self, time_propagate):
         """ Step the whole system forward in time. Also keep a log of the
         system state at these times.
 
         Parameters
         ----------
-        time : float
+        time_propagate : float
             Time to advance the system in au.
         """
         # TODO: Is this a good way to handle 'time' not multiple of timestep?
@@ -107,7 +107,7 @@ class System(object):
         # for proper floor division or modulo operation. This value is chosen
         # since it is greater than machine error and less than typical
         # propagation timesteps.
-        time_plus = time + 1e-8
+        time_plus = time_propagate + 1e-8
         n_steps = int(time_plus // timestep_nuclei)
 
         for i in range(n_steps):
@@ -122,7 +122,7 @@ class System(object):
         if (np.isclose((time_plus % timestep_nuclei), 0.)):
             pass
         else:
-            timestep_remaining = time - float(n_steps) * timestep_nuclei
+            timestep_remaining = time_propagate - float(n_steps) * timestep_nuclei
             self.__nuclei.propagate(timestep_remaining)
 
         self.do_log()
@@ -164,5 +164,4 @@ class System(object):
             self.__log = []
 
         self.__log.append(copy.deepcopy(self.nuclei))
-
         # TODO: remove certain parts to not consume too much memory

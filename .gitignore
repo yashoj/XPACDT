@@ -8,3 +8,4 @@ _templates
 XPACDT/Bin/input.in
 XPACDT/Bin/dist
 *.exe.spec
+docs/source/XPACDT.*

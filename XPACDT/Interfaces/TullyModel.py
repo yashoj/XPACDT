@@ -111,6 +111,8 @@ class TullyModel(itemplate.PotentialInterface):
         self._calculate_diabatic_all(R)
         self._get_adiabatic_from_diabatic(R)
 
+        return
+
     def _calculate_diabatic_all(self, R):
         """
         Calculate and set diabatic matrices for energies and gradients for
@@ -153,6 +155,8 @@ class TullyModel(itemplate.PotentialInterface):
                 self._diabatic_energy_centroid[0, 1]
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
+
+        return
 
     def _get_V_dV_11(self, R):
         """
@@ -253,7 +257,10 @@ class TullyModel(itemplate.PotentialInterface):
 
 if __name__ == '__main__':
 
-    # Plotting
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python TullyModel.py <model_type>" where <model_type> can be model_A,
+    # model_B or model_C.
     import sys
     import matplotlib.pyplot as plt
 

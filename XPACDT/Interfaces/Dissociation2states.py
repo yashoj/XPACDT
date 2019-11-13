@@ -117,6 +117,8 @@ class Dissociation2states(itemplate.PotentialInterface):
         self._calculate_diabatic_all(R)
         self._get_adiabatic_from_diabatic(R)
 
+        return
+
     def _calculate_diabatic_all(self, R):
         """
         Calculate and set diabatic matrices for energies and gradients for
@@ -158,6 +160,8 @@ class Dissociation2states(itemplate.PotentialInterface):
                 self._diabatic_energy_centroid[0, 1]
             self._diabatic_gradient_centroid[1, 0] = \
                 self._diabatic_gradient_centroid[0, 1].copy()
+
+        return
 
     def _get_diag_V_grad(self, R, i):
         """
@@ -210,10 +214,14 @@ class Dissociation2states(itemplate.PotentialInterface):
 
 if __name__ == '__main__':
 
-    # Plotting
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python Dissociation2states.py <model_type>" where <model_type> can be
+    # strong_coupling or weak_coupling.
+    import sys
     import matplotlib.pyplot as plt
     nb = 1
-    model_type = 'weak_coupling'  # 'strong_coupling'
+    model_type = sys.argv[1]  # 'strong_coupling
     pot = Dissociation2states(nb, **{'model_type': model_type})
 
     # len(linspace) array of positions

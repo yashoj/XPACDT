@@ -76,7 +76,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         electrons.Electrons.__init__(self, "SurfaceHoppingElectrons",
                                      parameters, n_beads, basis)
-        print("Initiating surface hopping in ", self.basis, " basis")
+        # print("Initiating surface hopping in ", self.basis, " basis")
 
         # TODO: decide what should be the default, for nb=1 does that shouldn't matter though
         self.rpsh_type = electronic_parameters.get("rpsh_type", "bead")
@@ -89,14 +89,14 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         nuclear_timestep = units.parse_time(parameters.get("nuclei_propagator").get("timestep"))
         self.__timestep = timestep_scaling_factor * nuclear_timestep
 
-        self.evolution_picture = electronic_parameters.get("evolution_picture", "interaction")
+        self.evolution_picture = electronic_parameters.get("evolution_picture", "schroedinger")
         self.ode_solver = electronic_parameters.get("ode_solver", "rk4")
         if (self.ode_solver == "unitary"):
             assert (self.evolution_picture == "schroedinger"), \
                 ("Evolution picture needs to be Schroedinger for unitary propagation.")
 
-        print("Representation is ", self.evolution_picture)
-        print("ODE solver is ", self.ode_solver)
+        # print("Representation is ", self.evolution_picture)
+        # print("ODE solver is ", self.ode_solver)
 
         n_states = self.pes.n_states
         max_n_beads = self.pes.max_n_beads
@@ -126,8 +126,8 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             # Needed for getting proper phase in interaction picture.
             if (self.evolution_picture == 'interaction'):
                 # Integral over diff_diag_V term, doesn't include -i/hbar
-                self._phase = np.zeros(max_n_beads, n_states, n_states, dtype=complex)
-                self._diff_diag_V = np.zeros(max_n_beads, n_states, n_states, dtype=complex)
+                self._phase = np.zeros((max_n_beads, n_states, n_states), dtype=complex)
+                self._diff_diag_V = np.zeros((max_n_beads, n_states, n_states), dtype=complex)
         else:
             self._c_coeff = np.zeros((1, n_states), dtype=complex)
             self._D = np.zeros((1, n_states, n_states), dtype=float)
@@ -138,13 +138,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         self._c_coeff[:, self.current_state] = 1.0 + 0.0j
 
-        positions = R
-        momenta = P
-        print(positions,'\n',  momenta, '\n', self.masses_nuclei)
-        self._old_D = self._get_kinetic_coupling_matrix(positions, momenta)
-        self._old_H_e = self._get_H_matrix(positions, self._old_D)
+        self._old_D = self._get_kinetic_coupling_matrix(R, P)
+        self._old_H_e = self._get_H_matrix(R, self._old_D)
         if (self.evolution_picture == 'interaction'):
-            self._old_diff_diag_V = self._get_diff_diag_V_matrix(positions)
+            self._old_diff_diag_V = self._get_diff_diag_V_matrix(R)
 
     @property
     def current_state(self):
@@ -208,12 +205,12 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     @property
     def evolution_picture(self):
-        """{'interaction', 'schroedinger'} : Representation/picture for quantum evolution."""
+        """{'schroedinger', 'interaction'} : Representation/picture for quantum evolution."""
         return self.__evolution_picture
 
     @evolution_picture.setter
     def evolution_picture(self, p):
-        assert (p in ['interaction', 'schroedinger']),\
+        assert (p in ['schroedinger', 'interaction']),\
                ("Evolution picture not available.")
         self.__evolution_picture = p
 
@@ -690,13 +687,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         for i in range(len(prob)):
             if (prob[i] < 0. or i == self.current_state):
                 prob[i] = 0.
-         
-        #print("Printing probability: ",prob, '\n')
+
         # State switch if needed, have another function for momentum rescaling
         new_state = None
         rand_num = random.random()
-        # TODO : Remove this test later
-        # rand_num = 0.006
         
         sum_prob = 0.
         for i, p in enumerate(prob):
@@ -706,13 +700,9 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             sum_prob += p
 
         if (new_state is not None):
-            print("Current momenta: ", P)
             should_change = self._momentum_rescaling(R, P, new_state)
-            print("enough energy: ", should_change)
             if should_change:
                 self.current_state = new_state
-                print("new momenta: ", P)
-            print('State is ', self.current_state)
 
         return
 
@@ -747,7 +737,6 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             else:
                 dd = self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid) \
                     - self.pes.diabatic_gradient(R, new_state, new_state, centroid=centroid)
-        print(dd)
 
         # Need inv_mass as a property? Since mult is faster than division.
         if (self.rpsh_rescaling == 'centroid'):
@@ -767,7 +756,6 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         # Check if enough energy for hop
         root = b_kj * b_kj + 4 * a_kj * diff_V
-        print("Check of energy:", root)
 
         if (root < 0.):
             # Not enough energy
@@ -778,16 +766,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 factor = (b_kj + math.sqrt(root)) / (2. * a_kj)
             else:
                 factor = (b_kj - math.sqrt(root)) / (2. * a_kj)
-            
-            print("old momenta inside func: ", P)
-            print("change factor: ", factor)
+
             # Does changing P here, also change for nuclei????
             # Should work for both centroid and bead rescaling?
             for i, p_A in enumerate(P):
-                print("factor * dd: ", factor * dd[i])
                 p_A -= factor * dd[i]
-                
-            print("new momenta inside func: ", P)
 
             return True
     
@@ -803,11 +786,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             
         print('Printing density matrix')
         
-        #print(a_kj, '\n')
+        print(a_kj, '\n')
         
         # Print the trace instead
-        for a in a_kj:
-            print(np.trace(np.absolute((a))))
+        #for a in a_kj:
+        #    print(np.trace(np.absolute((a))))
         return
 
 

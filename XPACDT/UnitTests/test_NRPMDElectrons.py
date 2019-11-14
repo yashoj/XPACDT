@@ -33,20 +33,20 @@ import numpy as np
 import random
 import unittest
 
-import XPACDT.System.SurfaceHoppingElectrons as sh
+import XPACDT.System.NRPMDElectrons as nrpmd
 import XPACDT.Input.Inputfile as infile
 
 
-class SurfaceHoppingTest(unittest.TestCase):
+class NRPMDElectronsTest(unittest.TestCase):
 
     def setUp(self):
         seed = 0
         random.seed(seed)
         np.random.seed(seed)
 
-        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_Wigner_0.in")
+        self.parameters = infile.Inputfile("FilesForTesting/SystemTest/input_NRPMD_classical.in")
         #self.system = xSystem.System(self.parameters0)
-
+        
     def test_step(self):
         return
 
@@ -56,10 +56,7 @@ class SurfaceHoppingTest(unittest.TestCase):
     def test_gradient(self):
         return
 
-    def test_hop(self):
-        return
-
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(SurfaceHoppingTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(NRPMDElectronsTest)
     unittest.TextTestRunner().run(suite)

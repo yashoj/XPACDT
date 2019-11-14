@@ -37,7 +37,7 @@ rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve
                           # bead or centroid energy (possible: bead, centroid; default: bead)
 rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
 
-evolution_picture = interaction  # Representation/picture for quantum evolution (possible: interaction (default), schroedinger)
+evolution_picture = schroedinger  # Representation/picture for quantum evolution (possible: schroedinger (default), interaction)
 ode_solver = rk4          # ODE solver to be used for propagation (possible: rk4 (default), scipy_solver,
                           #     unitary (this needs 'evolution_picture' = schroedinger))
 $end

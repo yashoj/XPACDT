@@ -30,14 +30,6 @@ $end
 
 ##############################################################################
 
-$rpmd
-
-beads = 2
-beta = 1052.0
-$end
-
-##############################################################################
-
 $nuclei_propagator             # nuclei propagator input
 
 method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
@@ -50,14 +42,14 @@ $end
 $coordinates	           # coordinates given here
 
 type = mass-value
-2.0 2.5 2.6
+2.0 2.5
 $end
 
 ##############################################################################
 
 $momenta               # momenta, must be the same ordering as coordinates
 
-0.001 0.002
+0.001
 $end
 
 ##############################################################################

@@ -669,6 +669,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     def _linear_interpolation_1d(self, x_fraction, y_initial, y_final):
         # x_fraction = (x_required - x_initial) / (x_final - x_initial)
         # y can be any dimension array, x_fraction is float
+        # Need assert for shapes of y_initial and y_final??
         return ((1. - x_fraction) * y_initial + x_fraction * y_final)
 
     def _surface_hopping(self, R, P, t_list, a_kk, b_list):

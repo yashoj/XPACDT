@@ -210,46 +210,44 @@ class SurfaceHoppingTest(unittest.TestCase):
 
     def test_get_modified_V(self):
         ### test for 2 state potential, 1 dof, 1 bead
-        # Adiabatic basis
+        # All rpsh_type should give the same result for 1 bead case.
         R = np.array([[0.]])
 
+        # Adiabatic basis
+        V_ref = np.array([[[-math.sqrt(0.01 + 3.6e-07), 0.],
+                           [0., math.sqrt(0.01 + 3.6e-07)]]])
         self.sh_electrons_classical.basis = 'adiabatic'
         self.sh_electrons_classical.rpsh_type = 'bead'
         np.testing.assert_allclose(self.sh_electrons_classical._get_modified_V(R),
-                                   [[[-math.sqrt(0.01 + 3.6e-07), 0.],
-                                     [0., math.sqrt(0.01 + 3.6e-07)]]], rtol=1e-7)
+                                   V_ref, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'centroid'
         np.testing.assert_allclose(self.sh_electrons_classical._get_modified_V(R),
-                                   [[[-math.sqrt(0.01 + 3.6e-07), 0.],
-                                     [0., math.sqrt(0.01 + 3.6e-07)]]], rtol=1e-7)
+                                   V_ref, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'density_matrix'
         np.testing.assert_allclose(self.sh_electrons_classical._get_modified_V(R),
-                                   [[[-math.sqrt(0.01 + 3.6e-07), 0.],
-                                     [0., math.sqrt(0.01 + 3.6e-07)]]], rtol=1e-7)
+                                   V_ref, rtol=1e-7)
 
         # Diabatic basis
+        V_ref = np.array([[[0.0006, 0.1], [0.1, -0.0006]]])
         self.sh_electrons_classical.basis = 'diabatic'
         self.sh_electrons_classical.rpsh_type = 'bead'
         np.testing.assert_allclose(self.sh_electrons_classical._get_modified_V(R),
-                                   [[[0.0006, 0.1],
-                                     [0.1, -0.0006]]], rtol=1e-7)
+                                   V_ref, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'centroid'
         np.testing.assert_allclose(self.sh_electrons_classical._get_modified_V(R),
-                                   [[[0.0006, 0.1],
-                                     [0.1, -0.0006]]], rtol=1e-7)
+                                   V_ref, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'density_matrix'
         np.testing.assert_allclose(self.sh_electrons_classical._get_modified_V(R),
-                                   [[[0.0006, 0.1],
-                                     [0.1, -0.0006]]], rtol=1e-7)
+                                   V_ref, rtol=1e-7)
 
         ### test for 2 state potential, 1 dof, 2 beads
-        # Adibatic basis
         R = np.array([[-1.0e05, 1.0e05]])
 
+        # Adibatic basis
         self.sh_electrons_rpmd.basis = 'adiabatic'
         self.sh_electrons_rpmd.rpsh_type = 'bead'
         V_ad_ref = (math.sqrt(0.04 + 3.6e-07) + 0.0006) * 0.5
@@ -289,28 +287,27 @@ class SurfaceHoppingTest(unittest.TestCase):
 
     def test_get_kinetic_coupling_matrix(self):
         ### test for 2 state potential, 1 dof, 1 bead
+        # All rpsh_type should give the same result for 1 bead case.
         R = np.array([[0.]])
         P = np.array([[4.]])
         nac_ref = -2.7e-05/(0.01 + 3.6e-07)
 
         # Adiabatic basis
+        D_ref = np.array([[[0., 2.0 * nac_ref], [-2.0 * nac_ref, 0.]]])
         self.sh_electrons_classical.basis = 'adiabatic'
         self.sh_electrons_classical.rpsh_type = 'bead'
         np.testing.assert_allclose(self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P),
-                                   [[[0., 2.0 * nac_ref],
-                                     [-2.0 * nac_ref, 0.]]], rtol=1e-7)
+                                   D_ref, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'centroid'
         np.testing.assert_allclose(self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P),
-                                   [[[0., 2.0 * nac_ref],
-                                     [-2.0 * nac_ref, 0.]]], rtol=1e-7)
+                                   D_ref, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'density_matrix'
         np.testing.assert_allclose(self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P),
-                                   [[[0., 2.0 * nac_ref],
-                                     [-2.0 * nac_ref, 0.]]], rtol=1e-7)
+                                   D_ref, rtol=1e-7)
 
-        # Diabatic basis
+        # Diabatic basis - should just return None for all cases.
         self.sh_electrons_classical.basis = 'diabatic'
         self.sh_electrons_classical.rpsh_type = 'bead'
         self.assertIsNone(self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P))
@@ -354,6 +351,7 @@ class SurfaceHoppingTest(unittest.TestCase):
 
     def test_get_H_matrix(self):
         ### test for 2 state potential, 1 dof, 1 bead
+        # All rpsh_type should give the same result for 1 bead case.
         R = np.array([[0.]])
         P = np.array([[4.]])
         V_ad_ref = math.sqrt(0.01 + 3.6e-07)
@@ -364,72 +362,69 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         # Adiabatic basis
         self.sh_electrons_classical.basis = 'adiabatic'
+        H_ref_schroedinger = np.array([[[-V_ad_ref + 0.0j, -1j * D_ref],
+                                        [1j * D_ref, V_ad_ref + 0.0j]]])
+        H_ref_interaction = np.array([[[0.0 + 0.0j, -1j * D_ref],
+                                       [1j * D_ref, 0.0 + 0.0j]]])
+
 
         self.sh_electrons_classical.rpsh_type = 'bead'
         D = self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P)
         self.sh_electrons_classical.evolution_picture = 'schroedinger'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R, D),
-                                   [[[-V_ad_ref + 0.0j, -1j * D_ref],
-                                     [1j * D_ref, V_ad_ref + 0.0j]]], rtol=1e-7)
+                                   H_ref_schroedinger, rtol=1e-7)
         self.sh_electrons_classical.evolution_picture = 'interaction'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R, D),
-                                   [[[0.0 + 0.0j, -1j * D_ref],
-                                     [1j * D_ref, 0.0 + 0.0j]]], rtol=1e-7)
+                                   H_ref_interaction, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'centroid'
         D = self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P)
         self.sh_electrons_classical.evolution_picture = 'schroedinger'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R, D),
-                                   [[[-V_ad_ref + 0.0j, -1j * D_ref],
-                                     [1j * D_ref, V_ad_ref + 0.0j]]], rtol=1e-7)
+                                   H_ref_schroedinger, rtol=1e-7)
         self.sh_electrons_classical.evolution_picture = 'interaction'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R, D),
-                                   [[[0.0 + 0.0j, -1j * D_ref],
-                                     [1j * D_ref, 0.0 + 0.0j]]], rtol=1e-7)
+                                   H_ref_interaction, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'density_matrix'
         D = self.sh_electrons_classical._get_kinetic_coupling_matrix(R, P)
         self.sh_electrons_classical.evolution_picture = 'schroedinger'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R, D),
-                                   [[[-V_ad_ref + 0.0j, -1j * D_ref],
-                                     [1j * D_ref, V_ad_ref + 0.0j]]], rtol=1e-7)
+                                   H_ref_schroedinger, rtol=1e-7)
         self.sh_electrons_classical.evolution_picture = 'interaction'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R, D),
-                                   [[[0.0 + 0.0j, -1j * D_ref],
-                                     [1j * D_ref, 0.0 + 0.0j]]], rtol=1e-7)
+                                   H_ref_interaction, rtol=1e-7)
 
         # Diabatic basis
         self.sh_electrons_classical.basis = 'diabatic'
+        H_ref_schroedinger = np.array([[[0.0006 + 0.0j, 0.1 + 0.0j],
+                                        [0.1 + 0.0j, -0.0006 + 0.0j]]])
+        H_ref_interaction = np.array([[[0.0 + 0.0j, 0.1 + 0.0j],
+                                       [0.1 + 0.0j, 0.0 + 0.0j]]])
 
         self.sh_electrons_classical.rpsh_type = 'bead'
         self.sh_electrons_classical.evolution_picture = 'schroedinger'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R),
-                                   [[[0.0006 + 0.0j, 0.1 + 0.0j],
-                                     [0.1 + 0.0j, -0.0006 + 0.0j]]], rtol=1e-7)
+                                   H_ref_schroedinger, rtol=1e-7)
         self.sh_electrons_classical.evolution_picture = 'interaction'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R),
-                                   [[[0.0 + 0.0j, 0.1 + 0.0j],
-                                     [0.1 + 0.0j, 0.0 + 0.0j]]], rtol=1e-7)
+                                   H_ref_interaction, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'centroid'
         self.sh_electrons_classical.evolution_picture = 'schroedinger'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R),
-                                   [[[0.0006 + 0.0j, 0.1 + 0.0j],
-                                     [0.1 + 0.0j, -0.0006 + 0.0j]]], rtol=1e-7)
+                                   H_ref_schroedinger, rtol=1e-7)
         self.sh_electrons_classical.evolution_picture = 'interaction'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R),
-                                   [[[0.0 + 0.0j, 0.1 + 0.0j],
-                                     [0.1 + 0.0j, 0.0 + 0.0j]]], rtol=1e-7)
+                                   H_ref_interaction, rtol=1e-7)
 
         self.sh_electrons_classical.rpsh_type = 'density_matrix'
         self.sh_electrons_classical.evolution_picture = 'schroedinger'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R),
-                                   [[[0.0006 + 0.0j, 0.1 + 0.0j],
-                                     [0.1 + 0.0j, -0.0006 + 0.0j]]], rtol=1e-7)
+                                   H_ref_schroedinger, rtol=1e-7)
         self.sh_electrons_classical.evolution_picture = 'interaction'
         np.testing.assert_allclose(self.sh_electrons_classical._get_H_matrix(R),
-                                   [[[0.0 + 0.0j, 0.1 + 0.0j],
-                                     [0.1 + 0.0j, 0.0 + 0.0j]]], rtol=1e-7)
+                                   H_ref_interaction, rtol=1e-7)
 
         ### test for 2 state potential, 1 dof, 2 beads
         R = np.array([[-1.0e05, 1.0e05]])
@@ -517,15 +512,103 @@ class SurfaceHoppingTest(unittest.TestCase):
         return
 
     def test_get_diff_diag_V_matrix(self):
+        ### test for 2 state potential, 1 dof, 1 bead
+        # All rpsh_type should give the same result for 1 bead case.
+        
+        R = np.array([[0.]])
+        
+        self.sh_electrons_classical.evolution_picture = 'schroedinger'
+        with self.assertRaises(AssertionError):
+            self.sh_electrons_classical._get_diff_diag_V_matrix(R)
+            
+        self.sh_electrons_classical.evolution_picture = 'interaction'
+
+        # Adiabatic basis
+        self.sh_electrons_classical.basis = 'adiabatic'
+        V_ad_ref = math.sqrt(0.01 + 3.6e-07)
+        diff_ref = np.array([[[0., 2. * V_ad_ref],
+                              [-2. * V_ad_ref, 0.]]])
+
+        self.sh_electrons_classical.rpsh_type = 'bead'
+        np.testing.assert_allclose(self.sh_electrons_classical._get_diff_diag_V_matrix(R),
+                                   diff_ref, rtol=1e-7)
+
+        self.sh_electrons_classical.rpsh_type = 'centroid'
+        np.testing.assert_allclose(self.sh_electrons_classical._get_diff_diag_V_matrix(R),
+                                   diff_ref, rtol=1e-7)
+
+        self.sh_electrons_classical.rpsh_type = 'density_matrix'
+        np.testing.assert_allclose(self.sh_electrons_classical._get_diff_diag_V_matrix(R),
+                                   diff_ref, rtol=1e-7)
+        
+        # Diabatic basis
+        V_ref = np.array([[[0., -0.0012], [0.0012, 0.]]])
+        self.sh_electrons_classical.basis = 'diabatic'
+        self.sh_electrons_classical.rpsh_type = 'bead'
+        np.testing.assert_allclose(self.sh_electrons_classical._get_diff_diag_V_matrix(R),
+                                   V_ref, rtol=1e-7)
+
+        self.sh_electrons_classical.rpsh_type = 'centroid'
+        np.testing.assert_allclose(self.sh_electrons_classical._get_diff_diag_V_matrix(R),
+                                   V_ref, rtol=1e-7)
+
+        self.sh_electrons_classical.rpsh_type = 'density_matrix'
+        np.testing.assert_allclose(self.sh_electrons_classical._get_diff_diag_V_matrix(R),
+                                   V_ref, rtol=1e-7)
+
+        ### test for 2 state potential, 1 dof, 2 beads
+        R = np.array([[-1.0e05, 1.0e05]])
+        self.sh_electrons_rpmd.evolution_picture = 'interaction'
+
+        # Adibatic basis
+        self.sh_electrons_rpmd.basis = 'adiabatic'
+        self.sh_electrons_rpmd.rpsh_type = 'bead'
+        V_ad_ref = (math.sqrt(0.04 + 3.6e-07) + 0.0006) * 0.5
+        np.testing.assert_allclose(self.sh_electrons_rpmd._get_diff_diag_V_matrix(R),
+                                   [[[0., 2. * V_ad_ref],
+                                     [-2. * V_ad_ref, 0.]]], rtol=1e-7)
+
+        self.sh_electrons_rpmd.rpsh_type = 'centroid'
+        np.testing.assert_allclose(self.sh_electrons_rpmd._get_diff_diag_V_matrix(R),
+                                   [[[0., 2. * math.sqrt(0.01 + 3.6e-07)],
+                                     [-2. * math.sqrt(0.01 + 3.6e-07), 0.]]], rtol=1e-7)
+
+        self.sh_electrons_rpmd.rpsh_type = 'density_matrix'
+        np.testing.assert_allclose(self.sh_electrons_rpmd._get_diff_diag_V_matrix(R),
+                                   [[[0., 0.0012], [-0.0012, 0.]],
+                                    [[0., 2. * math.sqrt(0.04 + 3.6e-07)],
+                                     [-2. * math.sqrt(0.04 + 3.6e-07), 0.]]], rtol=1e-7)
+
+        # Diabatic basis
+        self.sh_electrons_rpmd.basis = 'diabatic'
+        self.sh_electrons_rpmd.rpsh_type = 'bead'
+        np.testing.assert_allclose(self.sh_electrons_rpmd._get_diff_diag_V_matrix(R),
+                                   [[[0., -0.0012], [0.0012, 0.]]], rtol=1e-7)
+        
+        self.sh_electrons_rpmd.rpsh_type = 'centroid'
+        np.testing.assert_allclose(self.sh_electrons_rpmd._get_diff_diag_V_matrix(R),
+                                   [[[0., -0.0012], [0.0012, 0.]]], rtol=1e-7)
+
+        self.sh_electrons_rpmd.rpsh_type = 'density_matrix'
+        np.testing.assert_allclose(self.sh_electrons_rpmd._get_diff_diag_V_matrix(R),
+                                   [[[0., -0.0012], [0.0012, 0.]],
+                                    [[0., -0.0012], [0.0012, 0.]]], rtol=1e-7)
+
         return
 
     def test_step(self):
+        return
+
+    def test_get_b_jk(self):
         return
 
     def test_surface_hopping(self):
         return
 
     def test_momentum_rescaling(self):
+        return
+
+    def test_linear_interpolation_1d(self):
         return
 
 

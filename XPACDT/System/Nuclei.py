@@ -165,28 +165,53 @@ class Nuclei(object):
 
     @property
     def energy(self):
-        """ float : Total energy of the nuclei including the spring term.
+        """ float : Total energy of the nuclei of the ring polymer including
+        the spring term in au.
         i.e. :math:`\\frac{1}{n}(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + SPINGS + V)`.
         TODO: write out properly."""
         return self.kinetic_energy + self.spring_energy + self.potential_energy
 
     @property
+    def energy_centroid(self):
+        """ float : Total energy of the nuclei of the centroid in au.
+        i.e. :math:`(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + V)`.
+        TODO: write out properly."""
+        return self.kinetic_energy_centroid + self.potential_energy_centroid
+
+    @property
     def kinetic_energy(self):
-        """ float TODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return 0.5*np.sum(self.momenta * self.momenta)
+        """ float : Kinetic energy of the ring polymer in au.
+        i.e. :math:`(\\sum_\\alpha \\sum_A (p^2_{A}^{(\\alpha))})(2m_A)))`."""
+        return (0.5 * np.sum(np.sum((self.momenta * self.momenta), axis=1)
+                             / self.masses))
 
     @property
     def spring_energy(self):
-        """ floatTODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return 0.0
+        """ float : Energy due to spring terms in the ring polymer in au.
+        TODO : write equation properly"""
+        if np.all([i == 1 for i in self.n_beads]):
+            return 0.0
+        else:
+            # Should beta be a property of nuclei instead of propagator?
+            prefactor = 0.5 * (float(max(self.n_beads)) / self.propagator.beta)**2
+            return (prefactor * np.sum(self.masses
+                                       * np.sum((self.positions
+                                                 - np.roll(self.positions, -1, axis=1))**2, axis=1)))
 
     @property
     def potential_energy(self):
-        """ floatTODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return self.electrons.energy(self.positions)
+        """ float : Potential energy of the ring polymer in au."""
+        return np.sum(self.electrons.energy(self.positions))
+
+    @property
+    def kinetic_energy_centroid(self):
+        """ float : Kinetic energy of the centroid in au."""
+        return (0.5 * np.dot(self.p_centroid, (self.p_centroid / self.masses)))
+
+    @property
+    def potential_energy_centroid(self):
+        """ float : Potential energy of the centroid in au."""
+        return self.electrons.energy(self.positions, centroid=True)
 
     def __eq__(self, other):
         """Test if an object is equal to the current nuclei object. A nuclei

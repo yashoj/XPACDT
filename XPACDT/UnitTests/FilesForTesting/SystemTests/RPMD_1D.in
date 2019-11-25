@@ -1,7 +1,7 @@
 $system                     # general parameters
 
 seed = 0                    # Seed for random number generator
-dof = 4                     # the number of degrees of freedom
+dof = 1                     # the number of degrees of freedom
 job = propagate	            # The job type (possible: sample, propagate, analyze)
 Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
 folder = test               # the folder for the trajectories
@@ -37,20 +37,13 @@ $end
 $coordinates	           # coordinates given here
 
 type = mass-value      # coordinate format (possible: mass-value, xyz)
-1.0 2.0 3.0 1.0 2.4
-2.0 1.0 1.2 1.5 -1.2
-12.0 4.0 -2.0 -0.1 0.0
-2.1 -2.0 0.0 1.0 2.3
+1.0 0.0 1.0 2.0 3.0
 $end
 
 ##############################################################################
 
 $momenta               # momenta, must be the same ordering as coordinates
-
--1.0 1.2 2.0 0.0
-0.1 -0.1 -0.5 0.2
-2.0 -0.1 2.5 3.0
-1.25 -0.5 0.1 0.0
+0.0 1.0 2.0 3.0
 $end
 
 ##############################################################################

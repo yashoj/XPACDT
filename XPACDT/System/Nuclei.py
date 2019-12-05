@@ -368,16 +368,56 @@ class Nuclei(object):
         time_propagate : float
             The time to advance the nuclei and electrons in au.
         """
-        # TODO : choose a better name than 'step_index'. Also do we need to
-        #        pass both R and P for all electronic methods?
-        self.electrons.step(self.positions, self.momenta, time_propagate, **{'step_index': 'first'})
+        # TODO: Check using unittest.
+
+        # 1e-8 is added because of floating point representation issue needed
+        # for proper floor division or modulo operation. This value is chosen
+        # since it is greater than machine error and less than typical
+        # propagation timesteps.
+        time_plus = time_propagate + 1e-8
+        timestep = self.propagator.timestep
+        n_steps = int(time_plus // timestep)
+
+        # This is needed since nuclear propagator has this fixed timestep.
+        # 'time_propagate' can be output time in propagation or sampling time
+        # in thermostated sampling.
+        assert(np.isclose((time_plus % timestep), 0.)), \
+              ("Propagation time is not multiple of nuclear timestep.")
+
+        for i in range(n_steps):
+            self._single_timestep_propagation(timestep)
+
+        # !!! This is not very efficient as well as compatible with velocity verlet
+        # so might be better to just have that assert and remove this?
+#        # Propagate for remaining time
+#        if (np.isclose((time_plus % timestep), 0.)):
+#            pass
+#        else:
+#            timestep_remaining = time_propagate - float(n_steps) * timestep
+#            self._single_timestep_propagation(timestep_remaining)
+
+        return
+
+    def _single_timestep_propagation(self, time_single_step):
+        """ This functions advances the positions and momenta of the nuclei
+        for a given time using the proapgator assigned. The electronic
+        subsystem is advanced for the same time.
+
+        Parameters
+        ----------
+        time_propagate : float
+            The time to advance the nuclei and electrons in au.
+        """
+        self.electrons.step(self.positions, self.momenta, time_single_step,
+                            **{'step_index': 'before_nuclei'})
 
         self.positions, self.momenta = \
             self.__propagator.propagate(self.positions, self.momenta,
-                                        time_propagate)
+                                        time_single_step)
 
-        self.electrons.step(self.positions, self.momenta, time_propagate, **{'step_index': 'last'})
+        self.electrons.step(self.positions, self.momenta, time_single_step,
+                            **{'step_index': 'after_nuclei'})
 
-        self.time += time_propagate
-
+        self.time += time_single_step
         return
+

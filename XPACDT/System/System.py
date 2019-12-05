@@ -31,7 +31,6 @@
 core of XPACDT."""
 
 import copy
-import numpy as np
 
 import XPACDT.System.Nuclei as nuclei
 import XPACDT.Tools.Units as units
@@ -99,32 +98,7 @@ class System(object):
         time_propagate : float
             Time to advance the system in au.
         """
-        # TODO: Is this a good way to handle 'time' not multiple of timestep?
-        #       If yes, then also do this in velocity verlet.
-        #       Also check using unittest.
-        timestep_nuclei = self.__nuclei.propagator.timestep
-        # 1e-8 is added because of floating point representation issue needed
-        # for proper floor division or modulo operation. This value is chosen
-        # since it is greater than machine error and less than typical
-        # propagation timesteps.
-        time_plus = time_propagate + 1e-8
-        n_steps = int(time_plus // timestep_nuclei)
-
-        for i in range(n_steps):
-            self.__nuclei.propagate(timestep_nuclei)
-
-        # TODO : For now assert that there is no remainder between output_step
-        # and nuclear step; needed for surface hopping
-        assert(np.isclose((time_plus % timestep_nuclei), 0.)), \
-              ("Output time is not multiple of nuclear timestep.")
-
-        # Propagate for remaining time
-        if (np.isclose((time_plus % timestep_nuclei), 0.)):
-            pass
-        else:
-            timestep_remaining = time_propagate - float(n_steps) * timestep_nuclei
-            self.__nuclei.propagate(timestep_remaining)
-
+        self.__nuclei.propagate(time_propagate)
         self.do_log()
 
     def reset(self, time=None):

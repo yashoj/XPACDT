@@ -117,7 +117,8 @@ samples = 1000          # number of samples to be collected
 modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty)
 quantum_numbers = 0 0 2 # the quantum number used in Quasiclassical sampling for each mode
 temperature = 300       # in Kelvin
-time = 10 fs            # time between samples in fs or au
+time = 10 fs            # time between samples for thermostated sampling in fs or au;
+                        # needs to be multiple of 'timestep' in 'nuclei_propagator'
 
 $end
 
@@ -136,11 +137,12 @@ $end
 
 $propagation	    # propagation input
 
-time_end = 1.0 au # end time for propagation
+time_end = 1.0 au    # end time for propagation
 
 # optional:
-time_start = 1.0 au # start time set for the system
-time_output = 1.0 # time step used for the full system and logging; if not given, the timestep of the nuclei is used
+time_start = 1.0 au  # start time set for the system
+time_output = 1.0 au # time step used for the full system and logging; if not given, the timestep of the nuclei is used;
+                     # needs to be multiple of 'timestep' in 'nuclei_propagator'
 $end
 
 ##############################################################################

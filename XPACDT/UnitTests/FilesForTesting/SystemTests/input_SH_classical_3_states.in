@@ -2,8 +2,8 @@ $system                     # general parameters
 
 seed = 0                    # Seed for random number generator
 dof = 1                     # the number of degrees of freedom
-electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
-Interface = TullyModel  # the interface to the potential to be used (possible: OneDPolynomial)
+electrons = SurfaceHoppingElectrons
+Interface = MorseDiabatic
 
 $end
 
@@ -23,17 +23,9 @@ $end
 
 ##############################################################################
 
-$TullyModel
-
-model_type = model_C
-$end
-
-##############################################################################
-
-$rpmd
-
-beads = 2
-beta = 1052.0
+$MorseDiabatic
+model_type = model_1
+n_states = 3
 $end
 
 ##############################################################################
@@ -50,14 +42,14 @@ $end
 $coordinates	           # coordinates given here
 
 type = mass-value
-2.0 2.5 2.6
+2.0 2.5
 $end
 
 ##############################################################################
 
 $momenta               # momenta, must be the same ordering as coordinates
 
-0.001 0.002
+0.001
 $end
 
 ##############################################################################

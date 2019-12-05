@@ -102,6 +102,8 @@ def start():
         system = pickle.load(open(path_file, 'rb'))
         # TODO: update new input parameters
     else:
+        assert(input_parameters.momenta is not None), \
+            "Momenta not provided in input file."
         system = xSystem.System(input_parameters)
 
     # Run job

@@ -18,7 +18,7 @@ rpsh_type = bead
 rpsh_rescaling = bead
 rescaling_type = nac
 evolution_picture = schroedinger
-ode_solver = rk4
+ode_solver = runga_kutta
 $end
 
 ##############################################################################

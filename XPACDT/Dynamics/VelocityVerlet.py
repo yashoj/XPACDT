@@ -54,7 +54,7 @@ class VelocityVerlet(object):
         Representation of the electrons that gives the gradients.
     mass : (n_dof) ndarray of floats
         Masses of the system in au.
-    nbeads : (n_dof) list of int
+    n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
 
     Other Parameters
@@ -203,7 +203,9 @@ class VelocityVerlet(object):
         # TODO: possibly multiple-timestepping here
 
         Rt, Pt = R.copy(), P.copy()
-        # TODO: handle time not a multiple of timestep? What's the best way?
+        # TODO: handle time not a multiple of timestep similar to 'propagate'
+        # in nuclei; this is only needed if this module has different timestep
+        # than nuclei so for multiple steps or for adaptive time step control.
         n_steps = int((time_propagation + 1e-8) // self.timestep)
         for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)

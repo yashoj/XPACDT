@@ -86,6 +86,10 @@ class NucleiTest(unittest.TestCase):
 
         return
 
+    def test_single_timestep_propagation(self):
+        
+        return
+
     def test_x_centroid(self):
         classical_centroid = np.array([2.0, 1.0, 4.0, -2.0])
         rpmd_centroid = np.array([2.1, 0.625, 0.475, 0.325])
@@ -296,11 +300,12 @@ class NucleiTest(unittest.TestCase):
 
 
 class DummyProp(object):
-    def __init__(self):
+    def __init__(self, timestep):
+        self.timestep = float(timestep)
         pass
 
     def propagate(self, R, P, time_propagation):
-        return 2.0*R, 2.0*P
+        return (2.0 * R), (2.0 * P)
 
 
 if __name__ == "__main__":

@@ -36,7 +36,6 @@ import XPACDT.Tools.Units as units
 class NRPMDElectrons(electrons.Electrons):
     """ TODO
     """
-
     
     def __init__(self, parameters, n_beads, R=None, P=None):
 
@@ -162,4 +161,3 @@ class NRPMDElectrons(electrons.Electrons):
                     (self.q[i,n]*self.q[j,n] + self.p[i,n]*self.p[j,n] - self.Einsmatrix[i,j]))
 
         return IMP
- 

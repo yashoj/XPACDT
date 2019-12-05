@@ -35,6 +35,12 @@ $MorseDiabatic  # must match the interface specified; specific to each interface
 model_type = model_3         # Model number to be used (possible: model_1, model_2, model_3)
 n_states = 2                 # Number of morse diabatic states (possible: 2, 3)
 $end
+##############################################################################
+
+$TullyModel
+
+model_type = model_C
+§end
 
 ##############################################################################
 

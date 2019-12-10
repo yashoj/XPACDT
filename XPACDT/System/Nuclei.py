@@ -66,8 +66,8 @@ class Nuclei(object):
         self.masses = input_parameters.masses
         self.positions = input_parameters.coordinates
         self.momenta = input_parameters.momenta
-
         self.n_beads = input_parameters.n_beads
+        self.__beta = input_parameters.beta
 
         # Set up electrons
         self.init_electrons(input_parameters)
@@ -75,9 +75,6 @@ class Nuclei(object):
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
             self.attach_nuclei_propagator(input_parameters)
-            
-            
-        ### Add beta as parameter
 
         return
 
@@ -123,6 +120,13 @@ class Nuclei(object):
     @n_beads.setter
     def n_beads(self, l):
         self.__n_beads = l
+
+    @property
+    def beta(self):
+        """ float or np.nan: Inverse temperature for ring polymer springs in
+        a.u. It is NaN if not given in the case of 1 bead for each degree of
+        freedom."""
+        return self.__beta
 
     @property
     def masses(self):
@@ -346,9 +350,6 @@ class Nuclei(object):
 
         prop_parameters = parameters.get('nuclei_propagator')
         if 'rpmd' in parameters:
-            assert('beta' in parameters.get("rpmd")), "No beta " \
-                   "given for RPMD."
-            prop_parameters['beta'] = parameters.get("rpmd").get('beta')
             prop_parameters['rp_transform_type'] = parameters.get('rpmd').get(
                     "nm_transform", "matrix")
 
@@ -356,7 +357,7 @@ class Nuclei(object):
         __import__("XPACDT.Dynamics." + prop_method)
         self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
                                   prop_method)(self.electrons, self.masses,
-                                               self.n_beads, **prop_parameters)
+                                               self.n_beads, self.beta, **prop_parameters)
 
         if 'thermostat' in parameters:
             self.propagator.attach_thermostat(parameters, self.masses)

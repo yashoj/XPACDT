@@ -38,9 +38,6 @@ import XPACDT.Tools.MathematicalTools as mtools
 class MathematicalToolsTest(unittest.TestCase):
 
     def test_linear_interpolation_1d(self):
-        # with self.assertRaises(AssertionError):
-        #     sh_electrons_classical._linear_interpolation_1d(1.5, 0., 2.4)
-
         # For floats
         self.assertAlmostEqual(mtools.linear_interpolation_1d(0.5, 0., 2.4), 1.2)
         self.assertAlmostEqual(mtools.linear_interpolation_1d(0.25, 0., 2.4), 0.6)

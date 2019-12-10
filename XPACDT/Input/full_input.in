@@ -29,7 +29,7 @@ $SurfaceHoppingElectrons  # must match the electrons specified; specific to each
 
 basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic; default: adiabatic)
 initial_state = 0         # Initial state of the system (Counting starts from 0)
-timestep_scaling_factor = 0.01  # Scaling factor to determine electronic timestep from nuclear step
+n_steps = 100             # Number of electronic steps to be performed for each nuclear steps (default: 1)
 
 rpsh_type = bead          # Type of ring polymer surface hopping (RPSH) 
                           # (possible: bead, centroid, density_matrix; default: bead)

@@ -13,7 +13,7 @@ $SurfaceHoppingElectrons
 
 basis = adiabatic
 initial_state = 0
-timestep_scaling_factor = 0.01
+n_steps = 100
 rpsh_type = bead
 rpsh_rescaling = bead
 rescaling_type = nac

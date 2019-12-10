@@ -72,7 +72,7 @@ class VelocityVerlet(object):
         Number of beads for each degrees of freedom
     """
 
-    def __init__(self, electrons, mass, n_beads, **kwargs):
+    def __init__(self, electrons, mass, n_beads, beta, **kwargs):
         # TODO: basic argument parsing here
 
         assert (isinstance(electrons, elecInterface.Electrons)), \
@@ -82,16 +82,11 @@ class VelocityVerlet(object):
         self.electrons = electrons
         self.mass = mass
         self.n_beads = n_beads
+        self.__beta = beta
 
         self.timestep = units.parse_time(kwargs.get("timestep"))
 
         # optional as keywords
-        if 'beta' in kwargs:
-            self.beta = float(kwargs.get('beta'))
-        else:
-            # In the case when RPMD is not used (i.e. n_beads=1), 'beta' should
-            # not be used anywhere, so setting it to NaN.
-            self.__beta = np.nan
         rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
 
         self.__thermostat = None
@@ -105,13 +100,10 @@ class VelocityVerlet(object):
 
     @property
     def beta(self):
-        """ float : Inverse temperature for ring polymer springs in a.u."""
+        """ float or np.nan: Inverse temperature for ring polymer springs in
+        a.u. It is NaN if not given in the case of 1 bead for each degree of
+        freedom."""
         return self.__beta
-
-    @beta.setter
-    def beta(self, f):
-        assert (f is None or f > 0), "Beta 0 or less."
-        self.__beta = f
 
     @property
     def timestep(self):

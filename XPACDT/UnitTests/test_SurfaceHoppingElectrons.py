@@ -57,7 +57,7 @@ class SurfaceHoppingTest(unittest.TestCase):
         self.assertEqual(sh_electrons_classical.name, 'SurfaceHoppingElectrons')
         self.assertEqual(sh_electrons_classical.basis, 'adiabatic')
         self.assertEqual(sh_electrons_classical.current_state, 0)
-        self.assertAlmostEqual(sh_electrons_classical.timestep, 0.01)
+        self.assertEqual(sh_electrons_classical.n_steps, 100)
         self.assertEqual(sh_electrons_classical.rpsh_type, 'bead')
         self.assertEqual(sh_electrons_classical.rpsh_rescaling, 'bead')
         self.assertEqual(sh_electrons_classical.rescaling_type, 'nac')
@@ -1249,35 +1249,6 @@ class SurfaceHoppingTest(unittest.TestCase):
         P = np.array([[10.0]])
         
         
-        return
-
-    def test_linear_interpolation_1d(self):
-        param = self.param_classical
-        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
-                                                            param.masses, param.coordinates,
-                                                            param.momenta)
-        with self.assertRaises(AssertionError):
-            sh_electrons_classical._linear_interpolation_1d(1.5, 0., 2.4)
-
-        # For floats
-        self.assertAlmostEqual(sh_electrons_classical._linear_interpolation_1d(0.5, 0., 2.4), 1.2)
-        self.assertAlmostEqual(sh_electrons_classical._linear_interpolation_1d(0.25, 0., 2.4), 0.6)
-
-        # For 1d array
-        y1 = np.array([0., 1.])
-        y2 = np.array([2.4, 3.4])
-        np.testing.assert_allclose(sh_electrons_classical._linear_interpolation_1d(0.5, y1, y2),
-                                   np.array([1.2, 2.2]), rtol=1e-7)
-        np.testing.assert_allclose(sh_electrons_classical._linear_interpolation_1d(0.25, y1, y2),
-                                   np.array([0.6, 1.6]), rtol=1e-7)
-
-        # For 2d array
-        y1 = np.array([[0., 1.], [-1., -3.4]])
-        y2 = np.array([[2.4, 3.4], [-3.4, -1.0]])
-        np.testing.assert_allclose(sh_electrons_classical._linear_interpolation_1d(0.5, y1, y2),
-                                   np.array([[1.2, 2.2], [-2.2, -2.2]]), rtol=1e-7)
-        np.testing.assert_allclose(sh_electrons_classical._linear_interpolation_1d(0.25, y1, y2),
-                                   np.array([[0.6, 1.6], [-1.6, -2.8]]), rtol=1e-7)
         return
 
 

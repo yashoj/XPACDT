@@ -92,6 +92,9 @@ class Inputfile(collections.MutableMapping):
                 self.beta = float(self.get('rpmd').get('beta'))
             else:
                 self.n_beads = '1'
+                # In the case when RPMD is not used (i.e. n_beads=1),
+                # 'beta' should not be used anywhere, so setting it to NaN.
+                self.__beta = np.nan
 
         if self.__coordinates is not None:
             self.__format_coordinates()

@@ -41,6 +41,7 @@ from scipy.integrate import ode
 
 import XPACDT.System.Electrons as electrons
 import XPACDT.Tools.Units as units
+import XPACDT.Tools.MathematicalTools as mtools
 
 
 class SurfaceHoppingElectrons(electrons.Electrons):
@@ -81,13 +82,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         self.__masses_nuclei = masses_nuclei
         try:
-            self.__timestep_scaling_factor = float(electronic_parameters.get("timestep_scaling_factor", 1.0))
-            assert (self.timestep_scaling_factor <= 1.0), \
-                ("Time step scaling factor for electrons is more than 1. Given"
-                 " in input file: " + self.timestep_scaling_factor)
+            self.__n_steps = int(electronic_parameters.get("n_steps", 1))
+            assert (self.n_steps >= 1), \
+                ("Number of electronic steps per nuclear step needs to be more"
+                 " than or equal to 1. Given in input file: " + self.n_steps)
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Parameter 'timestep_scaling_factor'"
-                          "for surface hopping not convertable to float.")
+            raise type(e)(str(e) + "\nXPACDT: Parameter 'n_steps'"
+                          "for surface hopping not convertable to int.")
 
         self.__rpsh_type = electronic_parameters.get("rpsh_type", "centroid")
         self.__rpsh_rescaling = electronic_parameters.get("rpsh_rescaling", "bead")
@@ -168,10 +169,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         return self.__masses_nuclei
 
     @property
-    def timestep_scaling_factor(self):
-        """float : The timestep for electronic propagation in a.u. """
-        # Changed from timestep to factor; should this be allowed to change with a setter?
-        return self.__timestep_scaling_factor
+    def n_steps(self):
+        """int : Number of electronic steps to be taken for each nuclear step."""
+        # Changed from timestep to number of steps; should this be allowed to change with a setter?
+        return self.__n_steps
 
     @property
     def rpsh_type(self):
@@ -453,34 +454,15 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         if (self.evolution_picture == 'interaction'):
             self._diff_diag_V = self._get_diff_diag_V_matrix(R)
 
-        # This permits steps not multiple of nuclear step since
-        timestep = self.timestep_scaling_factor * time_propagate
-        
-        # TODO: This seems a bit complicated? Simplify by letting n_steps (= t_prop/t_step = 1/t_scaling) only be int?
-
-        # t and b lists are (n_steps + 1) size
-        # Only relative time matters for integration so setting initial t = 0.
-        time_array = np.arange(0, time_propagate + 1e-8, timestep)
-        # Needed since need to go till 'time_propagate' and since time_rem != time_step
-        time_remaining = time_propagate - time_array[-1]
-
-        # Checking if there is any remaining time
-        print("Remaining time: ", time_remaining)
-        
-        # Add remaining time
-        if (np.isclose(time_remaining, 0.)):
-            pass
-        else:
-            time_array = np.append(time_array, time_propagate)
-        print("Time array: ", time_array)
-
-
-
-        # How to get rid of the if statements? Maybe make phase = None if in schroedinger picture?
-        if (self.evolution_picture == 'interaction'):
-            b_list = [self._get_b_jk(self._c_coeff, self._old_H_e, self._phase)]
-        else:
-            b_list = [self._get_b_jk(self._c_coeff, self._old_H_e)]
+        # Only relative time matters for integration so initial t = 0.
+        # 'time_array' is (n_steps + 1) size containing end time as well.
+        time_array = np.linspace(0., time_propagate, self.n_steps + 1,
+                                 endpoint=True)
+        # This permits steps not multiple of nuclear step since it only depends
+        # upon 'time_propagate'. Although for now this is not done in nuclear step.
+        timestep = time_propagate / float(self.n_steps)
+        # 'b_list' will be list of (n_steps + 1) size.
+        b_list = []
 
         # Get initial population of current state
         if (self.rpsh_type == 'density_matrix'):
@@ -491,32 +473,42 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         prop_func = getattr(self, "_propagation_equation_" + self.evolution_picture + "_picture")
         ode_solver_function = getattr(self, "_integrator_" + self.ode_solver)
-        # Until end-1
-        for i, t in enumerate(time_array[:-1]):
-            print("time now: ", t)
-            t_step = time_array[i+1] - t
-            self._c_coeff = ode_solver_function(t, self._c_coeff, t_step, time_propagate, prop_func)
 
+        # Loop over until second last time step, i.e. time_propagate - timestep
+        for t in time_array[:-1]:
+            # Get b_jk for this time.
             # How to avoid interpolating again and store at once? For now, this should work.
-            t_frac = time_array[i+1] / time_propagate
-            H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+            t_frac = t / time_propagate
+            H = mtools.linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
 
             if (self.evolution_picture == 'interaction'):
-                phase = self._phase + 0.5 * time_array[i+1] * (self._old_diff_diag_V
-                                                 + self._linear_interpolation_1d(
+                phase = self._phase + 0.5 * t * (self._old_diff_diag_V
+                                                 + mtools.linear_interpolation_1d(
                                                    t_frac, self._old_diff_diag_V, self._diff_diag_V))
                 b_list.append(self._get_b_jk(self._c_coeff, H, phase))
             else:
                 b_list.append(self._get_b_jk(self._c_coeff, H))
 
-        # Perform surface hopping if needed.
-        self._surface_hopping(R, P, time_array, a_kk_initial, b_list)
+            # Propagate by an electronic timestep
+            self._c_coeff = ode_solver_function(t, self._c_coeff, timestep, time_propagate, prop_func)
 
         if (self.evolution_picture == 'interaction'):
             # At the end, add to phase (by trapezoidal integration) and update values
             self._phase += (0.5 * time_propagate * (self._old_diff_diag_V + self._diff_diag_V))
             self._old_diff_diag_V = self._diff_diag_V.copy()
+        
+        # Get b_jk for last time step.
+        # How to get rid of the if statements? Maybe make phase = None if in schroedinger picture?
+        # Or maybe put this in '_get_b_jk' so that it does the interpolation with t_frac???
+        if (self.evolution_picture == 'interaction'):
+            b_list.append(self._get_b_jk(self._c_coeff, self._H_e_total, self._phase))
+        else:
+            b_list.append(self._get_b_jk(self._c_coeff, self._H_e_total))
+            
+        # Perform surface hopping if needed.
+        self._surface_hopping(R, P, time_array, a_kk_initial, b_list)
 
+        # Update values
         self._old_H_e = self._H_e_total.copy()
         if (self.basis == 'adiabatic'):
             self._old_D = self._D.copy()
@@ -610,7 +602,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     # TODO : Should these electronic coefficint integrators be put in its own
     # module? This would be needed for Ehrenfest as well if we implement that.
-    def _integrator_runga_kutta(self, time, c_coeff, t_step, time_propagate, prop_func):
+    def _integrator_runga_kutta(self, time, c_coeff, timestep, time_propagate, prop_func):
         """ Propagate the electronic coefficients by one electronic time step
         using the classic 4th order Runga-Kutta method.
         Reference: http://mathworld.wolfram.com/Runge-KuttaMethod.html
@@ -623,6 +615,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
+        timestep : float
+            Time step...
+            
+            
+            
         time_propagate : float
             Total time to advance the electrons in this propagation step in au.
         prop_func : function
@@ -635,12 +632,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
             New electronic coefficients obtained after propagation.
         """
-        # Should rk4 calculate and return all of the interpolated values???
-        #t_step = self.timestep_scaling_factor * time_propagate
-        c_1 = t_step * prop_func(time, c_coeff, time_propagate)
-        c_2 = t_step * prop_func((time + 0.5 * t_step), c_coeff + 0.5 * c_1, time_propagate)
-        c_3 = t_step * prop_func((time + 0.5 * t_step), c_coeff + 0.5 * c_2, time_propagate)
-        c_4 = t_step * prop_func((time + t_step), c_coeff + c_3, time_propagate)
+        c_1 = timestep * prop_func(time, c_coeff, time_propagate)
+        c_2 = timestep * prop_func((time + 0.5 * timestep), c_coeff + 0.5 * c_1, time_propagate)
+        c_3 = timestep * prop_func((time + 0.5 * timestep), c_coeff + 0.5 * c_2, time_propagate)
+        c_4 = timestep * prop_func((time + timestep), c_coeff + c_3, time_propagate)
 
         c_new = c_coeff + 1.0 / 6.0 * (c_1 + c_4) + 1.0 / 3.0 * (c_2 + c_3)
 
@@ -651,7 +646,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         return c_new
 
-    def _integrator_scipy(self, time, c_coeff, time_propagate, prop_func):
+    def _integrator_scipy(self, time, c_coeff, timestep, time_propagate, prop_func):
         """ Propagate the electronic coefficients by electronic time step using
         ode integrator from scipy.
 
@@ -663,6 +658,9 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
+        timestep : float
+            
+            
         time_propagate : float
             Total time to advance the electrons in this propagation step in au.
         prop_func : function
@@ -676,7 +674,6 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             New electronic coefficients obtained after propagation.
         """
         c_new = []
-        timestep = self.timestep_scaling_factor * time_propagate
 
         # TODO: How to choose the method?
         solver = ode(prop_func).set_integrator('zvode', first_step=timestep, method='bdf')
@@ -693,10 +690,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         return np.array(c_new)
 
-    def _integrator_unitary(self, time, c_coeff, time_propagate, prop_func=None):
+    def _integrator_unitary(self, time, c_coeff, timestep, time_propagate, prop_func=None):
         """ Propagate the electronic coefficients by electronic time step using
         unitary evolution matrix at the midpoint. This is a 3rd order method.
-        TODO : Add reference to it?
+        Reference: Chemical Physics 349, 334 (2008)
 
         Parameters
         ----------
@@ -706,6 +703,9 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
+        timestep : float
+        
+        
         time_propagate : float
             Total time to advance the electrons in this propagation step in au.
         prop_func : function
@@ -718,11 +718,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
             New electronic coefficients obtained after propagation.
         """
-        t_step = self.timestep_scaling_factor * time_propagate
-        t_frac_mid = (time + 0.5 * t_step) / time_propagate
+        t_frac_mid = (time + 0.5 * timestep) / time_propagate
 
-        H_mid = self._linear_interpolation_1d(t_frac_mid, self._old_H_e, self._H_e_total)
-        propagator = np.array([expm(-1j * h * t_step) for h in H_mid])
+        H_mid = mtools.linear_interpolation_1d(t_frac_mid, self._old_H_e, self._H_e_total)
+        propagator = np.array([expm(-1j * h * timestep) for h in H_mid])
 
         c_new = np.matmul(propagator, np.expand_dims(c_coeff, axis=-1)).reshape(-1, self.pes.n_states)
 
@@ -758,10 +757,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # Time fraction in the propagation step, needed for interpolation.
         t_frac = t / t_prop
         if i is None:
-            H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+            H = mtools.linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
             return (-1.0j * np.matmul(H, np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states))
         else:
-            H = self._linear_interpolation_1d(t_frac, self._old_H_e[i], self._H_e_total[i])
+            H = mtools.linear_interpolation_1d(t_frac, self._old_H_e[i], self._H_e_total[i])
             return (-1.0j * np.matmul(H, c))
 
     def _propagation_equation_interaction_picture(self, t, c, t_prop, i=None):
@@ -795,48 +794,23 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         t_frac = t / t_prop
 
         if i is None:
-            H = self._linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+            H = mtools.linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
             phase = self._phase + 0.5 * t * (self._old_diff_diag_V + 
-                                             self._linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
+                                             mtools.linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
             # 'np.expand_dims' used to add a dimension for proper matrix multiplication.
             return (-1.0j * np.matmul((H * np.exp(-1.0j * phase)), np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states))
         else:
-            H = self._linear_interpolation_1d(t_frac, self._old_H_e[i], self._H_e_total[i])
+            H = mtools.linear_interpolation_1d(t_frac, self._old_H_e[i], self._H_e_total[i])
             phase = self._phase[i] + 0.5 * t * (self._old_diff_diag_V[i] + 
-                                             self._linear_interpolation_1d(t_frac, self._old_diff_diag_V[i], self._diff_diag_V[i]))
+                                             mtools.linear_interpolation_1d(t_frac, self._old_diff_diag_V[i], self._diff_diag_V[i]))
             return (-1.0j * np.matmul((H * np.exp(-1.0j * phase)), c))
-
-    # TODO : Maybe put this also in math module
-    def _linear_interpolation_1d(self, x_fraction, y_initial, y_final):
-        """ Performs linear interpolation in 1 dimension to obtain y value at
-        `x_fraction` between the intial and final x values.
-        TODO: write properly: x_fraction = (x_required - x_initial) / (x_final - x_initial)
-
-        Parameters
-        ----------
-        x_fraction : float
-            x fraction.
-        y_initial : ndarray
-            Initial y value. Can be any dimensional ndarray.
-        y_final : ndarray
-            Final y value. Same shape as y_initial.
-
-        Returns
-        -------
-        ndarray of floats (same as y_initial)
-            Interpolated value at `x_fraction` between the intial and final values.
-        """
-        print(x_fraction)
-        # Again too many asserts?
-        assert (x_fraction <= 1.), \
-            ("x fraction is larger than 1 in linear interpolation.")
-        return ((1. - x_fraction) * y_initial + x_fraction * y_final)
 
     def _surface_hopping(self, R, P, time_array, a_kk_initial, b_list):
         """ Perform surface hopping if required by comparing the probability
-        to hop with a random number from a uniform distribution between 0 and 1.
-        If there is a chance to hop, then check for energy conservation and
-        rescale momenta accordingly if needed.
+        to hop with a random number drawn from a uniform distribution between 0
+        and 1. Based on the random number, decide whether to stay on the same
+        surface or to hop. If there is a hop, then check for energy
+        conservation and rescale momenta accordingly.
 
         TODO: add equation for probability with integration.
         Reference: J. Chem. Phys. 101 (6), 4657 (1994)
@@ -854,17 +828,15 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             List of b_jk at times given in `t_list`.
         """
         # Perform trapezoidal integration to get hopping probability for each
-        # state, so 'prob' is (n_state) ndarray
+        # state, so 'prob' is (n_state) ndarray of floats
         prob = np.trapz(np.array(b_list), np.array(time_array), axis=0) / a_kk_initial
 
         # Setting negative probability and hopping to current state to 0.
-        # TODO : have cutoff for small probabilities! (determine value!), also check if total prob exceeds 1.
         prob[prob < 0] = 0.
         prob[self.current_state] = 0.
-        
-#        for i in range(len(prob)):
-#            if (prob[i] < 0. or i == self.current_state):
-#                prob[i] = 0.
+
+        assert (np.sum(prob) <= 1.), \
+            ("Total hopping probability is more than 1. Try again with smaller nuclear timestep.")
 
         # Switch state if needed by comparing to random number.
         new_state = None

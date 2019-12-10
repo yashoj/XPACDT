@@ -476,35 +476,15 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         # Loop over until second last time step, i.e. time_propagate - timestep
         for t in time_array[:-1]:
-            # Get b_jk for this time.
-            # How to avoid interpolating again and store at once? For now, this should work.
-            t_frac = t / time_propagate
-            H = mtools.linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
-
-            if (self.evolution_picture == 'interaction'):
-                phase = self._phase + 0.5 * t * (self._old_diff_diag_V
-                                                 + mtools.linear_interpolation_1d(
-                                                   t_frac, self._old_diff_diag_V, self._diff_diag_V))
-                b_list.append(self._get_b_jk(self._c_coeff, H, phase))
-            else:
-                b_list.append(self._get_b_jk(self._c_coeff, H))
+            # How to avoid interpolating again for b_jk and store at once? For now, this should work.
+            b_list.append(self._get_b_jk(t, time_propagate, self._c_coeff))
 
             # Propagate by an electronic timestep
             self._c_coeff = ode_solver_function(t, self._c_coeff, timestep, time_propagate, prop_func)
 
-        if (self.evolution_picture == 'interaction'):
-            # At the end, add to phase (by trapezoidal integration) and update values
-            self._phase += (0.5 * time_propagate * (self._old_diff_diag_V + self._diff_diag_V))
-            self._old_diff_diag_V = self._diff_diag_V.copy()
-        
         # Get b_jk for last time step.
-        # How to get rid of the if statements? Maybe make phase = None if in schroedinger picture?
-        # Or maybe put this in '_get_b_jk' so that it does the interpolation with t_frac???
-        if (self.evolution_picture == 'interaction'):
-            b_list.append(self._get_b_jk(self._c_coeff, self._H_e_total, self._phase))
-        else:
-            b_list.append(self._get_b_jk(self._c_coeff, self._H_e_total))
-            
+        b_list.append(self._get_b_jk(time_array[-1], time_propagate, self._c_coeff))
+
         # Perform surface hopping if needed.
         self._surface_hopping(R, P, time_array, a_kk_initial, b_list)
 
@@ -514,6 +494,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             self._old_D = self._D.copy()
         else:
             self._old_D = None
+
+        if (self.evolution_picture == 'interaction'):
+            # Add to phase (by trapezoidal integration).
+            self._phase += (0.5 * time_propagate * (self._old_diff_diag_V + self._diff_diag_V))
+            self._old_diff_diag_V = self._diff_diag_V.copy()
 
         return
 
@@ -548,7 +533,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         return a_kj
 
-    def _get_b_jk(self, c, H, phase=None):
+    def _get_b_jk(self, time, time_propagate, c):
         """ Calculate b_jk  where k is the current state and j is any other
         state except k, as defined in J. Chem. Phys. 93, 1061 (1990).
 
@@ -558,29 +543,34 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Parameters
         ----------
+        time : float
+            Current time in this propagation in au.
+        time_propagate : float
+            Total time to advance the electrons in this propagation step in au.
         c : (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
-        H : (n_beads, n_states, n_states) ndarray of complex if rpsh_type == 'density_matrix'
-            /or/ (1, n_states, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
-            Total non-adiabatic electronic Hamiltonian.
-        phase : (n_beads, n_states, n_states) ndarray of floats if rpsh_type == 'density_matrix'
-            /or/ (1, n_states, n_states) ndarray of floats if rpsh_type == 'bead' or 'centroid'
-            /or/ None if evolution_picture == 'schroedinger'
-            Phase of the wavefunction in interaction picture.
 
         Returns
         -------
         b_jk : (n_states) ndarray of floats
             b_jk array
         """
+        t_frac = time / time_propagate
+        H = mtools.linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
+
         # Transposes need to be done for proper broadcasting to give a_kj of
         # shape (1 or max_n_beads, n_states).
-        if (self.evolution_picture == 'interaction'):
-            a_kj = (c[:, self.current_state] * (np.conj(c) * np.exp(1j * phase[:, self.current_state, :])).T).T
-        else:
+        if (self.evolution_picture == 'schroedinger'):
             a_kj = (c[:, self.current_state] * np.conj(c).T).T
+
+        elif (self.evolution_picture == 'interaction'):
+            phase = self._phase + 0.5 * time * (self._old_diff_diag_V
+                                                + mtools.linear_interpolation_1d(
+                                                  t_frac, self._old_diff_diag_V, self._diff_diag_V))
+            a_kj = (c[:, self.current_state]
+                    * (np.conj(c) * np.exp(1j * phase[:, self.current_state, :])).T).T
 
         # b_kk = 0 and D_jk or V_jk should be (1 or n_beads, n_states)
         if (self.basis == 'adiabatic'):
@@ -616,10 +606,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
         timestep : float
-            Time step...
-            
-            
-            
+            Electronic time step in au.
         time_propagate : float
             Total time to advance the electrons in this propagation step in au.
         prop_func : function
@@ -659,8 +646,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
         timestep : float
-            
-            
+            Electronic time step in au.
         time_propagate : float
             Total time to advance the electrons in this propagation step in au.
         prop_func : function
@@ -704,8 +690,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
         timestep : float
-        
-        
+            Electronic time step in au.
         time_propagate : float
             Total time to advance the electrons in this propagation step in au.
         prop_func : function

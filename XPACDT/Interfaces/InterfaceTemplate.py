@@ -333,7 +333,7 @@ class PotentialInterface:
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
         dof_i : integer
-            Index of the variable that should change.
+            Index of the variable that should change; indices start at 0.
         start : float
             Starting value of the coordinate that is scanned in au.
         end : float
@@ -409,14 +409,14 @@ class PotentialInterface:
             Starting position for plotting. It either defines the fixed
             positions or the starting point for optimizations.
         dof_i : integer
-            Index of the first variable that should change.
+            Index of the first variable that should change; indices start at 0.
         dof_j : integer
-            Index of the second variable that should change.
-        starts : tuple of 2 floats
+            Index of the second variable that should change; indices start at 0.
+        starts : list of 2 floats
             Starting values of the coordinates that are scanned in au.
-        ends : tuple of 2 floats
+        ends : list of 2 floats
             Ending values of the coordinates that are scanned in au.
-        steps : tuple of 2 floats
+        steps : list of 2 floats
             Step sizes used along the scan in au.
         relax : bool, optional, Default: False
             Whether all other coordinates are fixed (False) or

@@ -27,7 +27,7 @@ $end
 $OneDPolynomial # must match the interface specified; specific to each interface
 
 # Required parameters
-a = 0 0 0.5     # several float, required: Expansion coefficients for the polynomial.
+a = 0 0 0.5     # floats separated by spaces, required: Expansion coefficients for the polynomial.
 
 # Optional parameters
 x0 = 0          # float, optional: Equilibrium position of the polynomial.
@@ -37,12 +37,14 @@ $end
 ##############################################################################
 
 # These fitted PES don't have any parameters.
-# $BKMP
-# $end
-# $CW
-# $end
-# $LWAL
-# $end
+$BKMP
+$end
+
+$CW
+$end
+
+$LWAL
+$end
 
 ##############################################################################
 
@@ -62,15 +64,15 @@ $end
 
 ##############################################################################
 
-# $plot
-# dof = 1 2
-# start = 1.0 1.0
-# end = 3.0 3.0
-# step = 0.1 0.1
+# $plot		# For plotting potential energy surfaces
+# dof = 1 2	  # 1 or 2 integers. The degrees of freedom that should be scanned. Indices start at 0.
+# start = 1.0 1.0 # Start values of the degrees of freedom that are scanned.
+# end = 3.0 3.0	  # End values of the degrees of freedom that are scanned.
+# step = 0.1 0.1  # Step size in the scan.
 # 
-# Optional parameters
-# internal
-# optimize
+# Optional parameters:
+# internal	  # Use of internal degrees of freedom as definied in specific interfaces.
+# optimize	  # If all not scanned degrees of freedom are optimized (instead of kept at the initial value).
 # $end
 
 ##############################################################################
@@ -110,7 +112,7 @@ samples = 1000          # number of samples to be collected
 modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty); option for 'Wigner', 'Quasiclassical'
 quantum_numbers = 0 0 2 # the quantum number used in 'Quasiclassical' sampling for each mode
 temperature = 300       # in Kelvin; this is the second option to take temperature from, option for 'Wigner', 'Thermostatted'
-time = 10 fs            # time between samples in fs or au; option for 'Thermostatted'
+time = 10 fs            # time between samples in fs or au; required option for 'Thermostatted'
 
 $end
 
@@ -138,14 +140,47 @@ $end
 
 $coordinates	           # coordinates given here
 
-type = mass-value      # coordinate format (possible: mass-value, xyz); mass-value is a mass with all bead positions per line; xyz is a atom name and x-, y-, and z-coordinate per line
+type = mass-value      # coordinate format (possible: mass-value, xyz);
+       		       # 	    mass-value: mass followed by all bead positions for a dof per line
+		       #	    xyz: A atom name and x-, y-, and z-coordinate per line for each bead, and repeated for each dof
+1.0 2.0 3.0
+2.0 1.0 4.0
+$end
+
+
+$coordinates	           # coordinates given here
+
+type = xyz             # coordinate format (possible: mass-value, xyz);
+       		       # 	    mass-value: mass followed by all bead positions for a dof per line
+		       #	    xyz: A atom name and x-, y-, and z-coordinate per line for each bead, and repeated for each dof
+H 1.2 0.0 0.0
+H -1.2 0.0 0.0
+O 0.0 0.0 0.0
+$end
+
+
+##############################################################################
+
+$momenta               # momenta, must be the same ordering as coordinates
+
+1.0 2.0 3.0
+4.0 5.0 6.0
+$end
+
+##############################################################################
+
+$positionShift	       # Fixed linear shift in positions added to the sampled values;
+		       # Format has to be the same as in $coordinates
+
 1.0 2.0 3.0
 2.0 1.0 4.0
 $end
 
 ##############################################################################
 
-$momenta               # momenta, must be the same ordering as coordinates
+$momentumShift         # Fixed linear shift in momentum added to the sampled values;
+		       # Format has to be the same as in $momenta
+
 
 1.0 2.0 3.0
 4.0 5.0 6.0

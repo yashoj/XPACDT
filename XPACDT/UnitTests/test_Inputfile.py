@@ -263,6 +263,10 @@ class InputfileTest(unittest.TestCase):
 
         return
 
+    def test_parse_shifts(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
     def test_format_coordinates(self):
         # Implicity tested in parse modules - not clear how to test separately.
         return

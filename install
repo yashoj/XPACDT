@@ -102,7 +102,7 @@ sys.stdout.write("For permanent activation add that line to "
                  "your ~/.bashrc, ~/.bash_profile, etc. \n")
 sys.stdout.write("\n")
 
-# Ask if XPACDT should be PyInstalled
+# Ask if Documentation should be generated
 isDocu = input("Do you want to generate the general documentation? (y/n) ")
 
 if isDocu == 'y':

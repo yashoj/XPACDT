@@ -38,7 +38,7 @@ import XPACDT.Tools.Geometry as geom
 class GeometryTest(unittest.TestCase):
 
     def test_angle(self):
-        
+        raise NotImplementedError("Please implement a test here!!")
         pass
 
 

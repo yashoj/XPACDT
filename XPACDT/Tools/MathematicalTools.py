@@ -53,7 +53,7 @@ def linear_interpolation_1d(x_fraction, y_initial, y_final):
     ndarray of floats (same as y_initial)
         Interpolated value at `x_fraction` between the intial and final values.
     """
-    # Need to put assert for x_frac <= 1?
-    # Although sometimes in scipy.ode in FSSH, x_frac = 1.00008 or so is used;
-    # maybe use np.allclose(x_frac-1, 0) with some tolerace?
+    # Asserting x_fraction <= 1 is not done since sometimes scipy.integrate.ode
+    # has it more than 1 for adaptive time step so it does linear extrapolation
+    # instead, which is still fine with this function.
     return ((1. - x_fraction) * y_initial + x_fraction * y_final)

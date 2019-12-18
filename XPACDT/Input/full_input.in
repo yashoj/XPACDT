@@ -170,6 +170,7 @@ op0 = +pos
 value = histogram -3.0 3.0 10 # way to analyze the data; could be 'mean', 'std' 'percentile x', 'histogram min max n'
 format = value # format for printing: time - one line per timestep; value - one line per value
 filename = blah # optional
+step = index 1 2 3  # can also be "step = last" which just uses the index of the last time step from the first trajectory file.
 $end
 
 ### more comments!!

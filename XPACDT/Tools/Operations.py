@@ -280,3 +280,72 @@ def _projection(options, values):
         values = values.astype(float)
 
     return values
+
+
+def electronic_state(arguments, log_nuclei):
+    """Does perform operations related to electronic state.
+
+    Valid options are as follows:
+
+    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
+                   gives the first position, or -1 0,3,7 gives the first,
+                   fourth and seventh position. Alternatively, also the
+                   center of mass position can be obtained by giving m and a
+                   comma separated list of degrees of freedom.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the position command. See above.
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
+
+    Output:
+        (n_values) ndarray of floats
+            values obtained from the position operation. The length depends on
+            the operation to be performed. If, e.g., all bead positions of a
+            single degree of freedom is requested, n_values will be n_beads of
+            that degree of freedom. If no arguments are given the function
+            returns None.
+    """
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +state", add_help=False)
+
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
+
+    parser.add_argument('-b', '--basis',
+                        dest='basis',
+                        type=str,
+                        default=None,
+                        choices=['adiabatic', 'diabatic'],
+                        help='Basis to be used. Possible "adiabatic" or "diabatic".')
+
+    if len(arguments) == 0:
+        raise RuntimeError("XPACDT: No arguments given to position operation.")
+
+    opts = parser.parse_args(arguments)
+
+    if opts.help is True:
+        parser.print_help()
+        return None
+
+    # Where to check if surface hopping used?
+    assert (log_nuclei.electrons.name == 'SurfaceHoppingElectrons'),\
+           ("Electronic state information is only available for surface"
+            " hopping electrons.")
+
+    # get state value.
+    if (log_nuclei.electrons.basis == arg.basis):
+        current_value = log_nuclei.electrons.current_state
+
+    else:
+        raise NotImplementedError("Implement change of basis!")
+    
+
+
+    return np.array(current_value).flatten()

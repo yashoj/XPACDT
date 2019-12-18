@@ -71,7 +71,7 @@ class VelocityVerletTest(unittest.TestCase):
     def test_propagate(self):
         # Classical
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
 
         p = np.array([[0.25]])
         r = np.array([[0.5]])
@@ -94,7 +94,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
@@ -118,7 +118,7 @@ class VelocityVerletTest(unittest.TestCase):
     def test_step(self):
         # classical
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
 
         p = np.array([[0.25]])
         r = np.array([[0.5]])
@@ -131,7 +131,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
@@ -146,7 +146,7 @@ class VelocityVerletTest(unittest.TestCase):
     def test_verlet_step(self):
         # classical
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
 
         p = np.array([[0.25]])
         r = np.array([[0.5]])
@@ -159,7 +159,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
 
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
@@ -174,7 +174,7 @@ class VelocityVerletTest(unittest.TestCase):
 
     def test_velocity_step(self):
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
 
         ###############
         # classical
@@ -187,7 +187,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
 
@@ -198,7 +198,7 @@ class VelocityVerletTest(unittest.TestCase):
         ###############
 
         propagator = vv.VelocityVerlet(self.pes1D_shifted_harmonic_classical,
-                                       np.array([2.0]), [1], np.nan,
+                                       np.array([2.0]), [1],
                                        **{'timestep': '0.2 au'})
 
         # classical
@@ -211,7 +211,8 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_shifted_harmonic_4_nb,
-                                       np.array([2.0]), [4], 8., **{'timestep': '0.2 au'})
+                                       np.array([2.0]), [4],
+                                       **{'beta': 8.0, 'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
 
@@ -222,7 +223,7 @@ class VelocityVerletTest(unittest.TestCase):
         ###############
 
         propagator = vv.VelocityVerlet(self.pes1D_anharmonic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
         # classical
         p = np.array([[0.25]])
         r = np.array([[0.5]])
@@ -233,7 +234,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_anharmonic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
 
@@ -244,7 +245,7 @@ class VelocityVerletTest(unittest.TestCase):
         ###############
 
         propagator = vv.VelocityVerlet(self.pes1D_quartic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
 
         # classical
         p = np.array([[0.25]])
@@ -256,7 +257,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         # 4 beads
         propagator = vv.VelocityVerlet(self.pes1D_quartic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
         p = np.array([[0.25, -0.25, 0.5, 0.0]])
         r = np.array([[0.5, 1.0, 0.0, -0.5]])
 
@@ -268,7 +269,7 @@ class VelocityVerletTest(unittest.TestCase):
 
     def test_set_propagation_matrix(self):
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_classical, np.array([2.0]),
-                                       [1], np.nan, **{'timestep': '0.2 au'})
+                                       [1], **{'timestep': '0.2 au'})
 
         classical_ref = np.array([[[[1.0, 0.0], [0.1, 1.0]]]])
         propagator._set_propagation_matrix()
@@ -276,7 +277,7 @@ class VelocityVerletTest(unittest.TestCase):
         np.testing.assert_allclose(classical_pm, classical_ref, rtol=1e-7)
 
         propagator = vv.VelocityVerlet(self.pes1D_harmonic_4_nb, np.array([2.0]),
-                                       [4], 8., **{'timestep': '0.2 au'})
+                                       [4], **{'beta': 8.0, 'timestep': '0.2 au'})
 
         four_beads_ref = np.array([[[[1.0, 0.0], [0.1, 1.0]],
                                    [[0.9900, -0.19933], [0.099667, 0.9900]],

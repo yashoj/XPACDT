@@ -112,7 +112,15 @@ def do_analysis(parameters, systems=None):
                 # than one value is returned
                 check_command(command, system)
 
-            apply_command(command, system)
+                steps_used = _get_step_list(key, command, system)
+
+                # Is it better to put it here and only do it for 1st system?
+                # Before it was being rewritten anyways for every system below.
+                # This assumes same time arrays, need a consistency check for that?
+                command['times'] = [log.time for i, log in enumerate(system.log)
+                                    if _use_time(i, steps_used)]
+
+            apply_command(command, system, steps_used)
 
         n_systems += 1
 
@@ -352,7 +360,7 @@ def check_command(command, system):
                                " operationsgiven. Please check!")
 
 
-def apply_command(command, system):
+def apply_command(command, system, steps_used=[]):
     """ Apply a given command to a given system. The results are stored in
     command['results'] and the times for which the system is evaluated
     are stored in command['times'].
@@ -366,7 +374,7 @@ def apply_command(command, system):
         The read in system containing its own log.
     """
 
-    steps_used = [int(x) for x in command.get('step', '').split()]
+    # steps_used = [int(x) for x in command.get('step', '').split()]
 
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
@@ -402,10 +410,33 @@ def apply_command(command, system):
                                    " '2op0' and '2op' operationsgiven. Please"
                                    " check!")
 
-    command['times'] = [log.time for i, log in enumerate(system.log)
-                        if _use_time(i, steps_used)]
-
     return
+
+
+def _get_step_list(command_name, command, system=None):
+    """Get step list
+    """
+    # TODO: more fancier parcing
+    # TODO : Maybe also add step by actual time value, but how to do that?
+    # How to input exact time value?
+    step_command_list = command.get('step', '').split()
+
+    if (step_command_list == []):
+        # This uses all time steps.
+        steps_used = []
+
+    elif (step_command_list[0] == 'index'):
+        steps_used = [int(x) for x in step_command_list[1:]]
+
+    elif (step_command_list[0] == 'last'):
+        # Get the last step index
+        steps_used = [len(system.log) - 1]
+        print(steps_used)
+    else:
+        raise ValueError("Steps to be used in analysis command '" + command_name
+                          + "' not given properly. It should be either 'index <step_index_numbers>'"
+                          " or 'last'. Given is: " + command.get('step', ''))
+    return steps_used
 
 
 def _use_time(i, steps_used):
@@ -470,6 +501,8 @@ def apply_operation(operation, log_nuclei):
             value *= op.momentum(ops[1:], log_nuclei)
         elif ops[0] == 'vel' or ops[0] == 'velocity':
             value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
+        elif ops[0] == 'state':
+            value *= op.electronic_state(ops[1:], log_nuclei)
         else:
             raise RuntimeError("XPACDT: The given operation is not"
                                "implemented. " + " ".join(ops))

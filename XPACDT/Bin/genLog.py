@@ -61,7 +61,7 @@ def start():
     parser.add_argument("-p", "--precision", type=int, dest="prec",
                         required=False, help=p_help, default=8)
 
-    s_help = "Generate electronic state logfile. Default: False."
+    s_help = "Generate current electronic state logfile. Default: False."
     parser.add_argument("-s", "--state", action="store_true", dest="state",
                         required=False, help=s_help, default=False)
 
@@ -73,6 +73,13 @@ def start():
 
     # Get input file
     system = pickle.load(open(args.PickleFile, 'rb'))
+
+    # Checking if the first system in log has surface hopping electrons to
+    # obtain state information.
+    if (args.state is True):
+        assert (system.log[0].electrons.name == 'SurfaceHoppingElectrons'),\
+            ("Current state information is only available for surface"
+             " hopping electrons.")
 
     # Currently just position and momenta output.
     # Add more functions for each value

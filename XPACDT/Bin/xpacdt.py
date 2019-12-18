@@ -51,7 +51,9 @@ import XPACDT.Input.Inputfile as infile
 
 
 def resource_path(relativePath):
-    """ Get absolute path to resource, works for dev and for PyInstaller.
+    """ Get absolute path to a folder below the directory, where the currently executed 
+    xpacdt.py is stored. This works with PyInstaller and also 'normal' python. This is 
+    used to access files stored in the PyInstaller folder.
 
     Parameters
     ----------
@@ -60,7 +62,7 @@ def resource_path(relativePath):
 
     Returns
     -------
-    Absolute path to the file currently executed.
+    Absolute path to the folder below the current working folder.
     """
     base_path = getattr(sys, '_MEIPASS',
                         os.path.dirname(os.path.abspath(__file__)))

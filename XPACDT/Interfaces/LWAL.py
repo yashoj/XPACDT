@@ -42,6 +42,11 @@ import XPACDT.Tools.Geometry as geom
 class LWAL(itemplate.PotentialInterface):
     """
     LWAL PES. No parameters required.
+
+    The ordering of the atoms is as follows:
+    F, H, H
+
+    G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
     """
     def __init__(self, **kwargs):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
@@ -57,6 +62,8 @@ class LWAL(itemplate.PotentialInterface):
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
+            Please note that Cartesian coordinates of the atoms are used and 
+            have to be ordered in the following way: F, H, H
         P : (n_dof, n_beads) ndarray of floats, optional
             The momenta of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads. This is not
@@ -92,7 +99,8 @@ class LWAL(itemplate.PotentialInterface):
 
     def _to_internal(self, R):
         """Transform from full cartesian coordinates to internal Jacobi
-        coordinates. The Jacobi coordinates are defined as follows:
+        coordinates. The order of the atoms has to be F, H, H. 
+        The Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
             R = internal[1] = Distance between the F and the center of
                               the two H's in au.
@@ -165,39 +173,39 @@ class LWAL(itemplate.PotentialInterface):
         return R
 
 
-if __name__ == "__main__":
-    pes = LWAL()
-    print(pes.name)
-    x=np.zeros(9)
-    for i in range(1000):
-        phi = np.random.rand(1)*2.0*np.pi
-        x[0] = 3.0*np.cos(phi)
-        x[1] = 3.0*np.sin(phi)
-        x[2] = 0.0 
-        x[3] = -1.0
-        x[4] = 0.0
-        x[5] = 0.0
-        x[6] = 1.0
-        x[7] = 0.0
-        x[8] = 0.0
+# if __name__ == "__main__":
+#     pes = LWAL()
+#     print(pes.name)
+#     x=np.zeros(9)
+#     for i in range(1000):
+#         phi = np.random.rand(1)*2.0*np.pi
+#         x[0] = 3.0*np.cos(phi)
+#         x[1] = 3.0*np.sin(phi)
+#         x[2] = 0.0 
+#         x[3] = -1.0
+#         x[4] = 0.0
+#         x[5] = 0.0
+#         x[6] = 1.0
+#         x[7] = 0.0
+#         x[8] = 0.0
         
         
-#        if phi > -11.0:
-#            inte = pes._to_internal(x)
-##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
-#            y = pes._from_internal(inte)
-##            print(x, y)
-#   
-#            print((abs(x-y) < 1e-8).all())
-##            print()
+# #        if phi > -11.0:
+# #            inte = pes._to_internal(x)
+# ##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
+# #            y = pes._from_internal(inte)
+# ##            print(x, y)
+# #   
+# #            print((abs(x-y) < 1e-8).all())
+# ##            print()
     
-    pes._calculate_all(x[:, None])
-    print(pes._energy, pes._gradient)
-    print(pes.energy(x[:, None]))
-    internal = np.array([2.0, 5.0, 0.0])
-    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
-#    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
+#     pes._calculate_all(x[:, None])
+#     print(pes._energy, pes._gradient)
+#     print(pes.energy(x[:, None]))
+#     internal = np.array([2.0, 5.0, 0.0])
+#     pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
+# #    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
     
-    pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
-#    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
-#    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)
+#     pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
+# #    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
+# #    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

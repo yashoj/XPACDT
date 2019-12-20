@@ -37,41 +37,45 @@ import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
 class EckartBarrier(itemplate.PotentialInterface):
     """
-    One-dimensional Eckart barrier with parameters "A, B, L" of the form:
-    V(x) = A*y / (1+y) + B*y / (1+y)^2
-    with: y = exp(x / L)
+    One-dimensional Eckart barrier with parameters `A`, `B`, `L` of the form:
 
-    Alternative parameters:
-        w (barrier frequency), h (barrier height), d (energy difference for
-          reactants and products), m (mass of particle)
+    :math:`V(x) = A*y / (1+y) + B*y / (1+y)^2` 
 
-    V(-\infty) = 0; V(\infty) = A
-    x_{max} = L ln(-(A+B) / (A-B))
-    V(x_{max}) = (A+B)^2 / 4B
+    :math:`y = \exp(x / L)`
 
-    'A' is the energy difference between reactants and products and equals 'd'.
+    :math:`V(-\infty) = 0; V(\infty) = A`
 
-    'h' is the barrier height coming from the reactant side. It can be
+    :math:`x_{max} = L \ln(-(A+B) / (A-B))`
+
+    :math:`V(x_{max}) = (A+B)^2 / 4B`
+
+    `A` is the energy difference between reactants and products and equals `d`.
+
+    `h` is the barrier height coming from the reactant side. It can be
     calculated as (A+B)^2 / 4B.
 
-    'B' can be obtained from 'h' and 'd' as h + (h-d) + sqrt(h*(h-d)). As 'h'
-    is the barrier height from the reactants and 'h-d' is the barrier height
-    from the products, 'B' can be obtaied as the square of the sum of the
-    squareroots of the barrier heights. B = (sqrt(D V_r) + sqrt(D V_p))^2.
+    `B` can be obtained from `h` and `d` as :math:`h + (h-d) + \sqrt(h*(h-d))`. As `h`
+    is the barrier height from the reactants and `h-d` is the barrier height
+    from the products, `B` can be obtaied as the square of the sum of the
+    squareroots of the barrier heights. :math:`B = (\sqrt(D V_r) + \sqrt(D V_p))^2`.
 
-    'w' is the barrier frequency and can be obtained from the second derivative
-    at the potential maximum, which is F = (2 / L^2) * h * (h-d) / B. 'w' is
-    then w = sqrt(|F| / m) / 2pi. 'L' is this obtained from 'w' and 'm' as
-    L = (sqrt(h * (h-d)) / sqrt(B)) / (sqrt(2) pi sqrt(m) w).
+    Alternative parameters:
+        `w` (barrier frequency), `h` (barrier height), `d` (energy difference for
+          reactants and products), `m` (mass of particle)
+
+    `w` is the barrier frequency and can be obtained from the second derivative
+    at the potential maximum, which is :math:`F = (2 / L^2) * h * (h-d) / B`. `w` is
+    then :math:`w = \sqrt(|F| / m) / 2\pi`. `L` is this obtained from `w` and `m` as
+    :math:`L = (\sqrt(h * (h-d)) / \sqrt(B)) / (\sqrt(2) \pi \sqrt(m) w)`.
 
     Other Parameters
     ----------------
     A, B, L : floats
         Parameters for the Eckart barrier.
-        A, B are energies in au. L is a length in bohr.
+        `A`, `B` are energies in au. `L` is a length in bohr.
     w, h, d, m : floats
         Alternative parameters for the Eckart barrier.
-        w is a frequency in au. h, d are energies in au. m is a mass in au.
+        `w` is a frequency in au. `h`, `d` are energies in au. `m` is a mass in au.
     """
     def __init__(self, **kwargs):
         if {'A', 'B', 'L'} <= set(kwargs):
@@ -121,7 +125,7 @@ class EckartBarrier(itemplate.PotentialInterface):
                               "barrier not convertable to float. m is "
                               + kwargs.get('m'))
 
-            # TOOD: conversion here!
+            # conversion here!
             self.__A = d
             self.__B = (math.sqrt(h) + math.sqrt(h-d))**2
             self.__L = math.sqrt(2.0*h*(h-d)) / (w * math.sqrt(m) * math.sqrt(self.__B))
@@ -176,23 +180,23 @@ class EckartBarrier(itemplate.PotentialInterface):
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
             y = np.exp(centroid / self.L)
-            yp = 1 + y
+            y_plus = 1 + y
             self._gradient_centroid = np.zeros_like(y)
             self._energy_centroid = np.zeros_like(y)
 
-            self._energy_centroid = self.A * y / yp + self.B * y / yp**2
-            self._gradient_centroid = (self.A / self.L) * y / yp**2 \
-                + (self.B / self.L) * y*(1-y) / yp**3
+            self._energy_centroid = self.A * y / y_plus + self.B * y / y_plus**2
+            self._gradient_centroid = (self.A / self.L) * y / y_plus**2 \
+                + (self.B / self.L) * y*(1-y) / y_plus**3
 
         # beads part
         y = np.exp(R[0] / self.L)
-        yp = 1 + y
+        y_plus = 1 + y
         self._gradient = np.zeros_like(y)
         self._energy = np.zeros_like(y)
 
-        self._energy = self.A * y / yp + self.B * y / yp**2
-        self._gradient = (self.A / self.L) * y / yp**2 \
-            + (self.B / self.L) * y*(1-y) / yp**3
+        self._energy = self.A * y / y_plus + self.B * y / y_plus**2
+        self._gradient = (self.A / self.L) * y / y_plus**2 \
+                         + (self.B / self.L) * y*(1-y) / y_plus**3
 
         self._gradient = self._gradient.reshape((1, -1))
 

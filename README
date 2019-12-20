@@ -8,6 +8,7 @@ effects are included employ different approaches, including fewest switches
 surface hopping.
 
 Requirements: see requirements.txt
+Also, to used some of the Fortran based potential energy surface `ifort` and sometimes `lapack` are required.
 
 Installation:
 	- Run the "install" script to generate important environment variables.

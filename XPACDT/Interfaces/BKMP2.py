@@ -121,10 +121,14 @@ class BKMP2(itemplate.PotentialInterface):
 
         # phi
         internal[2] = geom.angle(r_vec, R_vec)
+        # Correct angle definition to range :math:`0 : 2\pi`
         if R[7] < 0.0:
             internal[2] = 2.0*np.pi-internal[2]
 
         return internal
+
+    def _from_internal(self, internal):
+        return self._from_internal_to_catesian(internal)
 
     def _from_internal_to_catesian(self, internal):
         """Transform from Jacobi coordinates to full cartesian coordinates. The

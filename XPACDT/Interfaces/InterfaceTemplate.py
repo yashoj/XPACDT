@@ -211,7 +211,7 @@ class PotentialInterface:
 #
 #        return self._coupling
 
-    def _from_internal_to_catesian(self, internal):
+    def _from_internal(self, internal):
         """Transform from a defined set of internal coordinates to the actually
         used coordinates in the potential call.
 
@@ -250,7 +250,7 @@ class PotentialInterface:
         """
 
         if internal:
-            return self.energy(self._from_internal_to_catesian(R)[:, None], S, centroid=True)
+            return self.energy(self._from_internal(R)[:, None], S, centroid=True)
         else:
             return self.energy(R[:, None], S, centroid=True)
 
@@ -276,7 +276,7 @@ class PotentialInterface:
         """
 
         if internal:
-            return self.gradient(self._from_internal_to_catesian(R)[:, None], S, centroid=True)
+            return self.gradient(self._from_internal(R)[:, None], S, centroid=True)
         else:
             return self.gradient(R[:, None], S, centroid=True)
 

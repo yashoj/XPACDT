@@ -122,53 +122,53 @@ class LWALTest(unittest.TestCase):
         cartesian_ref = np.array([ 4.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
         # perpendicular
         internal = np.array([2.0, 4.0, np.pi/2.0])
         cartesian_ref = np.array([0.0, 4.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref, atol=1e-10)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
         # 45 degrees off
         internal = np.array([2.0, 4.0, np.pi/4.0])
         cartesian_ref = np.array([4.0/np.sqrt(2.0), 4.0/np.sqrt(2.0), 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
         # -45 degrees off
         internal = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
         cartesian_ref = np.array([4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
-    def test_to_internal(self):
+    def test_from_cartesian_to_internal(self):
         # colinear
         cartesian = np.array([3.8, 0.0, 0.0, -1.2, 0.0, 0.0, 1.2, 0.0, 0.0])
         internal_ref = np.array([2.4, 3.8, 0.0])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
         np.testing.assert_allclose(cartesian, self.pes._from_internal(internal))
 
         # perpendicular
         cartesian = np.array([4.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0])
         internal_ref = np.array([2.0, 4.0, np.pi/2.0])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
 
         # 'random' in space, 3rd H along axis
         cartesian = np.array([-1.25 , -3.25, -1.18198052, 1.0, -1.0, 2.0, 0.5, -1.5, 2.0-1.0/np.sqrt(2.0)])
         internal_ref = np.array([1.0, 4.0, 2.0*np.pi])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
 
         # -45 degrees off
         cartesian = np.array([4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         internal_ref = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
         np.testing.assert_allclose(cartesian, self.pes._from_internal(internal))
 

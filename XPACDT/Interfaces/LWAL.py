@@ -99,7 +99,7 @@ class LWAL(itemplate.PotentialInterface):
 
     def _from_cartesian_to_internal(self, R):
         """Transform from full cartesian coordinates to internal Jacobi
-        coordinates. The order of the atoms has to be F, H, H. 
+        coordinates. The order of the atoms has to be F, H, H.
         The Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
             R = internal[1] = Distance between the F and the center of
@@ -130,10 +130,14 @@ class LWAL(itemplate.PotentialInterface):
 
         # phi
         internal[2] = geom.angle(r_vec, R_vec)
+        # Correct angle definition to range :math:`0 : 2\pi`
         if R[1] < 0.0:
             internal[2] = 2.0*np.pi-internal[2]
 
         return internal
+
+    def _from_internal(self, internal):
+        return self._from_internal_to_cartesian(internal)
 
     def _from_internal_to_cartesian(self, internal):
         """Transform from Jacobi coordinates to full cartesian coordinates. The

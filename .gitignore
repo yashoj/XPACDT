@@ -8,7 +8,7 @@ _templates
 XPACDT/Bin/input.in
 XPACDT/Bin/dist
 *.exe.spec
-*.rst
+XPACDT.*rst
 output_docu
 output_pyinstall
 XPACDT/Interfaces/*_module/output_make

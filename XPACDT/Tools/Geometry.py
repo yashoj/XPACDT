@@ -34,7 +34,10 @@ import numpy as np
 
 
 def angle(v1, v2):
-    """ Returns the angle in radians between vectors 'v1' and 'v2'.
+    """ Returns the angle in radians between vectors `v1` and `v2`. The values
+    of the angle are from :math:`0` to :math:`\pi`. This version is
+    numerically stable.
+    See: www.cs.berkeley.edu/~wkahan/MathH110/Cross.pdf (page 15)
 
     Parameters
     ----------
@@ -46,8 +49,13 @@ def angle(v1, v2):
     Returns
     -------
     float
-        Angle in radians between v1 and v2.
+        Angle in radians between `v1` and `v2`.
+        The values are [:math:`0` : :math:`\pi`]
     """
-    cosang = np.dot(v1, v2)
-    sinang = np.linalg.norm(np.cross(v1, v2))
-    return np.arctan2(sinang, cosang)
+
+    norm_v1 = np.linalg.norm(v1)
+    norm_v2 = np.linalg.norm(v2)
+    vec_difference = np.linalg.norm(v1/norm_v1 - v2/norm_v2)
+    vec_sum = np.linalg.norm(v1/norm_v1 + v2/norm_v2)
+
+    return 2.0*np.arctan2(vec_difference, vec_sum)

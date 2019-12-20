@@ -1,11 +1,11 @@
 ! Standardized subroutine to call 3 atom potentials from Python. Here
 ! it calls the CW Cl+H2 PES.
 ! Input:
-!      xin : Cartesian coordinates; here Cl has to be the first atom
-!      inpath : path to the parameter files.
+!      xin : 1d float array; Cartesian coordinates; here Cl has to be the first atom
+!      inpath : string; path to the parameter files.
 ! Output:
-!      v : potential energy in hartree
-!      dv : derivatives with respect to cartesian coordinates in hartree/au
+!      v : float; potential energy in hartree
+!      dv : 1d float array; derivatives with respect to cartesian coordinates in hartree/au
 subroutine pot(xin, inpath, v, dv)
   implicit none
   

@@ -34,7 +34,7 @@ subroutine pot(xin, inpath, v, dv)
   r(2) = dsqrt(r(2))
   r(3) = dsqrt(r(3))
 
-  ! Call BKMP2 PES
+  ! Call BKMP2 PES; Requires interatomic distances, Gives back energy and derivatives in internal coordinates
   call bkmp2(r, v, dvdr, 1)
 
   ! Convert the derivatives in internal coordinates to cartesian coordinates

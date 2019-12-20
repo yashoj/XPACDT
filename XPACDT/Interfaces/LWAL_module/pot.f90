@@ -50,7 +50,7 @@ subroutine pot(xin, inpath, v, dv)
   f = dp / (r(1)*r(2))
   theta = dacos(f)
 
-  ! Call the LWAL PES
+  ! Call the LWAL PES; Requires interatomic distances, Gives back the lowest adiabatic energy
   call pot_fh2(r, v)
 
   ! Calculate derivatives with respect to the HH, and one HF bond

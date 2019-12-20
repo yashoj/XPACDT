@@ -48,7 +48,7 @@ subroutine pot(xin, inpath, v, dv)
   f = dp / (r(1)*r(2))
   theta = dacos(f)
 
-  ! Call the CW PES
+  ! Call the CW PES; Requires interatomic distances, Gives back the adiabatic energies, so we need to access the lowest one
   call poth2cl(r, vad, 1)
 
   v = vad(1)

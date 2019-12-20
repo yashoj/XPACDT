@@ -1,3 +1,11 @@
+! Standardized subroutine to call 3 atom potentials from Python. Here
+! it calls the LWAL F+H2 PES.
+! Input:
+!      xin : Cartesian coordinates; here F has to be the first atom
+!      inpath : path to the parameter files.
+! Output:
+!      v : potential energy in hartree
+!      dv : derivatives with respect to cartesian coordinates in hartree/au
 subroutine pot(xin, inpath, v, dv)
   implicit none
   
@@ -19,6 +27,8 @@ subroutine pot(xin, inpath, v, dv)
 
   v = 0.d0
 
+  ! r are all three interatomic distances; HH, HF, HF
+  ! dp is the dot product between the HH and one of the HF vectors
   r(1) = 0.d0
   r(2) = 0.d0
   r(3) = 0.d0
@@ -36,14 +46,14 @@ subroutine pot(xin, inpath, v, dv)
   r(2) = dsqrt(r(2))
   r(3) = dsqrt(r(3))
 
+  ! theta is the angle between the HH bond and one of the HF bonds
   f = dp / (r(1)*r(2))
   theta = dacos(f)
 
-!  write (6, *), f, theta
-!, getR3(r(1), r(2), theta), r(3)
-
+  ! Call the LWAL PES
   call pot_fh2(r, v)
 
+  ! Calculate derivatives with respect to the HH, and one HF bond
   do i = 1, 2
      r(i) = r(i) + step
      r(3) = getR3(r(1), r(2), theta)
@@ -58,6 +68,7 @@ subroutine pot(xin, inpath, v, dv)
      r(i) = r(i) + step
   enddo
 
+  ! Calculate derivative with respect to theta
   theta = theta + step
   r(3) = getR3(r(1), r(2), theta)
   call pot_fh2(r, vp)
@@ -75,9 +86,8 @@ subroutine pot(xin, inpath, v, dv)
   else
      dtda = -1.d0 / sqrt(1.d0 - f*f)
   endif
-!  write(6,*) "dtda=", dtda
 
-!!! do chain rule here for theta derivative
+  ! do chain rule here for theta derivative
   do i = 0, 2
      dv(1+i) = dvdr(2) * ((xin(1+i) - xin(4+i)) / r(2)) 
      dphi = (-xin(4+i) + xin(7+i))*r(1)*r(2)
@@ -101,8 +111,7 @@ subroutine pot(xin, inpath, v, dv)
 
 end subroutine pot
 
-
-
+! Initialize - doesn't do much here
 subroutine pes_init()
   implicit none
 
@@ -110,12 +119,12 @@ subroutine pes_init()
   COMMON /pathv/ path
 
   path = "/home/ralph/code/XPACDT/XPACDT/Interfaces/LWAL_module/"
-!inpath
 
   return
 
 end subroutine pes_init
 
+! Calculate the third interatomic distance based on two interatomic distances and their angle
 real*8 function getR3(r1, r2, theta)
   implicit none
 

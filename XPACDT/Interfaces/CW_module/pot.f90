@@ -1,3 +1,11 @@
+! Standardized subroutine to call 3 atom potentials from Python. Here
+! it calls the CW Cl+H2 PES.
+! Input:
+!      xin : Cartesian coordinates; here Cl has to be the first atom
+!      inpath : path to the parameter files.
+! Output:
+!      v : potential energy in hartree
+!      dv : derivatives with respect to cartesian coordinates in hartree/au
 subroutine pot(xin, inpath, v, dv)
   implicit none
   
@@ -9,7 +17,6 @@ subroutine pot(xin, inpath, v, dv)
   real*8 :: r(3), dvdr(3), vad(6), getR3
   real*8 :: dtda, dphi, dr1, dr2
   integer :: i, k
-!  real*8 :: step
   parameter step = 1.d-4
 
   CHARACTER(100) path
@@ -18,6 +25,8 @@ subroutine pot(xin, inpath, v, dv)
 
   v = 0.d0
 
+  ! r are all three interatomic distances; HH, HCl, HCl
+  ! dp is the dot product between the HH and one of the HF vectors
   r(1) = 0.d0
   r(2) = 0.d0
   r(3) = 0.d0
@@ -35,13 +44,16 @@ subroutine pot(xin, inpath, v, dv)
   r(2) = dsqrt(r(2))
   r(3) = dsqrt(r(3))
 
+  ! theta is the angle between the HH bond and one of the HF bonds
   f = dp / (r(1)*r(2))
   theta = dacos(f)
 
+  ! Call the CW PES
   call poth2cl(r, vad, 1)
 
   v = vad(1)
 
+  ! Calculate derivatives with respect to the HH, and one HCl bond
   do i = 1, 2
      r(i) = r(i) + step
      r(3) = getR3(r(1), r(2), theta)
@@ -58,6 +70,7 @@ subroutine pot(xin, inpath, v, dv)
      r(i) = r(i) + step
   enddo
 
+  ! Calculate derivative with respect to theta
   theta = theta + step
   r(3) = getR3(r(1), r(2), theta)
   call poth2cl(r, vad, 1)
@@ -72,33 +85,13 @@ subroutine pot(xin, inpath, v, dv)
   
   theta = theta + step
 
-! dtda = -1.d0 / sqrt(1.0 -f*f)
-! dphi = (2.0*mxin(2,i) - (xin(1,i)+xin(3,i)))*r(1)*r(3)
-!
-! dr1 = dp * r(2) * ((xin(2,i)-xin(3,i)) / r(1))
-! dr2 = dp * r(1) * ((xin(2,i)-xin(1,i)) / r(2))
-
-! g[0] = dvdr(3) * dtda * (dphi - dr1 - dr2) / (r(1)*r(1)*r(2)*r(2))
-
-
-! dphi = (-xin(2,i) + xin(3,i))*r(1)*r(2)
-! dr1 = dp * r(2) * (-(xin(2,i)-xin(3,i))) / r(1))
-
-! g[3] = dvdr(3) * dtda * (dphi - dr1) /  (r(1)*r(1)*r(2)*r(2))
-
-
-! dphi = (-xin(2,i) + xin(1,i))*r(1)*r(2)
-! dr2 = dp * r(1) * (-(xin(2,i)-xin(1,i))) / r(2))
-
-! g[3] = dvdr(3) * dtda * (dphi - dr2) /  (r(1)*r(1)*r(2)*r(2))
-
   if (abs((abs(f)-1.0)).lt.1.d-6) then
      dtda = 0.d0
   else
      dtda = -1.d0 / sqrt(1.0 -f*f)
   endif
 
-!!! do chain rule here for theta derivative
+  ! do chain rule here for theta derivative
   do i = 0, 2
      dv(1+i) = dvdr(2) * ((xin(1+i) - xin(4+i)) / r(2)) 
      dphi = (-xin(4+i) + xin(7+i))*r(1)*r(2)
@@ -121,8 +114,7 @@ subroutine pot(xin, inpath, v, dv)
 
 end subroutine pot
 
-
-
+! Initialize - doesn't do much here
 subroutine pes_init()
   implicit none
 
@@ -130,6 +122,7 @@ subroutine pes_init()
 
 end subroutine pes_init
 
+! Calculate the third interatomic distance based on two interatomic distances and their angle
 real*8 function getR3(r1, r2, theta)
   implicit none
 

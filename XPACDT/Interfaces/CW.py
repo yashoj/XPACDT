@@ -99,7 +99,7 @@ class CW(itemplate.PotentialInterface):
 
         return
 
-    def _to_internal(self, R):
+    def _from_cartesian_to_internal(self, R):
         """Transform from full cartesian coordinates to internal Jacobi
         coordinates. The order of the atoms has to be Cl, H, H. 
         The Jacobi coordinates are defined as follows:
@@ -137,7 +137,7 @@ class CW(itemplate.PotentialInterface):
 
         return internal
 
-    def _from_internal(self, internal):
+    def _from_internal_to_catesian(self, internal):
         """Transform from Jacobi coordinates to full cartesian coordinates. The
         Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
@@ -193,9 +193,9 @@ class CW(itemplate.PotentialInterface):
 #        
 #        
 #        if phi > -11.0:
-#            inte = pes._to_internal(x)
+#            inte = pes._from_cartesian_to_internal(x)
 ##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
-#            y = pes._from_internal(inte)
+#            y = pes._from_internal_to_catesian(inte)
 ##            print(x, y)
 #   
 #            print((abs(x-y) < 1e-8).all())

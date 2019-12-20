@@ -110,8 +110,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             assert (self.evolution_picture == "schroedinger"), \
                 ("Evolution picture needs to be Schroedinger for unitary propagation.")
 
-        n_states = self.pes.n_states
         max_n_beads = self.pes.max_n_beads
+        n_states = self.pes.n_states
+        assert (n_states >= 2), ("Number of states should be more than or "
+                                 "equal to 2 for surface hoping. Else it"
+                                 "doesn't make sense to use it.")
 
         try:
             initial_state = int(parameters.get("SurfaceHoppingElectrons").get("initial_state"))
@@ -510,19 +513,21 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Parameters
         ----------
-        c : (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
+        c_coeff : (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
+            (Note: This shape here comes from rpsh_type within the module, but
+            doesn't necessary have to be that.)
             Electronic wavefuntion coefficients in interaction or Schroedinger
             picture depending upon 'evolution_picture' selected.
-        phase : (n_beads, n_states, n_states) ndarray of floats if rpsh_type == 'density_matrix'
-            /or/ (1, n_states, n_states) ndarray of floats if rpsh_type == 'bead' or 'centroid'
-            /or/ None if evolution_picture == 'schroedinger'
+        phase : None if evolution_picture == 'schroedinger'
+            /or/ (*, n_states, n_states) ndarray of floats, where * is the
+                 first dimension of the input array `c_coeff`
             Phase of the wavefunction in interaction picture.
 
         Returns
         -------
-        a_jk : (n_beads, n_states, n_states) ndarray of complex if rpsh_type == 'density_matrix'
-            /or/ (1, n_states, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
+        a_jk : (*, n_states, n_states) ndarray of complex, where * is the
+               first dimension of the input array `c_coeff`
             Electronic density matrix. This should be independent of 'evolution_picture' selected.
         """
         if (self.evolution_picture == 'interaction'):
@@ -615,8 +620,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Returns
         -------
-        c_new : n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
-            /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
+        c_new : ndarray of complex with the same shape as `c_coeff`
             New electronic coefficients obtained after propagation.
         """
         c_1 = timestep * prop_func(time, c_coeff, time_propagate)
@@ -655,8 +659,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Returns
         -------
-        c_new : (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
-            /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
+        c_new : ndarray of complex with the same shape as `c_coeff`
             New electronic coefficients obtained after propagation.
         """
         c_new = []
@@ -699,8 +702,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Returns
         -------
-        c_new : (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
-            /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
+        c_new : ndarray of complex with the same shape as `c_coeff`
             New electronic coefficients obtained after propagation.
         """
         t_frac_mid = (time + 0.5 * timestep) / time_propagate
@@ -734,9 +736,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Returns
         -------
-        (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix' and ode_solver == 'runga_kutta'
-        /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid', and ode_solver == 'runga_kutta'
-        /or/ (n_states) ndarray of complex if ode_solver == 'scipy'
+        ndarray of complex with the same shape as `c`
             Time derivative of electronic coefficients at time `t`.
         """
         # Time fraction in the propagation step, needed for interpolation.
@@ -770,9 +770,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         Returns
         -------
-        (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix' and ode_solver == 'runga_kutta'
-        /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid', and ode_solver == 'runga_kutta'
-        /or/ (n_states) ndarray of complex if ode_solver == 'scipy'
+        ndarray of complex with the same shape as `c`
             Time derivative of electronic coefficients at time `t`.
         """
         # Time fraction in the propagation step, needed for interpolation.

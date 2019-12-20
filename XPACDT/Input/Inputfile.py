@@ -101,6 +101,7 @@ class Inputfile(collections.MutableMapping):
 
         self.commands = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:
+            self.commands[key]['name'] = key
             self.commands[key]['results'] = []
 
     @property

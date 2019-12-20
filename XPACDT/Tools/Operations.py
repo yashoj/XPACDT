@@ -61,13 +61,14 @@ def position(arguments, log_nuclei):
     log_nuclei: XPACDT.System.Nuclei object from the log to perform
                 operations on.
 
-    Output:
-        (n_values) ndarray of floats
-            values obtained from the position operation. The length depends on
-            the operation to be performed. If, e.g., all bead positions of a
-            single degree of freedom is requested, n_values will be n_beads of
-            that degree of freedom. If no arguments are given the function
-            returns None.
+    Returns
+    -------
+    (n_values) ndarray of floats
+        Values obtained from the position operation. The length depends on
+        the operation to be performed. If, e.g., all bead positions of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom. If no arguments are given the function
+        returns None.
     """
 
     # Parse arguments
@@ -157,13 +158,14 @@ def momentum(arguments, log_nuclei):
     log_nuclei: XPACDT.System.Nuclei object from the log to perform
                 operations on.
 
-    Output:
-        (n_values) ndarray of floats
-            Values obtained from the momentum operation. The length depends on
-            the operation to be performed. If, e.g., all bead momenta of a
-            single degree of freedom is requested, n_values will be n_beads of
-            that degree of freedom. If no arguments are given the function
-            returns None.
+    Returns
+    -------
+    (n_values) ndarray of floats
+        Values obtained from the momentum operation. The length depends on
+        the operation to be performed. If, e.g., all bead momenta of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom. If no arguments are given the function
+        returns None.
     """
 
     # Parse arguments
@@ -245,6 +247,7 @@ def _projection(options, values):
             - above a value: >,A
     values : float or ndarray of floats
         The values to be checked.
+
     Returns
     -------
     values.shape ndarray of floats
@@ -284,14 +287,14 @@ def _projection(options, values):
 
 def electronic_state(arguments, log_nuclei):
     """Does perform operations related to electronic state.
+    
+    TODO: Write down equations for populations for different rpsh_type.
 
     Valid options are as follows:
-
-    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
-                   gives the first position, or -1 0,3,7 gives the first,
-                   fourth and seventh position. Alternatively, also the
-                   center of mass position can be obtained by giving m and a
-                   comma separated list of degrees of freedom.
+        
+    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or "diabatic". Default: "adiabatic".
+    
+    -p <a> given: State to be projected onto in the basis given by 'basis'.
 
     Parameters
     ----------
@@ -300,13 +303,14 @@ def electronic_state(arguments, log_nuclei):
     log_nuclei: XPACDT.System.Nuclei object from the log to perform
                 operations on.
 
-    Output:
-        (n_values) ndarray of floats
-            values obtained from the position operation. The length depends on
-            the operation to be performed. If, e.g., all bead positions of a
-            single degree of freedom is requested, n_values will be n_beads of
-            that degree of freedom. If no arguments are given the function
-            returns None.
+    Returns
+    -------
+    (1) ndarray of float
+        values obtained from the position operation. The length depends on
+        the operation to be performed. If, e.g., all bead positions of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom. If no arguments are given the function
+        returns None.
     """
 
     # Parse arguments
@@ -321,9 +325,16 @@ def electronic_state(arguments, log_nuclei):
     parser.add_argument('-b', '--basis',
                         dest='basis',
                         type=str,
-                        default=None,
+                        default='adiabatic',
                         choices=['adiabatic', 'diabatic'],
-                        help='Basis to be used. Possible "adiabatic" or "diabatic".')
+                        required=False,
+                        help='Basis to be used. Possible "adiabatic" or "diabatic". Default: "adiabatic".')
+    
+    parser.add_argument('-p', '--project',
+                        dest='proj',
+                        type=int,
+                        default=None,
+                        help='State to be projected onto.')
 
     if len(arguments) == 0:
         raise RuntimeError("XPACDT: No arguments given to position operation.")
@@ -334,18 +345,55 @@ def electronic_state(arguments, log_nuclei):
         parser.print_help()
         return None
 
-    # Where to check if surface hopping used?
+    n_states = log_nuclei.electrons.pes.n_states
+    current_state = log_nuclei.electrons.current_state
+
+    # Where to check for these asserts?
     assert (log_nuclei.electrons.name == 'SurfaceHoppingElectrons'),\
            ("Electronic state information is only available for surface"
             " hopping electrons.")
+    assert (opts.proj < n_states),\
+        ("State to be projected onto is greater than the number of states. "
+         "Note: State count starts from 0. Given state to project is: " + opts.proj)
 
     # get state value.
-    if (log_nuclei.electrons.basis == arg.basis):
-        current_value = log_nuclei.electrons.current_state
+    if (log_nuclei.electrons.basis == opts.basis):
+        if opts.proj == current_state:
+            current_value = 1.0
+        else:
+            current_value = 0.0
 
     else:
-        raise NotImplementedError("Implement change of basis!")
-    
+        if (n_states == 2):
+            import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
+        elif (n_states > 2):
+            import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
+        else:
+            raise ValueError("Number of states should be 2 or more to use "
+                             "diabatic to adiabatic transformation. Here "
+                             "number of states is: " + str(n_states))
 
+        # Diabatic to adiabatic transformation matrix for centroid or all beads based on rpsh type
+        if (log_nuclei.electrons.rpsh_type == 'centroid'):
+            U = dia2ad.get_transformation_matrix(log_nuclei.electrons.pes._diabatic_energy_centroid)
+            if (log_nuclei.electrons.basis == 'adiabatic' and opts.basis == 'diabatic'):
+                current_value = (np.abs(U[opts.proj, current_state]))**2
+            else:
+                # For reverse case, need U_daggar so complex conjugate transpose
+                current_value = (np.abs(np.conj(U[current_state, opts.proj])))**2
+        else:
+            # Getting shape (n_beads, n_states, n_states)
+            U = dia2ad.get_transformation_matrix(log_nuclei.electrons.pes._diabatic_energy).transpose(2, 0, 1)
+            if (log_nuclei.electrons.rpsh_type == 'bead'):
+                if (log_nuclei.electrons.basis == 'adiabatic' and opts.basis == 'diabatic'):
+                    current_value = (np.abs(np.mean([u_a[opts.proj, current_state] for u_a in U])))**2
+                else:
+                    current_value = (np.abs(np.mean([np.conj(u_a[current_state, opts.proj]) for u_a in U])))**2
 
-    return np.array(current_value).flatten()
+            elif (log_nuclei.electrons.rpsh_type == 'density'):
+                if (log_nuclei.electrons.basis == 'adiabatic' and opts.basis == 'diabatic'):
+                    current_value = np.mean([(np.abs(u_a[opts.proj, current_state]))**2 for u_a in U])
+                else:
+                    current_value = np.mean([(np.abs(np.conj(u_a[current_state, opts.proj])))**2 for u_a in U])
+
+    return np.array(current_value)

@@ -107,16 +107,17 @@ def do_analysis(parameters, systems=None):
     for system in get_systems(dirs, file_name, systems):
         # do different stuff for each command
         for key, command in parameters.commands.items():
+            # For now, 'steps_used' is generated for each system. This is in the case that
+            # different systems have different times.
+            steps_used = _get_step_list(command, system)
+
             if n_systems == 0:
                 # Consistency check for operations and print warning if more
-                # than one value is returned
+                # than one value is returned.
                 check_command(command, system)
 
-                steps_used = _get_step_list(key, command, system)
-
-                # Is it better to put it here and only do it for 1st system?
-                # Before it was being rewritten anyways for every system below.
-                # This assumes same time arrays, need a consistency check for that?
+                # This assumes same time array for all systems, need a consistency check for that, maybe in steps_used?
+                # TODO : how to deal with different time arrays like perhaps in last step.
                 command['times'] = [log.time for i, log in enumerate(system.log)
                                     if _use_time(i, steps_used)]
 
@@ -387,6 +388,7 @@ def apply_command(command, system, steps_used=[]):
                                    for i, log_nuclei in enumerate(system.log)
                                    if _use_time(i, steps_used)])
     except ValueError as e:
+        # Add command name by 'name'
         raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
                                " together it probably is due to incompatible"
                                " array sizes returned by the 'op0' and 'op'"
@@ -407,18 +409,31 @@ def apply_command(command, system, steps_used=[]):
             raise type(e)(str(e) + "\nXPACDT: If 'operands could not be"
                                    " broadcast together it probably is due to"
                                    " incompatible array sizes returned by the"
-                                   " '2op0' and '2op' operationsgiven. Please"
+                                   " '2op0' and '2op' operations given. Please"
                                    " check!")
 
     return
 
 
-def _get_step_list(command_name, command, system=None):
-    """Get step list
+def _get_step_list(command, system=None):
+    """ Get list of time step indices to be used for analysis.
+
+    Parameters
+    ----------
+    command : dict
+        The definition of the command to be evaluated as given in the input
+        file.
+    system : XPACDT.System
+        The read in system containing its own log.
+
+    Returns
+    -------
+    steps_used : list of integer
+        Empty list if all timesteps should be used. Else a list of integers
+        representing indices for the timesteps to be used.
     """
-    # TODO: more fancier parcing
-    # TODO : Maybe also add step by actual time value, but how to do that?
-    # How to input exact time value?
+    # TODO : Add step by actual time value, but how to do that? How to input exact time value?
+    # Maybe with ranges like for projection in operations; if yes, need fancier parcing here.
     step_command_list = command.get('step', '').split()
 
     if (step_command_list == []):
@@ -431,9 +446,8 @@ def _get_step_list(command_name, command, system=None):
     elif (step_command_list[0] == 'last'):
         # Get the last step index
         steps_used = [len(system.log) - 1]
-        print(steps_used)
     else:
-        raise ValueError("Steps to be used in analysis command '" + command_name
+        raise ValueError("Steps to be used in analysis command '" + command.get('name')
                           + "' not given properly. It should be either 'index <step_index_numbers>'"
                           " or 'last'. Given is: " + command.get('step', ''))
     return steps_used

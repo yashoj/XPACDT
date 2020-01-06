@@ -263,9 +263,16 @@ class InputfileTest(unittest.TestCase):
 
         return
 
-    def test_parse_shifts(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+    def test_flatten_shifts(self):
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_shifts.in")
+        parameters._flatten_shifts()
+        parameters._c_type = 'xpacdt'
+
+        positionShift_ref = np.array([1.0, 2.0, 3.0, 4.0])
+        momentumShift_ref = np.array([-1.0, -2.0, -3.0, -4.0])
+
+        np.testing.assert_array_equal(parameters.positionShift, positionShift_ref)
+        np.testing.assert_array_equal(parameters.momentumShift, momentumShift_ref)
 
     def test_format_coordinates(self):
         # Implicity tested in parse modules - not clear how to test separately.

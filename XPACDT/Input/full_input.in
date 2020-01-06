@@ -169,8 +169,8 @@ $end
 
 ##############################################################################
 
-$positionShift	       # Fixed linear shift in positions added to the sampled values;
-		       # Format has to be the same as in $coordinates
+$positionShift	       # Fixed linear shift in positions centroid added to the sampled values;
+		       # Format has to be the same as in $coordinates, but only for 1 bead as only centroid shifts are allowed
 
 1.0 2.0 3.0
 2.0 1.0 4.0
@@ -178,8 +178,8 @@ $end
 
 ##############################################################################
 
-$momentumShift         # Fixed linear shift in momentum added to the sampled values;
-		       # Format has to be the same as in $momenta
+$momentumShift         # Fixed linear shift in momentum centroid added to the sampled values;
+		       # Format has to be the same as in $momenta, but only for 1 bead as only centroid shifts are allowed
 
 
 1.0 2.0 3.0

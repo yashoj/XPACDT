@@ -108,6 +108,7 @@ def sample(system, parameters, do_return=False):
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
                               "do_" + method + "_sampling")(system, parameters, n_samples_required)
 
+    # Shift centroid position and/or momenta if requested
     if parameters.positionShift is not None:
         for system in sampled_systems:
             system.nuclei.positions += parameters.positionShift[:, None]

@@ -434,24 +434,8 @@ class Inputfile(collections.MutableMapping):
                 except ValueError as e:
                     raise type(e)(str(e) + "\nXPACDT: Number of given momenta "
                                            "and coordinates do not match!")
-
-            if self.__positionShift is not None:
-                self.__positionShift = self.__positionShift.reshape(-1)
-                if len(self.__positionShift) != self.n_dof:
-                    raise RuntimeError("XPACDT: Number of coordinates in "
-                                       "position shift does not match number "
-                                       "of degrees of freedom given: "
-                                       + str(self.n_dof) + " != "
-                                       + str(len(self.__positionShift)))
-
-            if self.__momentumShift is not None:
-                self.__momentumShift = self.__momentumShift.reshape(-1)
-                if len(self.__momentumShift) != self.n_dof:
-                    raise RuntimeError("XPACDT: Number of coordinates in "
-                                       "momentum shift does not match number "
-                                       "of degrees of freedom given: "
-                                       + str(self.n_dof) + " != "
-                                       + str(len(self.__momentumShift)))
+            
+            self._flatten_shifts()
             self._c_type = 'xpacdt'
 
         elif self._c_type == 'xyz':
@@ -510,4 +494,30 @@ class Inputfile(collections.MutableMapping):
                 if self.__momenta is not None:
                     self.__momenta = rp_momenta.copy()
 
+            self._flatten_shifts()
+
             self._c_type = 'xpacdt'
+
+    def _flatten_shifts(self):
+        """Function to flatten then given position or momentum shift to
+        one-dimensional arrays.
+        """
+        if self.__positionShift is not None:
+            self.__positionShift = self.__positionShift.reshape(-1)
+            if len(self.__positionShift) != self.n_dof:
+                raise RuntimeError("XPACDT: Number of coordinates in "
+                                   "position shift does not match number "
+                                   "of degrees of freedom given: "
+                                   + str(self.n_dof) + " != "
+                                   + str(len(self.__positionShift)))
+
+        if self.__momentumShift is not None:
+            self.__momentumShift = self.__momentumShift.reshape(-1)
+            if len(self.__momentumShift) != self.n_dof:
+                raise RuntimeError("XPACDT: Number of coordinates in "
+                                   "momentum shift does not match number "
+                                   "of degrees of freedom given: "
+                                   + str(self.n_dof) + " != "
+                                   + str(len(self.__momentumShift)))
+
+        return

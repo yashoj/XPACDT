@@ -58,10 +58,6 @@ class FixedSamplingTest(unittest.TestCase):
                                        rtol=1e-7)
             # TODO: more attributes to be checked?
 
-    def test_shifts(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
-
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(FixedSamplingTest)

@@ -37,7 +37,7 @@ import shutil
 import sys
 
 
-def sample(system, parameters):
+def sample(system, parameters, do_return=False):
     """
     Basic sampling method. This function creates the folder given in the input
     to put the sampled data to. If the folder already exists, either overwrite
@@ -56,6 +56,13 @@ def sample(system, parameters):
         System that defines the initial geometry and the potential.
     parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
+    do_return: Bool, optional, default:False
+        If True then the list of samples systems is returned instead of written
+        to pickle files.
+
+    Return
+    ------
+    If do_return is True, the list of samples systems is returned.
     """
 
     sampling_parameters = parameters.get('sampling')
@@ -110,6 +117,9 @@ def sample(system, parameters):
         for system in sampled_systems:
             system.nuclei.momenta += parameters.momentumShift[:, None]
             system.do_log(init=True)
+
+    if do_return is True:
+        return sampled_systems
 
     # Save stuff to pickle files. Iterate over all possible folders
     shift = 0

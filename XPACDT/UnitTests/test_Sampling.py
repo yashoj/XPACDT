@@ -29,8 +29,12 @@
 #
 #  **************************************************************************
 
+import numpy as np
+import os
 import unittest
 
+import XPACDT.System.System as xSystem
+import XPACDT.Input.Inputfile as infile
 import XPACDT.Sampling.Sampling as sampling
 
 # TODO: How would a good test look like?
@@ -40,13 +44,45 @@ import XPACDT.Sampling.Sampling as sampling
 
 class SamplingTest(unittest.TestCase):
 
-#    def setUp(self):
-#        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
+    def setUp(self):
+        self.parameters_position_shift = infile.Inputfile("FilesForTesting/SamplingTest/input_position_shift.in")
+        self.system_position = xSystem.System(self.parameters_position_shift)
 
-    def test_sample(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        self.parameters_momentum_shift = infile.Inputfile("FilesForTesting/SamplingTest/input_momentum_shift.in")
+        self.system_momentum = xSystem.System(self.parameters_momentum_shift)
+
+#    def test_sample(self):
+#        raise NotImplementedError("Please implement a test here!!")
+#        pass
+
+
+    def test_shifts(self):
+        coordinate_ref = np.array([[2.0], [1.0], [4.0], [-2.0]])
+        momenta_ref = np.array([[-1.0], [0.1], [2.0], [1.25]])
+        shift_ref = np.array([[1.0], [1.0], [-1.0], [-1.0]])
+
+        sampled_systems = sampling.sample(self.system_position, self.parameters_position_shift, True)
+
+        self.assertEqual(len(sampled_systems), 1000)
+        for s in sampled_systems:
+            self.assertEqual(s.nuclei.n_dof, 4)
+            np.testing.assert_allclose(s.nuclei.positions, coordinate_ref + shift_ref,
+                                       rtol=1e-7)
+            np.testing.assert_allclose(s.nuclei.momenta, momenta_ref,
+                                       rtol=1e-7)
+
+        sampled_systems = sampling.sample(self.system_momentum, self.parameters_momentum_shift, True)
+
+        self.assertEqual(len(sampled_systems), 1000)
+        for s in sampled_systems:
+            self.assertEqual(s.nuclei.n_dof, 4)
+            np.testing.assert_allclose(s.nuclei.positions, coordinate_ref,
+                                       rtol=1e-7)
+            np.testing.assert_allclose(s.nuclei.momenta, momenta_ref + shift_ref,
+                                       rtol=1e-7)
+
+        os.rmdir('test')
+
 
 
 if __name__ == "__main__":

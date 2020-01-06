@@ -66,9 +66,20 @@ class MassiveAndersen(object):
         if 'temperature' in thermo_parameters:
             self.temperature = float(thermo_parameters.
                                      get('temperature').split()[0])
-        elif 'temperature' in sampling_parameters:
-            self.temperature = float(sampling_parameters.
-                                     get('temperature').split()[0])
+
+            # Consistency check
+            if sampling_parameters is not None and 'temperature' in sampling_parameters:
+                sampling_temperature = float(sampling_parameters.
+                                             get('temperature').split()[0])
+
+                # Avoid round of errors; There should be really no difference
+                # in results if temperatures given deviate by 1e-4
+                if abs(self.temperature - sampling_temperature) > 1e-4:
+                    raise RuntimeError("Temperatures given in thermostat"
+                                       "(" + str(self.temperature) + " K) and"
+                                       " in samping ("
+                                       + str(sampling_temperature) + " K)"
+                                       " do not match!")
         else:
             raise RuntimeError("No temperature given for MassiveAndersen!")
 

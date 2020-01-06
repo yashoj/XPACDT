@@ -199,6 +199,14 @@ class MassiveAndersenTest(unittest.TestCase):
             self.assertTrue(std_min < p_std_ref < std_max)
 
 
+    def test_generation(self):
+        # test temperature consistency check
+        input_params = {'thermostat': {'temperature': '315775.130734'},
+                        'sampling': {'temperature': '1.0'}}
+        mass = np.array([1.])
+        with self.assertRaises(RuntimeError):
+            thermostat = ma.MassiveAndersen(input_params, mass)
+
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(MassiveAndersenTest)
     unittest.TextTestRunner().run(suite)

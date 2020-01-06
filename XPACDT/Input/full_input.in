@@ -95,9 +95,7 @@ $thermostat                 # thermostat input
 # Required parameters
 method = MassiveAndersen    # Thermostat method (possible: MassiveAndersen; desired:...)
 time = 100 fs               # timescale for thermostattting
-
-# Optional parameters
-temperature = 300           # in Kelvin; this is the first option to take temperature from
+temperature = 300           # in Kelvin
 
 $end
 
@@ -111,7 +109,7 @@ samples = 1000          # number of samples to be collected
 # optional:
 modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty); option for 'Wigner', 'Quasiclassical'
 quantum_numbers = 0 0 2 # the quantum number used in 'Quasiclassical' sampling for each mode
-temperature = 300       # in Kelvin; this is the second option to take temperature from, option for 'Wigner', 'Thermostatted'
+temperature = 300       # in Kelvin; option for 'Wigner', if given and thermostatt is used, both temperatures have to match
 time = 10 fs            # time between samples in fs or au; required option for 'Thermostatted'
 
 $end

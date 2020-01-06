@@ -23,7 +23,7 @@ subroutine pot(xin, inpath, v, dv)
   r(2) = 0.d0
   r(3) = 0.d0
 
-  ! r are all three interatomic distances; HH, HF, HF
+  ! r are all three interatomic distances
   do i = 1, 3
      r(1) = r(1) + (xin(0+i) - xin(3+i))*(xin(0+i) - xin(3+i))
      r(2) = r(2) + (xin(0+i) - xin(6+i))*(xin(0+i) - xin(6+i))

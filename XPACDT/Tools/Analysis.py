@@ -107,21 +107,22 @@ def do_analysis(parameters, systems=None):
     for system in get_systems(dirs, file_name, systems):
         # do different stuff for each command
         for key, command in parameters.commands.items():
-            # For now, 'steps_used' is generated for each system. This is in the case that
-            # different systems have different times.
-            steps_used = _get_step_list(command, system)
+            # For now, 'steps_to_use' is generated for each system. This is in
+            # the case that different systems have different times.
+            steps_to_use = _get_step_list(command, system)
 
             if n_systems == 0:
                 # Consistency check for operations and print warning if more
                 # than one value is returned.
                 check_command(command, system)
 
-                # This assumes same time array for all systems, need a consistency check for that, maybe in steps_used?
+                # This assumes same time array for all systems, need a consistency check for that, maybe in steps_to_use?
                 # TODO : how to deal with different time arrays like perhaps in last step.
+                #        Also where to test if 'times' is proper? Maybe in integrated testing?
                 command['times'] = [log.time for i, log in enumerate(system.log)
-                                    if _use_time(i, steps_used)]
+                                    if _use_time(i, steps_to_use)]
 
-            apply_command(command, system, steps_used)
+            apply_command(command, system, steps_to_use)
 
         n_systems += 1
 
@@ -171,8 +172,8 @@ def do_analysis(parameters, systems=None):
                 func = (lambda x: np.histogram(x, bins=edges, density=True)[0])
 
             else:
-                raise RuntimeError("XPACDT: No function for 'value'"
-                                   " defined in the analysis part")
+                raise RuntimeError("XPACDT: No function for 'value' defined "
+                                   "in the analysis command '" + command.get('name') + "'.")
 
         # The resuts array is reshaped to look like (n_times, n_values).
         #
@@ -329,14 +330,16 @@ def check_command(command, system):
         The read in system containing its own log.
     """
     if ('2d' in command and command['format'] != 'time'):
-        warnings.warn("XPACDT: For a 2dhistogram is requested, 'form' has to"
-                      "have the value 'time'. This is now automatically set.")
+        warnings.warn("XPACDT: For a 2d histogram requested, 'form' has to"
+                      "have the value 'time'. This is now automatically set "
+                      "in analysis command '" + command.get('name') + "'.")
         command['format'] = 'time'
     if (command['format'] == '2d' and command['value'][:9] != 'histogram'):
         raise RuntimeError("XPACDT: If form is '2d', 'value' has to be"
                            "'histogram' - i.e., a 1d histogram which will be"
-                           "plotted over time in a 2d gnuplot bloacked"
-                           "format.")
+                           "plotted over time in a 2d gnuplot bloacked "
+                           "format. This is not the case in analysis command '"
+                           + command.get('name') + "'.")
 
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
@@ -345,7 +348,8 @@ def check_command(command, system):
 
     try:
         if len(value_0 * apply_operation(command['op'], system.log[0])) > 1:
-            warnings.warn("XPACDT: The operation in analysis returns"
+            warnings.warn("XPACDT: The operation in analysis command '"
+                          + command.get('name') + "' returns"
                           "more than one value. Please check if this"
                           "is the intended behavior. Please note that"
                           "all returned values will be used in the"
@@ -355,13 +359,14 @@ def check_command(command, system):
                           "bootstrapping. op0:" + command['op0'] +
                           "; op:" + command['op'], RuntimeWarning)
     except ValueError as e:
-        raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
+        raise type(e)(str(e) + "\nXPACDT: If operands could not be broadcast"
                                " together it probably is due to incompatible"
                                " array sizes returned by the 'op0' and 'op'"
-                               " operationsgiven. Please check!")
+                               " operations given. Please check in analysis"
+                               "command '" + command.get('name') + "'!")
 
 
-def apply_command(command, system, steps_used=[]):
+def apply_command(command, system, steps_to_use):
     """ Apply a given command to a given system. The results are stored in
     command['results'] and the times for which the system is evaluated
     are stored in command['times'].
@@ -373,9 +378,10 @@ def apply_command(command, system, steps_used=[]):
         file.
     system : XPACDT.System
         The read in system containing its own log.
+    steps_to_use : list of integers
+        Indices for the timesteps to be used. If empty list, all timesteps
+        will be used.
     """
-
-    # steps_used = [int(x) for x in command.get('step', '').split()]
 
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
@@ -386,13 +392,14 @@ def apply_command(command, system, steps_used=[]):
         # Iterate over all times and calculate the full command.
         command['results'].extend([value_0 * apply_operation(command['op'], log_nuclei)
                                    for i, log_nuclei in enumerate(system.log)
-                                   if _use_time(i, steps_used)])
+                                   if _use_time(i, steps_to_use)])
     except ValueError as e:
         # Add command name by 'name'
-        raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
+        raise type(e)(str(e) + "\nXPACDT: If operands could not be broadcast"
                                " together it probably is due to incompatible"
                                " array sizes returned by the 'op0' and 'op'"
-                               " operationsgiven. Please check!")
+                               " operations given. Please check in analysis"
+                               " command '" + command.get('name') + "'!")
 
     # For a 2d histogram another 'obeservable' needs to be computed
     if '2d' in command:
@@ -404,13 +411,14 @@ def apply_command(command, system, steps_used=[]):
             # Iterate over all times and calculate the full command.
             command['results'].extend([value_0 * apply_operation(command['2op'], log_nuclei)
                                        for i, log_nuclei in enumerate(system.log)
-                                       if _use_time(i, steps_used)])
+                                       if _use_time(i, steps_to_use)])
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: If 'operands could not be"
+            raise type(e)(str(e) + "\nXPACDT: If operands could not be"
                                    " broadcast together it probably is due to"
                                    " incompatible array sizes returned by the"
                                    " '2op0' and '2op' operations given. Please"
-                                   " check!")
+                                   " check in analysis command '"
+                                   + command.get('name') + "'!")
 
     return
 
@@ -428,9 +436,9 @@ def _get_step_list(command, system=None):
 
     Returns
     -------
-    steps_used : list of integer
-        Empty list if all timesteps should be used. Else a list of integers
-        representing indices for the timesteps to be used.
+    steps_to_use : list of integers
+        Indices for the timesteps to be used. If empty list, all timesteps
+        will be used.
     """
     # TODO : Add step by actual time value, but how to do that? How to input exact time value?
     # Maybe with ranges like for projection in operations; if yes, need fancier parcing here.
@@ -438,22 +446,22 @@ def _get_step_list(command, system=None):
 
     if (step_command_list == []):
         # This uses all time steps.
-        steps_used = []
+        steps_to_use = []
 
     elif (step_command_list[0] == 'index'):
-        steps_used = [int(x) for x in step_command_list[1:]]
+        steps_to_use = [int(x) for x in step_command_list[1:]]
 
     elif (step_command_list[0] == 'last'):
         # Get the last step index
-        steps_used = [len(system.log) - 1]
+        steps_to_use = [len(system.log) - 1]
     else:
         raise ValueError("Steps to be used in analysis command '" + command.get('name')
-                          + "' not given properly. It should be either 'index <step_index_numbers>'"
-                          " or 'last'. Given is: " + command.get('step', ''))
-    return steps_used
+                          + "' not given properly. It should be either empty/not given (to use all timesteps),"
+                          " 'index <step_index_numbers>' or 'last'. Given is: " + command.get('step'))
+    return steps_to_use
 
 
-def _use_time(i, steps_used):
+def _use_time(i, steps_to_use):
     """ Wrapper to check if a certain command is supposed to be evaluated for a
     given timestep.
 
@@ -461,9 +469,9 @@ def _use_time(i, steps_used):
     ----------
     i : integer
         Index of the timestep in question.
-    steps_used : list of integer
-        Empty list if all timesteps should be used. Else a list of integers
-        identifying the timesteps to be used.
+    steps_to_use : list of integers
+        Indices for the timesteps to be used. If empty list, all timesteps
+        will be used.
 
     Returns
     -------
@@ -472,10 +480,10 @@ def _use_time(i, steps_used):
         False is returned.
     """
 
-    if steps_used == []:
+    if steps_to_use == []:
         return True
     else:
-        return (i in steps_used)
+        return (i in steps_to_use)
 
 
 def apply_operation(operation, log_nuclei):
@@ -497,7 +505,7 @@ def apply_operation(operation, log_nuclei):
     """
 
     if '+' not in operation:
-            raise RuntimeError("XPACDT: No operation given, instead: " + operation)
+        raise RuntimeError("XPACDT: No operation given, instead: " + operation)
 
     value = 1.0
     # The split has '' as a first results on something like '+pos'.split('+'),

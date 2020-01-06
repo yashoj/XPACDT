@@ -396,7 +396,7 @@ class Inputfile(collections.MutableMapping):
                     self.__momenta = rp_momenta.copy()
 
             else:
-                self.__coordinates = self.__coordinates.reshape((self.n_dof, -1))
+                self.__coordinates = self.__coordinates.reshape((self.n_dof, max(self.n_beads)))
 
                 try:
                     self.__momenta = self.__momenta.reshape(self.__coordinates.shape)

@@ -713,7 +713,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         c_new = np.matmul(propagator, np.expand_dims(c_coeff, axis=-1)).reshape(-1, self.pes.n_states)
 
         return c_new
-    
+
     def _propagation_equation_schroedinger_picture(self, t, c, t_prop, i=None):
         """ Propagation equation for the electronic coefficients in
         Schroedinger picture.
@@ -778,14 +778,16 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         if i is None:
             H = mtools.linear_interpolation_1d(t_frac, self._old_H_e, self._H_e_total)
-            phase = self._phase + 0.5 * t * (self._old_diff_diag_V + 
-                                             mtools.linear_interpolation_1d(t_frac, self._old_diff_diag_V, self._diff_diag_V))
+            phase = self._phase + 0.5 * t * (self._old_diff_diag_V +
+                                             mtools.linear_interpolation_1d(
+                                                     t_frac, self._old_diff_diag_V, self._diff_diag_V))
             # 'np.expand_dims' used to add a dimension for proper matrix multiplication.
             return (-1.0j * np.matmul((H * np.exp(-1.0j * phase)), np.expand_dims(c, axis=-1)).reshape(-1, self.pes.n_states))
         else:
             H = mtools.linear_interpolation_1d(t_frac, self._old_H_e[i], self._H_e_total[i])
-            phase = self._phase[i] + 0.5 * t * (self._old_diff_diag_V[i] + 
-                                             mtools.linear_interpolation_1d(t_frac, self._old_diff_diag_V[i], self._diff_diag_V[i]))
+            phase = self._phase[i] + 0.5 * t * (self._old_diff_diag_V[i] +
+                                                mtools.linear_interpolation_1d(
+                                                        t_frac, self._old_diff_diag_V[i], self._diff_diag_V[i]))
             return (-1.0j * np.matmul((H * np.exp(-1.0j * phase)), c))
 
     def _surface_hopping(self, R, P, time_array, a_kk_initial, b_list):

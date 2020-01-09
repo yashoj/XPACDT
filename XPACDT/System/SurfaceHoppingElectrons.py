@@ -682,6 +682,8 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     def _integrator_unitary(self, time, c_coeff, timestep, time_propagate, prop_func=None):
         """ Propagate the electronic coefficients by electronic time step using
         unitary evolution matrix at the midpoint. This is a 3rd order method.
+        For unitary evolution, the coefficients have to be in Schroedinger
+        picture.
         Reference: Chemical Physics 349, 334 (2008)
 
         Parameters
@@ -690,8 +692,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             Current time in this propagation in au.
         c_coeff : (n_beads, n_states) ndarray of complex if rpsh_type == 'density_matrix'
             /or/ (1, n_states) ndarray of complex if rpsh_type == 'bead' or 'centroid'
-            Electronic wavefuntion coefficients in interaction or Schroedinger
-            picture depending upon 'evolution_picture' selected.
+            Electronic wavefuntion coefficients in Schroedinger picture.
         timestep : float
             Electronic time step in au.
         time_propagate : float
@@ -893,7 +894,6 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 proj_vec = self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid) \
                           - self.pes.diabatic_gradient(R, new_state, new_state, centroid=centroid)
 
-        # Need inv_mass as a property? Since mult is faster than division.
         if (self.rpsh_rescaling == 'centroid'):
             # Conserve H_centroid
             A_kj = 0.5 * np.sum(proj_vec * proj_vec / self.masses_nuclei)

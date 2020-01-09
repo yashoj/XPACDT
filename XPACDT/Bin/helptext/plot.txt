@@ -1,0 +1,17 @@
+Module to plot potential energy surfaces. The module can plot one- and two-dimensional cuts through the potential energy surface. Additional degrees of freedom can be set to a fixed value or optimized (i.e., set to the value that minimizes the energy). The potential energy is calculated on a regular one- or two-dimensional grid specified in the input and the resulting values are written to a file. Additionally, a gnuplot file is created that can be used (and modified) to perform the actual plot.
+
+Please note that a starting geometry has to be supplied in the input file using the $coordinates section. If no optimization is used, the values given here are used for all but the scanned degrees of freedom.
+
+The following options can be set in the $plot section of the input file:
+
+    dof = One or two integers specifying the degrees of freedom that should be plotted. Please note that numbering starts at 0.
+
+    start = One or two float specifying the starting values of the grids in each degree of freedom.
+
+    end = One or two float specifying the end values of the grids in each degree of freedom.
+
+    step = One or two float specifying the step size for the grids in each degree of freedom.
+
+    optimize If given all but the coordinates scanned are optimized, i.e., adjusted to minimize the energy.
+
+    internal If given, internal coordinates that differ from the actual coordinates used in the interface are employed in the plotting. Please note that a transformation from these internal coordinates to the coordinates used in the interface has to be implemented for this to work.

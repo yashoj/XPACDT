@@ -69,6 +69,20 @@ def resource_path(relativePath):
     return os.path.join(base_path, relativePath)
 
 
+def print_helpfile(filename):
+    """ Output the contents of a help file to stdout.
+
+    Parameters
+    ----------
+    filename : string
+       Name of the file to be printed.
+    """
+
+    with open(filename, 'r') as helpfile:
+        for line in helpfile:
+            print(line, end='')
+
+
 def start():
     """Start any XPACDT calculation."""
 
@@ -96,7 +110,7 @@ def start():
 
     parser.add_argument('-h', '--help', nargs='?',
                         type=str, dest="help", const='nothing',
-                        help='Prints this help page and additional information for certain keywords: Analysis, TODO_MORE.')
+                        help='Prints this help page and additional information for certain keywords: analysis, plot, sampling, propagation.')
 
     i_help = "Name of the XPACDT input file. Please refer to the general " \
              "documentation for instructions on how this has to be structured."
@@ -108,20 +122,21 @@ def start():
 
     if args.help is not None:
         parser.print_help()
-        if args.help == 'Analysis':
+        if args.help.lower() == 'analysis':
             print()
             print()
             print("Printing additional help for " + args.help + ":")
             print()
-            print("Module to perform analysis on a set of XPACDT.Systems. The most general cases that can be calculated are: \n \t Expectation values <A(t)>, \n \t Correlation functions <B(0)A(t)>, \n \t One- and Two-dimensional histograms \n\nIn the input file one defines: \n\t A(t), B(0):  Quantities of interest, e.g., the position of a certain atom, a bond length, the charge, etc. The quantities can be obtained as multiplications of more basic quantities.\n\t f(x): A function to be calculated over the quantities obtained from all trajectories, i.e., the mean or standard devitaion, a histogram. \n\nThe analysis then iterates over all XPACDT.Systems and calculates A(t), B(0) for each system. Then the function f(x) is evaluated, i.e., the mean of the quantity is obtained or a histogram of the quantity is obtained. The standard error of the obtain results is evaluated employing bootstrapping. \n\nResults are printed to file for easy plotting with gnuplot. \n\nPlease note that for each quantity one wishes to obtain, an individual 'command'-block has to be defined in the input file. If n operation, i.e. A(t), B(0), returns more than one value, they all together enter the function f(x) and are treated as independet in the bootstrapping. This might be desired behavior for obtaining mean positions of the beads or obtaining a density plot of the ring polymer, but for most scenarios, this is not desired. Thus, whenever a command returns more than one value, a RuntimeWarning is printed for the first system and timestep.\n\n\n")
-            print("An Example input block for a position-position correlation function looks like:\n\n$commandCxx\nop0 = +pos\nop = +pos\nformat = time\nvalue = mean\n\n$end \n\n")
-            print("An Example input block for a histogram of the positions of a one-d system looks like:\n\n$commandPos\nop = +pos\nvalue = histogram -3.0 3.0 10\nformat = value\n$end \n\n")
-            print("An Example input block for a histogram of the velocities for all positions greater than 0 of a one-d system looks like:\n\n$commandPos\nop = +vel +pos -p<0\nvalue = histogram -3.0 3.0 10\nformat = value\n$end \n\n")
-            print("Please refer to the example input files for more options!\n\n")
-            print("Possible operations for A and B are: \n")
+            print_helpfile("helptext/analysis.txt")
             operations.position(["-h"], None)
             print()
             operations.momentum(["-h"], None)
+        elif args.help.lower() == 'plot' or args.help.lower() == 'sampling' or args.help.lower() == 'propagation':
+            print()
+            print()
+            print("Printing additional help for " + args.help + ":")
+            print()
+            print_helpfile("helptext/" + args.help.lower() + ".txt")            
         elif args.help == 'nothing':
             pass
         else:

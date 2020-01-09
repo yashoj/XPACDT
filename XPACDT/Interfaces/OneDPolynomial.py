@@ -110,15 +110,15 @@ class OneDPolynomial(itemplate.PotentialInterface):
             centroid = np.mean(R, axis=1)
             distance_centroid = centroid[0] - self.x0
             power_centroid = 1.0
-            self._adiabatic_gradient_centroid = np.zeros_like(distance_centroid)
-            self._adiabatic_energy_centroid = np.zeros_like(distance_centroid) + self.a[0]
+            self._adiabatic_gradient_centroid = np.zeros(1)
+            self._adiabatic_energy_centroid = np.zeros(1) + self.a[0]
 
         # beads part
         distance = R[0] - self.x0
-        power = np.ones_like(distance)
+        power = np.ones(self.max_n_beads)
 
-        self._adiabatic_gradient = np.zeros_like(distance)
-        self._adiabatic_energy = np.zeros_like(distance) + self.a[0]
+        self._adiabatic_gradient = np.zeros(self.max_n_beads)
+        self._adiabatic_energy = np.zeros(self.max_n_beads) + self.a[0]
 
         for i, a in enumerate(self.a[1:]):
             # beads part

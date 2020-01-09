@@ -308,7 +308,7 @@ class VelocityVerlet(object):
         # three-dimensional array; For each physical degree of freedom and
         # each ring polymer bead the normal mode position and momentum is
         # stored.
-        nms = np.array([list(zip(p, r)) for r, p in zip(rnm, pnm)])
+        nms = np.dstack((pnm, rnm))[:, :, :, None]
         rnm_t = np.zeros(rnm.shape)
         pnm_t = np.zeros(rnm.shape)
 
@@ -318,12 +318,11 @@ class VelocityVerlet(object):
             # broadcast multiply matrices sitting in the last two dimensions;
             # here: broadcast over all beads, multiply the 2x2 propagation
             # matrix with the (p_kj, q_kj) vector
-            tt = np.matmul(self.propagation_matrix[k],
-                           np.expand_dims(nm, axis=2))[:, :, 0]
+            tt = np.matmul(self.propagation_matrix[k], nm)[:, :, 0]
 
             pnm_t[k] = tt[:, 0]
             rnm_t[k] = tt[:, 1]
-
+  
         return self.RPtransform.from_RingPolymer_normalModes(rnm_t),\
             self.RPtransform.from_RingPolymer_normalModes(pnm_t)
 

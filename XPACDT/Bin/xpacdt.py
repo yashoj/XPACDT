@@ -33,6 +33,7 @@
 """
 
 import argparse
+import datetime
 import git
 import inspect
 import numpy as np
@@ -202,7 +203,47 @@ def start():
         system = xSystem.System(input_parameters)
 
     # Run job
-    if job == "sample":
+    if job == "full":
+        now = datetime.datetime.now()
+        print(now)
+
+        # run sampling first
+        print("Running Sampling...", end='', flush=True)
+        start_time = time.time()
+        systems = sampling.sample(system, input_parameters, do_return = True)
+        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+        # loop and propagate
+        print("Running Real time propagation...", end='', flush=True)
+        start_time = time.time()
+        for i, sys in enumerate(systems):
+            # create folder
+            trj_folder = os.path.join(name_folder, 'trj_{0:07}'.format(i))
+            if not os.path.isdir(trj_folder):
+                try:
+                    os.mkdir(trj_folder)
+                except OSError:
+                    sys.stderr.write("Creation of trajectory folder "
+                                     + trj_folder + " failed!")
+                    raise
+            # set in input parameters
+            input_parameters['system']['folder'] = trj_folder
+
+            # Remove thermostat if exists
+            input_parameters.pop('thermostat', None)
+            # run
+            rt.propagate(sys, input_parameters)
+
+        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
+ 
+        # run analsysis
+        print("Running analysis...", end='', flush=True)
+        start_time = time.time()
+        input_parameters['system']['folder'] = name_folder
+        analysis.do_analysis(input_parameters, systems)
+        print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+    elif job == "sample":
         sampling.sample(system, input_parameters)
     elif job == "propagate":
         rt.propagate(system, input_parameters)

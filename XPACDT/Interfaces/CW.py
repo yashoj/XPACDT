@@ -48,14 +48,15 @@ class CW(itemplate.PotentialInterface):
 
     G. Capecchi and H. J. Werner, Phys. Chem. Chem. Phys. 6, 4975 (2004).
     """
-    def __init__(self, **kwargs):
+    def __init__(self, max_n_beads=1, **kwargs):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "CW")
+        itemplate.PotentialInterface.__init__(self, "CW", 9, 1,
+                                              max_n_beads, 'adiabatic')
         # For proper Hessian derivatives! Numerically tested for stability!
         self._DERIVATIVE_STEPSIZE = 7e-3
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -79,23 +80,23 @@ class CW(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros((1, R.shape[1]))
-        self._gradient = np.zeros_like(R[np.newaxis, :])
+        self._adiabatic_energy = np.zeros((1, R.shape[1]))
+        self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
 
-        self._energy_centroid = np.zeros(1)
-        self._gradient_centroid = np.zeros((1, R.shape[0]))
+        self._adiabatic_energy_centroid = np.zeros(1)
+        self._adiabatic_gradient_centroid = np.zeros((1, R.shape[0]))
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-            self._energy_centroid[0], self._gradient_centroid[0] = pot.pot(centroid, self.__data_path)
+            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid, self.__data_path)
 
         for i, r in enumerate(R.T):
-            self._energy[0, i], self._gradient[0, :, i] = pot.pot(r, self.__data_path)
+            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r, self.__data_path)
 
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy[:, 0]
-            self._gradient_centroid = self._gradient[:, :, 0]
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
 
         return
 
@@ -206,8 +207,8 @@ class CW(itemplate.PotentialInterface):
 ##            print()
 #    
 #    pes._calculate_all(x[:, None])
-#    print(pes._energy, pes._gradient)
-#    print(pes.energy(x[:, None]))
+#    print(pes._adiabatic_energy, pes._gradient)
+#    print(pes.adiabatic_energy(x[:, None]))
 #    internal = np.array([2.0, 5.0, 0.0])
 #    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
 ##    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)

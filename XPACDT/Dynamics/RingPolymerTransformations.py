@@ -48,25 +48,21 @@ class RingPolymerTransformations(object):
 
     Parameters
     ----------
-    nbeads : (n_dof) list of int
+    n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
-    transform_type : string
-        Type of ring polymer normal mode transformation to be used; this can
-        be 'matrix' or 'fft'. Default: 'matrix'
+    transform_type : {'matrix', 'fft'}
+        Type of ring polymer normal mode transformation to be used.
+        Default: 'matrix'
 
     Attributes:
     -----------
-    n_beads : (n_dof) list of int
-        Number of beads for each degrees of freedom
-    transform_type : string
-        Type of ring polymer normal mode transformation to be used; this can
-        be 'matrix' or 'fft'.
-    C_matrices : dictionary or None
-        Normal mode transformation matrices for all different number of beads
-        present in 'n_beads'; the keys are the number of beads
-        (optional depending upon if transform_type=='matrix'; else if
-        transform_type=='fft', it is None)
-
+    n_beads
+    transform_type
+    C_matrices, C_inv_matrices : dictionary or None
+        Normal mode transformation matrices `C_matrices` and their inverses
+        `C_inv_matrices` for all different number of beads present in
+        `n_beads`; the keys are the number of beads (optional depending upon
+        if transform_type=='matrix'; else if transform_type=='fft', it is None)
     """
 
     def __init__(self, n_beads, transform_type='matrix'):
@@ -75,9 +71,10 @@ class RingPolymerTransformations(object):
         self.transform_type = transform_type
 
         if (self.transform_type == 'matrix'):
-            self.C_matrices = self.get_normal_mode_matrix()
+            self.C_matrices, self.C_inv_matrices = self.get_normal_mode_matrix()
         else:
             self.C_matrices = None
+            self.C_inv_matrices = None
         return
 
     @property
@@ -91,7 +88,8 @@ class RingPolymerTransformations(object):
 
     @property
     def transform_type(self):
-        """string : Type of ring polymer normal mode transformation."""
+        """{'matrix', 'fft'} : String defining type of ring polymer normal mode
+        transformation. Default: 'matrix'."""
         return self.__transform_type
 
     @transform_type.setter
@@ -224,9 +222,7 @@ class RingPolymerTransformations(object):
         (nb) ndarray of floats
             'normal' representation of the ring polymer in one dimension.
         """
-        # Obtaining inverse matrix using the fact that C is unitary and real
-        C_inv_mat = np.transpose(self.C_matrices[nb])
-        return np.matmul(C_inv_mat, nm)
+        return np.matmul(self.C_inv_matrices[nb], nm)
 
     def _1d_to_nm_using_fft(self, x, nb):
         """
@@ -297,12 +293,15 @@ class RingPolymerTransformations(object):
 
         Returns
         -------
-        C_dict : dictionary
+        C_dict, C_inv_dict : dictionary
             Ring polymer normal mode tranformation matrices for each distinct
-            i-th element in 'n_beads' as keys and their transformation matrix
-            (n_beads[i], n_beads[i]) ndarray of floats as values
+            i-th element in 'n_beads' as keys and its transformation matrix
+            (n_beads[i], n_beads[i]) ndarray of floats as values. `C_dict` has
+            the forward transformation matrices and `C_inv_dict` has the
+            backward (its inverses).
         """
         C_dict = {}
+        C_inv_dict = {}
 
         for n in self.n_beads:
             if n not in C_dict.keys():
@@ -320,8 +319,10 @@ class RingPolymerTransformations(object):
                             C_mat[k][j] = math.sqrt(2 / n)\
                                           * math.sin(2 * math.pi * j * k / n)
                 C_dict[n] = C_mat.copy()
+                # Obtaining inverse matrix using the fact that C is unitary and real
+                C_inv_dict[n] = np.transpose(C_mat)
 
-        return C_dict
+        return C_dict, C_inv_dict
 
     def sample_free_rp_momenta(self, nb, mass, beta, centroid=None):
         """

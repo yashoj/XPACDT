@@ -45,36 +45,36 @@ class LWALTest(unittest.TestCase):
     def test_creation(self):
         self.assertEqual(self.pes.name, 'LWAL')
 
-    def test_calculate_all(self):
+    def test_calculate_adiabatic_all(self):
         # H2 minimum
         energy_ref = np.zeros((1, 1)) 
         gradient_ref = np.zeros((1, 9, 1))
-        self.pes._calculate_all(self.pes._from_internal([1.401168, 40.0, 0.0]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-5)
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([1.401168, 40.0, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-5)
 
         # HF minimum
         energy_ref = np.zeros((1, 1)) - 0.050454
         gradient_ref = np.zeros((1, 9, 1))
-        self.pes._calculate_all(self.pes._from_internal([80.0, 40.0+1.7335, 0.0]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([80.0, 40.0+1.7335, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-6)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-4)
 
         # co-linear TST
         energy_ref = np.zeros((1, 1)) + 0.003428
         gradient_ref = np.zeros((1, 9, 1))
-        self.pes._calculate_all(self.pes._from_internal([1.443, 2.936+0.5*1.443, 0.0]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
-        save_gradient = self.pes._gradient_centroid
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([1.443, 2.936+0.5*1.443, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-5)
+        save_adiabatic_gradient = self.pes._adiabatic_gradient_centroid
 
         # TST
         energy_ref = np.zeros((1, 1)) + 0.002616
         gradient_ref = np.zeros((1, 9, 1))
         R = np.sqrt( (1.457/2.0)**2 + 2.932**2 - 1.457*2.932*np.cos(np.pi*113.0/180.0))
         gamma = np.arccos((2.932**2 - R**2 - (1.457/2.0)**2) / (-R * 1.457))
-        self.pes._calculate_all(self.pes._from_internal([1.457, R, gamma]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([1.457, R, gamma]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-6)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-4)
 
         # RPMD
         x0 = self.pes._from_internal([1.401168, 40.0, 0.0])
@@ -82,12 +82,12 @@ class LWALTest(unittest.TestCase):
         x2 = self.pes._from_internal([1.443, 2.936+0.5*1.443, 0.0])
         x3 = self.pes._from_internal([1.457, R, gamma])
         x = np.column_stack((x0, x1, x2, x3))
-        self.pes._calculate_all(x, None)
+        self.pes._calculate_adiabatic_all(x, None)
         energy_ref = np.array([[0.0, -0.050454, 0.003428, 0.002616]])
         gradient_ref = np.zeros((1, 9, 4))
-        gradient_ref[0, :, 2] = save_gradient[0]
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-4)
+        gradient_ref[0, :, 2] = save_adiabatic_gradient[0]
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-4)
 
     def test_minimize(self):
         fun_ref = 0.0

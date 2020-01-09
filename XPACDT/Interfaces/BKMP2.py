@@ -43,11 +43,12 @@ class BKMP2(itemplate.PotentialInterface):
     """
     BKMP2 PES. No parameters required.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, max_n_beads=1, **kwargs):
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "BKMP2")
+        itemplate.PotentialInterface.__init__(self, "BKMP2", 9, 1,
+                                              max_n_beads, 'adiabatic')
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -70,23 +71,23 @@ class BKMP2(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros((1, R.shape[1]))
-        self._gradient = np.zeros_like(R[np.newaxis, :])
+        self._adiabatic_energy = np.zeros((1, R.shape[1]))
+        self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
 
-        self._energy_centroid = np.zeros(1)
-        self._gradient_centroid = np.zeros((1, R.shape[0]))
+        self._adiabatic_energy_centroid = np.zeros(1)
+        self._adiabatic_gradient_centroid = np.zeros((1, R.shape[0]))
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-            self._energy_centroid[0], self._gradient_centroid[0] = pot.pot(centroid)
+            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid)
 
         for i, r in enumerate(R.T):
-            self._energy[0, i], self._gradient[0, :, i] = pot.pot(r)
+            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r)
 
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy[:, 0]
-            self._gradient_centroid = self._gradient[:, :, 0]
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
 
         return
 
@@ -196,8 +197,8 @@ class BKMP2(itemplate.PotentialInterface):
 ##            print()
 #    
 #    pes._calculate_all(x[:, None])
-#    print(pes._energy, pes._gradient)
-#    print(pes.energy(x[:, None]))
+#    print(pes._adiabatic_energy, pes._gradient)
+#    print(pes.adiabatic_energy(x[:, None]))
 #    internal = np.array([2.0, 5.0, 0.1])
 #    pes.plot_1D(internal, 1, 4.0, 7.0, 0.1, relax=True, internal=True)
 ##    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)

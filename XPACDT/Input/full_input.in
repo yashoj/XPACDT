@@ -24,6 +24,20 @@ $end
 
 ##############################################################################
 
+$SurfaceHoppingElectrons  # must match the electrons specified; specific to each electronic method
+
+basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic)
+$end
+
+##############################################################################
+
+$NRPMDElectrons      # must match the electrons specified; specific to each electronic method
+
+basis = diabatic     # Electronic state basis representation (possible: adiabatic, diabatic)
+$end
+
+##############################################################################
+
 $OneDPolynomial # must match the interface specified; specific to each interface
 
 # Required parameters
@@ -64,7 +78,45 @@ $end
 
 ##############################################################################
 
+$Morse1D   # must match the interface specified; specific to each interface
+
+# Required parameters
+De = 0.04556 # float; Dissociation energy in hartree
+a = 1.94     # float; TODO 0.97
+re = 2.50    # float; equilibrium position of morse oscillator in bohr
+b = 0.04556  # float; constant vertical shift of the energy in hartree
+$end
+
+##############################################################################
+
+$MorseDiabatic  # must match the interface specified; specific to each interface
+
+# Required parameters
+model_type = model_1         # Model number to be used (possible: model_1, model_2, model_3)
+n_states = 3                 # Number of morse diabatic states (possible: 2, 3)
+$end
+
+##############################################################################
+
+$Dissociation2states  # must match the interface specified; specific to each interface
+
+# Required parameters
+model_type = strong_coupling         # Model type to be used (possible: strong_coupling, weak_coupling)
+$end
+
+##############################################################################
+
+$TullyModel  # must match the interface specified; specific to each interface
+
+# Required parameters
+model_type = model_A         # Model type to be used (possible: model_A, model_B, model_C)
+$end
+
+##############################################################################
+
 # $plot		# For plotting potential energy surfaces
+
+# Required parameters
 # dof = 1 2	  # 1 or 2 integers. The degrees of freedom that should be scanned. Indices start at 0.
 # start = 1.0 1.0 # Start values of the degrees of freedom that are scanned.
 # end = 3.0 3.0	  # End values of the degrees of freedom that are scanned.

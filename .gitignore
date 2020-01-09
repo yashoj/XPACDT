@@ -15,3 +15,5 @@ XPACDT/Interfaces/*_module/output_make
 XPACDT/Interfaces/*_module/*.o
 XPACDT/Interfaces/*_module/*.so
 XPACDT/Interfaces/*/pes.py
+docs/source/XPACDT.*
+

@@ -77,7 +77,7 @@ class EckartBarrier(itemplate.PotentialInterface):
         Alternative parameters for the Eckart barrier.
         `w` is a frequency in au. `h`, `d` are energies in au. `m` is a mass in au.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, max_n_beads=1, **kwargs):
         if {'A', 'B', 'L'} <= set(kwargs):
             try:
                 self.__A = float(kwargs.get('A'))
@@ -138,7 +138,8 @@ class EckartBarrier(itemplate.PotentialInterface):
         assert(self.__B > 0.0), "B not positive!"
         assert(self.__L > 0.0), "L not positive!"
 
-        itemplate.PotentialInterface.__init__(self, "EckartBarrier")
+        itemplate.PotentialInterface.__init__(self, "EckartBarrier", 1, 1,
+                                              max_n_beads, 'adiabatic')
 
     @property
     def A(self):
@@ -155,7 +156,7 @@ class EckartBarrier(itemplate.PotentialInterface):
         """float : L parameter for Eckart barrier."""
         return self.__L
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -181,27 +182,25 @@ class EckartBarrier(itemplate.PotentialInterface):
             centroid = np.mean(R, axis=1)
             y = np.exp(centroid / self.L)
             y_plus = 1 + y
-            self._gradient_centroid = np.zeros_like(y)
-            self._energy_centroid = np.zeros_like(y)
+            self._adiabatic_gradient_centroid = np.zeros((1, 1))
+            self._adiabatic_energy_centroid = np.zeros(1)
 
-            self._energy_centroid = self.A * y / y_plus + self.B * y / y_plus**2
-            self._gradient_centroid = (self.A / self.L) * y / y_plus**2 \
+            self._adiabatic_energy_centroid[0] = self.A * y / y_plus + self.B * y / y_plus**2
+            self._adiabatic_gradient_centroid[0] = (self.A / self.L) * y / y_plus**2 \
                 + (self.B / self.L) * y*(1-y) / y_plus**3
 
         # beads part
         y = np.exp(R[0] / self.L)
         y_plus = 1 + y
-        self._gradient = np.zeros_like(y)
-        self._energy = np.zeros_like(y)
+        self._adiabatic_gradient = np.zeros_like(y[None, None, :])
+        self._adiabatic_energy = np.zeros_like(y[None, :])
 
-        self._energy = self.A * y / y_plus + self.B * y / y_plus**2
-        self._gradient = (self.A / self.L) * y / y_plus**2 \
+        self._adiabatic_energy[0] = self.A * y / y_plus + self.B * y / y_plus**2
+        self._adiabatic_gradient[0, 0] = (self.A / self.L) * y / y_plus**2 \
                          + (self.B / self.L) * y*(1-y) / y_plus**3
 
-        self._gradient = self._gradient.reshape((1, -1))
-
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy
-            self._gradient_centroid = self._gradient
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
 
         return

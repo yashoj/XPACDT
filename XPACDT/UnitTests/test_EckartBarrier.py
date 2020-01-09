@@ -79,107 +79,107 @@ class EckartBarrierTest(unittest.TestCase):
 
         return
 
-    def test_calculate_all(self):
+    def test_calculate_adiabatic_all(self):
         pes_asym = eckart.EckartBarrier(**{'A': -18.0/np.pi, 'B': 54.0/np.pi, 'L': 4.0/np.sqrt(3.0*np.pi)})
 
         # test the given parameters
         with self.assertRaises(AssertionError):
-            pes_asym._calculate_all([0.0], None)
+            pes_asym._calculate_adiabatic_all([0.0], None)
 
         with self.assertRaises(AssertionError):
-            pes_asym._calculate_all(np.array([0.0]), None)
+            pes_asym._calculate_adiabatic_all(np.array([0.0]), None)
 
         with self.assertRaises(AssertionError):
-            pes_asym._calculate_all(np.array([[[0.0]]]), None)
+            pes_asym._calculate_adiabatic_all(np.array([[[0.0]]]), None)
 
         # test correct potential values and gradients
-        pes_asym._calculate_all(np.array([[-100.0]]), None)
-        np.testing.assert_allclose(pes_asym._energy, [0.0], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._gradient, [[0.0]], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._energy_centroid, [0.0], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._gradient_centroid, [[0.0]], atol=1e-10)
+        pes_asym._calculate_adiabatic_all(np.array([[-100.0]]), None)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy, [[0.0]], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient, [[[0.0]]], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, [0.0], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, [[0.0]], atol=1e-10)
 
-        pes_asym._calculate_all(np.array([[+100.0]]), None)
-        np.testing.assert_allclose(pes_asym._energy, [-18.0/np.pi], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._gradient, [[0.0]], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._energy_centroid, [-18.0/np.pi], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._gradient_centroid, [[0.0]], atol=1e-10)
+        pes_asym._calculate_adiabatic_all(np.array([[+100.0]]), None)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy, [[-18.0/np.pi]], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient, [[[0.0]]], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, [-18.0/np.pi], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, [[0.0]], atol=1e-10)
 
-        pes_asym._calculate_all(np.array([[-4.0*np.log(2.0)/np.sqrt(3.0*np.pi)]]), None)
-        np.testing.assert_allclose(pes_asym._energy, [6.0/np.pi], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._gradient, [[0.0]], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._energy_centroid, [6.0/np.pi], atol=1e-10)
-        np.testing.assert_allclose(pes_asym._gradient_centroid, [[0.0]], atol=1e-10)
+        pes_asym._calculate_adiabatic_all(np.array([[-4.0*np.log(2.0)/np.sqrt(3.0*np.pi)]]), None)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy, [[6.0/np.pi]], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient, [[[0.0]]], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, [6.0/np.pi], atol=1e-10)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, [[0.0]], atol=1e-10)
 
-        pes_asym._calculate_all(np.array([[-4.0/np.sqrt(3.0*np.pi)]]), None)
-        np.testing.assert_allclose(pes_asym._energy, [1.83859], atol=1e-6)
-        np.testing.assert_allclose(pes_asym._gradient, [[0.334034]], atol=1e-6)
-        np.testing.assert_allclose(pes_asym._energy_centroid, [1.83859], atol=1e-6)
-        np.testing.assert_allclose(pes_asym._gradient_centroid, [[0.334034]], atol=1e-6)
+        pes_asym._calculate_adiabatic_all(np.array([[-4.0/np.sqrt(3.0*np.pi)]]), None)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy, [[1.83859]], atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient, [[[0.334034]]], atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, [1.83859], atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, [[0.334034]], atol=1e-6)
 
-        pes_asym._calculate_all(np.array([[4.0/np.sqrt(3.0*np.pi)]]), None)
-        np.testing.assert_allclose(pes_asym._energy, [-0.809147], atol=1e-6)
-        np.testing.assert_allclose(pes_asym._gradient, [[-2.06321]], atol=1e-5)
-        np.testing.assert_allclose(pes_asym._energy_centroid, [-0.809147], atol=1e-6)
-        np.testing.assert_allclose(pes_asym._gradient_centroid, [[-2.06321]], atol=1e-5)
+        pes_asym._calculate_adiabatic_all(np.array([[4.0/np.sqrt(3.0*np.pi)]]), None)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy, [[-0.809147]], atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient, [[[-2.06321]]], atol=1e-5)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, [-0.809147], atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, [[-2.06321]], atol=1e-5)
 
         # test for multiple beads
-        pes_asym._calculate_all(np.array([[-100.0, 100.0, -4.0/np.sqrt(3.0*np.pi), 4.0/np.sqrt(3.0*np.pi)]]), None)
-        np.testing.assert_allclose(pes_asym._energy, np.array([0.0, -18.0/np.pi, 1.83859, -0.809147]), atol=1e-6)
-        np.testing.assert_allclose(pes_asym._gradient, np.array([[0.0, 0.0, 0.334034, -2.06321]]), atol=1e-5)
+        pes_asym._calculate_adiabatic_all(np.array([[-100.0, 100.0, -4.0/np.sqrt(3.0*np.pi), 4.0/np.sqrt(3.0*np.pi)]]), None)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy, np.array([[0.0, -18.0/np.pi, 1.83859, -0.809147]]), atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient, np.array([[[0.0, 0.0, 0.334034, -2.06321]]]), atol=1e-5)
 
-        np.testing.assert_allclose(pes_asym._energy_centroid, np.array([4.5/np.pi]), atol=1e-6)
-        np.testing.assert_allclose(pes_asym._gradient_centroid, np.array([-1.09936]), atol=1e-5)
+        np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, np.array([4.5/np.pi]), atol=1e-6)
+        np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, np.array([[-1.09936]]), atol=1e-5)
 
         pes_sym = eckart.EckartBarrier(**{'A': 0, 'B': 0.0363857, 'L': 0.330235})
 
         with self.assertRaises(AssertionError):
-            pes_sym._calculate_all([0.0], None)
+            pes_sym._calculate_adiabatic_all([0.0], None)
 
         with self.assertRaises(AssertionError):
-            pes_sym._calculate_all(np.array([0.0]), None)
+            pes_sym._calculate_adiabatic_all(np.array([0.0]), None)
 
         with self.assertRaises(AssertionError):
-            pes_sym._calculate_all(np.array([[[0.0]]]), None)
+            pes_sym._calculate_adiabatic_all(np.array([[[0.0]]]), None)
 
         # test correct potential values and gradients
-        pes_sym._calculate_all(np.array([[-70.0]]), None)
-        np.testing.assert_allclose(pes_sym._energy, [0.0], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._gradient, [[0.0]], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._energy_centroid, [0.0], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._gradient_centroid, [[0.0]], atol=1e-10)
+        pes_sym._calculate_adiabatic_all(np.array([[-70.0]]), None)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy, [[0.0]], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient, [[[0.0]]], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy_centroid, [0.0], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, [[0.0]], atol=1e-10)
 
-        pes_sym._calculate_all(np.array([[+70.0]]), None)
-        np.testing.assert_allclose(pes_sym._energy, [0.0], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._gradient, [[0.0]], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._energy_centroid, [0.0], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._gradient_centroid, [[0.0]], atol=1e-10)
+        pes_sym._calculate_adiabatic_all(np.array([[+70.0]]), None)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy, [[0.0]], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient, [[[0.0]]], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy_centroid, [0.0], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, [[0.0]], atol=1e-10)
 
-        pes_sym._calculate_all(np.array([[0.0]]), None)
-        np.testing.assert_allclose(pes_sym._energy, [0.0363857/4.0], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient, [[0.0]], atol=1e-10)
-        np.testing.assert_allclose(pes_sym._energy_centroid, [0.0363857/4.0], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient_centroid, [[0.0]], atol=1e-10)
+        pes_sym._calculate_adiabatic_all(np.array([[0.0]]), None)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy, [[0.0363857/4.0]], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient, [[[0.0]]], atol=1e-10)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy_centroid, [0.0363857/4.0], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, [[0.0]], atol=1e-10)
 
-        pes_sym._calculate_all(np.array([[-0.66047]]), None)
-        np.testing.assert_allclose(pes_sym._energy, [0.0090964/np.cosh(1)**2], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient, [[0.00881034]], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._energy_centroid, [0.0090964/np.cosh(1)**2], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient_centroid, [[0.00881034]], atol=1e-6)
+        pes_sym._calculate_adiabatic_all(np.array([[-0.66047]]), None)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy, [[0.0090964/np.cosh(1)**2]], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient, [[[0.00881034]]], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy_centroid, [0.0090964/np.cosh(1)**2], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, [[0.00881034]], atol=1e-6)
 
-        pes_sym._calculate_all(np.array([[0.66047]]), None)
-        np.testing.assert_allclose(pes_sym._energy, [0.0090964/np.cosh(1)**2], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient, [[-0.00881034]], atol=1e-5)
-        np.testing.assert_allclose(pes_sym._energy_centroid, [0.0090964/np.cosh(1)**2], atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient_centroid, [[-0.00881034]], atol=1e-5)
+        pes_sym._calculate_adiabatic_all(np.array([[0.66047]]), None)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy, [[0.0090964/np.cosh(1)**2]], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient, [[[-0.00881034]]], atol=1e-5)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy_centroid, [0.0090964/np.cosh(1)**2], atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, [[-0.00881034]], atol=1e-5)
 
         # test for multiple beads
-        pes_sym._calculate_all(np.array([[-70.0, 70.0, -0.66047, 0.66047]]), None)
-        np.testing.assert_allclose(pes_sym._energy, np.array([0.0, 0.0, 0.0090964/np.cosh(1)**2, 0.0090964/np.cosh(1)**2]), atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient, np.array([[0.0, 0.0, 0.00881034, -0.00881034]]), atol=1e-5)
+        pes_sym._calculate_adiabatic_all(np.array([[-70.0, 70.0, -0.66047, 0.66047]]), None)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy, np.array([[0.0, 0.0, 0.0090964/np.cosh(1)**2, 0.0090964/np.cosh(1)**2]]), atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient, np.array([[[0.0, 0.0, 0.00881034, -0.00881034]]]), atol=1e-5)
 
-        np.testing.assert_allclose(pes_sym._energy_centroid, np.array([0.0363857/4.0]), atol=1e-6)
-        np.testing.assert_allclose(pes_sym._gradient_centroid, np.array([0.0]), atol=1e-5)
+        np.testing.assert_allclose(pes_sym._adiabatic_energy_centroid, np.array([0.0363857/4.0]), atol=1e-6)
+        np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, np.array([[0.0]]), atol=1e-5)
 
     def test_get_Hessian(self):
         pes_asym = eckart.EckartBarrier(**{'A': -18.0/np.pi, 'B': 54.0/np.pi, 'L': 4.0/np.sqrt(3.0*np.pi)})

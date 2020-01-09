@@ -68,6 +68,7 @@ class RingPolymerTransformations(object):
     def __init__(self, n_beads, transform_type='matrix'):
 
         self.n_beads = n_beads
+        self.__classical = np.all([n == 1 for n in self.n_beads])
         self.transform_type = transform_type
 
         if (self.transform_type == 'matrix'):
@@ -123,10 +124,10 @@ class RingPolymerTransformations(object):
         assert (X.ndim == 2), "X rray not two-dimensional!"
         assert (X.dtype == 'float64'), "X array not real!"
 
-        NM = X.copy()
-        if np.all([n == 1 for n in self.n_beads]):
-            return NM
+        if self.__classical:
+            return X
 
+        NM = X.copy()
         if i is not None:
             if self.transform_type == 'matrix':
                 NM[i] = self._1d_to_nm_using_matrix(X[i], self.n_beads[i])
@@ -167,10 +168,10 @@ class RingPolymerTransformations(object):
         assert (NM.ndim == 2), "NM rray not two-dimensional!"
         assert (NM.dtype == 'float64'), "NM array not real!"
 
-        X = NM.copy()
-        if np.all([n == 1 for n in self.n_beads]):
-            return X
+        if self.__classical:
+            return NM
 
+        X = NM.copy()
         if i is not None:
             if self.transform_type == 'matrix':
                 X[i] = self._1d_from_nm_using_matrix(NM[i], self.n_beads[i])

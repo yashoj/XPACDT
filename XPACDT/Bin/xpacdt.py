@@ -52,8 +52,8 @@ import XPACDT.Input.Inputfile as infile
 
 
 def resource_path(relativePath):
-    """ Get absolute path to a folder below the directory, where the currently executed 
-    xpacdt.py is stored. This works with PyInstaller and also 'normal' python. This is 
+    """ Get absolute path to a folder below the directory, where the currently executed
+    xpacdt.py is stored. This works with PyInstaller and also 'normal' python. This is
     used to access files stored in the PyInstaller folder.
 
     Parameters
@@ -87,6 +87,8 @@ def print_helpfile(filename):
 def start():
     """Start any XPACDT calculation."""
 
+
+    np.setbufsize(10**7)
     # Save version used for later reference; either from git repository or from
     # .version file included by the PyInstaller program
     try:

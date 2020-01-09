@@ -116,6 +116,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
         # beads part
         distance = R[0] - self.x0
         power = np.ones_like(distance)
+
         self._adiabatic_gradient = np.zeros_like(distance)
         self._adiabatic_energy = np.zeros_like(distance) + self.a[0]
 

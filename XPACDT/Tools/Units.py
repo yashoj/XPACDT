@@ -27,20 +27,20 @@
 #
 #  **************************************************************************
 
-"""Module to handly units."""
+"""Module to handle units."""
 
 import re
 from scipy.constants import physical_constants, femto, pico, atto, centi, pi
 
-# Alternative periodic tables
-# from mendeleev import element
-# from pyne.data import atomic_mass
 
 # Boltzmann constant in atomic units
 boltzmann = physical_constants['electron volt-hartree relationship'][0] * physical_constants['Boltzmann constant in eV/K'][0]
 # Normal mode eigenvalues to wave numbers
 nm_to_cm = centi/physical_constants['Bohr radius'][0]/physical_constants['inverse fine-structure constant'][0] / 2.0 / pi
 
+# Conversion of Hartree energy to eV and vice versa
+hartree_to_eV = physical_constants['Hartree energy in eV'][0]
+eV_to_hartree = 1.0 / hartree_to_eV
 
 def parse_time(time_string):
     """ Takes a string with a time and converts it to the numerical value
@@ -71,12 +71,13 @@ def atom_mass(symbol):
     if symbol == 'D':
         standard_symbol = 'H-2'
     else:
-        symbol_groups = re.search(r"(\d*)-?([a-zA-Z])-?(\d*)", symbol)
+        symbol_groups = re.search(r"(\d*)-?([a-zA-Z]*)-?(\d*)", symbol)
         number = symbol_groups.group(1).strip() + symbol_groups.group(3).strip()
         atom = symbol_groups.group(2).strip()
         standard_symbol = atom
         if len(number) > 0:
             standard_symbol += "-" + number
+        
 
     conversion = physical_constants['atomic mass constant'][0] / physical_constants['atomic unit of mass'][0]
     try:

@@ -1,0 +1,19 @@
+$system  ## inline comment
+dof = 4
+$end 
+
+## in between comment
+
+$positionShift
+1.0
+2.0
+3.0
+4.0
+$end
+
+$momentumShift
+-1.0
+-2.0
+-3.0
+-4.0
+$end

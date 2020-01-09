@@ -5,20 +5,21 @@
 
 $system                     # general parameters
 
-seed = 0                    # Seed for random number generator
-dof = 4                     # the number of degrees of freedom
-job = sample	                # The job type (possible: sample, propagate, analyze, plot)
-electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
-Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
-folder = test               # the folder for the trajectories
+# Required parameters
+dof = 4                     # integer, required: the number of degrees of freedom
+job = sample	                # (sample, propagate, analyze, plot), required: The job type.
+Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier), required: The interface to the potential to be used.
+folder = test               # string, required: Base folder for the trajectories.
 
-# optional:
-picklefile = NameHere.dat   # optional name of pickle file - else: pickle.dat
-time = 0 fs                 # the current time of the system in either fs or au
+# Optional parameters
+seed = 0                    # integer, optional : Seed for random number generator
+picklefile = NameHere.dat   # string, optional: Name of pickle file - else: pickle.dat
+time = 0 fs                 # float, optional: The current time of the system in either fs or au.
+overwrite                   # optional: For sampling with existing folder: overwrite old files; either add or overwrite can be given
+add                         # optional: For sampling with existing folder: add samples up to required number; either add or overwrite can be given
+continue                    # optional: If given, the propagation is continue.
+intermediate_write          # optional: If givenm the pickle file is write every output timestep
 
-# override or add (for sampling with existing folder)
-# continue (for continueing a propagation)
-# intermediate_write (for writing the pickle file every output timestep)
 $end
 
 ##############################################################################
@@ -39,24 +40,58 @@ $end
 
 $OneDPolynomial # must match the interface specified; specific to each interface
 
-a = 0 0 0.5
-x0 = 0
+# Required parameters
+a = 0 0 0.5     # floats separated by spaces, required: Expansion coefficients for the polynomial.
+
+# Optional parameters
+x0 = 0          # float, optional: Equilibrium position of the polynomial.
+
 $end
+
+##############################################################################
+
+# These fitted PES don't have any parameters.
+$BKMP
+$end
+
+$CW
+$end
+
+$LWAL
+$end
+
+##############################################################################
+
+# $EckartBarrier # must match the interface specified; specific to each interface
+# 
+# # Required parameter set 1 - please see the definition of the Eckart barrier
+# A = 0.0     # float
+# B = 0.25    # float
+# L = 1.0     # float
+# 
+# # Alternative parameter set - please see the definition of the Eckart barrier
+# w = 0.001   # float
+# h = 0.2     # float
+# d = 0.0     # float
+# m = 1836    # float
+# $end
 
 ##############################################################################
 
 $Morse1D   # must match the interface specified; specific to each interface
 
-De = 0.04556
-a = 1.94  # 0.97
-re = 2.50  # 1.70
-b = 0.04556
+# Required parameters
+De = 0.04556 # float; Dissociation energy in hartree
+a = 1.94     # float; TODO 0.97
+re = 2.50    # float; equilibrium position of morse oscillator in bohr
+b = 0.04556  # float; constant vertical shift of the energy in hartree
 $end
 
 ##############################################################################
 
 $MorseDiabatic  # must match the interface specified; specific to each interface
 
+# Required parameters
 model_type = model_1         # Model number to be used (possible: model_1, model_2, model_3)
 n_states = 3                 # Number of morse diabatic states (possible: 2, 3)
 $end
@@ -65,6 +100,7 @@ $end
 
 $Dissociation2states  # must match the interface specified; specific to each interface
 
+# Required parameters
 model_type = strong_coupling         # Model type to be used (possible: strong_coupling, weak_coupling)
 $end
 
@@ -72,24 +108,47 @@ $end
 
 $TullyModel  # must match the interface specified; specific to each interface
 
+# Required parameters
 model_type = model_A         # Model type to be used (possible: model_A, model_B, model_C)
 $end
 
 ##############################################################################
 
+# $plot		# For plotting potential energy surfaces
+
+# Required parameters
+# dof = 1 2	  # 1 or 2 integers. The degrees of freedom that should be scanned. Indices start at 0.
+# start = 1.0 1.0 # Start values of the degrees of freedom that are scanned.
+# end = 3.0 3.0	  # End values of the degrees of freedom that are scanned.
+# step = 0.1 0.1  # Step size in the scan.
+# 
+# Optional parameters:
+# internal	  # Use of internal degrees of freedom as definied in specific interfaces.
+# optimize	  # If all not scanned degrees of freedom are optimized (instead of kept at the initial value).
+# $end
+
+##############################################################################
+
 $rpmd                       # RPMD input
 
-beads = 4                   # Number of beads used; 1 or even numbers; TODO: different numbers
-beta = 8.0                  # Beta used for the springs
-nm_transform = matrix       # Optional; ring polymer normal mode transformation type (possible: 'matrix' (default), 'fft')
+# Required parameters
+beads = 4                   # integer, required: Number of beads used; 1 or even numbers
+beta = 8.0                  # float, required: Beta used for the springs in au.
+
+# Optional parameters
+nm_transform = matrix       # (matrix, fft), optional: ring polymer normal mode transformation type
+
 $end
 
 ##############################################################################
 
 $thermostat                 # thermostat input
 
+# Required parameters
 method = MassiveAndersen    # Thermostat method (possible: MassiveAndersen; desired:...)
 time = 100 fs               # timescale for thermostattting
+temperature = 300           # in Kelvin
+
 $end
 
 ##############################################################################
@@ -100,10 +159,10 @@ method = Wigner         # method to be used for sampling (possible: Wigner, Quas
 samples = 1000          # number of samples to be collected
 
 # optional:
-modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty)
-quantum_numbers = 0 0 2 # the quantum number used in Quasiclassical sampling for each mode
-temperature = 300       # in Kelvin
-time = 10 fs            # time between samples in fs or au
+modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty); option for 'Wigner', 'Quasiclassical'
+quantum_numbers = 0 0 2 # the quantum number used in 'Quasiclassical' sampling for each mode
+temperature = 300       # in Kelvin; option for 'Wigner', if given and thermostatt is used, both temperatures have to match
+time = 10 fs            # time between samples in fs or au; required option for 'Thermostatted'
 
 $end
 
@@ -114,8 +173,6 @@ $nuclei_propagator             # nuclei propagator input
 method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
 timestep = 0.01 fs      # timestep in fs or au
 
-# optional:
-# TODO
 $end
 
 ##############################################################################
@@ -133,10 +190,24 @@ $end
 
 $coordinates	           # coordinates given here
 
-type = mass-value      # coordinate format (possible: mass-value, xyz); TODO: description here
+type = mass-value      # coordinate format (possible: mass-value, xyz);
+       		       # 	    mass-value: mass followed by all bead positions for a dof per line
+		       #	    xyz: A atom name and x-, y-, and z-coordinate per line for each bead, and repeated for each dof
 1.0 2.0 3.0
 2.0 1.0 4.0
 $end
+
+
+$coordinates	           # coordinates given here
+
+type = xyz             # coordinate format (possible: mass-value, xyz);
+       		       # 	    mass-value: mass followed by all bead positions for a dof per line
+		       #	    xyz: A atom name and x-, y-, and z-coordinate per line for each bead, and repeated for each dof
+H 1.2 0.0 0.0
+H -1.2 0.0 0.0
+O 0.0 0.0 0.0
+$end
+
 
 ##############################################################################
 
@@ -148,12 +219,38 @@ $end
 
 ##############################################################################
 
-$command1 # commands are used for analysis - command name is also used for output file name if no other name given.
-op = +pos # operations
-op0 = +pos
-value = histogram -3.0 3.0 10 # way to analyze the data; could be 'mean', 'std' 'percentile x', 'histogram min max n'
-format = value # format for printing: time - one line per timestep; value - one line per value
-filename = blah # optional
+$positionShift	       # Fixed linear shift in positions centroid added to the sampled values;
+		       # Format has to be the same as in $coordinates, but only for 1 bead as only centroid shifts are allowed
+
+1.0 2.0 3.0
+2.0 1.0 4.0
+$end
+
+##############################################################################
+
+$momentumShift         # Fixed linear shift in momentum centroid added to the sampled values;
+		       # Format has to be the same as in $momenta, but only for 1 bead as only centroid shifts are allowed
+
+
+1.0 2.0 3.0
+4.0 5.0 6.0
+$end
+
+##############################################################################
+
+$commandNAME                    # commands are used for analysis - command name is also used for output file name if no other name given.
+
+op = +pos                       # operation to be performed; see help for details!
+format = value                  # format for file output: (possible: 'time', 'value', '2d'); time - one line per timestep; value - one line per value; '2d' - Blocked data for 2d plotting of a histogram over time
+value = histogram -3.0 3.0 10   # way to analyze the data; possible: 'mean', 'std' 'percentile x', 'histogram min_value max_value number_bins', '2dhistogram min_value_1 max_value_1 number_bins_1 min_value_2 max_value_2 number_bins_2')
+
+# optional:
+op0 = +pos                      # t=0 operation for correlation functions; see help for details!
+filename = blah                 # Name for output file
+2op0 = +pos                     # t=0 operation for 2d histogram
+2op = +pos                      # second operation for 2d histogram
+step = 1 2 5                    # List of time steps (indices, not actual times) to be used for the analysis
+
 $end
 
 ### more comments!!

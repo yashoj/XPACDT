@@ -37,7 +37,7 @@ the centroid and the ring polymer are outputted. More needs to be added.
 import argparse
 import pickle
 import sys
-
+import os
 
 def start():
     """

@@ -219,6 +219,7 @@ class AnalysisTest(unittest.TestCase):
                 text += line
 
         os.remove("test.dat")
+        os.remove("test.plt")
         self.assertEqual(text, compare_text)
 
         header = "# This is a stupid header\n# For my super test!\n"
@@ -249,6 +250,7 @@ class AnalysisTest(unittest.TestCase):
                 text += line
 
         os.remove("test.dat")
+        os.remove("test.plt")
         self.assertEqual(text, compare_text)
 
     def test_use_time(self):

@@ -1,0 +1,26 @@
+$system                     # general parameters
+dof = 1                     # integer, required: the number of degrees of freedom
+job = plot	            # (sample, propagate, analyze, plot), required: The job type.
+Interface = EckartBarrier   # (OneDPolynomial, BKMP2, EckartBarrier), required: The interface to the potential to be used.
+folder = test               # string, required: Base folder for the trajectories.
+$end
+
+##############################################################################
+
+$EckartBarrier # must match the interface specified; specific to each interface
+A = 0.0
+B = 0.2
+L = 1.0
+$end
+
+$plot
+dof = 0		# first (and only) degree of freedom
+start = -6.0	# start value for grid
+end = 6.0 	# end value for grid
+step = 0.1 	# step size for grid
+$end
+
+$coordinates
+type = mass-value
+1.0 3.0
+$end

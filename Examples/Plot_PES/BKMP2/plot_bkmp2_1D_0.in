@@ -1,0 +1,26 @@
+$system                     # general parameters
+dof = 3                     # integer, required: the number of degrees of freedom
+job = plot	            # (sample, propagate, analyze, plot), required: The job type.
+Interface = BKMP2	    # (OneDPolynomial, BKMP2, EckartBarrier), required: The interface to the potential to be used.
+folder = test               # string, required: Base folder for the trajectories.
+$end
+
+##############################################################################
+
+$BKMP2 # must match the interface specified; specific to each interface
+$end
+
+$plot
+dof = 0		# Scan the first internal degree of freedom - here it is the Jacobi coorinate r
+start = 1.0
+end = 4.0 
+step = 0.1
+internal
+$end
+
+$coordinates
+type = mass-value
+1.0 1.5
+1.0 20.0	# No optimization - so the second coordinate will be fixed to 20.0
+1.0 0.0		# No optimization - so the thrid coordinate will be fixed to 0.0
+$end

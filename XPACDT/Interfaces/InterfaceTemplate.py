@@ -266,21 +266,13 @@ class PotentialInterface:
         if self._old_R is None:
             self._old_R = R.copy()
             return True
-# is abs(R - self._old_R) > self.SAVE_THESHOLD).any() faster?
-#        if (np.sum(abs(R-self._old_R)) < self.SAVE_THESHOLD):
-#        if np.allclose(R, self._old_R, atol=self.SAVE_THESHOLD):
+
         if (abs(R - self._old_R) < self.SAVE_THESHOLD).all():
             return False
         else:
             self._old_R = R.copy()
-            return True            
+            return True
 
-#        for val in abs(R - self._old_R):
-#            if val > self.SAVE_THESHOLD:
-#                self._old_R = R.copy()
-#                return True
-#        return False
-    
     def _recalculate_adiabatic(self, R, S=None):
         """Check if adiabatic properties need to be recalulated due to change
         in positions or since only diabatic properties were calculated. If yes,
@@ -572,7 +564,7 @@ class PotentialInterface:
         """
 
         if internal:
-            return self.adibatic_energy(self._from_internal(R)[:, None], S, centroid)
+            return self.adiabatic_energy(self._from_internal(R)[:, None], S, centroid)
         else:
             return self.adiabatic_energy(R[:, None], S, centroid)
 

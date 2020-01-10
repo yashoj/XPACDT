@@ -120,6 +120,16 @@ def start():
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
                         required=False, help=i_help)
 
+    i_help = "Name of the XPACDT input file used for real time propagation. Please refer to the general " \
+             "documentation for instructions on how this has to be structured."
+    parser.add_argument("-p", "--propagation_input", type=str, dest="PropagationInputFile",
+                        required=False, help=i_help)
+
+    i_help = "Name of the XPACDT input file used for analysis. Please refer to the general " \
+             "documentation for instructions on how this has to be structured."
+    parser.add_argument("-a", "--analysis_input", type=str, dest="AnalysisInputFile",
+                        required=False, help=i_help)
+
     # TODO: Add more command line arguments as fit
     args = parser.parse_args()
 
@@ -205,20 +215,27 @@ def start():
         system = xSystem.System(input_parameters)
 
     # Run job
-    if job == "full":
+    if job == "full" or args.PropagationInputFile is not None:
         now = datetime.datetime.now()
         print(now)
 
         # run sampling first
         print("Running Sampling...", end='', flush=True)
         start_time = time.time()
-        systems = sampling.sample(system, input_parameters, do_return = True)
+        systems = sampling.sample(system, input_parameters, do_return=True)
         print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
         # loop and propagate
         print("Running Real time propagation...", end='', flush=True)
         start_time = time.time()
-        for i, sys in enumerate(systems):
+        # Read new input file if given
+        if args.PropagationInputFile is not None:
+            print("The inputfile '" + args.PropagationInputFile + "' is read! \n")
+            input_parameters = infile.Inputfile(args.PropagationInputFile)
+        else:
+            # Remove thermostat if exists
+            input_parameters.pop('thermostat', None)
+        for i, systemi in enumerate(systems):
             # create folder
             trj_folder = os.path.join(name_folder, 'trj_{0:07}'.format(i))
             if not os.path.isdir(trj_folder):
@@ -231,18 +248,22 @@ def start():
             # set in input parameters
             input_parameters['system']['folder'] = trj_folder
 
-            # Remove thermostat if exists
-            input_parameters.pop('thermostat', None)
             # run
-            rt.propagate(sys, input_parameters)
-
+            rt.propagate(systemi, input_parameters)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
- 
+
         # run analsysis
         print("Running analysis...", end='', flush=True)
         start_time = time.time()
-        input_parameters['system']['folder'] = name_folder
-        analysis.do_analysis(input_parameters, systems)
+        if args.AnalysisInputFile is not None:
+            print("The inputfile '" + args.AnalysisInputFile + "' is read! \n")
+            input_parameters = infile.Inputfile(args.AnalysisInputFile)
+        else:
+            input_parameters['system']['folder'] = name_folder
+
+        # Perform actual analysis only if commands are present
+        if len(input_parameters.commands) > 0:
+            analysis.do_analysis(input_parameters, systems)
         print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     elif job == "sample":

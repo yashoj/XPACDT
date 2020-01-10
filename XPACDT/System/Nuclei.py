@@ -212,6 +212,9 @@ class Nuclei(object):
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
+    def init_electrons(self, parameters):
+        self.__init_electrons(parameters)
+
     def __init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system.
 

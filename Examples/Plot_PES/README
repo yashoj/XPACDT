@@ -1,0 +1,6 @@
+This folder contrains a few examples on how to plot a potential energy
+surface or cut through a potential energy surface using XPACDT.
+
+The examples use simple one-dimensional potentials (1dPolynomial, Eckart)
+or fitted triatomic potential energy surfaces for the H3, FH2, ClH2
+systems, respectively (BKMP2, LWAL, CW).

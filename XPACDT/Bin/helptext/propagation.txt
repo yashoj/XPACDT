@@ -1,1 +1,1 @@
-DUMMY
+Module to run real time propagation for a given system. Please refer to the 'full_input.in' for options. The initial coordinates and momenta can be given in the input file or read from a pickle file; typically generated in a sampling step.

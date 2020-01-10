@@ -35,7 +35,6 @@ import copy
 import XPACDT.System.Nuclei as nuclei
 import XPACDT.Tools.Units as units
 
-
 class System(object):
     """This class is the main class representing the system state. It stores
     the nuclei and takes care of logging.
@@ -91,7 +90,7 @@ class System(object):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
 
-    def step(self, time_propagate):
+    def step(self, time_propagate, sparse=False):
         """ Step the whole system forward in time. Also keep a log of the
         system state at these times.
 
@@ -99,10 +98,12 @@ class System(object):
         ----------
         time_propagate : float
             Time to advance the system in au.
+        sparse : bool, optional, default: False
+            Whether to keep a sparse (less memory consuming) log or not
         """
 
         self.__nuclei.propagate(time_propagate)
-        self.do_log()
+        self.do_log(sparse=sparse)
 
     def reset(self, time=None):
         """ Reset the system state to its original values and clear everything
@@ -126,7 +127,7 @@ class System(object):
         self.__nuclei = copy.deepcopy(self.__log[-1])
         self.do_log(True)
 
-    def do_log(self, init=False):
+    def do_log(self, init=False, sparse=False):
         """ Log the system state to a list called __log. Each entry is a
         dictonary containing the logged quantities. Currently this logs
         the system time and the nuclei object.
@@ -135,10 +136,16 @@ class System(object):
         ----------
         init : bool, optional
             If the log has to be initialized or not. Default False.
+        sparse : bool, optional, default: False
+            Whether to keep a sparse (less memory consuming) log or not
         """
 
         if init:
             self.__log = []
 
+        # self.nuclei.print_size()
         self.__log.append(copy.deepcopy(self.nuclei))
-        # TODO: remove certain parts to not consume too much memory
+
+        # Use a sprase log by removing the propagator object - TODO: what else?
+        if sparse == True:
+            self.__log[-1].propagator = None

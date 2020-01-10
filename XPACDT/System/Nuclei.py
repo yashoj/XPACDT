@@ -33,6 +33,31 @@ import sys
 
 # TODO: add more quantities calculated for the nuclei!
 
+import sys
+from types import ModuleType, FunctionType
+from gc import get_referents
+# Custom objects know their class.
+# Function objects seem to know way too much, including modules.
+# Exclude modules as well.
+BLACKLIST = type, ModuleType, FunctionType
+
+def getsize(obj):
+    """sum size of object & members."""
+    if isinstance(obj, BLACKLIST):
+        raise TypeError('getsize() does not take argument of type: '+ str(type(obj)))
+    seen_ids = set()
+    size = 0
+    objects = [obj]
+    while objects:
+        need_referents = []
+        for obj in objects:
+            if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
+                seen_ids.add(id(obj))
+                size += sys.getsizeof(obj)
+                need_referents.append(obj)
+        objects = get_referents(*need_referents)
+    return size
+
 
 class Nuclei(object):
     """
@@ -354,3 +379,15 @@ class Nuclei(object):
         self.time += time_propagate
 
         return
+
+    def print_size(self):
+        print("Nuclei is {: .2f} KB".format(getsize(self) / 1024))
+        print("\t Consisting of:")
+        print("\t n_dof {: .2f} KB".format(getsize(self.n_dof) / 1024))
+        print("\t time {: .2f} KB".format(getsize(self.time) / 1024))
+        print("\t n_beads {: .2f} KB".format(getsize(self.n_beads) / 1024))
+        print("\t masses {: .2f} KB".format(getsize(self.masses) / 1024))
+        print("\t positions {: .2f} KB".format(getsize(self.positions) / 1024))
+        print("\t momenta {: .2f} KB".format(getsize(self.momenta) / 1024))
+        print("\t propagator {: .2f} KB".format(getsize(self.__propagator) / 1024))
+        print("\t electrons {: .2f} KB".format(getsize(self.__electrons) / 1024))

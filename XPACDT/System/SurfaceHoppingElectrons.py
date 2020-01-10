@@ -470,9 +470,9 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # Get initial population of current state
         if (self.rpsh_type == 'density_matrix'):
             # Mean is taken instead of sum to get normalizing factor of 1/n_beads
-            a_kk_initial = np.mean(np.absolute(self._c_coeff[:, self.current_state]))
+            a_kk_initial = np.mean(np.abs(self._c_coeff[:, self.current_state])**2)
         else:
-            a_kk_initial = abs(self._c_coeff[0, self.current_state])
+            a_kk_initial = abs(self._c_coeff[0, self.current_state])**2
 
         prop_func = getattr(self, "_propagation_equation_" + self.evolution_picture + "_picture")
         ode_solver_function = getattr(self, "_integrator_" + self.ode_solver)

@@ -60,7 +60,8 @@ class InputfileTest(unittest.TestCase):
                                       "dof": "4"},
                            "trajectory": {"blubb": "1.3 fs"},
                            "pes": {"blibb": "1.3 fs", "hot": "",
-                                   "temp": "300 K"}}
+                                   "temp": "300 K"},
+                           "miep": {"": ""}}
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_works.in")
         self.assertDictEqual(input_reference, parameters.store)
 
@@ -191,13 +192,12 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
 
-
         input_string = "1837.3624 1.0 2.0 \n" \
             + "34631.9731 2.0 1.0 4.0 \n"
         with self.assertRaises(ValueError):
             parameters._parse_mass_value(input_string)
         pass
-    
+
     def test_parse_mass_value_free_rp_sampling(self):
         # So far only shape of output and centroid value tested; maybe add
         # test for distribution?
@@ -262,6 +262,17 @@ class InputfileTest(unittest.TestCase):
         self.assertFalse("wrong" in parameters)
 
         return
+
+    def test_flatten_shifts(self):
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_shifts.in")
+        parameters._flatten_shifts()
+        parameters._c_type = 'xpacdt'
+
+        positionShift_ref = np.array([1.0, 2.0, 3.0, 4.0])
+        momentumShift_ref = np.array([-1.0, -2.0, -3.0, -4.0])
+
+        np.testing.assert_array_equal(parameters.positionShift, positionShift_ref)
+        np.testing.assert_array_equal(parameters.momentumShift, momentumShift_ref)
 
     def test_format_coordinates(self):
         # Implicity tested in parse modules - not clear how to test separately.

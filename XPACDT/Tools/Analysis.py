@@ -33,6 +33,7 @@ import numpy as np
 import warnings
 
 import XPACDT.Tools.Bootstrap as bs
+import XPACDT.Tools.Gnuplot as gnuplot
 import XPACDT.Tools.Operations as op
 
 """Module to perform analysis on a set of XPACDT.Systems. The most general
@@ -175,6 +176,9 @@ def do_analysis(parameters, systems=None):
                 raise RuntimeError("XPACDT: No function for 'value' defined "
                                    "in the analysis command '" + command.get('name') + "'.")
 
+        # Check for 2d histograms
+        is_2d = '2op' in command
+
         # The resuts array is reshaped to look like (n_times, n_values).
         #
         # After performing all commands the results array looks is of the
@@ -191,11 +195,11 @@ def do_analysis(parameters, systems=None):
         # system are given.
         n_times = len(command['times'])
         reshaped_results = np.swapaxes(np.array(command['results']).
-                                       reshape(n_systems, (2 if '2d' in command else 1), n_times, -1),
+                                       reshape(n_systems, (2 if is_2d else 1), n_times, -1),
                                        0, 2).reshape(n_times, -1)
         # bootstrap; final_data: [n_times] with tuples(value, error)
         #                                  where value, error 1d arrays
-        final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
+        final_data = [bs.bootstrap(data, func, is_2D=is_2d)
                       for data in reshaped_results]
 
         # Generate header
@@ -207,7 +211,7 @@ def do_analysis(parameters, systems=None):
         # Output data:
         file_output = os.path.join(folder, command.get('filename', key + '.dat'))
         output_data(header, file_output, command['format'], command['times'],
-                    bins, final_data, two_d=('2d' in command))
+                    bins, final_data, two_d=is_2d)
 
 
 def output_data(header, file_output, form, times, bins, results, two_d=False):
@@ -246,6 +250,10 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             Whether a 2d histogram was produced.
     """
 
+    # For the gnuplot output!
+    dirname = os.path.dirname(file_output)
+    basename = os.path.basename(file_output).replace(".dat", "")
+
     # Formatting style
     PREC = 8
 
@@ -269,24 +277,30 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
 #                        outfile.write(str(b1) + " " + str(b2) + " " +
 #                                      str(data[1+i*len(bins[1])+j]) + " \n")
                         outfile.write("{: .{prec}e} {: .{prec}e} {: .{prec}e} \n".format(b1, b2, data[1+i*len(bins[1])+j], prec=PREC))
-                        
-                        
+
                     outfile.write("\n")
                 outfile.write("\n \n")
+
+            setup = "set xlabel 'TODO'\nset ylabel 'TODO'\n"
+            command = "using 1:2:3 w l"
+            gnuplot.write_gnuplot_file(dirname, basename, setup, command, True, nLoop=len(times)-1)
 
         # Regular output, just one line per timestep
         else:
             number_times = len(times)
             np.savetxt(file_output,
                        np.c_[times, np.array(results).reshape((number_times, -1))],
-                        fmt='% .' + str(PREC) + 'e', header=header)
+                       fmt='% .' + str(PREC) + 'e', header=header)
+
+            setup = "set xlabel 'time / au'\nset ylabel 'TODO'\n"
+            command = "using 1:2 w l ls 1 title 'First Value', '' using 1:2:3 w yerrorbars ls 1 title ''"
+            gnuplot.write_gnuplot_file(dirname, basename, setup, command, False)
 
     # Output format: One line per value/error pair (e.g. per bin in histogram)
     # each 2 columns represents one timestep
     elif form == 'value':
         # add time values in header for later reference
         for t in times:
-#            header += str(t) + "\t" + str(t) + "\t"
             header += "{: .{prec}e} \t {: .{prec}e} \t".format(t, t, prec=PREC)
         header += " \n"
 
@@ -297,6 +311,15 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
                    np.c_[bins[0], np.array(results).reshape((-1, number_values)).T],
                    fmt='% .' + str(PREC) + 'e', header=header)
 
+        # Gnuplot command for all times
+        i = 2
+        command = "using 1:{:d} w l ls {:d} title 't={:.2f}', '' using 1:{:d}:{:d} w yerrorbars ls {:d} title ''".format(i,i//2,times[0],i,i+1,i//2)
+        for t in times[1:]:
+            i += 2
+            command += ", '' using 1:{:d} w l ls {:d} title 't={:.2f}', '' using 1:{:d}:{:d} w yerrorbars ls {:d} title ''".format(i,i//2,t,i,i+1,i//2)
+        setup = "set xlabel 'TODO'\nset ylabel 'TODO'\n"
+        gnuplot.write_gnuplot_file(dirname, basename, setup, command, False)
+
     # Output format: For 2D plots of histograms vs. time
     elif form == '2d':
         outfile = open(file_output, 'w')
@@ -306,10 +329,12 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
         dd = np.c_[times, np.array(results).reshape((number_times, -1))]
         for data in dd:
             for i, b in enumerate(bins[0]):
-#                outfile.write(str(data[0]) + " " + str(b) + " " +
-#                              str(data[1+i]) + " \n")
                 outfile.write("{: .{prec}e} {: .{prec}e} {: .{prec}e} \n".format(data[0], b, data[1+i], prec=PREC))
             outfile.write("\n")
+
+        setup = "set xlabel 'TODO'\nset ylabel 'time / au'\n"
+        command = "using 2:1:3 w l"
+        gnuplot.write_gnuplot_file(dirname, basename, setup, command, True)
 
     else:
         raise RuntimeError("XPACDT: No or incorrect output format given: " + form)
@@ -329,8 +354,8 @@ def check_command(command, system):
     system : XPACDT.System
         The read in system containing its own log.
     """
-    if ('2d' in command and command['format'] != 'time'):
-        warnings.warn("XPACDT: For a 2d histogram requested, 'form' has to"
+    if ('2op' in command and command['format'] != 'time'):
+        warnings.warn("XPACDT: For a 2dhistogram is requested, 'form' has to "
                       "have the value 'time'. This is now automatically set "
                       "in analysis command '" + command.get('name') + "'.")
         command['format'] = 'time'
@@ -402,7 +427,7 @@ def apply_command(command, system, steps_to_use):
                                " command '" + command.get('name') + "'!")
 
     # For a 2d histogram another 'obeservable' needs to be computed
-    if '2d' in command:
+    if '2op' in command:
         value_0 = 1.0
         if '2op0' in command:
             value_0 = apply_operation(command['2op0'], system.log[0])

@@ -61,7 +61,9 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
         "samples required, but not given."
     assert('time' in sample_parameters), "Time for each sampling run " \
         "required, but not given."
+    assert('thermostat' in parameters), "No thermostat parameters given!"
 
+    
     sampling_time = units.parse_time(sample_parameters.get('time', '0.0 fs'))
 
     systems = []
@@ -71,6 +73,6 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
         system.clear_log()
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.propagator.thermostat = None
-        systems[-1].nuclei.time = None
+        systems[-1].nuclei.time = 0.0
 
     return systems

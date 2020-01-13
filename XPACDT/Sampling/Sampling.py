@@ -37,10 +37,10 @@ import shutil
 import sys
 
 
-def sample(system, parameters):
+def sample(system, parameters, do_return=False):
     """
     Basic sampling method. This function creates the folder given in the input
-    to put the sampled data to. If the folder already exists, either override
+    to put the sampled data to. If the folder already exists, either overwrite
     or add has to be given for removing all old trajectories or adding to the
     existing trajectories, respectively. If none of the two is given, a
     RuntimeError is raised.
@@ -56,6 +56,13 @@ def sample(system, parameters):
         System that defines the initial geometry and the potential.
     parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
+    do_return: Bool, optional, default:False
+        If True then the list of samples systems is returned instead of written
+        to pickle files.
+
+    Return
+    ------
+    If do_return is True, the list of samples systems is returned.
     """
 
     sampling_parameters = parameters.get('sampling')
@@ -83,7 +90,7 @@ def sample(system, parameters):
         trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*'))
         trj_folder_list.sort()
 
-        if 'override' in system_parameters:
+        if 'overwrite' in system_parameters:
             if trj_folder_list is not None:
                 for folder in trj_folder_list:
                     shutil.rmtree(folder)
@@ -92,7 +99,7 @@ def sample(system, parameters):
             n_samples_required -= len(trj_folder_list)
         else:
             raise RuntimeError("The trajectory folder already exists and no "
-                               "directive for overriding old data or adding "
+                               "directive for overwriting old data or adding "
                                "trajectories is given.")
 
     # Run sampling method
@@ -101,7 +108,19 @@ def sample(system, parameters):
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
                               "do_" + method + "_sampling")(system, parameters, n_samples_required)
 
-    # TODO: Add linear shifts in position or momentum!
+    # Shift centroid position and/or momenta if requested
+    if parameters.positionShift is not None:
+        for system in sampled_systems:
+            system.nuclei.positions += parameters.positionShift[:, None]
+            system.do_log(init=True)
+
+    if parameters.momentumShift is not None:
+        for system in sampled_systems:
+            system.nuclei.momenta += parameters.momentumShift[:, None]
+            system.do_log(init=True)
+
+    if do_return is True:
+        return sampled_systems
 
     # Save stuff to pickle files. Iterate over all possible folders
     shift = 0

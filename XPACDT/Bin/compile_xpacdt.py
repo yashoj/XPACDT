@@ -32,21 +32,55 @@
 """Convert XPACDT to an packed executable using pyinstaller.
 """
 
+import git
+import inspect
+import os
 import subprocess as sp
 
 
 if __name__ == "__main__":
 
-    # TODO read some stuff from command line
+    # TODO read some stuff from command line ?
 
+    # Get branch and version info.
+    # Write to file that will be included in bundle
+    current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
+    repo = git.Repo(path=current_path, search_parent_directories=True)
+    branch_name = repo.active_branch.name
+    hexsha = repo.head.object.hexsha
+    version_file = open('.version', 'w')
+    version_file.write("Branch: " + branch_name + " \n")
+    version_file.write("Commit: " + hexsha + " \n")
+    version_file.close()
+
+    # TODO: check for more hidden imports, check for more data files
     command = "cd $XPACDTPATH/Bin; "
-    command += "pyinstaller --onefile --runtime-tmpdir=\".\" -n genLog.exe genLog.py; "
-    command += "pyinstaller --onefile --runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
+
+    # For genLog.py - not implemented yet
+#    command += "pyinstaller --add-data '.version:.' "
+#    command += "--onefile "
+#    command += "--hidden-import='XPACDT' "
+#    command += "--runtime-tmpdir=\".\" -n genLog.exe genLog.py; "
+
+    # For xpacdt.py
+    command += "pyinstaller --add-data '.version:.' "
+    command += "--add-data 'XPACDT/Interfaces/LWAL_module/fhhfit_1050.dat:XPACDT/Interfaces/LWAL_module' "
+    command += "--add-data 'XPACDT/Interfaces/LWAL_module/fhhfit_1078_new.dat:XPACDT/Interfaces/LWAL_module' "
+    command += " --onefile"
+    command += "--hidden-import='git' "
+    command += "--hidden-import='XPACDT.System.AdiabaticElectrons' "
+    command += "--hidden-import='XPACDT.Dynamics.MassiveAndersen' "
+    command += "--hidden-import='XPACDT.Dynamics.VelocityVerlet' "
+    command += "--hidden-import='XPACDT.Sampling.FixedSampling' "
+    command += "--hidden-import='XPACDT.Sampling.QuasiclassicalSampling' "
+    command += "--hidden-import='XPACDT.Sampling.ThermostattedSampling' "
+    command += "--hidden-import='XPACDT.Sampling.WignerSampling' "
+    command += "--hidden-import='XPACDT.Interfaces.BKMP2' "
+    command += "--hidden-import='XPACDT.Interfaces.EckartBarrier' "
+    command += "--hidden-import='XPACDT.Interfaces.OneDPolynomial' "
+    command += "--runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
 
     p = sp.Popen(command, shell=True, executable="bash")
     p.wait()
 
     exit
-
-# --hidden-import='git'
-# --hidden-import='git'

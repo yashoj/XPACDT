@@ -15,3 +15,7 @@ The following options can be set in the $plot section of the input file:
     optimize If given all but the coordinates scanned are optimized, i.e., adjusted to minimize the energy.
 
     internal If given, internal coordinates that differ from the actual coordinates used in the interface are employed in the plotting. Please note that a transformation from these internal coordinates to the coordinates used in the interface has to be implemented for this to work.
+
+    S = Electronic state to plot. Numbering starts with 0.
+
+    picture = ('adiabatic', 'diabatic') Whether to plot the adiabatic or diabatic (if available) PES. Right now, only diagonal elements can be plotted.

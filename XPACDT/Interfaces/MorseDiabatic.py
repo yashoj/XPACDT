@@ -327,127 +327,127 @@ class MorseDiabatic(itemplate.PotentialInterface):
         return V_diabatic
 
 
-if __name__ == '__main__':
-
-    # Plotting script to visualize the potential.
-    # Runs only if this file is executed on its own by doing:
-    # "python MorseDiabatic.py <model_type> <n_states>" where <model_type> can
-    # be model_1, model_2, model_3 and <n_states> can be 2 or 3.
-    import sys
-    import matplotlib.pyplot as plt
-
-    model_type = sys.argv[1]  # 'model_3'
-    n_states = int(sys.argv[2])  # 2
-    nb = 1
-    pot = MorseDiabatic(nb, **{'n_states': str(n_states), 'model_type': model_type})
-
-    bead_ind = 0  # Bead to be used for plotting
-
-    # len(linspace) array of positions
-    X = np.linspace(1.8, 12., num=1000)
-    v1 = []
-    v2 = []
-    v3 = []
-    k1 = []
-    k2 = []
-
-    dv1 = []
-    dv2 = []
-    dv3 = []
-    dk1 = []
-    dk2 = []
-
-    V1_ad = []
-    V2_ad = []
-    V3_ad = []
-    dV1_ad = []
-    dV2_ad = []
-    dV3_ad = []
-
-    nac12 = []
-    nac13 = []
-    nac23 = []
-
-    for i in X:
-        pot._calculate_adiabatic_all(np.array([[i]]))
-
-        v1.append(pot._diabatic_energy[0, 0, 0])
-        v2.append(pot._diabatic_energy[1, 1, 0])
-        k1.append(pot._diabatic_energy[0, 1, 0])
-        dv1.append(pot._diabatic_gradient[0, 0, 0, 0])
-        dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
-        dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
-
-        V1_ad.append(pot._adiabatic_energy[0, 0])
-        V2_ad.append(pot._adiabatic_energy[1, 0])
-        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
-        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
-        nac12.append(pot._nac[0, 1, 0, 0])
-
-        if (n_states == 3):
-            v3.append(pot._diabatic_energy[2, 2, 0])
-            dv3.append(pot._diabatic_gradient[2, 2, 0, 0])
-            V3_ad.append(pot._adiabatic_energy[2, 0])
-            dV3_ad.append(pot._adiabatic_gradient[2, 0, 0])
-            nac13.append(pot._nac[0, 2, 0, 0])
-            nac23.append(pot._nac[1, 2, 0, 0])
-
-            if model_type == 'model_1':
-                k2.append(pot._diabatic_energy[1, 2, 0])
-                dk2.append(pot._diabatic_gradient[1, 2, 0, 0])
-            else:
-                k2.append(pot._diabatic_energy[0, 2, 0])
-                dk2.append(pot._diabatic_gradient[0, 2, 0, 0])
-
-    # Plot all
-    fig, ax = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle('Morse diabatic potential: ' + model_type, fontsize=20)
-
-    ax[0, 0].plot(X, v1, 'r-', label="V1")
-    ax[0, 0].plot(X, v2, 'k-', label="V2")
-    ax[0, 0].plot(X, k1, 'b--', label="K1")
-    if (n_states == 3):
-        ax[0, 0].plot(X, v3, 'g-', label="V3")
-        ax[0, 0].plot(X, k2, 'g--', label="K2")
-    ax[0, 0].set_xlabel('x')
-    ax[0, 0].set_ylabel('Diabatic Potential')
-    ax[0, 0].legend(loc='best')
-    ax[0, 0].set_ylim((-0.001, 0.05))
-
-    ax[0, 1].plot(X, dv1, 'r-', label="dV1/dx")
-    ax[0, 1].plot(X, dv2, 'k-', label="dV2/dx")
-    ax[0, 1].plot(X, dk1, 'b--', label="dK1/dx")
-    if (n_states == 3):
-        ax[0, 1].plot(X, dv3, 'g-', label="dV3/dx")
-        ax[0, 1].plot(X, dk2, 'g--', label="dK2/dx")
-    ax[0, 1].set_xlabel('x')
-    ax[0, 1].set_ylabel('Derivative of diabatic potential')
-    ax[0, 1].legend(loc='best')
-
-    ax[1, 0].plot(X, V1_ad, 'r-', label="V1")
-    ax[1, 0].plot(X, V2_ad, 'k-', label="V2")
-    if (n_states == 3):
-        ax[1, 0].plot(X, V3_ad, 'g-', label="V3")
-    ax[1, 0].set_xlabel('x')
-    ax[1, 0].set_ylabel('Adiabatic Potential')
-    ax[1, 0].legend(loc='best')
-    ax[1, 0].set_ylim((-0.001, 0.05))
-
-    ax[1, 1].plot(X, dV1_ad, 'r-', label="dV1/dx")
-    ax[1, 1].plot(X, dV2_ad, 'k-', label="dV2/dx")
-    if (n_states == 3):
-        ax[1, 1].plot(X, dV3_ad, 'g-', label="dV3/dx")
-    ax[1, 1].set_xlabel('x')
-    ax[1, 1].set_ylabel('Derivative of Adiabatic Potential')
-    ax[1, 1].legend(loc='best')
-
-    ax[1, 2].plot(X, nac12, 'r-', label="NAC_12")
-    if (n_states == 3):
-        ax[1, 2].plot(X, nac13, 'b-', label="NAC_13")
-        ax[1, 2].plot(X, nac23, 'g-', label="NAC_23")
-    ax[1, 2].set_xlabel('x')
-    ax[1, 2].set_ylabel('NAC')
-    ax[1, 2].legend(loc='best')
-    ax[1, 2].set_xlim((2, 6))
-
-    plt.show()
+#if __name__ == '__main__':
+#
+#    # Plotting script to visualize the potential.
+#    # Runs only if this file is executed on its own by doing:
+#    # "python MorseDiabatic.py <model_type> <n_states>" where <model_type> can
+#    # be model_1, model_2, model_3 and <n_states> can be 2 or 3.
+#    import sys
+#    import matplotlib.pyplot as plt
+#
+#    model_type = sys.argv[1]  # 'model_3'
+#    n_states = int(sys.argv[2])  # 2
+#    nb = 1
+#    pot = MorseDiabatic(nb, **{'n_states': str(n_states), 'model_type': model_type})
+#
+#    bead_ind = 0  # Bead to be used for plotting
+#
+#    # len(linspace) array of positions
+#    X = np.linspace(1.8, 12., num=1000)
+#    v1 = []
+#    v2 = []
+#    v3 = []
+#    k1 = []
+#    k2 = []
+#
+#    dv1 = []
+#    dv2 = []
+#    dv3 = []
+#    dk1 = []
+#    dk2 = []
+#
+#    V1_ad = []
+#    V2_ad = []
+#    V3_ad = []
+#    dV1_ad = []
+#    dV2_ad = []
+#    dV3_ad = []
+#
+#    nac12 = []
+#    nac13 = []
+#    nac23 = []
+#
+#    for i in X:
+#        pot._calculate_adiabatic_all(np.array([[i]]))
+#
+#        v1.append(pot._diabatic_energy[0, 0, 0])
+#        v2.append(pot._diabatic_energy[1, 1, 0])
+#        k1.append(pot._diabatic_energy[0, 1, 0])
+#        dv1.append(pot._diabatic_gradient[0, 0, 0, 0])
+#        dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
+#        dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
+#
+#        V1_ad.append(pot._adiabatic_energy[0, 0])
+#        V2_ad.append(pot._adiabatic_energy[1, 0])
+#        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
+#        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
+#        nac12.append(pot._nac[0, 1, 0, 0])
+#
+#        if (n_states == 3):
+#            v3.append(pot._diabatic_energy[2, 2, 0])
+#            dv3.append(pot._diabatic_gradient[2, 2, 0, 0])
+#            V3_ad.append(pot._adiabatic_energy[2, 0])
+#            dV3_ad.append(pot._adiabatic_gradient[2, 0, 0])
+#            nac13.append(pot._nac[0, 2, 0, 0])
+#            nac23.append(pot._nac[1, 2, 0, 0])
+#
+#            if model_type == 'model_1':
+#                k2.append(pot._diabatic_energy[1, 2, 0])
+#                dk2.append(pot._diabatic_gradient[1, 2, 0, 0])
+#            else:
+#                k2.append(pot._diabatic_energy[0, 2, 0])
+#                dk2.append(pot._diabatic_gradient[0, 2, 0, 0])
+#
+#    # Plot all
+#    fig, ax = plt.subplots(2, 3, figsize=(18, 12))
+#    fig.suptitle('Morse diabatic potential: ' + model_type, fontsize=20)
+#
+#    ax[0, 0].plot(X, v1, 'r-', label="V1")
+#    ax[0, 0].plot(X, v2, 'k-', label="V2")
+#    ax[0, 0].plot(X, k1, 'b--', label="K1")
+#    if (n_states == 3):
+#        ax[0, 0].plot(X, v3, 'g-', label="V3")
+#        ax[0, 0].plot(X, k2, 'g--', label="K2")
+#    ax[0, 0].set_xlabel('x')
+#    ax[0, 0].set_ylabel('Diabatic Potential')
+#    ax[0, 0].legend(loc='best')
+#    ax[0, 0].set_ylim((-0.001, 0.05))
+#
+#    ax[0, 1].plot(X, dv1, 'r-', label="dV1/dx")
+#    ax[0, 1].plot(X, dv2, 'k-', label="dV2/dx")
+#    ax[0, 1].plot(X, dk1, 'b--', label="dK1/dx")
+#    if (n_states == 3):
+#        ax[0, 1].plot(X, dv3, 'g-', label="dV3/dx")
+#        ax[0, 1].plot(X, dk2, 'g--', label="dK2/dx")
+#    ax[0, 1].set_xlabel('x')
+#    ax[0, 1].set_ylabel('Derivative of diabatic potential')
+#    ax[0, 1].legend(loc='best')
+#
+#    ax[1, 0].plot(X, V1_ad, 'r-', label="V1")
+#    ax[1, 0].plot(X, V2_ad, 'k-', label="V2")
+#    if (n_states == 3):
+#        ax[1, 0].plot(X, V3_ad, 'g-', label="V3")
+#    ax[1, 0].set_xlabel('x')
+#    ax[1, 0].set_ylabel('Adiabatic Potential')
+#    ax[1, 0].legend(loc='best')
+#    ax[1, 0].set_ylim((-0.001, 0.05))
+#
+#    ax[1, 1].plot(X, dV1_ad, 'r-', label="dV1/dx")
+#    ax[1, 1].plot(X, dV2_ad, 'k-', label="dV2/dx")
+#    if (n_states == 3):
+#        ax[1, 1].plot(X, dV3_ad, 'g-', label="dV3/dx")
+#    ax[1, 1].set_xlabel('x')
+#    ax[1, 1].set_ylabel('Derivative of Adiabatic Potential')
+#    ax[1, 1].legend(loc='best')
+#
+#    ax[1, 2].plot(X, nac12, 'r-', label="NAC_12")
+#    if (n_states == 3):
+#        ax[1, 2].plot(X, nac13, 'b-', label="NAC_13")
+#        ax[1, 2].plot(X, nac23, 'g-', label="NAC_23")
+#    ax[1, 2].set_xlabel('x')
+#    ax[1, 2].set_ylabel('NAC')
+#    ax[1, 2].legend(loc='best')
+#    ax[1, 2].set_xlim((2, 6))
+#
+#    plt.show()

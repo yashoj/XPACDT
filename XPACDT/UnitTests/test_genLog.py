@@ -191,9 +191,12 @@ class genLogTest(unittest.TestCase):
         time_reference = np.random.rand()
         state_reference = 1
 
-        self.nuclei_classical.electrons.current_state = state_reference
-        self.nuclei_classical.time = time_reference
-        log = self.nuclei_classical
+        # Test for surface hopping electrons
+        param_sh_classical = infile.Inputfile("FilesForTesting/SystemTests/input_SH_classical.in")
+        param_sh_classical["SurfaceHoppingElectrons"]["initial_state"] = state_reference
+
+        nuclei_sh_classical = nuclei.Nuclei(1, param_sh_classical, time_reference)
+        log = nuclei_sh_classical
 
         outfile = open("state.log", 'w')
         genLog.write_electronic_state(log, outfile, 16, 8)

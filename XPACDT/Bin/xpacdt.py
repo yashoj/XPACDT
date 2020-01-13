@@ -173,6 +173,7 @@ def start():
     if job == "analyze":
         analysis.do_analysis(input_parameters)
         return
+
     elif job == "plot":
         pes_name = input_parameters.get("system").get("Interface", None)
         assert (pes_name != None), "No potential interface name given in input."
@@ -180,6 +181,7 @@ def start():
         pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
                       pes_name)(**input_parameters.get(pes_name))
 
+        # Parse grid parameters
         dof = [int(i) for i in input_parameters.get("plot").get("dof").split()]
         start = [float(i) for i in input_parameters.get("plot").get("start").split()]
         end = [float(i) for i in input_parameters.get("plot").get("end").split()]
@@ -189,16 +191,22 @@ def start():
         assert(len(dof) == len(end)), "Number of degrees of freedom and end values for grids differ!" + str(len(dof)) + " != " + str(len(end))
         assert(len(dof) == len(step)), "Number of degrees of freedom and step values for grids differ!" + str(len(dof)) + " != " + str(len(step))
 
+        # Parse electronic parameters
+        state = int(input_parameters.get("plot").get("state", "0"))
+        picture = 'diabatic' if 'diabatic' in input_parameters.get("plot") else 'adiabatic'
+
         if len(dof) == 1:
             pes.plot_1D(input_parameters.coordinates[:, 0], dof[0],
                         start[0], end[0], step[0],
                         relax=("optimize" in input_parameters.get("plot")),
-                        internal=("internal" in input_parameters.get("plot")))
+                        internal=("internal" in input_parameters.get("plot")),
+                        S=state, picture=picture)
         elif len(dof) == 2:
             pes.plot_2D(input_parameters.coordinates, dof[0], dof[1],
                         start, end, step,
                         relax=("optimize" in input_parameters.get("plot")),
-                        internal=("internal" in input_parameters.get("plot")))
+                        internal=("internal" in input_parameters.get("plot")),
+                        S=state, picture=picture)
 
         else:
             raise RuntimeError("Cannot plot PES other than for 1 or 2 degrees of freedom.")

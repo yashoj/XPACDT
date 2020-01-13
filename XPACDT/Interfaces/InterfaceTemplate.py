@@ -540,7 +540,7 @@ class PotentialInterface:
 
     # TODO: should these wrappers have option to return adiabatic or diabatic
     #       energies, in case we decide to plot either one? Or maybe create separate functions for them?
-    def _energy_wrapper(self, R, S=0, centroid=True, internal=False):
+    def _energy_wrapper(self, R, S=0, centroid=True, internal=False, picture='adiabatic'):
         """Wrapper function to do call energy with a one-dimensional array.
         This should only be used for directly accessing the PES and not for any
         dynamics calculation!.
@@ -556,6 +556,10 @@ class PotentialInterface:
         internal : bool, optional, default False
             Whether 'R' is in internal coordinates. Then it is backtransformed
             to cartesian coordinates in the wrapper.
+        picture : string, optional, ('adiabatic', 'diabatic')
+            Whether adiabatic or diabatic PES should be returned. Currently,
+            only diabatic diagonal elements are returned, i.e., SI=SJ=S.
+            TODO: Howto handle couplings?
 
         Returns
         -------
@@ -563,10 +567,16 @@ class PotentialInterface:
         The energy at the given geometry in hartree.
         """
 
-        if internal:
-            return self.adiabatic_energy(self._from_internal(R)[:, None], S, centroid)
+        if picture == 'adiabatic':
+            if internal:
+                return self.adiabatic_energy(self._from_internal(R)[:, None], S, centroid)
+            else:
+                return self.adiabatic_energy(R[:, None], S, centroid)
         else:
-            return self.adiabatic_energy(R[:, None], S, centroid)
+            if internal:
+                return self.diabatic_energy(self._from_internal(R)[:, None], S, S, centroid)
+            else:
+                return self.diabatic_energy(R[:, None], S, S, centroid)
 
     def _gradient_wrapper(self, R, S=0, centroid=True, internal=False):
         """Wrapper function to do call gradient with a one-dimensional array.
@@ -716,7 +726,8 @@ class PotentialInterface:
         """ Find the transition state. """
         raise NotImplementedError
 
-    def plot_1D(self, R, dof_i, start, end, step, relax=False, internal=False, S=0):
+    def plot_1D(self, R, dof_i, start, end, step,
+                relax=False, internal=False, S=0, picture='adiabatic'):
         """Generate data to plot a potential energy surface along one
         dimension. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_1d.dat' or
@@ -748,7 +759,10 @@ class PotentialInterface:
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
         S : integer, optional, Default: 0
-            Could be the state, not impemented yet.
+            The state to be plotted.
+        picture : string, optional, ('adiabatic', 'diabatic')
+            Whether adiabatic or diabatic PES should be plotted. 
+            TODO: Howto handle couplings?
 
         Returns
         -------
@@ -758,6 +772,23 @@ class PotentialInterface:
 
         setup = "set xlabel 'coordinate " + str(dof_i) + "' \nset ylabel 'energy / au'\n"
         gnuplot.write_gnuplot_file('./', 'pes_1d' + ('_opti' if relax else ''), setup, " using 1:2 w l ls 1 title 'TODO'", False)
+
+        # Add header with parameters, etc.
+        header = "Data file from 1D potential energy scan. There should be"\
+            + " a gnuplot file called 'pes_1d.plt' or 'pes_1d_opti.plt'"\
+            + " available to give reasonable help on plotting this file. \n"\
+            + "The file was generated for the following interface: \n"\
+            + self.name + " \n"\
+            + "And with the following parameters: "\
+            + "R = " + str(R) + " \n"\
+            + "dof_i = " + str(dof_i) + " \n"\
+            + "start = " + str(start) + " \n"\
+            + "end = " + str(end) + " \n"\
+            + "step = " + str(step) + " \n"\
+            + "relax = " + str(relax) + " \n"\
+            + "internal = " + str(internal) + " \n"\
+            + "S = " + str(S) + " \n"\
+            + "picture = " + str(picture) + " \n"
 
         # TODO: add some asserts
         e = []
@@ -770,7 +801,7 @@ class PotentialInterface:
                 constraint = ({'type': 'eq', 'fun': lambda x: x[dof_i] - g})
                 R0 = R.copy()
                 R0[dof_i] = g
-                results = spminimize(lambda x : self._energy_wrapper(x, internal=internal),
+                results = spminimize(lambda x : self._energy_wrapper(x, internal=internal, S=S, picture=picture),
                                      R0, method='SLSQP',
                                      constraints=constraint)
 
@@ -783,14 +814,16 @@ class PotentialInterface:
                                        " message: " + results.message)
             else:
                 R[dof_i] = g
-                e.append([self._energy_wrapper(R, internal=internal)])
+                e.append([self._energy_wrapper(R, internal=internal, S=S, picture=picture)])
 
         pes = np.insert(np.array(e), 0, grid, axis=1)
         if relax:
             pes = np.hstack((pes, np.array(R_optimized)))
-        np.savetxt('pes_1d' + ('_opti' if relax else '') + '.dat', pes)
 
-    def plot_2D(self, R, dof_i, dof_j, starts, ends, steps, relax=False, internal=False):
+        np.savetxt('pes_1d' + ('_opti' if relax else '') + '.dat', pes, header=header)
+
+    def plot_2D(self, R, dof_i, dof_j, starts, ends, steps,
+                relax=False, internal=False, S=0, picture='adiabatic'):
         """Generate data to plot a potential energy surface along two
         dimensions. The other degrees of freedom can either kept fix or can be
         optimized. The results are writte to a file called 'pes_2d.dat' or
@@ -826,7 +859,10 @@ class PotentialInterface:
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
         S : integer, optional, Default: 0
-            Could be the state, not impemented yet.
+            The state to be plotted.
+        picture : string, optional, ('adiabatic', 'diabatic')
+            Whether adiabatic or diabatic PES should be plotted. 
+            TODO: Howto handle couplings?
 
         Returns
         -------
@@ -839,6 +875,23 @@ class PotentialInterface:
 
         old_thresh = self.__SAVE_THRESHOLD
         self.__SAVE_THRESHOLD = 1e-15
+
+        # Add header with parameters, etc.
+        header = "# Data file from 2D potential energy scan. There should be"\
+            + " a gnuplot file called 'pes_2d.plt' or 'pes_2d_opti.plt'"\
+            + " available to give reasonable help on plotting this file. \n"\
+            + "# The file was generated for the following interface: \n"\
+            + "# " + self.name + " \n"\
+            + "# And with the following parameters: "\
+            + "# R = " + str(R) + " \n"\
+            + "# dof_i, dof_j = " + str(dof_i) + " " + str(dof_j) + " \n"\
+            + "# starts = " + str(starts) + " \n"\
+            + "# ends = " + str(ends) + " \n"\
+            + "# steps = " + str(steps) + " \n"\
+            + "# relax = " + str(relax) + " \n"\
+            + "# internal = " + str(internal) + " \n"\
+            + "# S = " + str(S) + " \n"\
+            + "# picture = " + str(picture) + " \n"
 
         e = []
         if relax:
@@ -860,7 +913,7 @@ class PotentialInterface:
                     R0 = R.copy()
                     R0[dof_i] = g_x
                     R0[dof_j] = g_y
-                    results = spminimize(lambda x : self._energy_wrapper(x, internal=internal),
+                    results = spminimize(lambda x : self._energy_wrapper(x, internal=internal, S=S, picture=picture),
                                          R0, method='SLSQP',
                                          constraints=constraint,
                                          options={'ftol': 1e-6, 'eps':1e-3})
@@ -874,7 +927,7 @@ class PotentialInterface:
                 else:
                     R[dof_i] = g_x
                     R[dof_j] = g_y
-                    e.append([self._energy_wrapper(R, internal=internal)])
+                    e.append([self._energy_wrapper(R, internal=internal, S=S, picture=picture)])
 
         grid = np.dstack((grid_y, grid_x)).reshape(n_grid, -1)
         pes = np.hstack((grid, e))
@@ -882,6 +935,7 @@ class PotentialInterface:
             pes = np.hstack((pes, np.array(R_optimized)))
 
         outfile = open('pes_2d' + ('_opti' if relax else '') + '.dat', 'w')
+        outfile.write(header)
         for k, data in enumerate(pes):
             outfile.write(' '.join([str(x) for x in data]))
             outfile.write('\n')

@@ -1,8 +1,7 @@
 $system                     # general parameters
-dof = 3                     # integer, required: the number of degrees of freedom
+dof = 3                     # integer, required: the number of degrees of freedom; it is 3 here as internal coordinates are used
 job = plot	            # (sample, propagate, analyze, plot), required: The job type.
 Interface = LWAL	    # (OneDPolynomial, LWAL, EckartBarrier), required: The interface to the potential to be used.
-folder = test               # string, required: Base folder for the trajectories.
 $end
 
 ##############################################################################

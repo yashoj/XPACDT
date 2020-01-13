@@ -244,7 +244,7 @@ def start():
         else:
             # Remove thermostat if exists
             input_parameters.pop('thermostat', None)
-        for i, systemi in enumerate(systems):
+        for i, system_i in enumerate(systems):
             # create folder
             trj_folder = os.path.join(name_folder, 'trj_{0:07}'.format(i))
             if not os.path.isdir(trj_folder):
@@ -258,7 +258,7 @@ def start():
             input_parameters['system']['folder'] = trj_folder
 
             # run
-            rt.propagate(systemi, input_parameters)
+            rt.propagate(system_i, input_parameters)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
         # run analsysis
@@ -273,7 +273,9 @@ def start():
         # Perform actual analysis only if commands are present
         if len(input_parameters.commands) > 0:
             analysis.do_analysis(input_parameters, systems)
-        print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
+            print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
+        else:
+            print("...no analysis requested!")
 
     elif job == "sample":
         sampling.sample(system, input_parameters)

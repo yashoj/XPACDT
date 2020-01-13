@@ -736,7 +736,6 @@ class PotentialInterface:
         energy. If relax is True then the full optimized geometry is given
         after the energy.
 
-        TODO: Implement the use of a certain excited state.
         TODO: add variable file name
 
         Parameters

@@ -2,7 +2,6 @@ $system                     # general parameters
 dof = 1                     # integer, required: the number of degrees of freedom
 job = plot	            # (sample, propagate, analyze, plot), required: The job type.
 Interface = EckartBarrier   # (OneDPolynomial, BKMP2, EckartBarrier), required: The interface to the potential to be used.
-folder = test               # string, required: Base folder for the trajectories.
 $end
 
 ##############################################################################

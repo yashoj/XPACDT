@@ -305,9 +305,10 @@ class VelocityVerlet(object):
         rnm = self.RPtransform.to_RingPolymer_normalModes(R)
         pnm = self.RPtransform.to_RingPolymer_normalModes(P)
 
-        # three-dimensional array; For each physical degree of freedom and
+        # four-dimensional array; For each physical degree of freedom and
         # each ring polymer bead the normal mode position and momentum is
-        # stored.
+        # stored. A fourth dimension is added for broadcasting with the
+        # matrix multiplication below
         nms = np.dstack((pnm, rnm))[:, :, :, None]
         rnm_t = np.zeros(rnm.shape)
         pnm_t = np.zeros(rnm.shape)

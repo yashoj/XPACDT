@@ -67,17 +67,17 @@ if __name__ == "__main__":
     # For xpacdt.py
     command += "pyinstaller --add-data '.version:.' "
 
-    file = os.path.join(current_path, "../Interfaces/LWAL_module/fhhfit_1050.dat")
-    command += "--add-data '+ " + file + ":XPACDT/Interfaces/LWAL_module' "
+    add_file = os.path.join(current_path, "../Interfaces/LWAL_module/fhhfit_1050.dat")
+    command += "--add-data '" + add_file + ":XPACDT/Interfaces/LWAL_module' "
 
-    file = os.path.join(current_path, "../Interfaces/LWAL_module/fhhfit_1078_new.dat")
-    command += "--add-data '+ " + file + ":XPACDT/Interfaces/LWAL_module' "
+    add_file = os.path.join(current_path, "../Interfaces/LWAL_module/fhhfit_1078_new.dat")
+    command += "--add-data '" + add_file + ":XPACDT/Interfaces/LWAL_module' "
 
-    file = os.path.join(current_path, "../Interfaces/CW_module/cwfit.dat")
-    command += "--add-data '+ " + file + ":XPACDT/Interfaces/CW_module' "
+    add_file = os.path.join(current_path, "../Interfaces/CW_module/cwfit.dat")
+    command += "--add-data '" + add_file + ":XPACDT/Interfaces/CW_module' "
 
-    file = os.path.join(current_path, "helptext/*.txt")
-    command += "--add-data '+ " + file + ":XPACDT/Bin/helptext' "
+    add_file = os.path.join(current_path, "helptext/*.txt")
+    command += "--add-data '" + add_file + ":helptext' "
 
     command += " --onefile "
     command += "--hidden-import='git' "

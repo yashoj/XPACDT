@@ -79,7 +79,9 @@ def print_helpfile(filename):
        Name of the file to be printed.
     """
 
-    with open(filename, 'r') as helpfile:
+    help_path = resource_path("helptext")
+
+    with open(os.path.join(help_path, filename), 'r') as helpfile:
         for line in helpfile:
             print(line, end='')
 
@@ -87,8 +89,6 @@ def print_helpfile(filename):
 def start():
     """Start any XPACDT calculation."""
 
-
-    np.setbufsize(10**7)
     # Save version used for later reference; either from git repository or from
     # .version file included by the PyInstaller program
     try:
@@ -135,12 +135,13 @@ def start():
 
     if args.help is not None:
         parser.print_help()
+
         if args.help.lower() == 'analysis':
             print()
             print()
             print("Printing additional help for " + args.help + ":")
             print()
-            print_helpfile("helptext/analysis.txt")
+            print_helpfile("analysis.txt")
             operations.position(["-h"], None)
             print()
             operations.momentum(["-h"], None)
@@ -149,7 +150,7 @@ def start():
             print()
             print("Printing additional help for " + args.help + ":")
             print()
-            print_helpfile("helptext/" + args.help.lower() + ".txt")            
+            print_helpfile(args.help.lower() + ".txt")
         elif args.help == 'nothing':
             pass
         else:

@@ -869,7 +869,11 @@ class OperationsTest(unittest.TestCase):
             operations._projection("<,>,4.0", None)
 
     def test_electronic_state(self):
-        ### 1 bead case
+        # Here only proper parsing for the function is tested for 1 bead case
+        # using surface hopping electrons.
+        # Individual 'get_population' function used in this function should be
+        # tested in specific electron test.
+
         # Set up nuclei with surface hopping electrons
         param_classical = infile.Inputfile("FilesForTesting/SystemTests/input_SH_classical.in")
 
@@ -880,7 +884,8 @@ class OperationsTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             state = operations.electronic_state([], log_sh_classical)
 
-        with self.assertRaises(AssertionError):
+        # This function is not implemented in OneDPolynomial interface.
+        with self.assertRaises(NotImplementedError):
             state = operations.electronic_state("-b adiabatic -p 0".split(),
                                                 self.log_classical)
         with self.assertRaises(AssertionError):
@@ -890,22 +895,22 @@ class OperationsTest(unittest.TestCase):
         # State operation in the same basis
         state = operations.electronic_state("-b adiabatic -p 0".split(),
                                             log_sh_classical)
-        np.testing.assert_array_equal(state, 1.0)
+        np.testing.assert_array_equal(state, [1.0])
 
         state = operations.electronic_state("-b adiabatic -p 1".split(),
                                             log_sh_classical)
-        np.testing.assert_array_equal(state, 0.0)
+        np.testing.assert_array_equal(state, [0.0])
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
         param_classical["SurfaceHoppingElectrons"]["basis"] = "diabatic"
         log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
         state = operations.electronic_state("-b diabatic -p 0".split(),
                                             log_sh_classical)
-        np.testing.assert_array_equal(state, 0.0)
+        np.testing.assert_array_equal(state, [0.0])
 
         state = operations.electronic_state("-b diabatic -p 1".split(),
                                             log_sh_classical)
-        np.testing.assert_array_equal(state, 1.0)
+        np.testing.assert_array_equal(state, [1.0])
 
         # State operation in different basis using Tully model A;
         # should give the same result for all rpsh types for 1 bead case.
@@ -923,11 +928,11 @@ class OperationsTest(unittest.TestCase):
 
         state = operations.electronic_state("-b diabatic -p 0".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
+        np.testing.assert_allclose(state, [0.], atol=1e-7)
 
         state = operations.electronic_state("-b diabatic -p 1".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
+        np.testing.assert_allclose(state, [1.], atol=1e-7)
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
         log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
@@ -936,65 +941,11 @@ class OperationsTest(unittest.TestCase):
 
         state = operations.electronic_state("-b diabatic -p 0".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
+        np.testing.assert_allclose(state, [1.], atol=1e-7)
 
         state = operations.electronic_state("-b diabatic -p 1".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
+        np.testing.assert_allclose(state, [0.], atol=1e-7)
 
         # Then in diabatic basis.
         param_classical["SurfaceHoppingElectrons"]["basis"] = "diabatic"
@@ -1008,11 +959,11 @@ class OperationsTest(unittest.TestCase):
 
         state = operations.electronic_state("-b adiabatic -p 0".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
+        np.testing.assert_allclose(state, [0.], atol=1e-7)
 
         state = operations.electronic_state("-b adiabatic -p 1".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
+        np.testing.assert_allclose(state, [1.], atol=1e-7)
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
         log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
@@ -1021,274 +972,11 @@ class OperationsTest(unittest.TestCase):
 
         state = operations.electronic_state("-b adiabatic -p 0".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
+        np.testing.assert_allclose(state, [1.], atol=1e-7)
 
         state = operations.electronic_state("-b adiabatic -p 1".split(),
                                             log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
-        log_sh_classical.positions = np.array([[-1.0e5]])
-        log_sh_classical.electrons.energy(log_sh_classical.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 1., atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_classical)
-        np.testing.assert_allclose(state, 0., atol=1e-7)
-
-        ### 2 bead case
-        # Set up nuclei with surface hopping electrons
-        param_rpmd = infile.Inputfile("FilesForTesting/SystemTests/input_SH_rpmd.in")
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        param_rpmd["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-
-        # State operation in the same basis
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_array_equal(state, 1.0)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_array_equal(state, 0.0)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        param_rpmd["SurfaceHoppingElectrons"]["basis"] = "diabatic"
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_array_equal(state, 0.0)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_array_equal(state, 1.0)
-
-        # State operation in different basis using Tully model A;
-        # should give different results for different rpsh types in this case.
-        param_rpmd["TullyModel"]["model_type"] = "model_A"
-
-        # First in adiabatic basis.
-        param_rpmd["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
-        param_rpmd["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        # This is done just to reset all pes quantities to current position value.
-        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]]
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.125, atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        state_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        np.testing.assert_allclose(state, state_ref, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        state_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        np.testing.assert_allclose(state, state_ref, atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.125, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 1.0e5]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 1.0e5]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.25, atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.75, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b diabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.75, atol=1e-7)
-
-        state = operations.electronic_state("-b diabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.25, atol=1e-7)
-
-        # Then in diabatic basis.
-        param_rpmd["SurfaceHoppingElectrons"]["basis"] = "diabatic"
-        param_rpmd["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        # This is done just to reset all pes quantities to current position value.
-        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]]
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.125, atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        state_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        np.testing.assert_allclose(state, state_ref, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        state_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        np.testing.assert_allclose(state, state_ref, atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.125, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 1.0e5]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 1.0e5]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.5, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.25, atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.75, atol=1e-7)
-
-        param_rpmd["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_rpmd = nuclei.Nuclei(1, param_rpmd, 0.0)
-        log_sh_rpmd.positions = np.array([[-1.0e5, 0.0]])
-        log_sh_rpmd.electrons.energy(log_sh_rpmd.positions)
-
-        state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.75, atol=1e-7)
-
-        state = operations.electronic_state("-b adiabatic -p 1".split(),
-                                            log_sh_rpmd)
-        np.testing.assert_allclose(state, 0.25, atol=1e-7)
-
-        # TODO: add more tests with 3 state test using morse diabatic after
-        #       correcting phase factor issue in 3 state basis transformation.
+        np.testing.assert_allclose(state, [0.], atol=1e-7)
 
         return
 

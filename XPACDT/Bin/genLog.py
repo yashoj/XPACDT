@@ -74,15 +74,8 @@ def start():
     # Get input file
     system = pickle.load(open(args.PickleFile, 'rb'))
 
-    # Checking if the first system in log has surface hopping electrons to
-    # obtain state information.
-    if (args.state is True):
-        assert (system.log[0].electrons.name == 'SurfaceHoppingElectrons'),\
-            ("Current state information is only available for surface"
-             " hopping electrons.")
-
-    # Currently just position and momenta output.
-    # Add more functions for each value
+    # Currently just position, momenta and state output.
+    # Add more functions for each value.
     outfiles = setup_outfiles(args)
 
     # iterate over log

@@ -285,11 +285,7 @@ def _projection(options, values):
 
 def electronic_state(arguments, log_nuclei):
     """Performs operations related to electronic state. If no options are
-    given, then it will raise an error. For now only works with surface hopping
-    electrons.
-    TODO: Adapt this to NRPMD as well.
-
-    TODO: Write down equations for populations for different rpsh_type for RPSH.
+    given, then it will raise an error.
 
     Valid options are as follows:
 
@@ -343,59 +339,11 @@ def electronic_state(arguments, log_nuclei):
         return None
 
     # Where to check for these asserts?
-    assert (log_nuclei.electrons.name == 'SurfaceHoppingElectrons'),\
-           ("Electronic state information is only available for surface"
-            " hopping electrons.")
     assert (opts.proj < log_nuclei.electrons.pes.n_states),\
         ("State to be projected onto is greater than the number of states. "
          "Note: State count starts from 0. Given state to project is: "
          + str(opts.proj))
 
-    n_states = log_nuclei.electrons.pes.n_states
-    current_state = log_nuclei.electrons.current_state
-
-    # If requested basis is the same as electronic basis, simply check if it is
-    # in the requested state or not.
-    if (log_nuclei.electrons.basis == opts.basis):
-        if opts.proj == current_state:
-            current_value = 1.0
-        else:
-            current_value = 0.0
-    # If not, then get value by performing change of basis.
-    else:
-        if (n_states == 2):
-            import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
-        elif (n_states > 2):
-            import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
-        else:
-            raise ValueError("Number of states should be 2 or more to use "
-                             "diabatic to adiabatic transformation. Here "
-                             "number of states is: " + str(n_states))
-
-        # Get diabatic to adiabatic transformation matrix U for centroid or all
-        # beads based on rpsh type.
-        if (log_nuclei.electrons.rpsh_type == 'centroid'):
-            U = dia2ad.get_transformation_matrix(log_nuclei.electrons.pes._diabatic_energy_centroid)
-            if (log_nuclei.electrons.basis == 'diabatic' and opts.basis == 'adiabatic'):
-                current_value = (np.abs(U[opts.proj, current_state]))**2
-            else:
-                # For reverse case, need U_daggar so complex conjugate transposed
-                # element is needed, however conjugate not done due to absolute value.
-                current_value = (np.abs(U[current_state, opts.proj]))**2
-        else:
-            # Getting shape (n_beads, n_states, n_states)
-            U = dia2ad.get_transformation_matrix(log_nuclei.electrons.pes._diabatic_energy).transpose(2, 0, 1)
-            if (log_nuclei.electrons.rpsh_type == 'bead'):
-                if (log_nuclei.electrons.basis == 'diabatic' and opts.basis == 'adiabatic'):
-                    current_value = (np.abs(np.mean([u_a[opts.proj, current_state] for u_a in U])))**2
-                else:
-                    current_value = (np.abs(np.mean([np.conj(u_a[current_state, opts.proj]) for u_a in U])))**2
-
-            elif (log_nuclei.electrons.rpsh_type == 'density_matrix'):
-                if (log_nuclei.electrons.basis == 'diabatic' and opts.basis == 'adiabatic'):
-                    current_value = np.mean([(np.abs(u_a[opts.proj, current_state]))**2 for u_a in U])
-                else:
-                    # Again complex conjugate is not done due to absolute value.
-                    current_value = np.mean([(np.abs(u_a[current_state, opts.proj]))**2 for u_a in U])
+    current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
 
     return np.array(current_value)

@@ -255,6 +255,69 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         else:
             return self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid)
 
+    def get_population(self, proj, basis_requested):
+        """ Get electronic population for a certain adiabatic or diabatic state
+        regardless of whichever basis the electron uses.
+
+        TODO: Write down equations for populations for different rpsh_type for RPSH.
+
+        Parameters
+        ----------
+        proj : int
+            State to be projected onto in the basis given by `basis_requested`.
+        basis_requested : str
+            Electronic basis to be used. Can be "adiabatic" or "diabatic".
+
+        Returns
+        -------
+        population : float
+            Electronic population value.
+        """
+        # If requested basis is the same as electronic basis, simply check if
+        # it is in the requested state or not.
+        if (self.basis == basis_requested):
+            if proj == self.current_state:
+                 population = 1.0
+            else:
+                population = 0.0
+        # If not, then get value by performing change of basis.
+        else:
+            if (self.pes.n_states == 2):
+                import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
+            elif (self.pes.n_states > 2):
+                import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
+            else:
+                raise ValueError("Number of states should be 2 or more to use "
+                                 "diabatic to adiabatic transformation. Here "
+                                 "number of states is: " + str(self.pes.n_states))
+
+            # Get diabatic to adiabatic transformation matrix U for centroid
+            # or all beads based on rpsh type.
+            if (self.rpsh_type == 'centroid'):
+                U = dia2ad.get_transformation_matrix(self.pes._diabatic_energy_centroid)
+                if (self.basis == 'diabatic' and basis_requested == 'adiabatic'):
+                    population = (np.abs(U[proj, self.current_state]))**2
+                else:
+                    # For reverse case, need U_daggar so complex conjugate transposed
+                    # element is needed, however conjugate not done due to absolute value.
+                    population = (np.abs(U[self.current_state, proj]))**2
+            else:
+                # Getting shape (n_beads, n_states, n_states)
+                U = dia2ad.get_transformation_matrix(self.pes._diabatic_energy).transpose(2, 0, 1)
+                if (self.rpsh_type == 'bead'):
+                    if (self.basis == 'diabatic' and basis_requested == 'adiabatic'):
+                        population = (np.abs(np.mean([u_a[proj, self.current_state] for u_a in U])))**2
+                    else:
+                        population = (np.abs(np.mean([np.conj(u_a[self.current_state, proj]) for u_a in U])))**2
+
+                elif (self.rpsh_type == 'density_matrix'):
+                    if (self.basis == 'diabatic' and basis_requested == 'adiabatic'):
+                        population = np.mean([(np.abs(u_a[proj, self.current_state]))**2 for u_a in U])
+                    else:
+                        # Again complex conjugate is not done due to absolute value.
+                        population = np.mean([(np.abs(u_a[self.current_state, proj]))**2 for u_a in U]) 
+        return population
+
     def _get_velocity(self, P):
         """Obtain nuclear velocities of the system.
 
@@ -821,6 +884,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         prob[prob < 0] = 0.
         prob[self.current_state] = 0.
 
+        # TOD0: add adaptive time step here which halves nuclear time step.
         assert (np.sum(prob) <= 1.), \
             ("Total hopping probability is more than 1. Try again with smaller nuclear timestep.")
 

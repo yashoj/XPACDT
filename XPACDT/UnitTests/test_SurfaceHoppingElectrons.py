@@ -1358,10 +1358,71 @@ class SurfaceHoppingTest(unittest.TestCase):
 
     def test_step(self):
         # TODO: this seems more like a integrated test, what exactly should be tested here?
-
         # Test all ode solvers give same result in all pictures after long propagation
         # Test norm conservation after long propagation.
+        
+#        # Schroedinger picture
+#        R = np.array([[-1.0e5]])
+#        P = np.array([[10.0]])
+#        param = self.param_classical
+#        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
+#        param["SurfaceHoppingElectrons"]["n_steps"] = 100
+#        #param["TullyModel"]["model_type"] = "model_A"
+#        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+#                                                            param.masses, param.coordinates,
+#                                                            param.momenta)
+#        
+#        with self.assertRaises(AssertionError):
+#            sh_electrons_classical.step(R, P, 1.)
+#
+#        c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
+#        c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
+#        H_ref = np.array([[[-0.0006+0.j, 0.+0.j], [0.+0.j, 0.0006+0.j]]])
+#        sh_electrons_classical._old_H_e = np.zeros_like(H_ref)
+#        sh_electrons_classical._c_coeff = c.copy()
+#
+#        
+#        sh_electrons_classical.step(R, P, 1., **{'step_index': 'after_nuclei'})
+##        np.testing.assert_allclose(
+##                sh_electrons_classical._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+##                c_ref, rtol=1e-4)
+#
+#        # No change
+#        sh_electrons_classical.step(R, P, 1., **{'step_index': 'before_nuclei'})
+#
+#        # Test for change
+#        sh_electrons_classical.step(R, P, 1., **{'step_index': 'after_nuclei'})
+#
+#        # 2 c-coefficients
+#        param = self.param_rpmd
+#        param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
+#        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
+#        param["SurfaceHoppingElectrons"]["n_steps"] = 100
+#        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+#                                                       param.masses, param.coordinates,
+#                                                       param.momenta)
+#
+#        R = np.array([[-1.0e5, -1.0e5]])
+#        P = np.array([[10.0, 10.0]])
+#        c = np.array([[1.+0.j, 0.+0.j],
+#                      [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
+#        H_ref = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]],
+#                      [[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
+#        sh_electrons_rpmd._old_H_e = np.zeros_like(H_ref)
+#        sh_electrons_rpmd._c_coeff = c.copy()
+#        c_ref = [[0.-1.j, 0.+0.j],
+#                 [(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
+#        
+#        sh_electrons_rpmd.step(R, P, 1., **{'step_index': 'after_nuclei'})
+        
+#        np.testing.assert_allclose(
+#                sh_electrons_rpmd._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+#                c_ref, rtol=1e-4)
+        
+        
+        
         raise NotImplementedError("Please implement a test here!!")
+        
         return
 
     # Simple exact solutions for the matrix ODE can be obtained for either
@@ -2174,7 +2235,341 @@ class SurfaceHoppingTest(unittest.TestCase):
         R = np.array([[0.0]])
         P = np.array([[10.0]])
         
+        raise NotImplementedError("Please implement a test here!!")
         
+        return
+
+    def test_get_population(self):
+        ### 1 bead case
+        param = self.param_classical
+
+        # Population in the same basis
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertEqual(pop, 0.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertEqual(pop, 1.0)
+
+        # Population in different basis using Tully model A;
+        # should give the same result for all rpsh types for 1 bead case.
+        param["TullyModel"]["model_type"] = "model_A"
+
+        # First in adiabatic basis.
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        # This is done just to reset all pes quantities to required position value.
+        # The transformation matrix here is U = [[0, -1], [1, 0]]
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 1.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.0)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 1.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.0)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 1.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.0)
+
+        # Then in diabatic basis.
+        param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        # This is done just to reset all pes quantities to required position value.
+        # The transformation matrix here is U = [[0, -1], [1, 0]]
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 1.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.0)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 1.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.0)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 1.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        pop = sh_electrons_classical.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 1.0)
+        pop = sh_electrons_classical.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.0)
+
+        ### 2 bead case
+        param = self.param_rpmd
+
+        # Population in the same basis
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        self.assertEqual(pop, 1.0)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertEqual(pop, 0.0)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        self.assertEqual(pop, 0.0)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertEqual(pop, 1.0)
+        
+        # Population in different basis using Tully model A;
+        # should give different results for different rpsh types in this case.
+        param["TullyModel"]["model_type"] = "model_A"
+
+        # First in adiabatic basis.
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        # This is done just to reset all pes quantities to required position value.
+        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]]
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.125)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
+        self.assertAlmostEqual(pop, pop_ref)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5,  0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
+        self.assertAlmostEqual(pop, pop_ref)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.125)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 1.0e5]]))
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.5)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.5)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 1.0e5]]))
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.5)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.5)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.25)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.75)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "diabatic")
+        self.assertAlmostEqual(pop, 0.75)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.25)
+
+        # Then in diabatic basis.
+        param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        # This is done just to reset all pes quantities to required position value.
+        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]]
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.125)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
+        self.assertAlmostEqual(pop, pop_ref)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5,  0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
+        self.assertAlmostEqual(pop, pop_ref)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.125)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 1.0e5]]))
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.5)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.5)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 1.0e5]]))
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.5)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.5)
+
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = "density_matrix"
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.25)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.75)
+
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param, param.n_beads,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+        sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
+        pop = sh_electrons_rpmd.get_population(0, "adiabatic")
+        self.assertAlmostEqual(pop, 0.75)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.25)
+
+        # TODO: add more tests with 3 state test using morse diabatic after
+        #       correcting phase factor issue in 3 state basis transformation.
         return
 
 

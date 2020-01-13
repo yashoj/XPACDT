@@ -98,6 +98,13 @@ class Electrons:
         assert (b in ['adiabatic', 'diabatic']),\
                ("Electronic state basis representation not available.")
         self.__basis = b
+        
+    @property
+    def current_state(self):
+        """Int : Current electronic state of the system. All beads are in same
+        state for now. This needs to be defined by any child class which has
+        this property, if not it throws a NotImplemented Error."""
+        raise NotImplementedError
 
     def energy(self, R, centroid=False):
         """Calculate the electronic energy at the current geometry.
@@ -113,7 +120,7 @@ class Electrons:
 
         Returns
         -------
-        This function throws and NotImplemented Error and needs to be
+        This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
         raise NotImplementedError
@@ -133,7 +140,7 @@ class Electrons:
 
         Returns
         -------
-        This function throws and NotImplemented Error and needs to be
+        This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
         raise NotImplementedError
@@ -151,7 +158,25 @@ class Electrons:
 
         Returns
         -------
-        This function throws and NotImplemented Error and needs to be
+        This function throws a NotImplemented Error and needs to be
+        implemented by any child class.
+        """
+        raise NotImplementedError
+
+    def get_population(self, proj, basis_requested):
+        """ Get electronic population for a certain adiabatic or diabatic state
+        regardless of whichever basis the electron uses.
+
+        Parameters
+        ----------
+        proj : int
+            State to be projected onto in the basis given by `basis_requested`.
+        basis_requested : str
+            Electronic basis to be used. Can be "adiabatic" or "diabatic".
+
+        Returns
+        -------
+        This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
         raise NotImplementedError

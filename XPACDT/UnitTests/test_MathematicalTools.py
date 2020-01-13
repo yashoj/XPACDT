@@ -30,42 +30,36 @@
 #  **************************************************************************
 
 import numpy as np
-import random
-import scipy.stats
 import unittest
 
-import XPACDT.System.System as xSystem
-import XPACDT.Sampling.ThermostattedSampling as thermo
-import XPACDT.Input.Inputfile as infile
-import XPACDT.Tools.Units as units
+import XPACDT.Tools.MathematicalTools as mtools
 
 
-class ThermostattedSamplingTest(unittest.TestCase):
+class MathematicalToolsTest(unittest.TestCase):
 
-    def setUp(self):
-        seed = 0
-        random.seed(seed)
-        np.random.seed(seed)
+    def test_linear_interpolation_1d(self):
+        # For floats
+        self.assertAlmostEqual(mtools.linear_interpolation_1d(0.5, 0., 2.4), 1.2)
+        self.assertAlmostEqual(mtools.linear_interpolation_1d(0.25, 0., 2.4), 0.6)
 
-        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_Thermo.in")
-        self.system = xSystem.System(self.parameters)
+        # For 1d array
+        y1 = np.array([0., 1.])
+        y2 = np.array([2.4, 3.4])
+        np.testing.assert_allclose(mtools.linear_interpolation_1d(0.5, y1, y2),
+                                   np.array([1.2, 2.2]), rtol=1e-7)
+        np.testing.assert_allclose(mtools.linear_interpolation_1d(0.25, y1, y2),
+                                   np.array([0.6, 1.6]), rtol=1e-7)
 
-    def test_do_Thermostatted_sampling(self):
-        samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
-                                                   int(self.parameters.get("sampling").get('samples')))
-        energies = [s.nuclei.energy for s in samples]
-        statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
-        mean_min, mean_max = statistics[0][1]
-        dev_min, dev_max = statistics[2][1]
-        mean_reference = 1.0 / (315777*units.boltzmann)
-
-        self.assertTrue(mean_min < mean_reference < mean_max)
-        self.assertTrue(dev_min < mean_reference < dev_max)
-        self.assertEqual(len(samples), 1000)
-        for s in samples:
-            self.assertEqual(s.nuclei.n_dof, 1)
+        # For 2d array
+        y1 = np.array([[0., 1.], [-1., -3.4]])
+        y2 = np.array([[2.4, 3.4], [-3.4, -1.0]])
+        np.testing.assert_allclose(mtools.linear_interpolation_1d(0.5, y1, y2),
+                                   np.array([[1.2, 2.2], [-2.2, -2.2]]), rtol=1e-7)
+        np.testing.assert_allclose(mtools.linear_interpolation_1d(0.25, y1, y2),
+                                   np.array([[0.6, 1.6], [-1.6, -2.8]]), rtol=1e-7)
+        return
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(ThermostattedSamplingTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(MathematicalToolsTest)
     unittest.TextTestRunner().run(suite)

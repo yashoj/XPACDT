@@ -109,7 +109,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
                 self.__A13 = float(model_params.get('A13'))
                 self.__as13 = float(model_params.get('as13'))
                 self.__r13 = float(model_params.get('r13'))
-    
+
     @property
     def model_type(self):
         """string : Model number to be used."""
@@ -122,13 +122,11 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
         Parameters:
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads.
-        P : (n_dof, n_beads) ndarray of floats, optional
-            The momenta of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads. This is not
-            used in this potential and thus defaults to None.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system in au. The first axis represents the degrees of freedom and
+            the second axis is the beads. `P` is not used in this potential
+            and thus defaults to None.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.
@@ -167,7 +165,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
                 self._diabatic_gradient[1, 2] = self._get_off_diag_grad(
                     R, self.__A23, self.__as23, self.__r23)
                 self._diabatic_gradient[2, 1] = self._diabatic_gradient[1, 2].copy() 
-    
+
             elif (self.model_type == 'model_2') or (self.model_type == 'model_3'):
                 self._diabatic_gradient[0, 2] = self._get_off_diag_grad(
                     R, self.__A13, self.__as13, self.__r13)
@@ -318,7 +316,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
                 V_diabatic[1, 2] = self._get_off_diag_V(
                     R, self.__A23, self.__as23, self.__r23)
                 V_diabatic[2, 1] = V_diabatic[1, 2].copy()
-    
+
             elif (self.model_type == 'model_2') or (self.model_type == 'model_3'):
                 V_diabatic[0, 2] = self._get_off_diag_V(
                     R, self.__A13, self.__as13, self.__r13)

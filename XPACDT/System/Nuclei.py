@@ -66,11 +66,10 @@ class Nuclei(object):
         self.masses = input_parameters.masses
         self.positions = input_parameters.coordinates
         self.momenta = input_parameters.momenta
-
         self.n_beads = input_parameters.n_beads
 
         # Set up electrons
-        self.__init_electrons(input_parameters)
+        self.init_electrons(input_parameters)
 
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
@@ -165,28 +164,53 @@ class Nuclei(object):
 
     @property
     def energy(self):
-        """ float : Total energy of the nuclei including the spring term.
-        i.e. \frac{1}{n}(\sum_i \sum_j (p^2_ij)(2m_j)) + SPINGS + V). TODO:
-        write out properly."""
+        """ float : Total energy of the nuclei of the ring polymer including
+        the spring term in au.
+        i.e. :math:`\\frac{1}{n}(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + SPINGS + V)`.
+        TODO: write out properly."""
         return self.kinetic_energy + self.spring_energy + self.potential_energy
 
     @property
+    def energy_centroid(self):
+        """ float : Total energy of the nuclei of the centroid in au.
+        i.e. :math:`(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + V)`.
+        TODO: write out properly."""
+        return self.kinetic_energy_centroid + self.potential_energy_centroid
+
+    @property
     def kinetic_energy(self):
-        """ float TODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return 0.5*np.sum(self.momenta * self.momenta)
+        """ float : Kinetic energy of the ring polymer in au.
+        i.e. :math:`(\\sum_\\alpha \\sum_A (p^2_{A}^{(\\alpha))})(2m_A)))`."""
+        return (0.5 * np.sum(np.sum((self.momenta * self.momenta), axis=1)
+                             / self.masses))
 
     @property
     def spring_energy(self):
-        """ floatTODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return 0.0
+        """ float : Energy due to spring terms in the ring polymer in au.
+        TODO : write equation properly"""
+        if np.all([i == 1 for i in self.n_beads]):
+            return 0.0
+        else:
+            # Should beta be a property of nuclei instead of propagator?
+            prefactor = 0.5 * (float(max(self.n_beads)) / self.propagator.beta)**2
+            return (prefactor * np.sum(self.masses
+                                       * np.sum((self.positions
+                                                 - np.roll(self.positions, -1, axis=1))**2, axis=1)))
 
     @property
     def potential_energy(self):
-        """ floatTODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return self.electrons.energy(self.positions)
+        """ float : Potential energy of the ring polymer in au."""
+        return np.sum(self.electrons.energy(self.positions))
+
+    @property
+    def kinetic_energy_centroid(self):
+        """ float : Kinetic energy of the centroid in au."""
+        return (0.5 * np.dot(self.p_centroid, (self.p_centroid / self.masses)))
+
+    @property
+    def potential_energy_centroid(self):
+        """ float : Potential energy of the centroid in au."""
+        return self.electrons.energy(self.positions, centroid=True)
 
     def __eq__(self, other):
         """Test if an object is equal to the current nuclei object. A nuclei
@@ -212,7 +236,7 @@ class Nuclei(object):
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
-    def __init_electrons(self, parameters):
+    def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system.
 
         Parameters
@@ -227,8 +251,10 @@ class Nuclei(object):
         if (electronic_method != "AdiabaticElectrons"):
             assert(electronic_method in parameters), \
                   ("No input parameters for chosen electronic method.")
+
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
-                                   electronic_method)(parameters, self.n_beads)
+                                   electronic_method)(parameters, self.n_beads,
+                                                      self.masses, self.positions, self.momenta)
 
     def getCOM(self, dofs, quantity='x'):
         """ Get the center of mass position, momentum or velocity for a list
@@ -341,12 +367,28 @@ class Nuclei(object):
         time_propagate : float
             The time to advance the nuclei and electrons in au.
         """
+        # 1e-8 is added because of floating point representation issue needed
+        # for proper floor division or modulo operation. This value is chosen
+        # since it is greater than machine error and less than typical
+        # propagation timesteps.
+        time_plus = time_propagate + 1e-8
+        timestep = self.propagator.timestep
+        n_steps = int(time_plus // timestep)
 
-        self.electrons.step(time_propagate, **{'first': True})
-        self.positions, self.momenta = \
-            self.__propagator.propagate(self.positions, self.momenta,
-                                        time_propagate)
-        self.electrons.step(time_propagate, **{'last': True})
+        # This is needed since nuclear propagator has this fixed timestep.
+        # 'time_propagate' can be output time in propagation or sampling time
+        # in thermostated sampling.
+        assert(np.isclose((time_plus % timestep), 0.)), \
+              ("Propagation time is not multiple of nuclear timestep.")
+
+        for i in range(n_steps):
+            self.electrons.step(self.positions, self.momenta, timestep,
+                                **{'step_index': 'before_nuclei'})
+            self.positions, self.momenta = \
+                self.__propagator.propagate(self.positions, self.momenta,
+                                            timestep)
+            self.electrons.step(self.positions, self.momenta, timestep,
+                                **{'step_index': 'after_nuclei'})
 
         self.time += time_propagate
 

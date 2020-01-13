@@ -8,7 +8,9 @@ $system                     # general parameters
 # Required parameters
 dof = 4                     # integer, required: the number of degrees of freedom
 job = sample	                # (sample, propagate, analyze, plot), required: The job type.
-Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier), required: The interface to the potential to be used.
+electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: AdiabaticElectrons (default),
+                                     #      SurfaceHoppingElectrons, NRPMDElectrons)
+Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier, Morse1D, MorseDiabatic, Dissociation2states, TullyModel), required: The interface to the potential to be used.
 folder = test               # string, required: Base folder for the trajectories.
 
 # Optional parameters
@@ -26,7 +28,19 @@ $end
 
 $SurfaceHoppingElectrons  # must match the electrons specified; specific to each electronic method
 
-basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic)
+basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic; default: adiabatic)
+initial_state = 0         # Initial state of the system (Counting starts from 0)
+n_steps = 100             # Number of electronic steps to be performed for each nuclear steps (default: 1)
+
+rpsh_type = bead          # Type of ring polymer surface hopping (RPSH) 
+                          # (possible: bead, centroid, density_matrix; default: bead)
+rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve 
+                          # bead or centroid energy (possible: bead, centroid; default: bead)
+rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
+
+evolution_picture = schroedinger  # Representation/picture for quantum evolution (possible: schroedinger (default), interaction)
+ode_solver = runga_kutta  # ODE solver to be used for propagation (possible: runga_kutta (default), scipy,
+                          #     unitary (this needs 'evolution_picture' = schroedinger))
 $end
 
 ##############################################################################
@@ -162,8 +176,8 @@ samples = 1000          # number of samples to be collected
 modes = 2 3 4           # modes to be sampled (possible: 'linear', 'nonlinear', list of integers, empty); option for 'Wigner', 'Quasiclassical'
 quantum_numbers = 0 0 2 # the quantum number used in 'Quasiclassical' sampling for each mode
 temperature = 300       # in Kelvin; option for 'Wigner', if given and thermostatt is used, both temperatures have to match
-time = 10 fs            # time between samples in fs or au; required option for 'Thermostatted'
-
+time = 10 fs            # time between samples in fs or au; required option for 'Thermostatted';
+                        # needs to be multiple of 'timestep' in 'nuclei_propagator'
 $end
 
 ##############################################################################
@@ -179,11 +193,12 @@ $end
 
 $propagation	    # propagation input
 
-time_end = 1.0 au # end time for propagation
+time_end = 1.0 au    # end time for propagation
 
 # optional:
-time_start = 1.0 au # start time set for the system
-time_output = 1.0 # time step used for the full system and logging; if not given, the timestep of the nuclei is used
+time_start = 1.0 au  # start time set for the system
+time_output = 1.0 au # time step used for the full system and logging; if not given, the timestep of the nuclei is used;
+                     # needs to be multiple of 'timestep' in 'nuclei_propagator'
 $end
 
 ##############################################################################
@@ -249,8 +264,9 @@ op0 = +pos                      # t=0 operation for correlation functions; see h
 filename = blah                 # Name for output file
 2op0 = +pos                     # t=0 operation for 2d histogram
 2op = +pos                      # second operation for 2d histogram
-step = 1 2 5                    # List of time steps (indices, not actual times) to be used for the analysis
-
+step = index 1 2 3              # Time step indices to be used. Optional: if not given, all steps will be used.
+                                # Can also be "step = last" in which case just the index of the last time step 
+                                # from each trajectory is used.
 $end
 
 ### more comments!!

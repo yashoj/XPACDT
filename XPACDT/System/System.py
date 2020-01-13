@@ -51,8 +51,6 @@ class System(object):
 
         self.__parameters = input_parameters
 
-        assert('Interface' in self.parameters.get("system")), "Interface " \
-            "not specified!"
         assert('dof' in self.parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 
@@ -100,7 +98,6 @@ class System(object):
         time_propagate : float
             Time to advance the system in au.
         """
-
         self.__nuclei.propagate(time_propagate)
         self.do_log()
 
@@ -113,7 +110,7 @@ class System(object):
         time : float, optional, default None
             System time to be set, if given.
         """
-
+        # TODO: after updating new parameters, initialize e- and propagator for 1st log
         self.__nuclei = copy.deepcopy(self.__log[0])
         if time is not None:
             self.__nuclei.time = time

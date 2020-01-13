@@ -62,6 +62,9 @@ def propagate(system, input_parameters):
     if 'continue' not in sys_parameters:
         # set initial time and reset log
         system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
+        # Setup electron
+        system.nuclei.init_electrons(input_parameters)
+        system.do_log(True)
 
     # Set desired propagator
     system.nuclei.attach_nuclei_propagator(input_parameters)

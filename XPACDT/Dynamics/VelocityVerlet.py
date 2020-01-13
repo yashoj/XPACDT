@@ -54,7 +54,7 @@ class VelocityVerlet(object):
         Representation of the electrons that gives the gradients.
     mass : (n_dof) ndarray of floats
         Masses of the system in au.
-    nbeads : (n_dof) list of int
+    n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
 
     Other Parameters
@@ -89,7 +89,9 @@ class VelocityVerlet(object):
         if 'beta' in kwargs:
             self.beta = float(kwargs.get('beta'))
         else:
-            self.__beta = -1.0
+            # In the case when RPMD is not used (i.e. n_beads=1), 'beta' should
+            # not be used anywhere, so setting it to NaN.
+            self.__beta = np.nan
         rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
 
         self.__thermostat = None
@@ -103,7 +105,9 @@ class VelocityVerlet(object):
 
     @property
     def beta(self):
-        """ float : Inverse temperature for ring polymer springs in a.u."""
+        """ float or np.nan: Inverse temperature for ring polymer springs in
+        a.u. It is NaN if not given in the case of 1 bead for each degree of
+        freedom."""
         return self.__beta
 
     @beta.setter
@@ -184,29 +188,26 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
         time_propagation : float
             The amount of time to advance in au.
 
         Returns
         -------
-        Rn : (n_dof, n_beads) ndarray of floats
-             The positions of all beads after advancing in time. The first
-             axis is the degrees of freedom and the second axis the beads.
-        Pn : (n_dof, n_beads) ndarray of floats
-             The momenta of all beads after advancing in time. The first axis
-             is the degrees of freedom and the second axis the beads.
+        Rn, Pn : (n_dof, n_beads) ndarray of floats
+             The positions `Rn` and momenta `Pn` of all beads after advancing
+             in time. The first axis is the degrees of freedom and the second
+             axis is beads.
         """
         # TODO: possibly step size control here.
         # TODO: possibly multiple-timestepping here
 
         Rt, Pt = R.copy(), P.copy()
-        # TODO: handle time not a multiple of timestep? What's the best way?
+        # TODO: handle time not a multiple of timestep similar to 'propagate'
+        # in nuclei; this is only needed if this module has different timestep
+        # than nuclei so for multiple steps or for adaptive time step control.
         n_steps = int((time_propagation + 1e-8) // self.timestep)
         for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)
@@ -222,21 +223,16 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
 
         Returns
         -------
-        rt : (n_dof, n_beads) ndarray of floats
-             The positions of all beads after advancing in time. The first
-             axis is the degrees of freedom and the second axis the beads.
-        pt : (n_dof, n_beads) ndarray of floats
-             The momenta of all beads after advancing in time. The first axis
-             is the degrees of freedom and the second axis the beads.
+        rt, pt : (n_dof, n_beads) ndarray of floats
+             The positions `rt` and momenta `pt` of all beads after advancing
+             in time. The first axis is the degrees of freedom and the second
+             axis is beads.
         """
         pt2 = self._velocity_step(P, R)
         if self.thermostat is not None:
@@ -262,12 +258,9 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
 
         Returns
         -------
@@ -284,12 +277,9 @@ class VelocityVerlet(object):
 
         Parameters
         ----------
-        P : (n_dof, n_beads) ndarray of floats
-            The momenta of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads. The first axis is the degrees of
-            freedom and the second axis the beads.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The positions `R` and momenta `P` of all beads. The first axis is
+            the degrees of freedom and the second axis the beads.
 
         Returns
         -------
@@ -343,7 +333,7 @@ class VelocityVerlet(object):
 
         Returns
         -------
-        Nothing, but self.__propagation matrix is initialized.
+        Nothing, but `self.__propagation matrix` is initialized.
         -------
         """
         # TODO: Make this compatible with different n_beads for each dof

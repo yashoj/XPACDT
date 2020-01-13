@@ -31,41 +31,32 @@
 
 import numpy as np
 import random
-import scipy.stats
 import unittest
 
-import XPACDT.System.System as xSystem
-import XPACDT.Sampling.ThermostattedSampling as thermo
+import XPACDT.System.NRPMDElectrons as nrpmd
 import XPACDT.Input.Inputfile as infile
-import XPACDT.Tools.Units as units
 
 
-class ThermostattedSamplingTest(unittest.TestCase):
+class NRPMDElectronsTest(unittest.TestCase):
 
     def setUp(self):
         seed = 0
         random.seed(seed)
         np.random.seed(seed)
 
-        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_Thermo.in")
-        self.system = xSystem.System(self.parameters)
+        self.parameters = infile.Inputfile("FilesForTesting/SystemTest/input_NRPMD_classical.in")
+        #self.system = xSystem.System(self.parameters0)
+        
+    def test_step(self):
+        return
 
-    def test_do_Thermostatted_sampling(self):
-        samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
-                                                   int(self.parameters.get("sampling").get('samples')))
-        energies = [s.nuclei.energy for s in samples]
-        statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
-        mean_min, mean_max = statistics[0][1]
-        dev_min, dev_max = statistics[2][1]
-        mean_reference = 1.0 / (315777*units.boltzmann)
+    def test_energy(self):
+        return
 
-        self.assertTrue(mean_min < mean_reference < mean_max)
-        self.assertTrue(dev_min < mean_reference < dev_max)
-        self.assertEqual(len(samples), 1000)
-        for s in samples:
-            self.assertEqual(s.nuclei.n_dof, 1)
+    def test_gradient(self):
+        return
 
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(ThermostattedSamplingTest)
+    suite = unittest.TestLoader().loadTestsFromTestCase(NRPMDElectronsTest)
     unittest.TextTestRunner().run(suite)

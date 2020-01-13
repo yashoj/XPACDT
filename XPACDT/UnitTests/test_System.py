@@ -90,8 +90,10 @@ class SystemTest(unittest.TestCase):
         return
 
     def test_step(self):
+        # Step equal to single nuclear timestep
+
         # Set up dummy propagator
-        self.system.nuclei.propagator = DummyProp()
+        self.system.nuclei.propagator = DummyProp(1.0)
         self.system.step(1.0)
 
         # check correct advance
@@ -109,15 +111,42 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(self.system.log[1].time, 1.0)
         self.assertEqual(self.system.log[1], self.nuclei_ref)
 
+        ###############
+        # Step multiple of 10 nuclear timesteps
+
+        # reset system
+        self.system = xSystem.System(self.parameters)
+        self.system.nuclei.propagator = DummyProp(0.1)
+        self.system.step(1.0)
+
+        # check correct advance
+        self.nuclei_ref = copy.deepcopy(self.nuclei)
+        for i in range(10):
+            self.nuclei_ref.positions *= 2.0
+            self.nuclei_ref.momenta *= 2.0
+        self.assertAlmostEqual(self.system.nuclei.time, 1.0)
+        self.assertEqual(len(self.system.log), 2)
+        self.assertEqual(self.system.nuclei, self.nuclei_ref)
+
+        ###############
+        # Step not multiple of nuclear timestep; should give error
+
+        # reset system
+        self.system = xSystem.System(self.parameters)
+        self.system.nuclei.propagator = DummyProp(0.3)
+        with self.assertRaises(AssertionError):
+            self.system.step(1.0)
+
         return
 
 
 class DummyProp(object):
-    def __init__(self):
+    def __init__(self, timestep):
+        self.timestep = float(timestep)
         pass
 
     def propagate(self, R, P, time_propagation):
-        return 2.0*R, 2.0*P
+        return (2.0 * R), (2.0 * P)
 
 
 if __name__ == "__main__":

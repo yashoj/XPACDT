@@ -87,8 +87,8 @@ def sample(system, parameters, do_return=False):
             sys.stderr.write("Creation of trajectory folder failed!")
             raise
     else:
-        # todo: add sort
-        trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*')).sort()
+        trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*'))
+        trj_folder_list.sort()
 
         if 'overwrite' in system_parameters:
             if trj_folder_list is not None:

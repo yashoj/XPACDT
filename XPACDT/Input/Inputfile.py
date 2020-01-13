@@ -95,12 +95,16 @@ class Inputfile(collections.MutableMapping):
                 self.beta = float(self.get('rpmd').get('beta'))
             else:
                 self.n_beads = '1'
+                # In the case when RPMD is not used (i.e. n_beads=1),
+                # 'beta' should not be used anywhere, so setting it to NaN.
+                self.__beta = np.nan
 
         if self.__coordinates is not None:
             self.__format_coordinates()
 
         self.commands = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:
+            self.commands[key]['name'] = key
             self.commands[key]['results'] = []
 
     @property
@@ -422,7 +426,7 @@ class Inputfile(collections.MutableMapping):
                     self.__momenta = rp_momenta.copy()
 
             else:
-                self.__coordinates = self.__coordinates.reshape((self.n_dof, -1))
+                self.__coordinates = self.__coordinates.reshape((self.n_dof, max(self.n_beads)))
 
                 try:
                     self.__momenta = self.__momenta.reshape(self.__coordinates.shape)

@@ -143,7 +143,6 @@ class System(object):
         if init:
             self.__log = []
 
-        # self.nuclei.print_size()
         self.__log.append(copy.deepcopy(self.nuclei))
 
         # Use a sprase log by removing the propagator object - TODO: what else?

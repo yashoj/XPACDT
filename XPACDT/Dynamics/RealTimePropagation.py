@@ -53,6 +53,10 @@ def propagate(system, input_parameters):
         XPACDT representation of the given input file.
     """
 
+    if system.nuclei.momenta is None:
+        raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
+                           " file, but required in real time propagation.")
+
     prop_parameters = input_parameters.get('propagation')
     sys_parameters = input_parameters.get('system')
 

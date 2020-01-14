@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -58,10 +59,15 @@ class Inputfile(collections.MutableMapping):
 
     Attributes:
     -----------
-    n_dof : int (optional if specified in input file)
-        Number of degrees of freedom in the system.
-    n_beads : (n_dof) list of int (optional if specified in input file)
-        Number of beads for each degrees of freedom. Default: 1 for each dof
+    commands
+    masses
+    n_dof
+    n_beads
+    beta
+    coordinates
+    positionShift
+    momenta
+    momentumShift
     """
 
     def __init__(self, inputfile):
@@ -85,24 +91,50 @@ class Inputfile(collections.MutableMapping):
         self._parse_file()
 
         if 'system' in self.store:
-            self.n_dof = int(self.get('system').get('dof'))
-            if 'rpmd' in self.store:
-                assert('beads' in self.get("rpmd")), "No number of beads " \
-                       "given for RPMD."
-                assert('beta' in self.get("rpmd")), "No beta " \
-                                                    "given for RPMD."
-                self.n_beads = self.get('rpmd').get('beads')
-                self.beta = float(self.get('rpmd').get('beta'))
+
+            if 'dof' in self.get('system'):
+                try:
+                    self.__n_dof = int(self.get('system').get('dof'))
+                except ValueError as e:
+                    raise type(e)(str(e) + "\nXPACDT: Number of degrees of"
+                                           "freedom cannot be converted to int.")
+                if self.__n_dof < 1:
+                    raise RuntimeError("\nXPACDT: number of degrees of freedom"
+                                       " given is less than 1.")
             else:
-                self.n_beads = '1'
+                raise RuntimeError("\nXPACDT: number of degrees of freedom"
+                                   " not given in the input file.")
+
+            if 'rpmd' in self.store:
+                if 'beads' not in self.get("rpmd"):
+                    raise RuntimeError("\nXPACDT: No number of beads "
+                                       "given for RPMD in the input file.")
+                if 'beta' not in self.get("rpmd"):
+                    raise RuntimeError("\nXPACDT: No beta "
+                                       "given for RPMD in the input file.")
+                self._parse_beads(self.get('rpmd').get('beads'))
+
+                try:
+                    self.__beta = float(self.get('rpmd').get('beta'))
+                    if self.__beta <= 0:
+                        raise RuntimeError("\nXPACDT: Beta has to be greater"
+                                           " than 0.")
+                except ValueError as e:
+                    raise type(e)(str(e) + "\nXPACDT: Beta cannot be"
+                                           " converted to float.")
+            else:
+                self._parse_beads('1')
                 # In the case when RPMD is not used (i.e. n_beads=1),
                 # 'beta' should not be used anywhere, so setting it to NaN.
                 self.__beta = np.nan
+        else:
+            raise KeyError("\nXPACDT: No system parameters are given in the"
+                           " input file.")
 
         if self.__coordinates is not None:
             self.__format_coordinates()
 
-        self.commands = {k: self[k] for k in self.keys() if 'command' in k}
+        self.__commands = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:
             self.commands[key]['name'] = key
             self.commands[key]['results'] = []
@@ -113,31 +145,28 @@ class Inputfile(collections.MutableMapping):
         the analysis."""
         return self.__commands
 
-    @commands.setter
-    def commands(self, d):
-        self.__commands = d
-
     @property
     def masses(self):
         """(n_dof) ndarray of floats: Array containing the masses of each
         degree of freedom in au."""
         return self.__masses
 
-    @masses.setter
-    def masses(self, m):
-        assert (np.all([(i >= 0.0) for i in m])), "Negative mass assigned"
-        self.__masses = m
+    def _parse_masses(self, m):
+        """Set the masses for each degree of freedom.
+
+        Parameters
+        ----------
+        m : (n_dof) ndarray
+            Array containing the masses in au.
+        """
+        if np.any([(i <= 0.0) for i in m]):
+            raise ValueError("\nXPACDT: Masses of 0 or below given in input.")
+        self.__masses = m.copy()
 
     @property
     def n_dof(self):
         """int: Number of degrees of freedom."""
         return self.__n_dof
-
-    @n_dof.setter
-    def n_dof(self, d):
-        assert (d > 0), ("Number of degrees of freedom needs to be "
-                         "greater than zero")
-        self.__n_dof = d
 
     @property
     def n_beads(self):
@@ -145,38 +174,47 @@ class Inputfile(collections.MutableMapping):
         degree of freedom."""
         return self.__n_beads
 
-    @n_beads.setter
-    def n_beads(self, n_string):
+    def _parse_beads(self, n_string):
+        """Set the number of beads from a string given in the input file and
+        check for consistency.
+
+        Parameters
+        ----------
+        n_string : string
+            The string defining the number of beads.
+        """
         try:
             n = [int(i) for i in n_string.split()]
         except ValueError:
             raise ValueError("Number of beads not convertable to int.")
 
-        assert (len(n) == 1 or len(n) == self.n_dof), "Wrong number of " \
-                                                      "beads given."
-        assert (np.all([(i > 0) for i in n])), ("Number of beads needs to be"
-                                                " more than zero")
-        assert (np.all([(i == 1 or i % 2 == 0) for i in n])),\
-               ("Number of beads not 1 or even")
+        if len(n) != 1 or len(n) != self.n_dof:
+            raise ValueError("Wrong length for number of beads given. Either"
+                             " a single integer or one integer per dof"
+                             " should be given.")
+
+        if np.any([(i < 1) for i in n]):
+            raise ValueError("Number of beads needs to be more than zero.")
+
+        if np.any([(i != 1 or (i % 2 != 0)) for i in n]):
+            raise ValueError("Number of beads not 1 or even.")
+
         # Keep number of beads same for now
-        # TODO: Adjust structure to handle different number of beads
-        assert (np.all([(i == n[0]) for i in n])), \
-               ("Number of beads not same for all degree of freedom")
+        if np.any([(i != n[0]) for i in n]):
+            raise ValueError("Number of beads needs to be the same for all"
+                             " degrees of freedom.")
 
         if len(n) == 1:
             self.__n_beads = n * self.n_dof
         else:
             self.__n_beads = n
 
+        return
+
     @property
     def beta(self):
         """ float : Inverse temperature for ring polymer springs in a.u."""
         return self.__beta
-
-    @beta.setter
-    def beta(self, b):
-        assert (b is None or b > 0), "Beta 0 or less."
-        self.__beta = float(b)
 
     @property
     def coordinates(self):
@@ -220,7 +258,6 @@ class Inputfile(collections.MutableMapping):
             self.__format_coordinates()
         return self.__momenta
 
-# TODO: Do we need to document these basic functions of the interface?
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
 
@@ -239,6 +276,8 @@ class Inputfile(collections.MutableMapping):
     def __keytransform__(self, key):
         return key
 
+# TODO: we stopped here
+# TODO: we changed some requirements which might fail tests -> check
     def _parse_file(self):
         """
         Parses the text of an input file and saves it as a dictonary of
@@ -324,7 +363,7 @@ class Inputfile(collections.MutableMapping):
                                    "Please check the error for the line "
                                    "number with the first inconsistency.")
 
-        self.masses = mc[:, 0].copy()
+        self._parse_masses(mc[:, 0])
         self.__coordinates = mc[:, 1:].copy()
 
     def _parse_mass_value(self, values):
@@ -355,7 +394,7 @@ class Inputfile(collections.MutableMapping):
                                    "Please check the error for the line "
                                    "number with the first inconsistency.")
 
-        self.masses = mc[:, 0].copy()
+        self._parse_masses(mc[:, 0])
         self.__coordinates = mc[:, 1:].copy()
 
     def _parse_values(self, values):
@@ -455,9 +494,9 @@ class Inputfile(collections.MutableMapping):
             if (self.__coordinates.shape[0] == int(np.sum(self.n_beads) / 3)):
                 # reordering; only works for same number of beads for now!
                 n_max = max(self.n_beads)
-                self.masses = self.masses[::n_max]
-                self.masses = np.array([self.masses[i//3]
-                                        for i in range(self.n_dof)])
+                self._parse_masses(self.masses[::n_max])
+                self._parse_masses(np.array([self.masses[i//3]
+                                            for i in range(self.n_dof)]))
                 self.__coordinates = np.array([self.__coordinates[i::n_max]
                                                for i in range(n_max)])\
                     .flatten().reshape((self.n_dof, -1), order='F')
@@ -493,7 +532,7 @@ class Inputfile(collections.MutableMapping):
                             self.n_beads[i], masses_dof[i], self.beta,
                             self.__momenta[i // 3, i % 3])
 
-                self.masses = masses_dof.copy()
+                self._parse_masses(masses_dof)
                 self.__coordinates = rp_coord.copy()
                 if self.__momenta is not None:
                     self.__momenta = rp_momenta.copy()

@@ -278,6 +278,14 @@ class InputfileTest(unittest.TestCase):
         # Implicity tested in parse modules - not clear how to test separately.
         return
 
+    def test_parse_beads(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_parse_masses(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(InputfileTest)

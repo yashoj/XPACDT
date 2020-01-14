@@ -35,6 +35,7 @@ import copy
 import XPACDT.System.Nuclei as nuclei
 import XPACDT.Tools.Units as units
 
+
 class System(object):
     """This class is the main class representing the system state. It stores
     the nuclei and takes care of logging.
@@ -53,7 +54,7 @@ class System(object):
         assert('dof' in self.parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 
-        self.n_dof = self.parameters.get("system").get("dof")
+        self.n_dof = self.parameters.n_dof
         time = units.parse_time(self.parameters.get("system").get("time", "0 fs"))
 
         # Set up nuclei
@@ -82,6 +83,11 @@ class System(object):
     def parameters(self):
         """XPACDT.Input.Inputfile : The parameters from the input file."""
         return self.__parameters
+
+    @parameters.setter
+    def parameters(self, new_parameters):
+        # TODO: See Ticket XPACDT-65
+        pass
 
     @property
     def nuclei(self):

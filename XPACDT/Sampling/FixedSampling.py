@@ -53,6 +53,10 @@ def do_Fixed_sampling(system, parameters, n_sample):
         A list of n_sample copies of the given system.
     """
 
+    if system.nuclei.momenta is None:
+        raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
+                           " file, but required in fixed sampling.")
+
     systems = []
     for i in range(n_sample):
         systems.append(copy.deepcopy(system))

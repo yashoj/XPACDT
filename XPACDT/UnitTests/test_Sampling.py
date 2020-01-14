@@ -75,6 +75,7 @@ class SamplingTest(unittest.TestCase):
                                        rtol=1e-7)
             np.testing.assert_allclose(s.nuclei.momenta, momenta_ref,
                                        rtol=1e-7)
+        os.rmdir('test')
 
         sampled_systems = sampling.sample(self.system_momentum, self.parameters_momentum_shift, True)
 
@@ -85,6 +86,7 @@ class SamplingTest(unittest.TestCase):
                                        rtol=1e-7)
             np.testing.assert_allclose(s.nuclei.momenta, momenta_ref + shift_ref,
                                        rtol=1e-7)
+        os.rmdir('test')
 
         coordinate_ref = np.array([[0.0], [0.0], [0.0], [2.0], [0.0], [0.0]])
         momenta_ref = np.array([[-0.1], [0.0], [1.0], [0.0], [0.0], [1.0]])
@@ -99,6 +101,7 @@ class SamplingTest(unittest.TestCase):
                                        rtol=1e-7)
             np.testing.assert_allclose(s.nuclei.momenta, momenta_ref,
                                        rtol=1e-7)
+        os.rmdir('test')
 
         sampled_systems = sampling.sample(self.system_momentum_xyz, self.parameters_momentum_shift_xyz, True)
 

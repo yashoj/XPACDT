@@ -31,6 +31,8 @@ import numpy as np
 import sys
 # import scipy as sp
 
+import XPACDT.Tools.Memory as mem
+
 # TODO: add more quantities calculated for the nuclei!
 
 
@@ -393,3 +395,18 @@ class Nuclei(object):
         self.time += time_propagate
 
         return
+
+    def print_size(self):
+        """ Print the size of the nuclei object and some of its members.
+        """
+
+        print("Nuclei is {: .2f} KB".format(mem.getsize(self) / 1024))
+        print("\t Consisting of:")
+        print("\t n_dof {: .2f} KB".format(mem.getsize(self.n_dof) / 1024))
+        print("\t time {: .2f} KB".format(mem.getsize(self.time) / 1024))
+        print("\t n_beads {: .2f} KB".format(mem.getsize(self.n_beads) / 1024))
+        print("\t masses {: .2f} KB".format(mem.getsize(self.masses) / 1024))
+        print("\t positions {: .2f} KB".format(mem.getsize(self.positions) / 1024))
+        print("\t momenta {: .2f} KB".format(mem.getsize(self.momenta) / 1024))
+        print("\t propagator {: .2f} KB".format(mem.getsize(self.__propagator) / 1024))
+        print("\t electrons {: .2f} KB".format(mem.getsize(self.__electrons) / 1024))

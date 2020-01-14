@@ -1,0 +1,53 @@
+$system
+dof = 1
+Interface = OneDPolynomial
+job = full
+picklefile = pickle.dat
+folder = ho_1_1
+override
+$end
+
+$OneDPolynomial
+a = 0 0 0.5
+x0 = 0
+$end
+
+$thermostat
+method = MassiveAndersen
+temperature = 315774.64173590636
+$end
+
+$sampling
+method = Thermostatted
+samples = 5000
+time = 2.0 fs
+$end
+
+$nuclei_propagator
+method = VelocityVerlet
+timestep = 0.001 fs
+$end
+
+$propagation
+time_output = 0.01 fs 
+time_start = 0.0 fs
+time_end = 0.7 fs
+$end
+
+$coordinates
+type = mass-value
+1.0 0.5
+$end
+
+$momenta
+0.0
+$end
+
+$commandCXX
+op0 = +pos -1 0
+op = +pos -1 0
+value = mean
+format = time
+$end
+
+### more comments!!

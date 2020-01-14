@@ -7,13 +7,20 @@ $system                     # general parameters
 
 # Required parameters
 dof = 4                     # integer, required: the number of degrees of freedom
-job = sample	                # (sample, propagate, analyze, plot), required: The job type.
-electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: AdiabaticElectrons (default),
-                                     #      SurfaceHoppingElectrons, NRPMDElectrons)
-Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier, Morse1D, MorseDiabatic, Dissociation2states, TullyModel), required: The interface to the potential to be used.
-folder = test               # string, required: Base folder for the trajectories.
+job = sample	            # (sample, propagate, analyze, plot, full), required: The job type.
+
+Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier, Morse1D, MorseDiabatic, Dissociation2states, TullyModel)
+	    		    # required: The interface to the potential to be used.
+
+folder = test               # string, required (except for job = plot): Folder for the trajectories. 
+       	 		    # For job = full, sample, analyze, this is the base folder containing the trj_* folders
+			    # For job = propagate, this is the specific trj_* folder of the trajectory.
 
 # Optional parameters
+
+electrons = SurfaceHoppingElectrons  # (AdiabaticElectrons (default), SurfaceHoppingElectrons, NRPMDElectrons)
+	      			     # string, optional: Method to treat non-adiabatic dynamics
+
 seed = 0                    # integer, optional : Seed for random number generator
 picklefile = NameHere.dat   # string, optional: Name of pickle file - else: pickle.dat
 time = 0 fs                 # float, optional: The current time of the system in either fs or au.
@@ -28,25 +35,31 @@ $end
 
 $SurfaceHoppingElectrons  # must match the electrons specified; specific to each electronic method
 
-basis = adiabatic         # Electronic state basis representation (possible: adiabatic, diabatic; default: adiabatic)
-initial_state = 0         # Initial state of the system (Counting starts from 0)
-n_steps = 100             # Number of electronic steps to be performed for each nuclear steps (default: 1)
+# Required parameters
+initial_state = 0         # integer, required: Initial state of the system (Counting starts from 0)
 
-rpsh_type = bead          # Type of ring polymer surface hopping (RPSH) 
-                          # (possible: bead, centroid, density_matrix; default: bead)
-rpsh_rescaling = bead     # Type of RPSH rescaling; this can be done to conserve 
-                          # bead or centroid energy (possible: bead, centroid; default: bead)
-rescaling_type = nac      # Type of momentum rescaling; (possible: nac, gradient; default: nac)
-
-evolution_picture = schroedinger  # Representation/picture for quantum evolution (possible: schroedinger (default), interaction)
-ode_solver = runga_kutta  # ODE solver to be used for propagation (possible: runga_kutta (default), scipy,
-                          #     unitary (this needs 'evolution_picture' = schroedinger))
+# Optional parameters
+basis = adiabatic         # string, optional, (adiabatic (default), diabatic)
+      			  # Electronic basis employed 
+n_steps = 100             # integer, optional, default: 1
+	  		  # Number of electronic time steps to be performed for each nuclear steps
+rpsh_type = bead          # string, optional (bead (default), centroid, density_matrix)
+	    		  # Type of ring polymer surface hopping (RPSH) 
+rpsh_rescaling = bead     # string, optional (bead (default), centroid)
+	       	 	  # Type of momentum rescaling in RPSH; 
+			  # This will either conserve the full ring polymer Hamiltonian or the centroid energy
+rescaling_type = nac      # string, optional (nac (default), gradient)
+	       	 	  # Direction for momentum rescaling in surface hopping. 
+evolution_picture = schroedinger  # string, optional (schroedinger (default), interaction) 
+		    		  # Representation/picture for quantum evolution of the electronic subsystem
+ode_solver = runga_kutta  # string, optional (runge_kutta (default), scipy, unitary)
+	     		  # ODE solver to be used for propagation 
+			  # Please note that 'unitary' requires 'evolution_picture = schroedinger'
 $end
 
 ##############################################################################
 
 $NRPMDElectrons      # must match the electrons specified; specific to each electronic method
-
 basis = diabatic     # Electronic state basis representation (possible: adiabatic, diabatic)
 $end
 

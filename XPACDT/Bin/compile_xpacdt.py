@@ -53,6 +53,8 @@ if __name__ == "__main__":
     version_file.write("Commit: " + hexsha + " \n")
     version_file.close()
 
+    current_path = os.path.dirname(current_path)
+
     # TODO: check for more hidden imports, check for more data files
     command = "cd $XPACDTPATH/Bin; "
 
@@ -64,9 +66,20 @@ if __name__ == "__main__":
 
     # For xpacdt.py
     command += "pyinstaller --add-data '.version:.' "
-    command += "--add-data 'XPACDT/Interfaces/LWAL_module/fhhfit_1050.dat:XPACDT/Interfaces/LWAL_module' "
-    command += "--add-data 'XPACDT/Interfaces/LWAL_module/fhhfit_1078_new.dat:XPACDT/Interfaces/LWAL_module' "
-    command += " --onefile"
+
+    add_file = os.path.join(current_path, "../Interfaces/LWAL_module/fhhfit_1050.dat")
+    command += "--add-data '" + add_file + ":XPACDT/Interfaces/LWAL_module' "
+
+    add_file = os.path.join(current_path, "../Interfaces/LWAL_module/fhhfit_1078_new.dat")
+    command += "--add-data '" + add_file + ":XPACDT/Interfaces/LWAL_module' "
+
+    add_file = os.path.join(current_path, "../Interfaces/CW_module/cwfit.dat")
+    command += "--add-data '" + add_file + ":XPACDT/Interfaces/CW_module' "
+
+    add_file = os.path.join(current_path, "helptext/*.txt")
+    command += "--add-data '" + add_file + ":helptext' "
+
+    command += " --onefile "
     command += "--hidden-import='git' "
     command += "--hidden-import='XPACDT.System.AdiabaticElectrons' "
     command += "--hidden-import='XPACDT.Dynamics.MassiveAndersen' "
@@ -76,8 +89,14 @@ if __name__ == "__main__":
     command += "--hidden-import='XPACDT.Sampling.ThermostattedSampling' "
     command += "--hidden-import='XPACDT.Sampling.WignerSampling' "
     command += "--hidden-import='XPACDT.Interfaces.BKMP2' "
+    command += "--hidden-import='XPACDT.Interfaces.CW' "
+    command += "--hidden-import='XPACDT.Interfaces.LWAL' "
     command += "--hidden-import='XPACDT.Interfaces.EckartBarrier' "
     command += "--hidden-import='XPACDT.Interfaces.OneDPolynomial' "
+    command += "--hidden-import='XPACDT.Interfaces.TullyModel' "
+    command += "--hidden-import='XPACDT.Interfaces.MorseDiabatic' "
+    command += "--hidden-import='XPACDT.Interfaces.Morse1D' "
+    command += "--hidden-import='XPACDT.Interfaces.Dissociation2states' "
     command += "--runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
 
     p = sp.Popen(command, shell=True, executable="bash")

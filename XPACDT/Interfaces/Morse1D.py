@@ -166,45 +166,45 @@ class Morse1D(itemplate.PotentialInterface):
         return V, dV
 
 
-if __name__ == '__main__':
-
-    # Plotting script to visualize the potential.
-    # Runs only if this file is executed on its own by doing: python Morse1D.py
-    import matplotlib.pyplot as plt
-
-    # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
-    nb = 1
-    De = 0.04556
-    a = 1.94  # 0.97
-    re = 2.50  # 1.70
-    b = 0.04556
-    pot = Morse1D(nb, **{'De': De, 'a': a, 're': re, 'b': b})
-
-    # len(linspace) array of positions
-    X = np.linspace(2., 5., num=100)
-
-    V_ad = []
-    dV_ad = []
-
-    for i in X:
-        pot._calculate_adiabatic_all(np.array([[i]]))
-
-        V_ad.append(pot._adiabatic_energy[0, 0])
-        dV_ad.append(pot._adiabatic_gradient[0, 0, 0])
-
-    # Plot all
-    fig, ax = plt.subplots(2)
-    fig.suptitle('Morse potential: ', fontsize=20)
-
-    ax[0].plot(X, V_ad, 'r-', label="V")
-    ax[0].set_xlabel('x')
-    ax[0].set_ylabel('Adiabatic Potential')
-    ax[0].legend(loc='best')
-    # ax[0].set_ylim((-0.001, 0.05))
-
-    ax[1].plot(X, dV_ad, 'r-', label="dV/dx")
-    ax[1].set_xlabel('x')
-    ax[1].set_ylabel('Derivative of Adiabatic Potential')
-    ax[1].legend(loc='best')
-
-    plt.show()
+#if __name__ == '__main__':
+#
+#    # Plotting script to visualize the potential.
+#    # Runs only if this file is executed on its own by doing: python Morse1D.py
+#    import matplotlib.pyplot as plt
+#
+#    # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
+#    nb = 1
+#    De = 0.04556
+#    a = 1.94  # 0.97
+#    re = 2.50  # 1.70
+#    b = 0.04556
+#    pot = Morse1D(nb, **{'De': De, 'a': a, 're': re, 'b': b})
+#
+#    # len(linspace) array of positions
+#    X = np.linspace(2., 5., num=100)
+#
+#    V_ad = []
+#    dV_ad = []
+#
+#    for i in X:
+#        pot._calculate_adiabatic_all(np.array([[i]]))
+#
+#        V_ad.append(pot._adiabatic_energy[0, 0])
+#        dV_ad.append(pot._adiabatic_gradient[0, 0, 0])
+#
+#    # Plot all
+#    fig, ax = plt.subplots(2)
+#    fig.suptitle('Morse potential: ', fontsize=20)
+#
+#    ax[0].plot(X, V_ad, 'r-', label="V")
+#    ax[0].set_xlabel('x')
+#    ax[0].set_ylabel('Adiabatic Potential')
+#    ax[0].legend(loc='best')
+#    # ax[0].set_ylim((-0.001, 0.05))
+#
+#    ax[1].plot(X, dV_ad, 'r-', label="dV/dx")
+#    ax[1].set_xlabel('x')
+#    ax[1].set_ylabel('Derivative of Adiabatic Potential')
+#    ax[1].legend(loc='best')
+#
+#    plt.show()

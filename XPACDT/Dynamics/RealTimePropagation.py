@@ -62,7 +62,7 @@ def propagate(system, input_parameters):
     if 'continue' not in sys_parameters:
         # set initial time and reset log
         system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
-        # Setup electron
+        # reset the electrons
         system.nuclei.init_electrons(input_parameters)
         system.do_log(True)
 
@@ -84,7 +84,7 @@ def propagate(system, input_parameters):
     path_file = os.path.join(name_folder, name_file)
 
     while(system.nuclei.time < time_end):
-        system.step(timestep_output)
+        system.step(timestep_output, True)
 
         # TODO: Learn how to append in pickle and maybe do that
         if 'intermediate_write' in sys_parameters:

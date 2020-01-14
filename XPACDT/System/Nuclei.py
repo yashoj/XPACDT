@@ -72,7 +72,7 @@ class Nuclei(object):
         self.n_beads = input_parameters.n_beads
 
         # Set up electrons
-        self.__init_electrons(input_parameters)
+        self.init_electrons(input_parameters)
 
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
@@ -215,9 +215,6 @@ class Nuclei(object):
                 and (self.masses == other.masses).all())
 
     def init_electrons(self, parameters):
-        self.__init_electrons(parameters)
-
-    def __init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system.
 
         Parameters

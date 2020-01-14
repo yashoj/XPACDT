@@ -7,9 +7,11 @@ $system                     # general parameters
 
 # Required parameters
 dof = 4                     # integer, required: the number of degrees of freedom
-job = sample	                # (sample, propagate, analyze, plot), required: The job type.
+job = sample	            # (sample, propagate, analyze, plot, full), required: The job type.
 Interface = OneDPolynomial  # (OneDPolynomial, BKMP2, CW, LWAL, EckartBarrier), required: The interface to the potential to be used.
-folder = test               # string, required: Base folder for the trajectories.
+folder = test               # string, required (except for job = plot): Folder for the trajectories. 
+       	 		    # For job = full, sample, analyze, this is the base folder containing the trj_* folders
+			    # For job = propagate, this is the specific trj_* folder of the trajectory.
 
 # Optional parameters
 seed = 0                    # integer, optional : Seed for random number generator

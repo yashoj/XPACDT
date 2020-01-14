@@ -145,6 +145,8 @@ def start():
             operations.position(["-h"], None)
             print()
             operations.momentum(["-h"], None)
+            print()
+            operations.electronic_state(["-h"], None)
         elif args.help.lower() == 'plot' or args.help.lower() == 'sampling' or args.help.lower() == 'propagation':
             print()
             print()
@@ -220,7 +222,10 @@ def start():
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
         system = pickle.load(open(path_file, 'rb'))
+        # TODO: update new input parameters
     else:
+        assert(input_parameters.momenta is not None), \
+            "Momenta not provided in input file."
         system = xSystem.System(input_parameters)
 
     # Run job

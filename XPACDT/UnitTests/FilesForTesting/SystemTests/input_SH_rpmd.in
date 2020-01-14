@@ -1,19 +1,39 @@
 $system                     # general parameters
 
 seed = 0                    # Seed for random number generator
-dof = 4                     # the number of degrees of freedom
-job = propagate	            # The job type (possible: sample, propagate, analyze)
-Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
-folder = test               # the folder for the trajectories
+dof = 1                     # the number of degrees of freedom
+electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
+Interface = TullyModel  # the interface to the potential to be used (possible: OneDPolynomial)
 
 $end
 
 ##############################################################################
 
-$OneDPolynomial # must match the interface specified; specific to each interface
+$SurfaceHoppingElectrons
 
-a = 0 0 0.5
-x0 = 0
+basis = adiabatic
+initial_state = 0
+n_steps = 100
+rpsh_type = bead
+rpsh_rescaling = bead
+rescaling_type = nac
+evolution_picture = schroedinger
+ode_solver = runga_kutta
+$end
+
+##############################################################################
+
+$TullyModel
+
+model_type = model_C
+$end
+
+##############################################################################
+
+$rpmd
+
+beads = 2
+beta = 1052.0
 $end
 
 ##############################################################################
@@ -29,22 +49,15 @@ $end
 
 $coordinates	           # coordinates given here
 
-type = mass-value      # coordinate format (possible: mass-value, xyz)
-1.0 2.0
-2.0 1.0
-12.0 4.0
-2.1 -2.0
+type = mass-value
+2.0 2.5 2.6
 $end
 
 ##############################################################################
 
 $momenta               # momenta, must be the same ordering as coordinates
 
--1.0
-0.1
-2.0
-1.25
+0.001 0.002
 $end
 
 ##############################################################################
-

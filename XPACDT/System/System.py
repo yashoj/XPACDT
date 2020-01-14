@@ -50,8 +50,6 @@ class System(object):
 
         self.__parameters = input_parameters
 
-        assert('Interface' in self.parameters.get("system")), "Interface " \
-            "not specified!"
         assert('dof' in self.parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 
@@ -101,7 +99,6 @@ class System(object):
         sparse : bool, optional, default: False
             Whether to keep a sparse (less memory consuming) log or not
         """
-
         self.__nuclei.propagate(time_propagate)
         self.do_log(sparse=sparse)
 
@@ -114,7 +111,7 @@ class System(object):
         time : float, optional, default None
             System time to be set, if given.
         """
-
+        # TODO: after updating new parameters, initialize e- and propagator for 1st log
         self.__nuclei = copy.deepcopy(self.__log[0])
         if time is not None:
             self.__nuclei.time = time

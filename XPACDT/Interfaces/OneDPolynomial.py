@@ -38,7 +38,7 @@ class OneDPolynomial(itemplate.PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
     :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
-    
+
     Parameters
     ----------
     max_n_beads : int, optional
@@ -93,13 +93,11 @@ class OneDPolynomial(itemplate.PotentialInterface):
 
         Parameters:
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The positions of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads.
-        P : (n_dof, n_beads) ndarray of floats, optional
-            The momenta of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads. This is not
-            used in this potential and thus defaults to None.
+        R, P : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` and momenta `P` representing the
+            system in au. The first axis represents the degrees of freedom and
+            the second axis is the beads. `P` is not used in this potential
+            and thus defaults to None.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.

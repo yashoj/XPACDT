@@ -61,6 +61,10 @@ def start():
     parser.add_argument("-p", "--precision", type=int, dest="prec",
                         required=False, help=p_help, default=8)
 
+    s_help = "Generate current electronic state logfile. Default: False."
+    parser.add_argument("-s", "--state", action="store_true", dest="state",
+                        required=False, help=s_help, default=False)
+
     args = parser.parse_args()
 
     # Formatting style
@@ -70,8 +74,8 @@ def start():
     # Get input file
     system = pickle.load(open(args.PickleFile, 'rb'))
 
-    # Currently just position and momenta output.
-    # Add more functions for each value
+    # Currently just position, momenta and state output.
+    # Add more functions for each value.
     outfiles = setup_outfiles(args)
 
     # iterate over log
@@ -128,6 +132,14 @@ def write_Prp(log_nuclei, outfile, width, prec):
     return
 
 
+def write_electronic_state(log_nuclei, outfile, width, prec):
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                  width=width, prec=prec))
+    outfile.write("{: {width}d} ".format(log_nuclei.electrons.current_state, width=width))
+    outfile.write(" \n")
+    return
+
+
 def setup_outfiles(args):
     outfiles = {}
 
@@ -136,6 +148,8 @@ def setup_outfiles(args):
     outfiles['P'] = open('P.log', 'w')
     outfiles['Rrp'] = open('R_rp.log', 'w')
     outfiles['Prp'] = open('P_rp.log', 'w')
+    if (args.state):
+        outfiles['electronic_state'] = open('state.log', 'w')
 
     return outfiles
 

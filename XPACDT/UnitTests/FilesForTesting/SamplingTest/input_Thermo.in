@@ -21,7 +21,7 @@ $end
 $sampling               # sampling input
 
 method = Thermostatted  # method to be used for sampling
-samples = 500           # number of samples to be collected
+samples = 1000           # number of samples to be collected
 
 time = 2 fs
 $end

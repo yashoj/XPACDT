@@ -80,10 +80,10 @@ class BKMP2(itemplate.PotentialInterface):
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid)
+            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid, '')
 
         for i, r in enumerate(R.T):
-            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r)
+            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r, '')
 
         if R.shape[1] == 1:
             self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]

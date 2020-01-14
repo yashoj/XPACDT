@@ -59,7 +59,7 @@ def propagate(system, input_parameters):
     assert('time_end' in prop_parameters), "No endtime " \
         "given for the propagation."
 
-    if 'continue' not in sys_parameters:
+    if 'continue' not in prop_parameters:
         # set initial time and reset log
         system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
         # reset the electrons
@@ -87,7 +87,7 @@ def propagate(system, input_parameters):
         system.step(timestep_output, True)
 
         # TODO: Learn how to append in pickle and maybe do that
-        if 'intermediate_write' in sys_parameters:
+        if 'intermediate_write' in prop_parameters:
             pickle.dump(system, open(path_file, 'wb'), -1)
 
     pickle.dump(system, open(path_file, 'wb'), -1)

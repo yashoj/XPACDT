@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -52,9 +53,9 @@ import XPACDT.Input.Inputfile as infile
 
 
 def resource_path(relativePath):
-    """ Get absolute path to a folder below the directory, where the currently executed
-    xpacdt.py is stored. This works with PyInstaller and also 'normal' python. This is
-    used to access files stored in the PyInstaller folder.
+    """ Get absolute path to a folder below the directory, where the currently
+    executed xpacdt.py is stored. This works with PyInstaller and also 'normal'
+    python. This is used to access files stored in the PyInstaller folder.
 
     Parameters
     ----------

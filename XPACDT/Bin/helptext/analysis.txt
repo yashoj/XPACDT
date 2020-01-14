@@ -17,8 +17,8 @@ Please note that for each quantity one wishes to obtain, an individual 'command'
 An Example input block for a position-position correlation function looks like:
 
 $commandCxx
-op0 = +pos
-op = +pos
+op0 = +pos --x1 0
+op = +pos --x1 0
 format = time
 value = mean
 $end 
@@ -27,7 +27,7 @@ $end
 An Example input block for a histogram of the positions of a one-d system looks like:
 
 $commandPos
-op = +pos
+op = +pos --x1 0
 value = histogram -3.0 3.0 10
 format = value
 $end 
@@ -35,8 +35,8 @@ $end
 
 An Example input block for a histogram of the velocities for all positions greater than 0 of a one-d system looks like:
 
-$commandPos
-op = +vel +pos -p<0
+$commandVel
+op = +vel --x1 0 +pos --x1 0 -p<0
 value = histogram -3.0 3.0 10
 format = value
 $end 

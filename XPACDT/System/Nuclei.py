@@ -27,6 +27,7 @@
 #
 #  **************************************************************************
 
+import math
 import numpy as np
 import sys
 # import scipy as sp
@@ -380,7 +381,7 @@ class Nuclei(object):
         # This is needed since nuclear propagator has this fixed timestep.
         # 'time_propagate' can be output time in propagation or sampling time
         # in thermostated sampling.
-        assert(np.isclose((time_plus % timestep), 0.)), \
+        assert(math.isclose((time_plus % timestep), 0., abs_tol=1e-6)), \
               ("Propagation time is not multiple of nuclear timestep.")
 
         for i in range(n_steps):

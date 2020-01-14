@@ -90,12 +90,12 @@ def sample(system, parameters, do_return=False):
         trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*'))
         trj_folder_list.sort()
 
-        if 'overwrite' in system_parameters:
+        if 'overwrite' in sampling_parameters:
             if trj_folder_list is not None:
                 for folder in trj_folder_list:
                     shutil.rmtree(folder)
 
-        elif 'add' in system_parameters:
+        elif 'add' in sampling_parameters:
             n_samples_required -= len(trj_folder_list)
         else:
             raise RuntimeError("The trajectory folder already exists and no "

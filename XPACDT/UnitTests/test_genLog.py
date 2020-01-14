@@ -44,7 +44,8 @@ class genLogTest(unittest.TestCase):
         self.parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
         self.parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
 
-        self.nuclei_classical = nuclei.Nuclei(4, self.parameters_classical, None)
+        self.nuclei_classical = nuclei.Nuclei(4, self.parameters_classical,
+                                              None)
         self.nuclei_rpmd = nuclei.Nuclei(4, self.parameters_rpmd, None)
 
     def test_write_R(self):
@@ -133,7 +134,8 @@ class genLogTest(unittest.TestCase):
 
         written_data = np.genfromtxt("Rrp.log")
         np.testing.assert_allclose(time_reference, written_data[0], atol=1e-7)
-        np.testing.assert_allclose(r_reference.flatten(), written_data[1:], atol=1e-7)
+        np.testing.assert_allclose(r_reference.flatten(), written_data[1:],
+                                   atol=1e-7)
 
         r_reference = np.random.rand(4, 3)
 
@@ -209,6 +211,9 @@ class genLogTest(unittest.TestCase):
         os.remove("state.log")
 
         return
+
+    def test_setup_outfiles(self):
+        raise NotImplementedError("Please implement a test here!!")
 
 
 if __name__ == "__main__":

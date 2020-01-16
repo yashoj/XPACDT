@@ -21,7 +21,7 @@ folder = test               # string, required (except for job = plot): Folder f
 electrons = SurfaceHoppingElectrons  # (AdiabaticElectrons (default), SurfaceHoppingElectrons, NRPMDElectrons)
 	      			     # string, optional: Method to treat non-adiabatic dynamics
 
-seed = 0                    # integer, optional : Seed for random number generator
+seed = 0                    # integer, optional : Seed for random number generator; else the current time is used.
 picklefile = NameHere.dat   # string, optional: Name of pickle file - else: pickle.dat
 time = 0 fs                 # float, optional: The current time of the system in either fs or au.
 $end

@@ -95,6 +95,13 @@ class Inputfile(collections.MutableMapping):
             if 'dof' in self.get('system'):
                 try:
                     self.__n_dof = int(self.get('system').get('dof'))
+
+                    # Some interfaces have variable degrees of freedom and need
+                    # to know the actual number at setup time
+                    interface_name = self.get('system').get('Interface')
+                    if interface_name is not None:
+                        self.get(interface_name)['n_dof'] = str(self.__n_dof)
+
                 except ValueError as e:
                     raise type(e)(str(e) + "\nXPACDT: Number of degrees of"
                                            "freedom cannot be converted to int.")
@@ -186,23 +193,25 @@ class Inputfile(collections.MutableMapping):
         try:
             n = [int(i) for i in n_string.split()]
         except ValueError:
-            raise ValueError("Number of beads not convertable to int.")
+            raise ValueError("\nXPACDT: Number of beads not convertable to"
+                             " int.")
 
         if len(n) != 1 or len(n) != self.n_dof:
-            raise ValueError("Wrong length for number of beads given. Either"
-                             " a single integer or one integer per dof"
-                             " should be given.")
+            raise ValueError("\nXPACDT: Wrong length for number of beads"
+                             " given. Either a single integer or one integer"
+                             " per dof should be given.")
 
         if np.any([(i < 1) for i in n]):
-            raise ValueError("Number of beads needs to be more than zero.")
+            raise ValueError("\nXPACDT: Number of beads needs to be more than"
+                             " zero.")
 
         if np.any([(i != 1 or (i % 2 != 0)) for i in n]):
-            raise ValueError("Number of beads not 1 or even.")
+            raise ValueError("\nXPACDT: Number of beads not 1 or even.")
 
         # Keep number of beads same for now
         if np.any([(i != n[0]) for i in n]):
-            raise ValueError("Number of beads needs to be the same for all"
-                             " degrees of freedom.")
+            raise ValueError("\nXPACDT: Number of beads needs to be the same"
+                             " for all degrees of freedom.")
 
         if len(n) == 1:
             self.__n_beads = n * self.n_dof
@@ -300,14 +309,14 @@ class Inputfile(collections.MutableMapping):
                     self._c_type = match.group(2)
                     values = match.group(3)
                 except AttributeError:
-                    raise IOError("Coordinate type not given.")
+                    raise IOError("\nXPACDT: Coordinate type not given.")
 
                 if self._c_type == 'xyz':
                     self._parse_xyz(values)
                 elif self._c_type == 'mass-value':
                     self._parse_mass_value(values)
                 else:
-                    raise IOError("Coordinate type not understood: "
+                    raise IOError("\nXPACDT: Coordinate type not understood: "
                                   + self._c_type)
 
             elif section[0:8] == "$momenta":
@@ -329,8 +338,8 @@ class Inputfile(collections.MutableMapping):
                     values = ""
 
                 if keyword in self.store:
-                    # TODO: Use Better Error
-                    raise IOError("Key '" + keyword + "' defined twice!")
+                    raise KeyError("\nXPACDT: Key '" + keyword +
+                                   "' defined twice!")
                 else:
                     self.store[keyword] = self._parse_values(values)
 
@@ -425,9 +434,8 @@ class Inputfile(collections.MutableMapping):
                 value_dict[key_value[0].strip()] = key_value[1].strip()
 
             else:
-                # TODO: Use Better Error
-                raise IOError("Too many '=' in a key-Value pair: "
-                              + key_value_pair)
+                raise ValueError("\nXPACDT: Too many '=' in a key-Value pair: "
+                                 + key_value_pair)
 
         return value_dict
 

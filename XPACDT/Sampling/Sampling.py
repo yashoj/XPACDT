@@ -97,6 +97,9 @@ def sample(system, parameters, do_return=False):
 
         elif 'add' in sampling_parameters:
             n_samples_required -= len(trj_folder_list)
+            raise RuntimeWarning("\nXPACDT: Please make sure to use different"
+                                 " seeds in the input file when adding"
+                                 " trajectories.")
         else:
             raise RuntimeError("The trajectory folder already exists and no "
                                "directive for overwriting old data or adding "

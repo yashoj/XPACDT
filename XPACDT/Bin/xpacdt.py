@@ -226,7 +226,7 @@ def start():
                              " step values for grids differ!"
                              + str(len(dof)) + " != " + str(len(start)))
 
-        # Parse electronic parameters
+        # Parse electronic parameters TODO: parse tuple and check for consistency
         state = int(plot_params.get("state", "0"))
         picture = 'diabatic' if 'diabatic' in plot_params else 'adiabatic'
 

@@ -539,8 +539,10 @@ class PotentialInterface:
         ----------
         R : (n_dof) ndarray of floats
             The positions representing the system in au.
-        S : integer, default 0
-            The current state of the system.
+        S : integer, default 0 /or/ tupe of two integers
+            The current state of the system
+            /or/ if tupel is given the current off-diagonal element of the
+            diabatic matrix
         centroid : bool, default True
             If the energy of the centroid should be returned.
         internal : bool, optional, default False
@@ -566,7 +568,10 @@ class PotentialInterface:
             if internal:
                 return self.diabatic_energy(self._from_internal(R)[:, None], S, S, centroid)
             else:
-                return self.diabatic_energy(R[:, None], S, S, centroid)
+                if type(S) == tuple:
+                    return self.diabatic_energy(R[:, None], S[0], S[1], centroid)
+                else:
+                    return self.diabatic_energy(R[:, None], S, S, centroid)
 
     def _gradient_wrapper(self, R, S=0, centroid=True, internal=False):
         """Wrapper function to do call gradient with a one-dimensional array.
@@ -753,10 +758,12 @@ class PotentialInterface:
         internal : bool, optional, Default: False
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
-        S : integer, optional, Default: 0
-            The state to be plotted.
+        S : integer, default 0 /or/ tupe of two integers
+            The state to be plotted,
+            /or/ if tupel is given the off-diagonal element of the
+            diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
-            Whether adiabatic or diabatic PES should be plotted. 
+            Whether adiabatic or diabatic PES should be plotted.
             TODO: Howto handle couplings?
 
         Returns
@@ -853,8 +860,10 @@ class PotentialInterface:
         internal : bool, optional, Default: False
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
-        S : integer, optional, Default: 0
-            The state to be plotted.
+        S : integer, default 0 /or/ tupe of two integers
+            The state to be plotted,
+            /or/ if tupel is given the off-diagonal element of the
+            diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
             Whether adiabatic or diabatic PES should be plotted. 
             TODO: Howto handle couplings?

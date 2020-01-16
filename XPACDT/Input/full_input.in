@@ -145,8 +145,11 @@ $end
 # step = 0.1 0.1  # Step size in the scan.
 # 
 # Optional parameters:
-# internal	  # Use of internal degrees of freedom as definied in specific interfaces.
-# optimize	  # If all not scanned degrees of freedom are optimized (instead of kept at the initial value).
+# internal	             # Use of internal degrees of freedom as definied in specific interfaces.
+# optimize	             # If all not scanned degrees of freedom are optimized (instead of kept at the initial value).
+# picture = adiabatic    # (adiabatic (default), diabaitc) Whether to plot adiabatic or diabatic states
+# S = 1                  # Integer, default: 0; State of the system to be plotted
+                         # or 'diabatic' is given, two integers to plot offdiagonal diabatic matrix elements.
 # $end
 
 ##############################################################################

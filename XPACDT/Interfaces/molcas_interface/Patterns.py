@@ -44,14 +44,12 @@ RAW_PATTERNS["gradient section"] = r"""
 
 # Match a single line of the molecular gradient matrix inside
 # a 'Molecular gradients' section of a MOLCAS .log runfile
-# Capture the header (atom symbol with number) and the gradient vector
+# Capture the gradient vector
 # Note: the vector captured by this pattern can be directly parse by
 # np.fromstring(captured_vector, sep=" ")
 RAW_PATTERNS["gradient"] = r"""
-    (               # Capturing group for the atom symbol with ID
-        \w+         # Atom symbol
-        \d+         # ID (integer)
-    )
+    \w+             # Atom symbol
+    \d+             # ID (integer)
     \ +
     (               # Capturing group for the gradient vector
         {num}       # X component

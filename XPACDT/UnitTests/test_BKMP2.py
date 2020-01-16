@@ -45,27 +45,39 @@ class BKMP2Test(unittest.TestCase):
     def test_creation(self):
         self.assertEqual(self.pes.name, 'BKMP2')
 
-    def test_calculate_all(self):
+    def test_calculate_adiabatic_all(self):
         # Full Asymptote
         energy_ref = np.zeros((1, 1))
         gradient_ref = np.zeros((1, 9, 1))
-        self.pes._calculate_all(self.pes._from_internal([400.0, 800.0, 0.0]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-5)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-10)
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([400.0, 800.0, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-10)
 
         # H2 minimum 
         energy_ref = np.zeros((1, 1)) + -0.17449577
         gradient_ref = np.zeros((1, 9, 1))
-        self.pes._calculate_all(self.pes._from_internal([1.4014718, 80.0, 0.0]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-6)
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([1.4014718, 80.0, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-6)
 
         # TST
         energy_ref = np.zeros((1, 1)) + -0.17449577 + 0.01532
         gradient_ref = np.zeros((1, 9, 1))
-        self.pes._calculate_all(self.pes._from_internal([1.757, 2.6355, 0.0]).reshape(-1, 1), None)
-        np.testing.assert_allclose(self.pes._energy, energy_ref, atol=1e-6)
-        np.testing.assert_allclose(self.pes._gradient, gradient_ref, atol=1e-10)
+        self.pes._calculate_adiabatic_all(self.pes._from_internal([1.757, 2.6355, 0.0]).reshape(-1, 1), None)
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-6)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-10)
+
+        # RPMD
+        x0 = self.pes._from_internal([1.757, 2.6355, 0.0])
+        x1 = self.pes._from_internal([400.0, 800.0, 0.0])
+        x2 = self.pes._from_internal([1.4014718, 80.0, 0.0])
+        x3 = self.pes._from_internal([1.757, 2.6355, 0.0])
+        x = np.column_stack((x0, x1, x2, x3))
+        self.pes._calculate_adiabatic_all(x, None)
+        energy_ref = np.array([[-0.15917577, 0.0, -0.17449577, -0.15917577]])
+        gradient_ref = np.zeros((1, 9, 4))
+        np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-6)
 
     def test_minimize(self):
         fun_ref = -0.17449577
@@ -98,53 +110,53 @@ class BKMP2Test(unittest.TestCase):
         cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0, 0.0, 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
         # perpendicular
         internal = np.array([2.0, 4.0, np.pi/2.0])
         cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 4.0, 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref, atol=1e-10)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
         # 45 degrees off
         internal = np.array([2.0, 4.0, np.pi/4.0])
         cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0/np.sqrt(2.0), 4.0/np.sqrt(2.0), 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
         # -45 degrees off
         internal = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
         cartesian_ref = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0])
         cartesian = self.pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes._to_internal(cartesian))
+        np.testing.assert_allclose(internal, self.pes._from_cartesian_to_internal(cartesian))
 
-    def test_to_internal(self):
+    def test_from_cartesian_to_internal(self):
         # colinear
         cartesian = np.array([-1.2, 0.0, 0.0, 1.2, 0.0, 0.0, 3.8, 0.0, 0.0])
         internal_ref = np.array([2.4, 3.8, 0.0])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
         np.testing.assert_allclose(cartesian, self.pes._from_internal(internal))
 
         # perpendicular
         cartesian = np.array([0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 4.0, 0.0, 0.0])
         internal_ref = np.array([2.0, 4.0, np.pi/2.0])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
 
         # 'random' in space, 3rd H along axis
         cartesian = np.array([1.0, -1.0, 2.0, 0.5, -1.5, 2.0-1.0/np.sqrt(2.0), -1.25 , -3.25, -1.18198052])
         internal_ref = np.array([1.0, 4.0, 2.0*np.pi])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
 
         # -45 degrees off
         cartesian = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0])
         internal_ref = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
-        internal = self.pes._to_internal(cartesian)
+        internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
         np.testing.assert_allclose(cartesian, self.pes._from_internal(internal))
 

@@ -1,0 +1,26 @@
+$system                     # general parameters
+dof = 3                     # integer, required: the number of degrees of freedom; it is 3 here as internal coordinates are used
+job = plot	            # (sample, propagate, analyze, plot), required: The job type.
+Interface = LWAL	    # (OneDPolynomial, LWAL, EckartBarrier), required: The interface to the potential to be used.
+$end
+
+##############################################################################
+
+$LWAL # must match the interface specified; specific to each interface
+$end
+
+$plot
+dof = 0 1	# plot the first two degrees of freedom. As internal coordinates are used here this will be the two Jacobi coordinates r and R
+start = 1.0 2.0 
+end = 4.0 10.0 
+step = 0.1 0.1
+internal
+optimize	# The third coordinate is optimized to give the lowest energy possible.
+$end
+
+$coordinates
+type = mass-value
+1.0 1.5
+1.0 2.0
+1.0 0.5
+$end

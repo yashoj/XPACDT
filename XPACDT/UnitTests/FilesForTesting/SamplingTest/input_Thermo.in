@@ -21,9 +21,8 @@ $end
 $sampling               # sampling input
 
 method = Thermostatted  # method to be used for sampling
-samples = 500           # number of samples to be collected
+samples = 1000           # number of samples to be collected
 
-temperature = 315777 K     # Temperature
 time = 2 fs
 $end
 
@@ -33,6 +32,7 @@ $thermostat                 # thermostat input
 
 method = MassiveAndersen    # Thermostat method (possible: MassiveAndersen; desired:...)
 time = 2 fs                 # timescale for thermostattting
+temperature = 315777 K      # Temperature
 $end
 
 ##############################################################################

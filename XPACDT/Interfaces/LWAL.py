@@ -42,13 +42,19 @@ import XPACDT.Tools.Geometry as geom
 class LWAL(itemplate.PotentialInterface):
     """
     LWAL PES. No parameters required.
+
+    The ordering of the atoms is as follows:
+    F, H, H
+
+    G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
     """
-    def __init__(self, **kwargs):
+    def __init__(self, max_n_beads=1, **kwargs):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "LWAL")
+        itemplate.PotentialInterface.__init__(self, "LWAL", 9, 1,
+                                              max_n_beads, 'adiabatic')
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -57,6 +63,8 @@ class LWAL(itemplate.PotentialInterface):
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
+            Please note that Cartesian coordinates of the atoms are used and 
+            have to be ordered in the following way: F, H, H
         P : (n_dof, n_beads) ndarray of floats, optional
             The momenta of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads. This is not
@@ -70,28 +78,30 @@ class LWAL(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros((1, R.shape[1]))
-        self._gradient = np.zeros_like(R[np.newaxis, :])
+        self._adiabatic_energy = np.zeros((1, R.shape[1]))
+        self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
+
+        self._adiabatic_energy_centroid = np.zeros(1)
+        self._adiabatic_gradient_centroid = np.zeros((1, R.shape[0]))
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-            self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
-            self._energy_centroid = self._energy_centroid[np.newaxis, :]
-            self._gradient_centroid = self._gradient_centroid[np.newaxis, :]
+            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid, self.__data_path)
 
         for i, r in enumerate(R.T):
-            self._energy[0, i], self._gradient[0, :, i] = pot.pot(r, self.__data_path)
+            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r, self.__data_path)
 
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy[:, 0]
-            self._gradient_centroid = self._gradient[:, :, 0]
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
 
         return
 
-    def _to_internal(self, R):
+    def _from_cartesian_to_internal(self, R):
         """Transform from full cartesian coordinates to internal Jacobi
-        coordinates. The Jacobi coordinates are defined as follows:
+        coordinates. The order of the atoms has to be F, H, H.
+        The Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
             R = internal[1] = Distance between the F and the center of
                               the two H's in au.
@@ -121,12 +131,16 @@ class LWAL(itemplate.PotentialInterface):
 
         # phi
         internal[2] = geom.angle(r_vec, R_vec)
+        # Correct angle definition to range :math:`0 : 2\pi`
         if R[1] < 0.0:
             internal[2] = 2.0*np.pi-internal[2]
 
         return internal
 
     def _from_internal(self, internal):
+        return self._from_internal_to_cartesian(internal)
+
+    def _from_internal_to_cartesian(self, internal):
         """Transform from Jacobi coordinates to full cartesian coordinates. The
         Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
@@ -164,39 +178,39 @@ class LWAL(itemplate.PotentialInterface):
         return R
 
 
-if __name__ == "__main__":
-    pes = LWAL()
-    print(pes.name)
-    x=np.zeros(9)
-    for i in range(1000):
-        phi = np.random.rand(1)*2.0*np.pi
-        x[0] = 3.0*np.cos(phi)
-        x[1] = 3.0*np.sin(phi)
-        x[2] = 0.0 
-        x[3] = -1.0
-        x[4] = 0.0
-        x[5] = 0.0
-        x[6] = 1.0
-        x[7] = 0.0
-        x[8] = 0.0
+# if __name__ == "__main__":
+#     pes = LWAL()
+#     print(pes.name)
+#     x=np.zeros(9)
+#     for i in range(1000):
+#         phi = np.random.rand(1)*2.0*np.pi
+#         x[0] = 3.0*np.cos(phi)
+#         x[1] = 3.0*np.sin(phi)
+#         x[2] = 0.0 
+#         x[3] = -1.0
+#         x[4] = 0.0
+#         x[5] = 0.0
+#         x[6] = 1.0
+#         x[7] = 0.0
+#         x[8] = 0.0
         
         
-#        if phi > -11.0:
-#            inte = pes._to_internal(x)
-##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
-#            y = pes._from_internal(inte)
-##            print(x, y)
-#   
-#            print((abs(x-y) < 1e-8).all())
-##            print()
+# #        if phi > -11.0:
+# #            inte = pes._from_cartesian_to_internal(x)
+# ##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
+# #            y = pes._from_internal_to_cartesian(inte)
+# ##            print(x, y)
+# #   
+# #            print((abs(x-y) < 1e-8).all())
+# ##            print()
     
-    pes._calculate_all(x[:, None])
-    print(pes._energy, pes._gradient)
-    print(pes.energy(x[:, None]))
-    internal = np.array([2.0, 5.0, 0.0])
-    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
-#    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
+#     pes._calculate_all(x[:, None])
+#     print(pes._adiabatic_energy, pes._adiabatic_gradient)
+#     print(pes.adiabatic_energy(x[:, None]))
+#     internal = np.array([2.0, 5.0, 0.0])
+#     pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
+# #    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
     
-    pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
-#    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
-#    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)
+#     pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
+# #    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
+# #    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

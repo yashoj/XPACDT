@@ -1,8 +1,33 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@author: yashoj
-"""
+
+#  **************************************************************************
+#
+#  XPACDT, eXtended PolyAtomic Chemical Dynamics Toolkit
+#  XPACDT is a program that can treat polyatomic chemical dynamics problems
+#  by solving Newtons equations of motion directly or in an
+#  extended ring-polymer phase space. Non-Born-Oppenheimer effects are
+#  included employ different approaches, including fewest switches surface
+#  hopping.
+#
+#  Copyright (C) 2019
+#  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#
+#  This file is part of XPACDT.
+#
+#  XPACDT is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#  **************************************************************************
 
 import numpy as np
 import unittest
@@ -103,7 +128,7 @@ class MassiveAndersenTest(unittest.TestCase):
         # 1 dof, 4 beads, beta = 8.0
         pes1D_harmonic = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}})
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}
@@ -131,7 +156,7 @@ class MassiveAndersenTest(unittest.TestCase):
         np.random.seed(0)
         pes1D_harmonic = adiabatic.AdiabaticElectrons(
                 {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}})
+                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}
@@ -198,6 +223,14 @@ class MassiveAndersenTest(unittest.TestCase):
             self.assertTrue(mean_min < p_mean_ref < mean_max)
             self.assertTrue(std_min < p_std_ref < std_max)
 
+
+    def test_generation(self):
+        # test temperature consistency check
+        input_params = {'thermostat': {'temperature': '315775.130734'},
+                        'sampling': {'temperature': '1.0'}}
+        mass = np.array([1.])
+        with self.assertRaises(RuntimeError):
+            thermostat = ma.MassiveAndersen(input_params, mass)
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(MassiveAndersenTest)

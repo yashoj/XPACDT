@@ -44,12 +44,18 @@ class NucleiTest(unittest.TestCase):
 
         self.nuclei_classical = Nuclei.Nuclei(4, self.parameters_classical, 0.0)
         self.nuclei_rpmd = Nuclei.Nuclei(4, self.parameters_rpmd, 0.0)
+
+        self.parameters_classical_1D = infile.Inputfile("FilesForTesting/SystemTests/Classical_1D.in")
+        self.parameters_rpmd_1D = infile.Inputfile("FilesForTesting/SystemTests/RPMD_1D.in")
+
+        self.nuclei_classical_1D = Nuclei.Nuclei(1, self.parameters_classical_1D, 0.0)
+        self.nuclei_rpmd_1D = Nuclei.Nuclei(1, self.parameters_rpmd_1D, 0.0)
         pass
 
     def test_propagate(self):
-        pass
+        ### 1 bead case
         # Set up dummy propagator
-        self.nuclei_classical.propagator = DummyProp()
+        self.nuclei_classical.propagator = DummyProp(1.0)
         self.nuclei_classical.propagate(1.0)
 
         np.testing.assert_array_equal(self.nuclei_classical.positions,
@@ -57,14 +63,28 @@ class NucleiTest(unittest.TestCase):
         np.testing.assert_array_equal(self.nuclei_classical.momenta,
                                       self.parameters_classical.momenta*2.0)
 
-        self.nuclei_classical.propagate(1.0)
+        # Reset nuclei
+        self.nuclei_classical = Nuclei.Nuclei(4, self.parameters_classical,
+                                              0.0)
+        self.nuclei_classical.propagator = DummyProp(1.0)
+        self.nuclei_classical.propagate(5.0)
+        coordinates_ref = np.copy(self.parameters_classical.coordinates)
+        momenta_ref = np.copy(self.parameters_classical.momenta)
+
+        for i in range(5):
+            coordinates_ref *= 2.0
+            momenta_ref *= 2.0
 
         np.testing.assert_array_equal(self.nuclei_classical.positions,
-                                      self.parameters_classical.coordinates*4.0)
+                                      coordinates_ref)
         np.testing.assert_array_equal(self.nuclei_classical.momenta,
-                                      self.parameters_classical.momenta*4.0)
+                                      momenta_ref)
 
-        self.nuclei_rpmd.propagator = DummyProp()
+        with self.assertRaises(AssertionError):
+            self.nuclei_classical.propagate(1.5)
+
+        ### 4 bead case
+        self.nuclei_rpmd.propagator = DummyProp(1.0)
         self.nuclei_rpmd.propagate(1.0)
 
         np.testing.assert_array_equal(self.nuclei_rpmd.positions,
@@ -72,12 +92,24 @@ class NucleiTest(unittest.TestCase):
         np.testing.assert_array_equal(self.nuclei_rpmd.momenta,
                                       self.parameters_rpmd.momenta*2.0)
 
-        self.nuclei_rpmd.propagate(1.0)
+        # Reset nuclei
+        self.nuclei_rpmd = Nuclei.Nuclei(4, self.parameters_rpmd, 0.0)
+        self.nuclei_rpmd.propagator = DummyProp(1.0)
+        self.nuclei_rpmd.propagate(5.0)
+        coordinates_ref = np.copy(self.parameters_rpmd.coordinates)
+        momenta_ref = np.copy(self.parameters_rpmd.momenta)
+
+        for i in range(5):
+            coordinates_ref *= 2.0
+            momenta_ref *= 2.0
 
         np.testing.assert_array_equal(self.nuclei_rpmd.positions,
-                                      self.parameters_rpmd.coordinates*4.0)
+                                      coordinates_ref)
         np.testing.assert_array_equal(self.nuclei_rpmd.momenta,
-                                      self.parameters_rpmd.momenta*4.0)
+                                      momenta_ref)
+
+        with self.assertRaises(AssertionError):
+            self.nuclei_rpmd.propagate(1.5)
 
         return
 
@@ -172,33 +204,134 @@ class NucleiTest(unittest.TestCase):
         values = self.nuclei_rpmd.parse_dof("0,2,3", quantity='p', beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
+        return
+
     def test_energy(self):
-        raise NotImplementedError("Please implement a test here once "
-                                  "the function is implemented!!")
-        pass
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.energy, 0)
+
+        self.nuclei_classical_1D.positions = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.energy, 0.5)
+
+        self.nuclei_classical_1D.momenta = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.energy, 1)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.energy, 15.5)
+
+        # TODO: add test for more that 1 dimensions
+        return
 
     def test_kinetic_energy(self):
-        raise NotImplementedError("Please implement a test here once "
-                                  "the function is implemented!!")
-        pass
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.kinetic_energy, 0)
+
+        self.nuclei_classical_1D.momenta = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.kinetic_energy, 0.5)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.kinetic_energy, 7)
+
+        # 1 bead, 4 dof
+        KE_ref = 0.5025 + 1./6. + 1.5625/4.2
+        self.assertAlmostEqual(self.nuclei_classical.kinetic_energy, KE_ref)
+
+        # 4 beads, 4 dof
+        KE_ref = 6.44 * 0.5 + 0.25 * 0.31 + 19.26/24. + 1.8225/4.2
+        self.assertAlmostEqual(self.nuclei_rpmd.kinetic_energy, KE_ref)
+        return
 
     def test_spring_energy(self):
-        raise NotImplementedError("Please implement a test here once "
-                                  "the function is implemented!!")
-        pass
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.spring_energy, 0)
+
+        self.nuclei_classical_1D.positions = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.spring_energy, 0)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.spring_energy, 1.5)
+
+        # 1 bead, 4 dof
+        self.assertAlmostEqual(self.nuclei_classical.spring_energy, 0)
+
+        # 4 beads, 4 dof
+        SE_ref = 0.125 * (7.12 + 24.52 + 667.44 + 52.878)
+        self.assertAlmostEqual(self.nuclei_rpmd.spring_energy, SE_ref)
+        return
 
     def test_potential_energy(self):
-        raise NotImplementedError("Please implement a test here once "
-                                  "the function is implemented!!")
-        pass
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.potential_energy, 0)
+
+        self.nuclei_classical_1D.positions = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.potential_energy, 0.5)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.potential_energy, 7)
+
+        # TODO: add test for more that 1 dimensions
+        return
+
+    def test_energy_centroid(self):
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.energy_centroid, 0)
+
+        self.nuclei_classical_1D.positions = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.energy_centroid, 0.5)
+
+        self.nuclei_classical_1D.momenta = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.energy_centroid, 1)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.energy_centroid, 2.25)
+
+        # TODO: add test for more that 1 dimensions
+        return
+
+    def test_kinetic_energy_centroid(self):
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.kinetic_energy_centroid, 0)
+
+        self.nuclei_classical_1D.momenta = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.kinetic_energy_centroid, 0.5)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.kinetic_energy_centroid, 1.125)
+
+        # 1 bead, 4 dof
+        KE_ref = 0.5025 + 1./6. + 1.5625/4.2
+        self.assertAlmostEqual(self.nuclei_classical.kinetic_energy_centroid,
+                               KE_ref)
+
+        # 4 beads, 4 dof
+        KE_ref = 1. / 16. * (2.42 + 0.09 / 4. + 7.4**2 / 24. + 0.85**2 / 4.2)
+        self.assertAlmostEqual(self.nuclei_rpmd.kinetic_energy_centroid,
+                               KE_ref)
+
+        return
+
+    def test_potential_energy_centroid(self):
+        # 1 bead, 1 dof
+        self.assertAlmostEqual(self.nuclei_classical_1D.potential_energy_centroid, 0)
+
+        self.nuclei_classical_1D.positions = np.array([[1.]])
+        self.assertAlmostEqual(self.nuclei_classical_1D.potential_energy_centroid, 0.5)
+
+        # 4 beads, 1 dof
+        self.assertAlmostEqual(self.nuclei_rpmd_1D.potential_energy_centroid,
+                               1.125)
+
+        # TODO: add test for more that 1 dimensions
+        return
 
 
 class DummyProp(object):
-    def __init__(self):
+    def __init__(self, timestep):
+        self.timestep = float(timestep)
         pass
 
     def propagate(self, R, P, time_propagation):
-        return 2.0*R, 2.0*P
+        return (2.0 * R), (2.0 * P)
 
 
 if __name__ == "__main__":

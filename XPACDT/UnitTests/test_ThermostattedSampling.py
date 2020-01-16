@@ -54,14 +54,14 @@ class ThermostattedSamplingTest(unittest.TestCase):
         samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
                                                    int(self.parameters.get("sampling").get('samples')))
         energies = [s.nuclei.energy for s in samples]
-        statistics = scipy.stats.bayes_mvs(energies)
+        statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
         mean_min, mean_max = statistics[0][1]
         dev_min, dev_max = statistics[2][1]
         mean_reference = 1.0 / (315777*units.boltzmann)
 
         self.assertTrue(mean_min < mean_reference < mean_max)
         self.assertTrue(dev_min < mean_reference < dev_max)
-        self.assertEqual(len(samples), 500)
+        self.assertEqual(len(samples), 1000)
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
 

@@ -53,15 +53,22 @@ def propagate(system, input_parameters):
         XPACDT representation of the given input file.
     """
 
+    if system.nuclei.momenta is None:
+        raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
+                           " file, but required in real time propagation.")
+
     prop_parameters = input_parameters.get('propagation')
     sys_parameters = input_parameters.get('system')
 
     assert('time_end' in prop_parameters), "No endtime " \
         "given for the propagation."
 
-    if 'continue' not in sys_parameters:
+    if 'continue' not in prop_parameters:
         # set initial time and reset log
         system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
+        # reset the electrons
+        system.nuclei.init_electrons(input_parameters)
+        system.do_log(True)
 
     # Set desired propagator
     system.nuclei.attach_nuclei_propagator(input_parameters)
@@ -81,10 +88,10 @@ def propagate(system, input_parameters):
     path_file = os.path.join(name_folder, name_file)
 
     while(system.nuclei.time < time_end):
-        system.step(timestep_output)
+        system.step(timestep_output, True)
 
         # TODO: Learn how to append in pickle and maybe do that
-        if 'intermediate_write' in sys_parameters:
+        if 'intermediate_write' in prop_parameters:
             pickle.dump(system, open(path_file, 'wb'), -1)
 
     pickle.dump(system, open(path_file, 'wb'), -1)

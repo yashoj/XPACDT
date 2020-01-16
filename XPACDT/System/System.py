@@ -51,12 +51,10 @@ class System(object):
 
         self.__parameters = input_parameters
 
-        assert('Interface' in self.parameters.get("system")), "Interface " \
-            "not specified!"
         assert('dof' in self.parameters.get("system")), "Number of " \
             "degrees of freedom not specified!"
 
-        self.n_dof = self.parameters.get("system").get("dof")
+        self.n_dof = self.parameters.n_dof
         time = units.parse_time(self.parameters.get("system").get("time", "0 fs"))
 
         # Set up nuclei
@@ -86,12 +84,17 @@ class System(object):
         """XPACDT.Input.Inputfile : The parameters from the input file."""
         return self.__parameters
 
+    @parameters.setter
+    def parameters(self, new_parameters):
+        # TODO: See Ticket XPACDT-65
+        pass
+
     @property
     def nuclei(self):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
 
-    def step(self, time_propagate):
+    def step(self, time_propagate, sparse=False):
         """ Step the whole system forward in time. Also keep a log of the
         system state at these times.
 
@@ -99,10 +102,11 @@ class System(object):
         ----------
         time_propagate : float
             Time to advance the system in au.
+        sparse : bool, optional, default: False
+            Whether to keep a sparse (less memory consuming) log or not
         """
-
         self.__nuclei.propagate(time_propagate)
-        self.do_log()
+        self.do_log(sparse=sparse)
 
     def reset(self, time=None):
         """ Reset the system state to its original values and clear everything
@@ -113,7 +117,7 @@ class System(object):
         time : float, optional, default None
             System time to be set, if given.
         """
-
+        # TODO: after updating new parameters, initialize e- and propagator for 1st log
         self.__nuclei = copy.deepcopy(self.__log[0])
         if time is not None:
             self.__nuclei.time = time
@@ -126,7 +130,7 @@ class System(object):
         self.__nuclei = copy.deepcopy(self.__log[-1])
         self.do_log(True)
 
-    def do_log(self, init=False):
+    def do_log(self, init=False, sparse=False):
         """ Log the system state to a list called __log. Each entry is a
         dictonary containing the logged quantities. Currently this logs
         the system time and the nuclei object.
@@ -135,10 +139,15 @@ class System(object):
         ----------
         init : bool, optional
             If the log has to be initialized or not. Default False.
+        sparse : bool, optional, default: False
+            Whether to keep a sparse (less memory consuming) log or not
         """
 
         if init:
             self.__log = []
 
         self.__log.append(copy.deepcopy(self.nuclei))
-        # TODO: remove certain parts to not consume too much memory
+
+        # Use a sprase log by removing the propagator object - TODO: what else?
+        if sparse == True:
+            self.__log[-1].propagator = None

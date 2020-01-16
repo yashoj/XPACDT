@@ -41,16 +41,22 @@ import XPACDT.Tools.Geometry as geom
 
 class CW(itemplate.PotentialInterface):
     """
-    CW PES. No parameters required.
+    CW PES. No parameters required. 
+
+    The ordering of the atoms is as follows:
+    Cl, H, H
+
+    G. Capecchi and H. J. Werner, Phys. Chem. Chem. Phys. 6, 4975 (2004).
     """
-    def __init__(self, **kwargs):
+    def __init__(self, max_n_beads=1, **kwargs):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "CW")
-        # For proper Hessian derivatives!
+        itemplate.PotentialInterface.__init__(self, "CW", 9, 1,
+                                              max_n_beads, 'adiabatic')
+        # For proper Hessian derivatives! Numerically tested for stability!
         self._DERIVATIVE_STEPSIZE = 7e-3
 
-    def _calculate_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, P=None, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -59,6 +65,8 @@ class CW(itemplate.PotentialInterface):
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
+            Please note that Cartesian coordinates of the atoms are used and 
+            have to be ordered in the following way: Cl, H, H
         P : (n_dof, n_beads) ndarray of floats, optional
             The momenta of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads. This is not
@@ -72,28 +80,30 @@ class CW(itemplate.PotentialInterface):
         assert (R.ndim == 2), "Position array not two-dimensional!"
         assert (R.dtype == 'float64'), "Position array not real!"
 
-        self._energy = np.zeros((1, R.shape[1]))
-        self._gradient = np.zeros_like(R[np.newaxis, :])
+        self._adiabatic_energy = np.zeros((1, R.shape[1]))
+        self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
+
+        self._adiabatic_energy_centroid = np.zeros(1)
+        self._adiabatic_gradient_centroid = np.zeros((1, R.shape[0]))
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-            self._energy_centroid, self._gradient_centroid = pot.pot(centroid)
-            self._energy_centroid = self._energy_centroid[np.newaxis, :]
-            self._gradient_centroid = self._gradient_centroid[np.newaxis, :]
+            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid, self.__data_path)
 
         for i, r in enumerate(R.T):
-            self._energy[0, i], self._gradient[0, :, i] = pot.pot(r, self.__data_path)
+            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r, self.__data_path)
 
         if R.shape[1] == 1:
-            self._energy_centroid = self._energy[:, 0]
-            self._gradient_centroid = self._gradient[:, :, 0]
+            self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+            self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
 
         return
 
-    def _to_internal(self, R):
+    def _from_cartesian_to_internal(self, R):
         """Transform from full cartesian coordinates to internal Jacobi
-        coordinates. The Jacobi coordinates are defined as follows:
+        coordinates. The order of the atoms has to be Cl, H, H. 
+        The Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
             R = internal[1] = Distance between the F and the center of
                               the two H's in au.
@@ -123,12 +133,16 @@ class CW(itemplate.PotentialInterface):
 
         # phi
         internal[2] = geom.angle(r_vec, R_vec)
+        # Correct angle definition to range :math:`0 : 2\pi`
         if R[1] < 0.0:
             internal[2] = 2.0*np.pi-internal[2]
 
         return internal
 
     def _from_internal(self, internal):
+        return self._from_internal_to_cartesian(internal)
+
+    def _from_internal_to_cartesian(self, internal):
         """Transform from Jacobi coordinates to full cartesian coordinates. The
         Jacobi coordinates are defined as follows:
             r = internal[0] = Distance between the first and second H in au.
@@ -184,17 +198,17 @@ class CW(itemplate.PotentialInterface):
 #        
 #        
 #        if phi > -11.0:
-#            inte = pes._to_internal(x)
+#            inte = pes._from_cartesian_to_internal(x)
 ##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
-#            y = pes._from_internal(inte)
+#            y = pes._from_internal_to_cartesian(inte)
 ##            print(x, y)
 #   
 #            print((abs(x-y) < 1e-8).all())
 ##            print()
 #    
 #    pes._calculate_all(x[:, None])
-#    print(pes._energy, pes._gradient)
-#    print(pes.energy(x[:, None]))
+#    print(pes._adiabatic_energy, pes._gradient)
+#    print(pes.adiabatic_energy(x[:, None]))
 #    internal = np.array([2.0, 5.0, 0.0])
 #    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
 ##    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)

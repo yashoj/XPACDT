@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -33,6 +34,7 @@
 """
 
 import argparse
+import datetime
 import git
 import inspect
 import numpy as np
@@ -51,7 +53,9 @@ import XPACDT.Input.Inputfile as infile
 
 
 def resource_path(relativePath):
-    """ Get absolute path to resource, works for dev and for PyInstaller.
+    """ Get absolute path to a folder below the directory, where the currently
+    executed xpacdt.py is stored. This works with PyInstaller and also 'normal'
+    python. This is used to access files stored in the PyInstaller folder.
 
     Parameters
     ----------
@@ -60,11 +64,27 @@ def resource_path(relativePath):
 
     Returns
     -------
-    Absolute path to the file currently executed.
+    Absolute path to the folder below the current working folder.
     """
     base_path = getattr(sys, '_MEIPASS',
                         os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relativePath)
+
+
+def print_helpfile(filename):
+    """ Output the contents of a help file to stdout.
+
+    Parameters
+    ----------
+    filename : string
+       Name of the file to be printed.
+    """
+
+    help_path = resource_path("helptext")
+
+    with open(os.path.join(help_path, filename), 'r') as helpfile:
+        for line in helpfile:
+            print(line, end='')
 
 
 def start():
@@ -77,7 +97,7 @@ def start():
         repo = git.Repo(path=current_path, search_parent_directories=True)
         branch_name = repo.active_branch.name
         hexsha = repo.head.object.hexsha
-    except:  # TODO: better specific errors!
+    except git.exc.NoSuchPathError:
         with open(resource_path("") + '.version', 'r') as input_file:
             branch_name = input_file.readline().split()[1]
             hexsha = input_file.readline().split()[1]
@@ -88,37 +108,64 @@ def start():
     version_file.close()
     print("Branch: " + branch_name)
     print("Commit: " + hexsha)
+    now = datetime.datetime.now()
+    print(now)
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(add_help=False)
 
     parser.add_argument('-h', '--help', nargs='?',
                         type=str, dest="help", const='nothing',
-                        help='Prints this help page and additional information for certain keywords: Analysis, TODO_MORE.')
+                        help='Prints this help page and additional'
+                        ' information for certain keywords:'
+                        ' analysis, plot, sampling, propagation.')
 
-    i_help = "Name of the XPACDT input file. Please refer to the general " \
+    i_help = "Name of the main XPACDT input file. The input file is required" \
+             " for any calculation. Please refer to the general " \
              "documentation for instructions on how this has to be structured."
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
                         required=False, help=i_help)
 
-    # TODO: Add more command line arguments as fit
+    i_help = "Name of an additional XPACDT input file used for real time " \
+             " propagation. Please refer to the general " \
+             "documentation for instructions on how this has to be structured."
+    parser.add_argument("-p", "--propagation_input", type=str,
+                        dest="PropagationInputFile",
+                        required=False, help=i_help)
+
+    i_help = "Name of an additional XPACDT input file used for analysis. " \
+             "This input file is only used if job = full in the -i inputfile" \
+             "or if -p is given. " \
+             "Please refer to the general documentation for instructions " \
+             " on how this has to be structured."
+    parser.add_argument("-a", "--analysis_input", type=str,
+                        dest="AnalysisInputFile",
+                        required=False, help=i_help)
+
     args = parser.parse_args()
 
     if args.help is not None:
         parser.print_help()
-        if args.help == 'Analysis':
+
+        if args.help.lower() == 'analysis':
             print()
             print()
             print("Printing additional help for " + args.help + ":")
             print()
-            print("Module to perform analysis on a set of XPACDT.Systems. The most general cases that can be calculated are: \n \t Expectation values <A(t)>, \n \t Correlation functions <B(0)A(t)>, \n \t One- and Two-dimensional histograms \n\nIn the input file one defines: \n\t A(t), B(0):  Quantities of interest, e.g., the position of a certain atom, a bond length, the charge, etc.\n\t f(x): A function to be calculated over the quantities obtained from all trajectories, i.e., the mean or standard devitaion, a histogram. \n\nThe analysis then iterates over all XPACDT.Systems and calculates A(t), B(0) for each system. Then the function f(x) is evaluated, i.e., the mean of the quantity is obtained or a histogram of the quantity is obtained. The standard error of the obtain results is evaluated employing bootstrapping. \n\nResults are printed to file for easy plotting with gnuplot. \n\nPlease note that for each quantity one wishes to obtain, an individual 'command'-block has to be defined in the input file. If n operation, i.e. A(t), B(0), returns more than one value, they all together enter the function f(x) and are treated as independet in the bootstrapping. This might be desired behavior for obtaining mean positions of the beads or obtaining a density plot of the ring polymer, but for most scenarios, this is not desired. Thus, whenever a command returns more than one value, a RuntimeWarning is printed for the first system and timestep.\n\n\n")
-            print("An Example input block for a position-position correlation function looks like:\n\n$commandCxx\nop0 = +pos\nop = +pos\nformat = time\nvalue = mean\n\n$end \n\n")
-            print("An Example input block for a histogram of the positions of a one-d system looks like:\n\n$commandPos\nop = +pos\nvalue = histogram -3.0 3.0 10\nformat = value\n$end \n\n")
-            print("Please refer to the example input files for more options!\n\n")
-            print("Possible operations for A and B are: \n")
+            print_helpfile("analysis.txt")
             operations.position(["-h"], None)
             print()
             operations.momentum(["-h"], None)
+            print()
+            operations.electronic_state(["-h"], None)
+        elif (args.help.lower() == 'plot'
+              or args.help.lower() == 'sampling'
+              or args.help.lower() == 'propagation'):
+            print()
+            print()
+            print("Printing additional help for " + args.help + ":")
+            print()
+            print_helpfile(args.help.lower() + ".txt")
         elif args.help == 'nothing':
             pass
         else:
@@ -138,38 +185,69 @@ def start():
     np.random.seed(seed)
 
     # Analysis or plotting should be called right away
+    start_time = time.time()
     job = input_parameters.get("system").get("job")
     if job == "analyze":
+        print("Running Analysis...", end='', flush=True)
         analysis.do_analysis(input_parameters)
+        print("...Analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
         return
+
     elif job == "plot":
+        print("Running plotting...", end='', flush=True)
         pes_name = input_parameters.get("system").get("Interface", None)
+
+        if pes_name is None:
+            raise KeyError("\nXPACDT: No potential interface name"
+                           " given in input.")
         __import__("XPACDT.Interfaces." + pes_name)
         pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
                       pes_name)(**input_parameters.get(pes_name))
 
-        dof = [int(i) for i in input_parameters.get("plot").get("dof").split()]
-        start = [float(i) for i in input_parameters.get("plot").get("start").split()]
-        end = [float(i) for i in input_parameters.get("plot").get("end").split()]
-        step = [float(i) for i in input_parameters.get("plot").get("step").split()]
+        plot_params = input_parameters.get("plot")
+        # Parse grid parameters
+        dof = [int(i) for i in plot_params.get("dof").split()]
+        start = [float(i) for i in plot_params.get("start").split()]
+        end = [float(i) for i in plot_params.get("end").split()]
+        step = [float(i) for i in plot_params.get("step").split()]
 
-        assert(len(dof) == len(start)), "Number of degrees of freedom and start values for grids differ!" + str(len(dof)) + " != " + str(len(start))
-        assert(len(dof) == len(end)), "Number of degrees of freedom and end values for grids differ!" + str(len(dof)) + " != " + str(len(end))
-        assert(len(dof) == len(step)), "Number of degrees of freedom and step values for grids differ!" + str(len(dof)) + " != " + str(len(step))
+        if len(dof) != len(start):
+            raise ValueError("\nXPACDT: Number of degrees of freedom and"
+                             " start values for grids differ!"
+                             + str(len(dof)) + " != " + str(len(start)))
+
+        if len(dof) != len(end):
+            raise ValueError("\nXPACDT: Number of degrees of freedom and"
+                             " end values for grids differ!"
+                             + str(len(dof)) + " != " + str(len(start)))
+
+        if len(dof) != len(step):
+            raise ValueError("\nXPACDT: Number of degrees of freedom and"
+                             " step values for grids differ!"
+                             + str(len(dof)) + " != " + str(len(start)))
+
+        # Parse electronic parameters
+        state = int(plot_params.get("state", "0"))
+        picture = 'diabatic' if 'diabatic' in plot_params else 'adiabatic'
 
         if len(dof) == 1:
             pes.plot_1D(input_parameters.coordinates[:, 0], dof[0],
                         start[0], end[0], step[0],
-                        relax=("optimize" in input_parameters.get("plot")),
-                        internal=("internal" in input_parameters.get("plot")))
+                        relax=("optimize" in plot_params),
+                        internal=("internal" in plot_params),
+                        S=state, picture=picture)
         elif len(dof) == 2:
             pes.plot_2D(input_parameters.coordinates, dof[0], dof[1],
                         start, end, step,
-                        relax=("optimize" in input_parameters.get("plot")),
-                        internal=("internal" in input_parameters.get("plot")))
+                        relax=("optimize" in plot_params),
+                        internal=("internal" in plot_params),
+                        S=state, picture=picture)
 
         else:
-            raise RuntimeError("Cannot plot PES other than for 1 or 2 degrees of freedom.")
+            raise ValueError("\nXPACDT: Cannot plot PES other than for 1 or"
+                             " 2 degrees of freedom.")
+
+        print("...plotting done in {: .2f} s.".format(time.time() - start_time), flush=True)
         return
 
     # read from pickle file if exists
@@ -179,16 +257,80 @@ def start():
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
         system = pickle.load(open(path_file, 'rb'))
+        # Updating input parameters appropriately
+        system.parameters = input_parameters
     else:
         system = xSystem.System(input_parameters)
 
     # Run job
-    if job == "sample":
+    if job == "full" or args.PropagationInputFile is not None:
+        # run sampling first
+        print("Running Sampling...", end='', flush=True)
+        systems = sampling.sample(system, input_parameters, do_return=True)
+        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+        # loop and propagate
+        print("Running Real time propagation...", end='', flush=True)
+        start_time = time.time()
+        # Read new input file if given
+        if args.PropagationInputFile is not None:
+            print("The inputfile '" + args.PropagationInputFile +
+                  "' is read! \n")
+            input_parameters = infile.Inputfile(args.PropagationInputFile)
+        else:
+            # Remove thermostat if exists
+            input_parameters.pop('thermostat', None)
+
+        for i, system_i in enumerate(systems):
+            # create folder
+            trj_folder = os.path.join(name_folder, 'trj_{0:07}'.format(i))
+            if not os.path.isdir(trj_folder):
+                try:
+                    os.mkdir(trj_folder)
+                except OSError:
+                    sys.stderr.write("Creation of trajectory folder "
+                                     + trj_folder + " failed!")
+                    raise
+            # set folder in input parameters
+            input_parameters['system']['folder'] = trj_folder
+
+            # Updating input parameters appropriately if second input file is given
+            if args.PropagationInputFile is not None:
+                system_i.parameters = input_parameters
+
+            # run
+            rt.propagate(system_i, input_parameters)
+        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+        # run analsysis
+        print("Running analysis...", end='', flush=True)
+        start_time = time.time()
+        if args.AnalysisInputFile is not None:
+            print("The inputfile '" + args.AnalysisInputFile + "' is read! \n")
+            input_parameters = infile.Inputfile(args.AnalysisInputFile)
+        else:
+            input_parameters['system']['folder'] = name_folder
+
+        # Perform actual analysis only if commands are present
+        if len(input_parameters.commands) > 0:
+            analysis.do_analysis(input_parameters, systems)
+            print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
+        else:
+            print("...no analysis requested!")
+
+    elif job == "sample":
+        print("Running Sampling...", end='', flush=True)
         sampling.sample(system, input_parameters)
+        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
     elif job == "propagate":
+        print("Running Real time propagation...", end='', flush=True)
         rt.propagate(system, input_parameters)
+        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
     else:
-        raise NotImplementedError("Requested job type not implemented: " + job)
+        raise NotImplementedError("\nXPACDT: Requested job type not"
+                                  " implemented: " + job)
 
     return
 

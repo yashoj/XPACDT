@@ -1,0 +1,24 @@
+$system                     # general parameters
+dof = 9                     # integer, required: the number of degrees of freedom
+job = plot	            # (sample, propagate, analyze, plot), required: The job type.
+Interface = BKMP2	    # (OneDPolynomial, BKMP2, EckartBarrier), required: The interface to the potential to be used.
+$end
+
+##############################################################################
+
+$BKMP2 # must match the interface specified; specific to each interface
+$end
+
+$plot
+dof = 0		# Scan the first degree of freedom, i.e., x value of the first H
+start = 2.5
+end = 10.0 
+step = 0.1
+$end
+
+$coordinates
+type = xyz
+H 3.0 0.0 0.0
+H 1.0 0.0 0.0
+H -1.0 0.0 0.0
+$end

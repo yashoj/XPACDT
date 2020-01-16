@@ -41,12 +41,22 @@ class AdiabaticElectrons(electrons.Electrons):
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
+    n_beads : (n_dof) list of int
+        The number of beads for each degree of freedom.
+    masses_nuclei : (n_dof) ndarray of floats
+        The masses of each nuclear degree of freedom in au. This is not needed
+        for this particular electron subclass.
+    R, P : (n_dof, n_beads) ndarray of floats
+        The (ring-polymer) positions `R` and momenta `P` representing the
+        system nuclei in au. These are not needed for this particular electron
+        subclass.
     """
 
-    def __init__(self, parameters):
-        electrons.Electrons.__init__(self, parameters)
+    def __init__(self, parameters, n_beads, masses_nuclei=None, R=None, P=None):
+        electrons.Electrons.__init__(self, "AdiabaticElectrons", parameters,
+                                     n_beads, "adiabatic")
 
-    def step(self, time, **kwargs):
+    def step(self, R, P, time_propagate, **kwargs):
         """ Dummy implementation of the step, as adiabatic electrons have no
         explicit time-dependence.
         """
@@ -72,7 +82,7 @@ class AdiabaticElectrons(electrons.Electrons):
         The energy of the systems PES at each bead position or at the centroid
         in hartree.
         """
-        return self.pes.energy(R, centroid=centroid)
+        return self.pes.adiabatic_energy(R, centroid=centroid)
 
     def gradient(self, R, centroid=False):
         """Calculate the gradient of the electronic energy at the current
@@ -94,4 +104,4 @@ class AdiabaticElectrons(electrons.Electrons):
         centroid in hartree/au.
         """
 
-        return self.pes.gradient(R, centroid=centroid)
+        return self.pes.adiabatic_gradient(R, centroid=centroid)

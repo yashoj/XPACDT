@@ -81,7 +81,7 @@ isBundle = input("Do you want to run PyInstaller to bundle the XPACDT bin? (y/n)
 
 if isBundle == 'y':
    f = open("./output_pyinstall", 'w')
-   spoutput = sp.run(["compile_xpacdt.py"], cwd="XPACDT/Bin/", stdout=f, stderr=f)
+   spoutput = sp.run(["./compile_xpacdt.py"], cwd="XPACDT/Bin/", stdout=f, stderr=f)
    f.close()
 sys.stdout.write("\n")
 
@@ -102,7 +102,7 @@ sys.stdout.write("For permanent activation add that line to "
                  "your ~/.bashrc, ~/.bash_profile, etc. \n")
 sys.stdout.write("\n")
 
-# Ask if XPACDT should be PyInstalled
+# Ask if Documentation should be generated
 isDocu = input("Do you want to generate the general documentation? (y/n) ")
 
 if isDocu == 'y':

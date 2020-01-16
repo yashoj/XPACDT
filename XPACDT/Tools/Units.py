@@ -27,15 +27,12 @@
 #
 #  **************************************************************************
 
-"""Module to handly units."""
+"""Module to handle units."""
 
 import re
 from scipy.constants import physical_constants, femto, pico, atto, centi, pi
 import numpy as np
 
-# Alternative periodic tables
-# from mendeleev import element
-# from pyne.data import atomic_mass
 
 # Boltzmann constant in atomic units
 boltzmann = physical_constants['electron volt-hartree relationship'][0] * physical_constants['Boltzmann constant in eV/K'][0]

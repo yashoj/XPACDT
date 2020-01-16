@@ -56,11 +56,16 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
         A list of systems located at the sampled phase-space points.
     """
 
+    if system.nuclei.momenta is None:
+        raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
+                           " file, but required in thermostatted sampling.")
+
     sample_parameters = parameters.get('sampling')
     assert('samples' in sample_parameters), "Number of " \
         "samples required, but not given."
     assert('time' in sample_parameters), "Time for each sampling run " \
         "required, but not given."
+    assert('thermostat' in parameters), "No thermostat parameters given!"
 
     sampling_time = units.parse_time(sample_parameters.get('time', '0.0 fs'))
 
@@ -70,7 +75,6 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
 
         system.clear_log()
         systems.append(copy.deepcopy(system))
-        systems[-1].nuclei.propagator.thermostat = None
         systems[-1].nuclei.time = 0.0
 
     return systems

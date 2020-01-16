@@ -1,0 +1,11 @@
+Module to generate a set of initial conditions for subsequent real-time dynamics. Several approaches are implemented:
+
+FixedSampling : Keep the given coordinates and momenta.
+
+WignerSampling : Sample the Wigner distribution of the ground state or Boltzman distribution within the harmonic approximation.
+
+QuasiclassicalSampling : Sample the classical turning points to reproduce the energy of a given quantum state within the harmonic approximation.
+
+ThermostattedSampling : Run a long, thermostatted trajectory and periodically save coordinates and momenta.
+
+Please refer to the 'full_input.in' for options.

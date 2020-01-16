@@ -38,8 +38,68 @@ import XPACDT.Tools.Geometry as geom
 class GeometryTest(unittest.TestCase):
 
     def test_angle(self):
-        
-        pass
+        # Same direction -> angle should be 0
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([2.0, 0.0, 0.0])
+
+        phi_reference = 0.0
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
+
+        # Orthogonal -> angle should be \pi / 2
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([0.0, 1.0, 0.0])
+
+        phi_reference = np.pi / 2.0
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
+
+        # Opposite direction -> angle should be \pi
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([-1.0, 0.0, 0.0])
+
+        phi_reference = np.pi
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
+
+        # Mid of first quadrant -> angle should be \pi / 4
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([1.0, 1.0, 0.0])
+
+        phi_reference = np.pi / 4.0
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
+
+        # Mid of second quadrant -> angle should be 3 \pi / 4
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([-1.0, 1.0, 0.0])
+
+        phi_reference = 3.0 * np.pi / 4.0
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
+
+        # Mid of third quadrant -> angle should be 3 \pi / 4
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([-1.0, -1.0, 0.0])
+
+        phi_reference = 3.0 * np.pi / 4.0
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
+
+        # Mid of fourth quadrant -> angle should be \pi / 4
+        a = np.array([1.0, 0.0, 0.0])
+        b = np.array([1.0, -1.0, 0.0])
+
+        phi_reference = np.pi / 4.0
+        phi = geom.angle(a, b)
+
+        self.assertAlmostEqual(phi, phi_reference)
 
 
 if __name__ == "__main__":

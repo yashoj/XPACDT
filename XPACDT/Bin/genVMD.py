@@ -9,7 +9,7 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
 #
 #  This file is part of XPACDT.
@@ -63,7 +63,6 @@ def start():
     system = pickle.load(open(args.PickleFile, 'rb'))
     folder = os.path.dirname(os.path.abspath(args.PickleFile))
 
-
     # Generate XYZ file
     gen_XYZ(system, folder)
 
@@ -82,6 +81,8 @@ def gen_XYZ(system, folder):
     folder : string
         The folder in which to work.
     """
+
+    # TODO: Handle non-atom systems...
 
     # TODO: also add RPMD stuff, Use different format, etc.
     file = open(os.path.join(folder, "centroids.xyz"), 'w')

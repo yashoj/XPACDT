@@ -17,3 +17,4 @@ XPACDT/Interfaces/*_module/*.so
 XPACDT/Interfaces/*/pes.py
 docs/source/XPACDT.*
 
+.vscode

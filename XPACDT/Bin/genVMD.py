@@ -35,10 +35,10 @@ displaying.
 """
 
 import argparse
+import math
 import numpy as np
 import os
 import pickle
-import sys
 import subprocess as sp
 
 import XPACDT.Tools.Units as units
@@ -82,37 +82,58 @@ def gen_XYZ(system, folder):
         The folder in which to work.
     """
 
-    # TODO: Handle non-atom systems...
+    # Currently we assume that any system that has a multiple of three
+    # number of degrees of freedom is and 'xyz' type
+    # Any other system will be reformatted to fit the xyz type and additional
+    # degrees of freedom are set to always be 0, the atom symbol for everything
+    # is then assumed to be Na
 
-    # TODO: also add RPMD stuff, Use different format, etc.
-    file = open(os.path.join(folder, "centroids.xyz"), 'w')
-    symbols = np.array([units.atom_symbol(m) for m in system.log[0].masses[::3]])
-    for log_nuclei in system.log:
-        centroids = log_nuclei.x_centroid.reshape(-1, 3)
-        atoms = np.concatenate((symbols[:, None], centroids), axis=1)
+    n_dof = system.n_dof
+    # required number of atoms to save the actual degrees of freedom
+    n_atom = math.ceil(n_dof / 3)
+    n_dof_required = n_atom * 3
 
-        file.write(str(len(symbols)) + "\n\n")
-        for atom in atoms:
-            for value in atom:
-                file.write(str(value).replace('H', 'Na') + "\t")
-            file.write("\n")
-
-    file.close()
-
-    file = open(os.path.join(folder, "beads.xyz"), 'w')
     # TODO make variable!
-    n_beads = system.nuclei.n_beads[0]
+    n_beads = max(system.nuclei.n_beads)
+
+    if n_dof < n_dof_required:
+        symbols = np.array(['Na'] * n_atom)
+    else:
+        # Save in input file and actually get from there
+        symbols = np.array([units.atom_symbol(m) for m in system.log[0].masses[::3]])
+
+    file_centroid = open(os.path.join(folder, "centroids.xyz"), 'w')
+    file_beads = open(os.path.join(folder, "beads.xyz"), 'w')
+
+    extended_centroid = np.zeros(n_dof_required)
+    extended_beads = np.zeros((n_dof_required, n_beads))
     for log_nuclei in system.log:
-        positions = log_nuclei.positions.reshape(3,3,4).swapaxes(1,2).reshape(-1, 3)
-        atoms = np.concatenate((symbols.repeat(n_beads)[:, None], positions), axis=1)
+        # Obtain centroid positions and reshape to match n_dof_required and
+        # xyz file format
+        extended_centroid[:n_dof] = log_nuclei.x_centroid
+        centroids = extended_centroid.reshape(-1, 3)
+        atoms_c = np.concatenate((symbols[:, None], centroids), axis=1)
 
-        file.write(str(len(symbols)*n_beads) + "\n\n")
-        for atom in atoms:
+        # Obtain bead positions and reshape to match n_dof_required and
+        # xyz file format
+        extended_beads[:n_dof, :] = log_nuclei.positions
+        beads = extended_beads.reshape(-1, 3, n_beads).swapaxes(1, 2).reshape(-1, 3)
+        atoms_b = np.concatenate((symbols.repeat(n_beads)[:, None], beads), axis=1)
+
+        file_centroid.write(str(len(symbols)) + "\n\n")
+        for atom in atoms_c:
             for value in atom:
-                file.write(str(value).replace('H', 'Na') + "\t")
-            file.write("\n")
+                file_centroid.write(str(value) + "\t")
+            file_centroid.write("\n")
 
-    file.close()
+        file_beads.write(str(len(symbols)*n_beads) + "\n\n")
+        for atom in atoms_b:
+            for value in atom:
+                file_beads.write(str(value) + "\t")
+            file_beads.write("\n")
+
+    file_centroid.close()
+    file_beads.close()
 
 
 def gen_VMD(folder):
@@ -126,17 +147,18 @@ def gen_VMD(folder):
 
     file = open(os.path.join(folder, "movie.vmd"), 'w')
     file.write("## Read in centroids:\n")
-    file.write("mol new {/home/ralph/results/XPACDT-Testing/tmp/test_pes/muh2/centroids.xyz} type {xyz} first 0 last -1 step 1 waitfor -1\n\n")
-    file.write("## Set styles - Big balls + Dynamic bonds\n")
+    file.write("mol new {" + os.path.join(folder, 'centroids.xyz') +
+               "} type {xyz} first 0 last -1 step 1 waitfor -1\n\n")
+    file.write("## Set styles for centroid - Big balls + Dynamic bonds\n")
     file.write("mol modstyle 0 0 CPK 1.000000 0.000000 12.000000 12.000000\n")
     file.write("mol addrep 0\n")
     file.write("mol modstyle 1 0 DynamicBonds 2.000000 0.100000 12.000000\n\n")
     file.write("## Read in beads:\n")
-    file.write("mol new {/home/ralph/results/XPACDT-Testing/tmp/test_pes/muh2/beads.xyz} type {xyz} first 0 last -1 step 1 waitfor -1\n\n")
-    file.write("## Set styles - small balls, transparent\n")
+    file.write("mol new {" + os.path.join(folder, 'beads.xyz') +
+               "} type {xyz} first 0 last -1 step 1 waitfor -1\n\n")
+    file.write("## Set styles for beads - small balls, transparent\n")
     file.write("mol modstyle 0 1 CPK 0.500000 0.000000 12.000000 12.000000\n")
     file.write("mol modmaterial 0 1 Transparent\n")
-    file.write("mol modcolor 0 1 ColorID 0\n\n")
     file.write("## Go to the beginning\n")
     file.write("animate goto 0\n")
     file.write("display resetview\n\n")
@@ -144,6 +166,7 @@ def gen_VMD(folder):
     file.write("set n [molinfo top get numframes]\n\n")
     file.write("## Reset views etc.\n")
     file.write("color Display Background white\n")
+    file.write("color Name H silver\n")
     file.write("axes location Off\n")
     file.write("display projection orthographic\n")
     file.write("display depthcue off\n\n")

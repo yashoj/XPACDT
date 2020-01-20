@@ -226,9 +226,19 @@ def start():
                              " step values for grids differ!"
                              + str(len(dof)) + " != " + str(len(start)))
 
-        # Parse electronic parameters TODO: parse tuple and check for consistency
-        state = int(plot_params.get("state", "0"))
+        # Parse electronic parameters
         picture = 'diabatic' if 'diabatic' in plot_params else 'adiabatic'
+        state_split = plot.params.get("state", "0").split()
+        if len(state_split) == 1:
+            state = int(state_split[0])
+        elif len(state_split) == 2:
+            state = (int(state_split[0]), int(state_split[1]))
+            if picture == 'adiabatic':
+                raise RuntimeError("\nXPACDT: Cannot plot offdiagonal elements if"
+                                   "picture is adiabatic.")
+        else:
+            raise ValueError("\nXPACDT: Too many state variables given for plotting.")
+        state = int(plot_params.get("state", "0"))
 
         if len(dof) == 1:
             pes.plot_1D(input_parameters.coordinates[:, 0], dof[0],

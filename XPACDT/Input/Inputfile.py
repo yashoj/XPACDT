@@ -322,6 +322,11 @@ class Inputfile(collections.MutableMapping):
             else:
                 match = re.search(r"\$(\w+)\W*(.*)", section,
                                   flags=re.DOTALL)
+                if match is None:
+                    raise RuntimeError("\nXPACDT: Error parsing the"
+                                       " groups in the input file. "
+                                       "Maybe there is a space between"
+                                       " the $ and the name.")
                 keyword = match.group(1)
                 try:
                     values = match.group(2)

@@ -72,14 +72,10 @@ $end
 
 ##############################################################################
 
-# These fitted PES don't have any parameters.
-$BKMP
-$end
 
-$CW
-$end
-
-$LWAL
+$Triatomic
+# Required paramter
+name = BKMP2	# (BKMP2, CW, LWAL) String, Name of the fitted pes
 $end
 
 ##############################################################################

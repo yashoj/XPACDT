@@ -1,0 +1,36 @@
+&SEWARD
+    title = {title}     * Title of the computation
+    basis = {basis}     * Basis set to use for the computation
+    group = c1          * Symmetry (C1 means none)
+    coord               * Coordinates of the atoms
+    {natoms}
+    {xcart}
+
+&SCF
+    charge   = {charge} * Total charge of the system
+
+&RASSCF
+    charge   = {charge}                 * Total charge of the system
+    spin     = {spin}                   * Spin degeneracy
+    nactel   = {nactel} 0 0             * Number of active electrons
+    ras2     = {ras2}                   * Number of electrons in RAS2
+    ciroot   = {ciroot} {ciroot} 1      * ??
+    cionly                              * ??
+    rlxroot  = {rlxroot}                * ??
+
+>> COPY $Project.JobIph JOB001  * Store the result of RASSCF for future usage
+
+&MCLR  * ?? Get rid of this ?
+    iter = 6000
+    sala = 1
+    threshold = 1.e-4
+
+&ALASKA  * Run Alaska to get the gradient
+    pnew
+
+&ALASKA  * Run Alaska to get the nonadiabatic coupling (NAC) 
+    nac = ? ? * Check what root should be use
+
+&RASSI  * ?? Get rid of this ?
+    overlaps
+    onel

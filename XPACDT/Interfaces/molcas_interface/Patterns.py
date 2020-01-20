@@ -2,7 +2,30 @@ import re
 
 RAW_PATTERNS = dict()
 
-# Match decimal numbers in the format used in MOLCAS .log runfile
+# Match the version of MOLCAS as written in the .log file
+# Capture the version string.
+RAW_PATTERNS["molcas version"] = r"""
+    [Vv]ersion
+    \s*             # Spaces
+    (               # Start of the version capturing group
+        [-v\.\d]*   # Version string
+    )"""
+
+RAW_PATTERNS["error"] = r"""
+    (                       # Start capture group for the section
+        ---\ Start\ Module
+        .*                  # The whole content of the section
+        ---\ Stop\ Module
+        .*
+        rc=
+        \s*
+            (.*)            # The error type
+        \s*
+        ---
+    )
+    """
+
+# Match decimal numbers in the format used in MOLCAS .log file
 # Do *not* capture the number by itself but wrap everything in a non capturing
 # group to allow to format it in other patterns without problem.
 # Note: The use of the re.VERBOSE mode allow fancy formating but forces the
@@ -69,13 +92,17 @@ RAW_PATTERNS["overlap section"] = r"""
     ---\ Stop\ Module
     """
 
-# Match the content of an overlap matrix section if the matrix is diagonal
-# Capture all the diagonal elements at once
+# Match the content of an overlap matrix section
+# Capture all the matrix elements at once
+# If the first group is not empty, that means the matrix is given by its
+# diagonal only
 # Note: the vector representing the diagonal matrix captured by this pattern
 # can be directly parse by np.fromstring(captured_vector, sep=" ")
-RAW_PATTERNS["overlap diagonal"] = r"""
-    Diagonal,\ with\ elements\n
-    \ *
+RAW_PATTERNS["overlap matrix"] = r"""
+    (               # Start capturing group for diagonal text
+        Diagonal,\ with\ elements\n
+        \ *
+    )?              # The group is optional (match empty string if absent)
     ({num}|\s)*     # Capture diagonal vector
     """.format(num=RAW_PATTERNS["decimal"])
 

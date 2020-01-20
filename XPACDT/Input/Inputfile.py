@@ -196,7 +196,7 @@ class Inputfile(collections.MutableMapping):
         if np.any([(i < 1) for i in n]):
             raise ValueError("Number of beads needs to be more than zero.")
 
-        if np.any([(i != 1 or (i % 2 != 0)) for i in n]):
+        if np.any([(i != 1 and (i % 2 != 0)) for i in n]):
             raise ValueError("Number of beads not 1 or even.")
 
         # Keep number of beads same for now

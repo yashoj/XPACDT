@@ -1,10 +1,10 @@
 &SEWARD
-    title = {title}     * Title of the computation
     basis = {basis}     * Basis set to use for the computation
-    group = c1          * Symmetry (C1 means none)
+    group = nosym       * Symmetry to be considered
     coord               * Coordinates of the atoms
-    {natoms}
-    {xcart}
+        {natoms}
+                        * Mandatory ignored line for XYZ format
+        {xcart}
 
 &SCF
     charge   = {charge} * Total charge of the system
@@ -18,19 +18,10 @@
     cionly                              * ??
     rlxroot  = {rlxroot}                * ??
 
->> COPY $Project.JobIph JOB001  * Store the result of RASSCF for future usage
-
-&MCLR  * ?? Get rid of this ?
-    iter = 6000
-    sala = 1
-    threshold = 1.e-4
-
 &ALASKA  * Run Alaska to get the gradient
     pnew
 
-&ALASKA  * Run Alaska to get the nonadiabatic coupling (NAC) 
+* TODO This need to run for all pairs of states of interest
+&ALASKA  * Run Alaska to get the nonadiabatic coupling (NAC)
+    nocsf     * Use that option ?
     nac = ? ? * Check what root should be use
-
-&RASSI  * ?? Get rid of this ?
-    overlaps
-    onel

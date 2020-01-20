@@ -17,7 +17,7 @@ RAW_PATTERNS["error"] = r"""
         .*                  # The whole content of the section
         ---\ Stop\ Module
         .*
-        rc=
+        rc=                 # rc here means "Return Code"
         \s*
             (.*)            # The error type
         \s*
@@ -60,50 +60,35 @@ RAW_PATTERNS["energy"] = r"""
 # Match the 'Molecular gradients' section of a MOLCAS .log runfile
 # Capture the whole section
 RAW_PATTERNS["gradient section"] = r"""
-    Molecular gradients     # Text associated with the gradients section
+    Molecular\ gradients    # Text associated with the gradients section
     (.*)                    # Capture everything in the section
-    Stop\ Module:\ *alaska   # End of the alaska subroutine computing gradients
+    Stop\ Module:\ *alaska  # End of the alaska subroutine computing gradients
     """
 
-# Match a single line of the molecular gradient matrix inside
-# a 'Molecular gradients' section of a MOLCAS .log runfile
-# Capture the gradient vector
+# Match the 'Total derivative couplinig' section of a MOLCAS .log runfile
+# Capture the whole section
+RAW_PATTERNS["nac section"] = r"""
+    Total\ derivative\ coupling # Text associated with the gradients section
+    (.*)                        # Capture everything in the section
+    Stop\ Module:\ *alaska      # End of the alaska subroutine computing nac
+    """
+
+# Match a single line representing a vector at a molecule, as can be found
+# for the molecular gradients and the NAC vectors in a MOLCAS .log file.
+# Capture the vector
 # Note: the vector captured by this pattern can be directly parse by
 # np.fromstring(captured_vector, sep=" ")
-RAW_PATTERNS["gradient"] = r"""
+RAW_PATTERNS["molecular vector"] = r"""
     \w+             # Atom symbol
     \d+             # ID (integer)
     \ +
-    (               # Capturing group for the gradient vector
+    (               # Capturing group for the vector
         {num}       # X component
         \ +
         {num}       # Y Component
         \ +
         {num}       # Z Component
     )
-    """.format(num=RAW_PATTERNS["decimal"])
-
-# Match the overlap matrix section of a RASSI computation in a MOLCAS .log
-# runfile
-# Capture the content of the section
-RAW_PATTERNS["overlap section"] = r"""
-    OVERLAP\ MATRIX\ FOR\ THE\ ORIGINAL\ STATES:
-    (.*)                    # Capture everything in the section
-    ---\ Stop\ Module
-    """
-
-# Match the content of an overlap matrix section
-# Capture all the matrix elements at once
-# If the first group is not empty, that means the matrix is given by its
-# diagonal only
-# Note: the vector representing the diagonal matrix captured by this pattern
-# can be directly parse by np.fromstring(captured_vector, sep=" ")
-RAW_PATTERNS["overlap matrix"] = r"""
-    (               # Start capturing group for diagonal text
-        Diagonal,\ with\ elements\n
-        \ *
-    )?              # The group is optional (match empty string if absent)
-    ({num}|\s)*     # Capture diagonal vector
     """.format(num=RAW_PATTERNS["decimal"])
 
 # Compiled patterns

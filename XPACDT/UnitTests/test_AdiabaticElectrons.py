@@ -115,6 +115,11 @@ class AdiabaticElectronsTest(unittest.TestCase):
         energy = self.pes1D_quartic.energy(np.array([[1.0]]))
         self.assertAlmostEqual(energy, energy_ref)
 
+    def test_current_state(self):
+        pass
+    
+    def test_get_populations(self):
+        pass
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(AdiabaticElectronsTest)

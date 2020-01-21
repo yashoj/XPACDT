@@ -290,6 +290,10 @@ class VelocityVerletTest(unittest.TestCase):
         return
 
 
+    def test_attach_thermostat(self):
+        # What to test here?
+        pass
+
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(VelocityVerletTest)
     unittest.TextTestRunner().run(suite)

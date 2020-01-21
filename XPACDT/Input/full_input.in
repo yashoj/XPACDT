@@ -38,7 +38,7 @@ basis = adiabatic         # string, optional, (adiabatic (default), diabatic)
       			  # Electronic basis employed 
 n_steps = 100             # integer, optional, default: 1
 	  		  # Number of electronic time steps to be performed for each nuclear steps
-rpsh_type = bead          # string, optional (bead (default), centroid, density_matrix)
+rpsh_type = bead          # string, optional (centroid (default), bead, density_matrix)
 	    		  # Type of ring polymer surface hopping (RPSH) 
 rpsh_rescaling = bead     # string, optional (bead (default), centroid)
 	       	 	  # Type of momentum rescaling in RPSH; 
@@ -47,7 +47,7 @@ rescaling_type = nac      # string, optional (nac (default), gradient)
 	       	 	  # Direction for momentum rescaling in surface hopping. 
 evolution_picture = schroedinger  # string, optional (schroedinger (default), interaction) 
 		    		  # Representation/picture for quantum evolution of the electronic subsystem
-ode_solver = runga_kutta  # string, optional (runge_kutta (default), scipy, unitary)
+ode_solver = runga_kutta  # string, optional (scipy (default), runge_kutta, unitary)
 	     		  # ODE solver to be used for propagation 
 			  # Please note that 'unitary' requires 'evolution_picture = schroedinger'
 $end

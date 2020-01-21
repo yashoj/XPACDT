@@ -96,3 +96,8 @@ r13 = 4.97
 $end
 
 ##############################################################################
+
+# Needed to be able to (mis)use XPACDT.Inputfile for reading this file!
+$system
+dof = 1
+$end

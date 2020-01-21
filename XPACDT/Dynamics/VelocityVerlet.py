@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -37,9 +38,6 @@ import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.System.Electrons as elecInterface
 import XPACDT.Tools.Units as units
 
-# TODO: test, benchmark, optimize, docu
-# TODO: add thermostatting and constraints.
-
 
 class VelocityVerlet(object):
     """
@@ -48,8 +46,6 @@ class VelocityVerlet(object):
 
     Parameters
     ----------
-    dt : float
-        Basic timestep for the propagator in a.u.
     electrons : XPACDT.System.Electrons
         Representation of the electrons that gives the gradients.
     mass : (n_dof) ndarray of floats
@@ -61,38 +57,37 @@ class VelocityVerlet(object):
 
     Other Parameters
     ----------------
+    timestep : float
+        Basic timestep for the propagator in a.u.
     rp_transform_type : {'matrix', 'fft'}, optional, default: 'matrix'
         Type of ring polymer normal mode transformation to be used.
 
     Attributes:
     -----------
+    timestep
     electrons
-    mass
-    n_beads : (n_dof) list of int
-        Number of beads for each degrees of freedom
+    propagation_matrix
+    thermostat
     """
 
     def __init__(self, electrons, mass, n_beads, beta=np.nan, **kwargs):
-        # TODO: basic argument parsing here
-
         assert (isinstance(electrons, elecInterface.Electrons)), \
             "electrons not derived from System.Electrons!"
-        assert ('timestep' in kwargs), "No timestep given for propagator."
 
-        self.electrons = electrons
-        self.mass = mass
-        self.n_beads = n_beads
+        if 'timestep' not in kwargs:
+            raise KeyError("\nXPACDT: No timestep given for velocity verlet"
+                           "propagator.")
 
-        self.timestep = units.parse_time(kwargs.get("timestep"))
-
-        rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
+        self.__electrons = electrons
+        self.__timestep = units.parse_time(kwargs.get("timestep"))
 
         self.__thermostat = None
         self.__constraints = None
 
+        rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
         # basic initialization
-        self._set_propagation_matrix(beta)
-        self.RPtransform = RPtrafo.RingPolymerTransformations(self.n_beads,
+        self._set_propagation_matrix(beta, n_beads, mass)
+        self.RPtransform = RPtrafo.RingPolymerTransformations(n_beads,
                                                               rp_transform_type)
         return
 
@@ -101,31 +96,10 @@ class VelocityVerlet(object):
         """ float : The timestep of the propagator in a.u."""
         return self.__timestep
 
-    @timestep.setter
-    def timestep(self, f):
-        assert (f > 0), "Timestep 0 or less."
-        self.__timestep = f
-
-    @property
-    def mass(self):
-        """ (n_dof) ndarray of floats : The masses of the system in a.u."""
-        return self.__mass
-
-    @mass.setter
-    def mass(self, a):
-        assert ((a > 0).all()), "A mass 0 or less."
-        self.__mass = a.copy()
-
     @property
     def electrons(self):
         """ XPACDT.System.Electrons : The electrons used in the propagation."""
         return self.__electrons
-
-    @electrons.setter
-    def electrons(self, p):
-        assert (isinstance(p, elecInterface.Electrons)), "electrons not"
-        "derived from System.Electrons!"
-        self.__electrons = p
 
     @property
     def propagation_matrix(self):
@@ -141,10 +115,6 @@ class VelocityVerlet(object):
         """ The thermostat used in the propagation."""
         return self.__thermostat
 
-    @thermostat.setter
-    def thermostat(self, t):
-        self.__thermostat = t
-
     def attach_thermostat(self, input_parameters, masses):
         """ Create a thermostat and attach it to the propagator.
 
@@ -157,12 +127,13 @@ class VelocityVerlet(object):
             The mass of each degree of freedom in au.
         """
         thermo_parameters = input_parameters.get('thermostat')
-        assert('method' in thermo_parameters), "No thermostat method given."
+        if 'method' not in thermo_parameters:
+            raise KeyError("\nXPACDT:No thermostat method given.")
 
         method = thermo_parameters.get('method')
         __import__("XPACDT.Dynamics." + method)
-        self.thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
-                                  method)(input_parameters, masses)
+        self.__thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
+                                    method)(input_parameters, masses)
 
     def propagate(self, R, P, time_propagation):
         """ Advance the given position and momenta for a given time.
@@ -182,14 +153,13 @@ class VelocityVerlet(object):
              in time. The first axis is the degrees of freedom and the second
              axis is beads.
         """
-        # TODO: possibly step size control here.
-        # TODO: possibly multiple-timestepping here
 
         Rt, Pt = R.copy(), P.copy()
-        # TODO: handle time not a multiple of timestep similar to 'propagate'
-        # in nuclei; this is only needed if this module has different timestep
-        # than nuclei so for multiple steps or for adaptive time step control.
         n_steps = int((time_propagation + 1e-8) // self.timestep)
+
+        assert(math.isclose(n_steps*self.timestep, time_propagation, abs_tol=1e-6)), \
+            "\nXPACDT: Propagation time is not multiple of velocity verlet timestep."
+
         for j in range(n_steps):
             Rn, Pn = self._step(Rt, Pt)
             Rt, Pt = Rn.copy(), Pn.copy()
@@ -264,15 +234,11 @@ class VelocityVerlet(object):
 
         Returns
         -------
-        rt : (n_dof, n_beads) ndarray of floats
-             The positions of all beads after advancing in time. The first
-             axis is the degrees of freedom and the second axis the beads.
-        pt : (n_dof, n_beads) ndarray of floats
-             The momenta of all beads after advancing in time. The first axis
-             is the degrees of freedom and the second axis the beads.
+        rt, pt : (n_dof, n_beads) ndarray of floats
+             The positions and momenta of all beads after advancing in time.
+             The first axis is the degrees of freedom and the second axis the beads.
         """
 
-        # TODO: profile and optimize, and generalize to more D; docu properly
         rnm = self.RPtransform.to_RingPolymer_normalModes(R)
         pnm = self.RPtransform.to_RingPolymer_normalModes(P)
 
@@ -294,11 +260,11 @@ class VelocityVerlet(object):
 
             pnm_t[k] = tt[:, 0]
             rnm_t[k] = tt[:, 1]
-  
+
         return self.RPtransform.from_RingPolymer_normalModes(rnm_t),\
             self.RPtransform.from_RingPolymer_normalModes(pnm_t)
 
-    def _set_propagation_matrix(self, beta):
+    def _set_propagation_matrix(self, beta, n_beads, mass):
         """Set the propagation matrices for the momenta and internal ring
         polymer coordinates. It is an array of arrays of two-dimensional
         arrays. The first dimension is the physical degrees of freedom, the
@@ -307,8 +273,13 @@ class VelocityVerlet(object):
         For a given degree of freedom j (with mass m_j) and a given ring
         polymer normal mode k (with frequency w_k) the propagation matrix
         is a 2x2 matrix and reads:
-            (  cos(w_k * dt)                 , -m_j * w_k * sin(w_k * dt)  )
-            (  1/(m_j * w_k) * sin(w_k * dt) , cos(w_k * dt)               )
+
+        .. math::
+
+        \\begin{pmatrix}
+            \\cos(w_k * dt) & -m_j * w_k * sin(w_k * dt) \\
+            1/(m_j * w_k) * sin(w_k * dt) &  \\cos(w_k * dt)
+            \\end{pmatrix}
 
         See also: https://aip.scitation.org/doi/10.1063/1.3489925
 
@@ -317,6 +288,10 @@ class VelocityVerlet(object):
         beta : float
             The inserve temperature of the ring polymer in au
             /or/ np.nan if only 1 bead is used.
+        n_beads : (n_dof) list of int
+            The number of beads for each degree of freedom.
+        mass : (n_dof) ndarray of floats
+            Masses of the system in au.
 
         Returns
         -------
@@ -324,11 +299,11 @@ class VelocityVerlet(object):
         -------
         """
 
-        n = max(self.n_beads)
+        n = max(n_beads)
         w = np.array([2.0 * (float(n) / beta) * math.sin(k * math.pi / float(n))
                       for k in range(1, n)])
         ps = []
-        for m in self.mass:
+        for m in mass:
             pm = [np.array([[1.0, 0.0], [self.timestep / m, 1.0]])]
 
             for wk in w:

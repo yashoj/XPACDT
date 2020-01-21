@@ -276,7 +276,7 @@ class Nuclei(object):
                                "electronic method.")
 
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
-                                   electronic_method)(parameters, self.n_beads,
+                                   electronic_method)(parameters,
                                                       self.masses,
                                                       self.positions,
                                                       self.momenta)
@@ -401,7 +401,7 @@ class Nuclei(object):
         # This is needed since nuclear propagator has this fixed timestep.
         # 'time_propagate' can be output time in propagation or sampling time
         # in thermostated sampling.
-        if not math.isclose(n_steps*timestep, time_plus, abs_tol=1e-6):
+        if not math.isclose(n_steps*timestep, time_propagate, abs_tol=1e-6):
             raise RuntimeError("\nXPACDT: Propagation time is not multiple of"
                                " nuclear timestep.")
 

@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from XPACDT.Interfaces.InterfaceTemplate import PotentialInterface
-from XPACDT.Interfaces.molcas_interface.Patterns import PATTERNS
+from XPACDT.Interfaces.Molcas.Patterns import PATTERNS
 
 
 class MolcasError(Exception):
@@ -36,7 +36,7 @@ class MolcasError(Exception):
                 """)
 
 
-class MolcasInterface(PotentialInterface):
+class Molcas(PotentialInterface):
     """
     Electronic structure as computed by the external program MOLCAS.
 

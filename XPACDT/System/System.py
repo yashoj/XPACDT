@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,8 +28,7 @@
 #
 #  **************************************************************************
 
-""" Module that defines the physical system treated in XPACDT. This is the
-core of XPACDT."""
+""" Module that defines the physical system treated in XPACDT."""
 
 import copy
 
@@ -38,28 +38,31 @@ import XPACDT.Tools.Units as units
 
 class System(object):
     """This class is the main class representing the system state. It stores
-    the nuclei and takes care of logging.
+    the nuclei object and takes care of logging.
 
     Parameters
     ----------
     input_parameters : XPACDT.Inputfile
         Represents all the input parameters for the simulation given in the
         input file.
+
+    Attributes:
+    -----------
+    log
+    parameters
+    nuclei
     """
 
     def __init__(self, input_parameters):
 
         self.__parameters = input_parameters
-
-        assert('dof' in self.parameters.get("system")), "Number of " \
-            "degrees of freedom not specified!"
-
-        self.n_dof = self.parameters.n_dof
-        time = units.parse_time(self.parameters.get("system").get("time", "0 fs"))
+        time = units.parse_time(self.parameters.get("system").
+                                get("time", "0 fs"))
 
         # Set up nuclei
-        self.__nuclei = nuclei.Nuclei(self.n_dof, self.parameters, time)
+        self.__nuclei = nuclei.Nuclei(self.parameters, time)
 
+        # Set up log
         self.do_log(init=True)
 
     @property
@@ -68,16 +71,6 @@ class System(object):
         of the states of the nuclei, which also carry the information on the
         electrons, times, etc."""
         return self.__log
-
-    @property
-    def n_dof(self):
-        """int : The number of degrees of freedom in this system."""
-        return self.__n_dof
-
-    @n_dof.setter
-    def n_dof(self, i):
-        assert (int(i) > 0), "Number of degrees of freedom less than 1!"
-        self.__n_dof = int(i)
 
     @property
     def parameters(self):
@@ -117,7 +110,7 @@ class System(object):
         time : float, optional, default None
             System time to be set, if given.
         """
-        # TODO: after updating new parameters, initialize e- and propagator for 1st log
+
         self.__nuclei = copy.deepcopy(self.__log[0])
         if time is not None:
             self.__nuclei.time = time
@@ -132,8 +125,8 @@ class System(object):
 
     def do_log(self, init=False, sparse=False):
         """ Log the system state to a list called __log. Each entry is a
-        dictonary containing the logged quantities. Currently this logs
-        the system time and the nuclei object.
+        XPACDT.System.Nuclei object, which contains all important quantities
+        like time, position, momenta, energies, etc.
 
         Parameters
         ----------
@@ -148,6 +141,6 @@ class System(object):
 
         self.__log.append(copy.deepcopy(self.nuclei))
 
-        # Use a sprase log by removing the propagator object - TODO: what else?
-        if sparse == True:
+        # Use a sprase log by removing the propagator object
+        if sparse:
             self.__log[-1].propagator = None

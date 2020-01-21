@@ -113,9 +113,9 @@ def position(arguments, log_nuclei):
         return None
 
     # get coordinate values under consideration here!
-    current_value = log_nuclei.parse_dof(opts.x1, 'x', opts.rpmd)
+    current_value = log_nuclei.get_selected_quantities(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log_nuclei.parse_dof(opts.x2, 'x', opts.rpmd)
+        coordinate_2 = log_nuclei.get_selected_quantities(opts.x2, 'x', opts.rpmd)
         # Also calculated per beads
         try:
             current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
@@ -217,7 +217,7 @@ def momentum(arguments, log_nuclei):
     quantity = 'v' if opts.vel else 'p'
 
     # get coordinate values under consideration here!
-    current_value = log_nuclei.parse_dof(opts.x1, quantity, opts.rpmd)
+    current_value = log_nuclei.get_selected_quantities(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
         raise NotImplementedError("Implement relative momentum calculations, etc.")
 #        coordinate_2 = log_nuclei.parse_coordinate(opts.x2, quantity, opts.rpmd)

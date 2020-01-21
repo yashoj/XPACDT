@@ -56,11 +56,11 @@ class VelocityVerlet(object):
         Masses of the system in au.
     n_beads : (n_dof) list of int
         The number of beads for each degree of freedom.
+    beta : float, optional, default np.nan
+        Inverse temperature for ring polymer springs in a.u.
 
     Other Parameters
     ----------------
-    beta : float, optional, default None
-        Inverse temperature for ring polymer springs in a.u.
     rp_transform_type : {'matrix', 'fft'}, optional, default: 'matrix'
         Type of ring polymer normal mode transformation to be used.
 
@@ -72,7 +72,7 @@ class VelocityVerlet(object):
         Number of beads for each degrees of freedom
     """
 
-    def __init__(self, electrons, mass, n_beads, **kwargs):
+    def __init__(self, electrons, mass, n_beads, beta=np.nan, **kwargs):
         # TODO: basic argument parsing here
 
         assert (isinstance(electrons, elecInterface.Electrons)), \
@@ -85,35 +85,16 @@ class VelocityVerlet(object):
 
         self.timestep = units.parse_time(kwargs.get("timestep"))
 
-        # optional as keywords
-        if 'beta' in kwargs:
-            self.beta = float(kwargs.get('beta'))
-        else:
-            # In the case when RPMD is not used (i.e. n_beads=1), 'beta' should
-            # not be used anywhere, so setting it to NaN.
-            self.__beta = np.nan
         rp_transform_type = kwargs.get('rp_transform_type', 'matrix')
 
         self.__thermostat = None
         self.__constraints = None
 
         # basic initialization
-        self._set_propagation_matrix()
+        self._set_propagation_matrix(beta)
         self.RPtransform = RPtrafo.RingPolymerTransformations(self.n_beads,
                                                               rp_transform_type)
         return
-
-    @property
-    def beta(self):
-        """ float or np.nan: Inverse temperature for ring polymer springs in
-        a.u. It is NaN if not given in the case of 1 bead for each degree of
-        freedom."""
-        return self.__beta
-
-    @beta.setter
-    def beta(self, f):
-        assert (f is None or f > 0), "Beta 0 or less."
-        self.__beta = f
 
     @property
     def timestep(self):
@@ -317,7 +298,7 @@ class VelocityVerlet(object):
         return self.RPtransform.from_RingPolymer_normalModes(rnm_t),\
             self.RPtransform.from_RingPolymer_normalModes(pnm_t)
 
-    def _set_propagation_matrix(self):
+    def _set_propagation_matrix(self, beta):
         """Set the propagation matrices for the momenta and internal ring
         polymer coordinates. It is an array of arrays of two-dimensional
         arrays. The first dimension is the physical degrees of freedom, the
@@ -331,14 +312,20 @@ class VelocityVerlet(object):
 
         See also: https://aip.scitation.org/doi/10.1063/1.3489925
 
+        Parameters
+        ----------
+        beta : float
+            The inserve temperature of the ring polymer in au
+            /or/ np.nan if only 1 bead is used.
+
         Returns
         -------
         Nothing, but `self.__propagation matrix` is initialized.
         -------
         """
-        # TODO: Make this compatible with different n_beads for each dof
+
         n = max(self.n_beads)
-        w = np.array([2.0 * (float(n) / self.beta) * math.sin(k * math.pi / float(n))
+        w = np.array([2.0 * (float(n) / beta) * math.sin(k * math.pi / float(n))
                       for k in range(1, n)])
         ps = []
         for m in self.mass:

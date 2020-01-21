@@ -1,0 +1,8 @@
+&RASSCF
+    charge   = {charge}                 * Total charge of the system
+    spin     = {spin}                   * Spin degeneracy
+    nactel   = {nactel} 0 0             * Number of active electrons
+    ras2     = {ras2}                   * Number of electrons in RAS2
+    ciroot   = {ciroot} {ciroot} 1      * ??
+    cionly                              * ??
+    rlxroot  = {rlxroot}                * ??

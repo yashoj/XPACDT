@@ -2,26 +2,29 @@
     basis = {basis}     * Basis set to use for the computation
     group = nosym       * Symmetry to be considered
     coord               * Coordinates of the atoms
-        {natoms}
+        {n_atoms}
                         * Mandatory ignored line for XYZ format
-        {xcart}
+        {cartesian_coo}
 
-&SCF
-    charge   = {charge} * Total charge of the system
+&SCF  * SCF computation assuming 0 total charge
 
-&RASSCF
-    charge   = {charge}                 * Total charge of the system
-    spin     = {spin}                   * Spin degeneracy
-    nactel   = {nactel} 0 0             * Number of active electrons
-    ras2     = {ras2}                   * Number of electrons in RAS2
-    ciroot   = {ciroot} {ciroot} 1      * ??
-    cionly                              * ??
-    rlxroot  = {rlxroot}                * ??
+{rasscf}
 
 &ALASKA  * Run Alaska to get the gradient
     pnew
 
-* TODO This need to run for all pairs of states of interest
-&ALASKA  * Run Alaska to get the nonadiabatic coupling (NAC)
-    nocsf     * Use that option ?
-    nac = ? ? * Check what root should be use
+* We only compute the lower subdiagonal triangle of the NAC vector matrix
+* since it is antisymmetric (for real vectors). That means
+* d_IJ = -d_JI
+* and
+* d_II = 0
+>> FOREACH I in (1 .. {n_states})
+    >> EVAL JMAX = $I - 1
+    >> FOREACH J in (1 .. JMAX})
+
+        &ALASKA  * Run Alaska to get the nonadiabatic coupling vectors (NAC)
+            nocsf
+            nac = $I $J
+
+    >> ENDDO
+>> ENDDO

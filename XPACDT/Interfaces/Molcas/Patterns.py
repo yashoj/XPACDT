@@ -93,4 +93,4 @@ RAW_PATTERNS["molecular vector"] = r"""
 
 # Compiled patterns
 PATTERNS = {key: re.compile(pattern, re.DOTALL | re.VERBOSE)
-            for key, pattern in RAW_PATTERNS.values()}
+            for key, pattern in RAW_PATTERNS.items()}

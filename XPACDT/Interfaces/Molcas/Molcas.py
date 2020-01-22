@@ -74,21 +74,22 @@ class Molcas(PotentialInterface):
         RASSCF part of the computation.
     """
     def __init__(self,
+                 max_n_beads=1,
                  n_dof=1,
                  n_states=1,
-                 max_n_beads=1,
                  workdir=Path.cwd() / "tmp" / "molcas",
                  molcas_executable="molcas",
                  basis="",
                  rasscf_filepath=Path(),
                  **kwargs):
 
+        print(kwargs)
+
         if max_n_beads != 1:
             raise NotImplementedError(
                     "Beads not supported for Molcas interface yet.")
 
-        super().__init__(self,
-                         "Molcas",
+        super().__init__("Molcas",
                          n_dof,
                          n_states,
                          max_n_beads,
@@ -100,7 +101,7 @@ class Molcas(PotentialInterface):
         molcas_project_name = f"XPACDT_project_{time_desc}"
 
         self._workdir = workdir
-        self._workdir.mkdir(parents=True, exists_ok=True)
+        self._workdir.mkdir(parents=True, exist_ok=True)
 
         # Create a clean environnement to run MOLCAS, only copying the PATH
         # variable from the calling environnement to avoid contamination of
@@ -123,7 +124,7 @@ class Molcas(PotentialInterface):
         self._compute_from_scratch = True
 
         self._molcas_runfile = self._workdir / f"{molcas_project_name}.RunFile"
-        self._molcas_input_file = self._molcas_runfile.with_suffix("input")
+        self._molcas_input_file = self._molcas_runfile.with_suffix(".input")
 
         # Find the template file relative to the current file
         raw_input_template_file = Path(__file__).with_name("template.input")
@@ -137,7 +138,7 @@ class Molcas(PotentialInterface):
             n_atoms=n_dof//3,
             n_states=n_states,
             rasscf=rasscf,
-            cartesian_coo="{cartesian_coo}")
+            xyz="{xyz}")
 
     def _calculate_adiabatic_all(self, R, P, S=0):
         # TODO Take the current state in account
@@ -173,9 +174,9 @@ class Molcas(PotentialInterface):
         """
         Start MOLCAS as a subprocess and return its output as a string.
 
-        Ignore MOLCAS rc file and use a minimal environnement containing only
-        the PATH variable and MOLCAS related shell variables build based on
-        the content of the input file.
+        Ignore MOLCAS rc file (-ign option) and use a minimal environnement
+        containing only the PATH variable and MOLCAS related shell variables
+        defined based on the content of the input file.
 
         Parameters
         ----------
@@ -198,7 +199,7 @@ class Molcas(PotentialInterface):
         """
         Run MOLCAS for a given configuration.
         """
-        input_str = self._template_molcas_input.format(xcart=R)
+        input_str = self._template_molcas_input.format(xyz=self._xyz(R[:, 0]))
         self._molcas_input_file.write_text(input_str)
 
         # NOTE Currently self._compute_from_scratch is always True
@@ -229,3 +230,19 @@ class Molcas(PotentialInterface):
         print(f"MOLCAS version {self._molcas_version} is used.")
 
         # TODO check if the provided MOLCAS supports Alaska NAC e.g. using molcas help alaska nac
+
+    def _xyz(self, r):
+        """
+        Transform the given nuclear degrees of freedom `r` in a string in
+        XYZ format.
+
+        Parameters
+        ----------
+        r : (n_dof,) ndarraz of floats
+            Nuclei positions
+        """
+        # TODO Use stored atom named once this is implemented
+        # NOTE THis could be defined at the template level
+        positions = r.reshape(self.n_dof // 3, 3)
+        lines = [" ".join(["H", *map(str, pos)]) for pos in positions]
+        return "\n".join(lines)

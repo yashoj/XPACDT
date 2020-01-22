@@ -91,7 +91,7 @@ class Inputfile(collections.MutableMapping):
             # to know the actual number at setup time
             interface_name = self.get('system').get('Interface')
             if interface_name is not None:
-                self.get(interface_name)['n_dof'] = int(self.__n_dof)
+                self.get(interface_name)['n_dof'] = self.n_dof
 
             if 'rpmd' in self.store:
                 assert('beads' in self.get("rpmd")), "No number of beads " \

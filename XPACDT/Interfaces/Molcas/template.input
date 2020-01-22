@@ -1,16 +1,22 @@
 &SEWARD
-    basis = {basis}     * Basis set to use for the computation
-    group = nosym       * Symmetry to be considered
-    coord               * Coordinates of the atoms
+    * Coordinates of the atoms
+    coord               
         {n_atoms}
-                        * Mandatory ignored line for XYZ format
-        {cartesian_coo}
+        * Mandatory ignored line for XYZ format
+        {xyz}
+        
+    * Basis set to use for the computation
+    basis = {basis}
+    * Symmetry to be considered
+    group = nosym
 
-&SCF  * SCF computation assuming 0 total charge
+* SCF computation assuming 0 total charge
+&SCF
 
 {rasscf}
 
-&ALASKA  * Run Alaska to get the gradient
+* Run Alaska to get the gradient
+&ALASKA
     pnew
 
 * We only compute the lower subdiagonal triangle of the NAC vector matrix
@@ -20,9 +26,10 @@
 * d_II = 0
 >> FOREACH I in (1 .. {n_states})
     >> EVAL JMAX = $I - 1
-    >> FOREACH J in (1 .. JMAX})
+    >> FOREACH J in (1 .. JMAX)
 
-        &ALASKA  * Run Alaska to get the nonadiabatic coupling vectors (NAC)
+        * Run Alaska to get the nonadiabatic coupling vectors (NAC)
+        &ALASKA
             nocsf
             nac = $I $J
 

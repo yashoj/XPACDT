@@ -1,0 +1,54 @@
+$system
+    dof = 6
+    Interface = Molcas
+    job = propagate
+    picklefile = pickle.dat
+    folder = H2
+$end
+
+$Molcas
+    n_states = 2
+    molcas_executable = molcas82
+    basis = 6-31g
+    rasscf_filepath = H2.rasscf.input
+$end
+
+$thermostat
+    method = MassiveAndersen
+    temperature = 300
+$end
+
+$sampling
+    method = Thermostatted
+    samples = 100
+    time = 10 fs
+$end
+
+$nuclei_propagator
+    method = VelocityVerlet
+    timestep = 0.1 fs
+$end
+
+$propagation
+    time_output = 0.1 fs 
+    time_start = 0.0 fs
+    time_end = 0.7 fs
+$end
+
+$coordinates
+    type = xyz
+    H 0.0 0.0 0.0
+    H 0.0 0.0 1.0
+$end
+
+$momenta
+    0.0 0.0 0.0
+    0.0 0.0 0.0
+$end
+
+$commandCXX
+    op0 = +pos -1 0
+    op = +pos -1 0
+    value = mean
+    format = time
+$end

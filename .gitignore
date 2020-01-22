@@ -11,6 +11,7 @@ tmp
 _static
 _templates
 *.exe.spec
+*.status
 XPACDT.*rst
 
 output_docu

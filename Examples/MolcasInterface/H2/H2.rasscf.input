@@ -1,0 +1,14 @@
+&RASSCF
+    charge   
+        0
+    spin     
+        1
+    nactel   
+        2 0 0
+    inactive 
+        0
+    ras2     
+        4
+    ciroot   
+        3 3 1
+    cionly

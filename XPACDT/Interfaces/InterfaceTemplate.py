@@ -74,7 +74,7 @@ class PotentialInterface:
                  primary_basis='adiabatic', **kwargs):
         self.__name = name
         self.__n_dof = n_dof
-        self.__n_states = n_states
+        self.__n_states = int(n_states)  # TODO catch possible error here
         # Note that here all dof having same number of beads is assumed
         # or at least that the effective position matrix having the max. nbeads
         self.__max_n_beads = max_n_beads
@@ -349,7 +349,7 @@ class PotentialInterface:
             at the centroid for a particular state or all states.
         """
         self._recalculate_adiabatic(R, S)
-            
+
         if centroid:
             if return_matrix:
                 return self._adiabatic_gradient_centroid

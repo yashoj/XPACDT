@@ -61,7 +61,7 @@ RAW_PATTERNS["energy"] = r"""
 # Capture the whole section
 RAW_PATTERNS["gradient section"] = r"""
     Molecular\ gradients    # Text associated with the gradients section
-    (.*)                    # Capture everything in the section
+    (.*?)                   # Capture the section (non greedy)
     Stop\ Module:\ *alaska  # End of the alaska subroutine computing gradients
     """
 
@@ -69,7 +69,7 @@ RAW_PATTERNS["gradient section"] = r"""
 # Capture the whole section
 RAW_PATTERNS["nac section"] = r"""
     Total\ derivative\ coupling # Text associated with the gradients section
-    (.*)                        # Capture everything in the section
+    (.*?)                       # Capture the section (non greedy)
     Stop\ Module:\ *alaska      # End of the alaska subroutine computing nac
     """
 

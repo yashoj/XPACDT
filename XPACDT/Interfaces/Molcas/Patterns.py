@@ -8,7 +8,11 @@ RAW_PATTERNS["molcas version"] = r"""
     [Vv]ersion
     \s*             # Spaces
     (               # Start of the version capturing group
-        [-v\.\d]*   # Version string
+        v?
+        (\d)+       # Capture major version
+        \.
+        (\d)+       # Capture minor version
+        [-\.\d]*    # Other info on the version
     )"""
 
 RAW_PATTERNS["error"] = r"""

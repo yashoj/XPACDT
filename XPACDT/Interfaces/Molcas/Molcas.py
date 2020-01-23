@@ -247,20 +247,25 @@ class Molcas(PotentialInterface):
 
     def _test_molcas(self):
         """
-        Test that the molcas executable name exists and determine its MOLCAS
-        version.
+        Test that the molcas executable name exists and that it's version is
+        supported (currently 8.2 or later).
         """
         empty_input = Path(__file__).with_name("empty.input")
 
         # Run molcas with empty input file to only have base output
         output = self._molcas_subprocess(empty_input)
 
-        self._molcas_version, = PATTERNS["molcas version"].findall(output)
+        version_info, = PATTERNS["molcas version"].findall(output)
+        version, major, minor = version_info
+        major = int(major)
+        minor = int(minor)
 
         # TODO Move this to some kind of logging system
-        print(f"MOLCAS version {self._molcas_version} is used.")
+        print(f"MOLCAS version {version} is used.")
 
-        # TODO check if the provided MOLCAS supports Alaska NAC e.g. using molcas help alaska nac
+        if major < 8 or (major == 8 and minor < 2):
+            raise RuntimeError(f"XPACDT only support Molcas 8.2 or later, "
+                               f"but was started with Molcas {version}")
 
     def _xyz(self, r):
         """

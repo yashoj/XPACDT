@@ -105,6 +105,7 @@ class Molcas(PotentialInterface):
         # to have a nice ordering of files
         time_desc = datetime.now().isoformat(timespec="seconds")
         project_name = f"XPACDT_project_{time_desc}"
+        self._project_name = project_name
 
         tmpdir = Path.cwd() / "tmp" / "molcas" / project_name
 
@@ -200,16 +201,30 @@ class Molcas(PotentialInterface):
         *args : All parameters must be strings and are passed as additional
             parameters to the MOLCAS program.
         """
-        res = subprocess.run(
-            [self._molcas_executable, "-ign", *args],
-            env=self._molcas_env,  # Define environnement variables
-            text=True,  # Everything treated as string rather than binary
-            stdout=subprocess.PIPE,  # Redirect output to the returned object
-            stderr=subprocess.PIPE)
+        try:
+            res = subprocess.run(
+                [self._molcas_executable, "-ign", *args],
+                env=self._molcas_env,  # Define environnement variables
+                text=True,  # Everything treated as string rather than binary
+                stdout=subprocess.PIPE,  # Redirect output
+                stderr=subprocess.PIPE)
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"No MOLCAS executable named {self._molcas_executable} found. "
+                "Make sure to add the executable to your PATH or to specify "
+                "its full path in the input file.")
 
         # Raise an error if something wrong happened within MOLCAS
         if res.returncode != 0:
             raise MolcasError(res.stdout)
+
+        # Molcas creates a $Project.status file that is not redirected to
+        # either the workdir or the outputdir, so we move it manually.
+        # TODO Open a ticket about it on Molcas support
+        status_file = Path(f"{self._project_name}.status")
+
+        if status_file.is_file():
+            status_file.replace(self._outputdir / ".status")
 
         return res.stdout
 
@@ -236,14 +251,9 @@ class Molcas(PotentialInterface):
         version.
         """
         empty_input = Path(__file__).with_name("empty.input")
-        try:
-            # Run molcas with empty input file to only have base output
-            output = self._molcas_subprocess(empty_input)
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                f"No MOLCAS executable named {self._molcas_executable} found. "
-                "Make sure to add the executable to your PATH or to specify "
-                "its full path in the input file.")
+
+        # Run molcas with empty input file to only have base output
+        output = self._molcas_subprocess(empty_input)
 
         self._molcas_version, = PATTERNS["molcas version"].findall(output)
 

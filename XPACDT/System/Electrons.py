@@ -76,8 +76,7 @@ class Electrons:
         __import__("XPACDT.Interfaces." + pes_name)
 
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(max(parameters.n_beads),
-                                       **parameters.get(pes_name))
+                             pes_name)(parameters)
 
     @property
     def name(self):

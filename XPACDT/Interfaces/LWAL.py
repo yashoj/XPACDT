@@ -41,18 +41,24 @@ import XPACDT.Tools.Geometry as geom
 
 class LWAL(itemplate.PotentialInterface):
     """
-    LWAL PES. No parameters required.
+    LWAL PES. No additional parameters required.
 
     The ordering of the atoms is as follows:
     F, H, H
 
     G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
+
+    Parameters
+    ----------
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
     """
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
         itemplate.PotentialInterface.__init__(self, "LWAL", 9, 1,
-                                              max_n_beads, 'adiabatic')
+                                              max(parameters.n_beads),
+                                              'adiabatic')
 
     def _calculate_adiabatic_all(self, R, P=None, S=None):
         """

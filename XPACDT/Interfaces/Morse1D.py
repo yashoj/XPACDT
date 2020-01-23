@@ -43,8 +43,8 @@ class Morse1D(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
     Other Parameters
     ----------------
@@ -61,31 +61,34 @@ class Morse1D(itemplate.PotentialInterface):
     def __init__(self, max_n_beads=1, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "Morse1D", 1, 1,
-                                              max_n_beads, 'adiabatic')
+                                              max(parameters.n_beads),
+                                              'adiabatic')
+
+        pes_parameters = parameters.get(self.name)
 
         try:
-            self.__De = float(kwargs.get('De'))
+            self.__De = float(pes_parameters.get('De'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 'De' for morse potential not given or "
                   "not convertible to float.\n")
             raise
 
         try:
-            self.__a = float(kwargs.get('a'))
+            self.__a = float(pes_parameters.get('a'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 'a' for morse potential not given or "
                   "not convertible to float.\n")
             raise
 
         try:
-            self.__re = float(kwargs.get('re'))
+            self.__re = float(pes_parameters.get('re'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 're' for morse potential not given or "
                   "not convertible to float.\n")
             raise
 
         try:
-            self.__b = float(kwargs.get('b'))
+            self.__b = float(pes_parameters.get('b'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 'b' for morse potential not given or "
                   "not convertible to float.\n")

@@ -41,18 +41,24 @@ import XPACDT.Tools.Geometry as geom
 
 class CW(itemplate.PotentialInterface):
     """
-    CW PES. No parameters required. 
+    CW PES. No additional parameters required. 
 
     The ordering of the atoms is as follows:
     Cl, H, H
 
     G. Capecchi and H. J. Werner, Phys. Chem. Chem. Phys. 6, 4975 (2004).
+
+    Parameters
+    ----------
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
     """
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
         itemplate.PotentialInterface.__init__(self, "CW", 9, 1,
-                                              max_n_beads, 'adiabatic')
+                                              max(parameters.n_beads),
+                                              'adiabatic')
         # For proper Hessian derivatives! Numerically tested for stability!
         self._DERIVATIVE_STEPSIZE = 7e-3
 

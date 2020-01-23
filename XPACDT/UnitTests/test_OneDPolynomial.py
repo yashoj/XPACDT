@@ -34,6 +34,7 @@ import os
 import unittest
 
 import XPACDT.Interfaces.OneDPolynomial as oneDP
+import XPACDT.Input.Inputfile as infile
 
 
 class OneDPolynomialTest(unittest.TestCase):

@@ -49,8 +49,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
     Other Parameters
     ----------------
@@ -60,23 +60,26 @@ class MorseDiabatic(itemplate.PotentialInterface):
         Number of morse diabatic states (possible: 2, 3).
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
+
+        pes_parameters = parameters.get("MorseDiabatic")
 
         try:
-            n_states = int(kwargs.get('n_states', 3))
+            n_states = int(pes_parameters.get('n_states', 3))
         except ValueError as e:
             raise type(e)(str(e) + "\nXPACDT: Parameter 'n_states' for morse "
                                    "diabatic not convertable to int. "
-                                   "'n_states' is " + kwargs.get('n_states'))
+                                   "'n_states' is " + pes_parameters.get('n_states'))
         assert ((n_states == 2) or (n_states == 3)), \
                ("Only 2 or 3 states possible for morse diabatic potential")
 
         itemplate.PotentialInterface.__init__(self, "MorseDiabatic", 1,
-                                              n_states, max_n_beads, 'diabatic')
+                                              n_states, max(parameters.n_beads), 
+                                              'diabatic')
 
-        assert (isinstance(kwargs.get('model_type'), str)), \
+        assert (isinstance(pes_parameters.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
-        self.__model_type = kwargs.get('model_type')
+        self.__model_type = pes_parameters.get('model_type')
 
         # Read model parameters from file
         param_file = os.path.join(os.path.dirname(itemplate.__file__),

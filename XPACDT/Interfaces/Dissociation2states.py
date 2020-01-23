@@ -51,8 +51,8 @@ class Dissociation2states(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
     Other Parameters
     ----------------
@@ -60,14 +60,17 @@ class Dissociation2states(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "Dissociation2states", 1,
-                                              2, max_n_beads, 'diabatic')
+                                              2, max(parameters.n_beads), 
+                                              'diabatic')
 
-        assert (isinstance(kwargs.get('model_type'), str)), \
+        pes_parameters = parameters.get(self.name)
+
+        assert (isinstance(pes_parameters.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
-        self.__model_type = kwargs.get('model_type')
+        self.__model_type = pes_parameters.get('model_type')
 
         # Read model parameters from file
         param_file = os.path.join(os.path.dirname(itemplate.__file__),

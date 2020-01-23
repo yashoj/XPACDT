@@ -43,8 +43,8 @@ class TullyModel(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
     Other Parameters
     ----------------
@@ -52,33 +52,36 @@ class TullyModel(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "TullyModel", 1, 2,
-                                              max_n_beads, 'diabatic')
+                                              max(parameters.n_beads),
+                                              'diabatic')
 
-        assert (isinstance(kwargs.get('model_type'), str)), \
+        pes_parameters = parameters.get(self.name)
+
+        assert (isinstance(pes_parameters.get('model_type'), str)), \
             "Parameter 'model_type' not given or not given as string."
-        self.model_type = kwargs.get('model_type')
+        self.model_type = pes_parameters.get('model_type')
 
         # TODO: Need to add 'try' and setting to default warning?
         if (self.model_type == 'model_A'):
-            self.__A = float(kwargs.get('A', 0.01))
-            self.__B = float(kwargs.get('B', 1.6))
-            self.__C = float(kwargs.get('C', 0.005))
-            self.__D = float(kwargs.get('D', 1.0))
+            self.__A = float(pes_parameters.get('A', 0.01))
+            self.__B = float(pes_parameters.get('B', 1.6))
+            self.__C = float(pes_parameters.get('C', 0.005))
+            self.__D = float(pes_parameters.get('D', 1.0))
 
         elif (self.model_type == 'model_B'):
-            self.__A = float(kwargs.get('A', 0.1))
-            self.__B = float(kwargs.get('B', 0.28))
-            self.__C = float(kwargs.get('C', 0.015))
-            self.__D = float(kwargs.get('D', 0.06))
-            self.__Eo = float(kwargs.get('Eo', 0.05))
+            self.__A = float(pes_parameters.get('A', 0.1))
+            self.__B = float(pes_parameters.get('B', 0.28))
+            self.__C = float(pes_parameters.get('C', 0.015))
+            self.__D = float(pes_parameters.get('D', 0.06))
+            self.__Eo = float(pes_parameters.get('Eo', 0.05))
 
         elif (self.model_type == 'model_C'):
-            self.__A = float(kwargs.get('A', 0.0006))
-            self.__B = float(kwargs.get('B', 0.1))
-            self.__C = float(kwargs.get('C', 0.9))
+            self.__A = float(pes_parameters.get('A', 0.0006))
+            self.__B = float(pes_parameters.get('B', 0.1))
+            self.__C = float(pes_parameters.get('C', 0.9))
 
     @property
     def model_type(self):

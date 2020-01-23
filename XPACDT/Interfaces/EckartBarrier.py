@@ -68,6 +68,11 @@ class EckartBarrier(itemplate.PotentialInterface):
     then :math:`w = \sqrt(|F| / m) / 2\pi`. `L` is this obtained from `w` and `m` as
     :math:`L = (\sqrt(h * (h-d)) / \sqrt(B)) / (\sqrt(2) \pi \sqrt(m) w)`.
 
+    Parameters
+    ----------
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
+
     Other Parameters
     ----------------
     A, B, L : floats
@@ -77,53 +82,58 @@ class EckartBarrier(itemplate.PotentialInterface):
         Alternative parameters for the Eckart barrier.
         `w` is a frequency in au. `h`, `d` are energies in au. `m` is a mass in au.
     """
-    def __init__(self, max_n_beads=1, **kwargs):
-        if {'A', 'B', 'L'} <= set(kwargs):
+    def __init__(self, parameters, **kwargs):
+        itemplate.PotentialInterface.__init__(self, "EckartBarrier", 1, 1,
+                                              max(parameters.n_beads), 
+                                              'adiabatic')
+
+        pes_parameters = parameters.get(self.name)
+        if {'A', 'B', 'L'} <= set(pes_parameters):
             try:
-                self.__A = float(kwargs.get('A'))
+                self.__A = float(pes_parameters.get('A'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'A' for Eckart "
                               "barrier not convertable to float. A is "
-                              + kwargs.get('A'))
+                              + pes_parameters.get('A'))
             try:
-                self.__B = float(kwargs.get('B'))
+                self.__B = float(pes_parameters.get('B'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'B' for Eckart "
                               "barrier not convertable to float. B is "
-                              + kwargs.get('B'))
+                              + pes_parameters.get('B'))
             try:
-                self.__L = float(kwargs.get('L'))
+                self.__L = float(pes_parameters.get('L'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'L' for Eckart "
                               "barrier not convertable to float. L is "
-                              + kwargs.get('L'))
+                              + pes_parameters.get('L'))
 
-        elif {'w', 'h', 'd', 'm'} <= set(kwargs):
+        elif {'w', 'h', 'd', 'm'} <= set(pes_parameters):
             try:
-                w = float(kwargs.get('w'))
+                w = float(pes_parameters.get('w'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'w' for Eckart "
                               "barrier not convertable to float. w is "
-                              + kwargs.get('w'))
+                              + pes_parameters.get('w'))
             try:
-                h = float(kwargs.get('h'))
+                h = float(pes_parameters.get('h'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'h' for Eckart "
                               "barrier not convertable to float. h is "
-                              + kwargs.get('h'))
+                              + pes_parameters.get('h'))
             try:
-                d = float(kwargs.get('d'))
+                d = float(pes_parameters.get('d'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'd' for Eckart "
                               "barrier not convertable to float. d is "
-                              + kwargs.get('d'))
+                              + pes_parameters.get('d'))
 
             try:
-                m = float(kwargs.get('m'))
+                m = float(pes_parameters.get('m'))
             except ValueError as e:
                 raise type(e)(str(e) + "\nXPACDT: Parameter 'm' for Eckart "
                               "barrier not convertable to float. m is "
-                              + kwargs.get('m'))
+                              + pes_parameters.get('m'))
 
             # conversion here!
             self.__A = d
@@ -137,9 +147,6 @@ class EckartBarrier(itemplate.PotentialInterface):
         assert(self.__A <= 0.0), "A not zero or less!"
         assert(self.__B > 0.0), "B not positive!"
         assert(self.__L > 0.0), "L not positive!"
-
-        itemplate.PotentialInterface.__init__(self, "EckartBarrier", 1, 1,
-                                              max_n_beads, 'adiabatic')
 
     @property
     def A(self):

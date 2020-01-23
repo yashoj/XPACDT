@@ -98,12 +98,15 @@ class Molcas(PotentialInterface):
                          max_n_beads,
                          "adiabatic")
 
+        # TODO Move to template ? Use getter ?
+        self.n_atoms = n_dof // 3
+
         # Use the current time in the MOLCAS project name for unicity and
         # to have a nice ordering of files
         time_desc = datetime.now().isoformat(timespec="seconds")
-        molcas_project_name = f"XPACDT_project_{time_desc}"
+        project_name = f"XPACDT_project_{time_desc}"
 
-        tmpdir = Path.cwd() / "tmp" / "molcas" / molcas_project_name
+        tmpdir = Path.cwd() / "tmp" / "molcas" / project_name
 
         self._workdir = tmpdir / "workdir" if workdir is None else workdir
         self._workdir.mkdir(parents=True, exist_ok=True)
@@ -118,7 +121,7 @@ class Molcas(PotentialInterface):
         # e.g. MOLCAS directory
         self._molcas_env = dict(
             PATH=os.environ["PATH"],
-            MOLCAS_PROJECT=molcas_project_name,
+            MOLCAS_PROJECT=project_name,
             MOLCAS_WORKDIR=str(self._workdir),
             MOLCAS_OUTPUT=str(self._outputdir),
             MOLCAS_NEW_WORKDIR="NO"
@@ -131,22 +134,26 @@ class Molcas(PotentialInterface):
         # starting point for the new orbitals computations
         self._compute_from_scratch = True
 
-        self._molcas_runfile = self._workdir / f"{molcas_project_name}.RunFile"
-        self._molcas_input_file = self._molcas_runfile.with_suffix(".input")
+        self._molcas_input_file = self._workdir / f"{project_name}.input"
+        self._molcas_xyz_file = self._workdir / f"{project_name}.xyz"
 
         # Find the template file relative to the current file
         raw_input_template_file = Path(__file__).with_name("template.input")
         raw_input_template = raw_input_template_file.read_text()
+        xyz_template_file = Path(__file__).with_name("template.xyz")
+        self._xyz_template = xyz_template_file.read_text()
 
         rasscf = Path(rasscf_filepath).read_text()
 
         # Partially format the template with the parameters that stay constant
-        self._template_molcas_input = raw_input_template.format(
+        molcas_input = raw_input_template.format(
             basis=basis,
             n_atoms=n_dof//3,
             n_states=n_states,
             rasscf=rasscf,
-            xyz="{xyz}")
+            xyz_file=str(self._molcas_xyz_file))
+
+        self._molcas_input_file.write_text(molcas_input)
 
     def _calculate_adiabatic_all(self, R, P, S=0):
         # TODO Take the current state in account
@@ -210,8 +217,10 @@ class Molcas(PotentialInterface):
         """
         Run MOLCAS for a given configuration.
         """
-        input_str = self._template_molcas_input.format(xyz=self._xyz(R[:, 0]))
-        self._molcas_input_file.write_text(input_str)
+        xyz_str = self._xyz_template.format(
+            n_atoms=self.n_atoms,
+            xyz=self._xyz(R[:, 0]))
+        self._molcas_xyz_file.write_text(xyz_str)
 
         # NOTE Currently self._compute_from_scratch is always True
         if self._compute_from_scratch:
@@ -238,6 +247,7 @@ class Molcas(PotentialInterface):
 
         self._molcas_version, = PATTERNS["molcas version"].findall(output)
 
+        # TODO Move this to some kind of logging system
         print(f"MOLCAS version {self._molcas_version} is used.")
 
         # TODO check if the provided MOLCAS supports Alaska NAC e.g. using molcas help alaska nac
@@ -254,6 +264,6 @@ class Molcas(PotentialInterface):
         """
         # TODO Use stored atom named once this is implemented
         # NOTE THis could be defined at the template level
-        positions = r.reshape(self.n_dof // 3, 3)
+        positions = r.reshape(self.n_atoms, 3)
         lines = [" ".join(["H", *map(str, pos)]) for pos in positions]
         return "\n".join(lines)

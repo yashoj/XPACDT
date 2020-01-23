@@ -1,10 +1,6 @@
 &SEWARD
     * Coordinates of the atoms
-    coord               
-        {n_atoms}
-        * Mandatory ignored line for XYZ format
-        {xyz}
-
+    coord = {xyz_file}
     * Basis set to use for the computation
     basis = {basis}
     * Symmetry to be considered

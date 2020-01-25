@@ -33,26 +33,24 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.TullyModel as tullym
+import XPACDT.Input.Inputfile as infile
 
 
 class TullyModelTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_A_1_nb = tullym.TullyModel(1, **{'model_type': 'model_A'})
-        self.pes_A_2_nb = tullym.TullyModel(2, **{'model_type': 'model_A'})
+        self.pes_A_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_1.in"))
+        self.pes_A_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_2.in"))
 
-        self.pes_B_1_nb = tullym.TullyModel(1, **{'model_type': 'model_B'})
-        self.pes_B_2_nb = tullym.TullyModel(2, **{'model_type': 'model_B'})
+        self.pes_B_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_1.in"))
+        self.pes_B_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_2.in"))
 
-        self.pes_C_1_nb = tullym.TullyModel(1, **{'model_type': 'model_C'})
-        self.pes_C_2_nb = tullym.TullyModel(2, **{'model_type': 'model_C'})
+        self.pes_C_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_1.in"))
+        self.pes_C_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_2.in"))
 
         return
 
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = tullym.TullyModel(1)
-
         self.assertEqual(self.pes_A_1_nb.name, 'TullyModel')
         self.assertEqual(self.pes_A_1_nb.model_type, 'model_A')
 

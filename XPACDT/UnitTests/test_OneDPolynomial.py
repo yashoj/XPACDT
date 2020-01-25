@@ -39,89 +39,92 @@ import XPACDT.Input.Inputfile as infile
 
 class OneDPolynomialTest(unittest.TestCase):
 
+    def setUp(self):
+
+        self.pes1D_harmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic.in"))
+        self.pes1D_shifted_harmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_shifted.in"))
+        self.pes1D_shifted_anharmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_shifted.in"))
+        self.pes1D_anharmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic.in"))
+        self.pes1D_quartic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/quartic.in"))
+
+
+        self.pes1D_harmonic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_4.in"))
+        self.pes1D_shifted_anharmonic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_shifted_4.in"))
+        self.pes1D_anharmonic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_4.in"))
+        self.pes1D_quartic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/quartic_4.in"))
+
+        return
+
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = oneDP.OneDPolynomial(1)
+        self.assertEqual(self.pes1D_harmonic_classical.name, 'OneDPolynomial')
+        self.assertEqual(self.pes1D_harmonic_classical.x0, 0.0)
+        self.assertSequenceEqual(self.pes1D_harmonic_classical.a, [0.0, 0.0, 0.5])
 
-        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
-        self.assertEqual(pes.name, 'OneDPolynomial')
-        self.assertEqual(pes.x0, 0.0)
-        self.assertSequenceEqual(pes.a, [0.0, 0.0, 0.5])
-
-        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
-        self.assertEqual(pes.name, 'OneDPolynomial')
-        self.assertEqual(pes.x0, -1.0)
-        self.assertSequenceEqual(pes.a, [1.0, 0.0, 0.5, 0.1])
+        self.assertEqual(self.pes1D_shifted_anharmonic_classical.name, 'OneDPolynomial')
+        self.assertEqual(self.pes1D_shifted_anharmonic_classical.x0, -1.0)
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical.a, [1.0, 0.0, 0.5, 0.1, 0.01])
 
         with self.assertRaises(ValueError):
-            pes = oneDP.OneDPolynomial(1, **{'a': 'miep'})
+            pes = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_fail1.in"))
 
         with self.assertRaises(ValueError):
-            pes = oneDP.OneDPolynomial(1, **{'x0': 'miep', 'a': '0.0'})
+            pes = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_fail1.in"))
 
         return
 
     def test_calculate_adiabatic_all(self):
-        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
-
         # test correct potential values and gradients
-        pes._calculate_adiabatic_all(np.array([[0.0]]), None)
-        self.assertSequenceEqual(pes._adiabatic_energy, [[0.0]])
-        self.assertSequenceEqual(pes._adiabatic_gradient, [[[0.0]]])
-        self.assertSequenceEqual(pes._adiabatic_energy_centroid, [0.0])
-        self.assertSequenceEqual(pes._adiabatic_gradient_centroid, [[0.0]])
+        self.pes1D_harmonic_classical._calculate_adiabatic_all(np.array([[0.0]]), None)
+        self.assertSequenceEqual(self.pes1D_harmonic_classical._adiabatic_energy, [[0.0]])
+        self.assertSequenceEqual(self.pes1D_harmonic_classical._adiabatic_gradient, [[[0.0]]])
+        self.assertSequenceEqual(self.pes1D_harmonic_classical._adiabatic_energy_centroid, [0.0])
+        self.assertSequenceEqual(self.pes1D_harmonic_classical._adiabatic_gradient_centroid, [[0.0]])
 
-        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
-        pes._calculate_adiabatic_all(np.array([[-1.0]]), None)
-        self.assertSequenceEqual(pes._adiabatic_energy, [[1.0]])
-        self.assertSequenceEqual(pes._adiabatic_gradient, [[[0.0]]])
-        self.assertSequenceEqual(pes._adiabatic_energy_centroid, [1.0])
-        self.assertSequenceEqual(pes._adiabatic_gradient_centroid, [[0.0]])
+        self.pes1D_shifted_anharmonic_classical._calculate_adiabatic_all(np.array([[-1.0]]), None)
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_energy, [[1.0]])
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_gradient, [[[0.0]]])
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_energy_centroid, [1.0])
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_gradient_centroid, [[0.0]])
 
-        pes._calculate_adiabatic_all(np.array([[1.0]]), None)
-        self.assertSequenceEqual(pes._adiabatic_energy, [[1.0+2.0+0.8]])
-        self.assertSequenceEqual(pes._adiabatic_gradient, [[[2.0+1.2]]])
-        self.assertSequenceEqual(pes._adiabatic_energy_centroid, [1.0+2.0+0.8])
-        self.assertSequenceEqual(pes._adiabatic_gradient_centroid, [[2.0+1.2]])
+        self.pes1D_shifted_anharmonic_classical._calculate_adiabatic_all(np.array([[1.0]]), None)
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_energy, [[1.0+2.0+0.8+0.16]])
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_gradient, [[[2.0+1.2+0.32]]])
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_energy_centroid, [1.0+2.0+0.8+0.16])
+        self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical._adiabatic_gradient_centroid, [[2.0+1.2+0.32]])
 
         # test for multiple beads
-        pes_3_nb = oneDP.OneDPolynomial(3, **{'a': '1.0 0.0 0.5 0.1', 'x0': '-1.0'})
-
-        pes_3_nb._calculate_adiabatic_all(np.array([[1.0, -2.0, -1.0]]), None)
+        self.pes1D_shifted_anharmonic_4_nb._calculate_adiabatic_all(np.array([[1.0, -2.0, -1.0, 0.0]]), None)
         self.assertTrue(
-                np.alltrue(pes_3_nb._adiabatic_energy
-                           == np.array([[1.0+2.0+0.8, 1.0+0.5-0.1, 1.0]])))
+                np.alltrue(self.pes1D_shifted_anharmonic_4_nb._adiabatic_energy
+                           == np.array([[1.0+2.0+0.8+0.16, 1.0+0.5-0.1+0.01, 1.0, 1.0+0.5+0.1+0.01]])))
         self.assertTrue(
-                np.alltrue(pes_3_nb._adiabatic_gradient
-                           == np.array([[[2.0+1.2, -1.0+0.3, 0.0]]])))
+                np.alltrue(self.pes1D_shifted_anharmonic_4_nb._adiabatic_gradient
+                           == np.array([[[2.0+1.2+0.32, -1.0+0.3-0.04, 0.0, 1+0.1*3.+0.01*4.]]])))
 
-        np.testing.assert_allclose(pes_3_nb._adiabatic_energy_centroid, np.array([0.05555555555+0.0037037+1.0]))
-        np.testing.assert_allclose(pes_3_nb._adiabatic_gradient_centroid, np.array([[0.33333333+0.0333333333]]))
+        np.testing.assert_allclose(self.pes1D_shifted_anharmonic_4_nb._adiabatic_energy_centroid, np.array([1.138125]))
+        np.testing.assert_allclose(self.pes1D_shifted_anharmonic_4_nb._adiabatic_gradient_centroid, np.array([[0.58]]))
 
     def test_minimize_geom(self):
         # Harmonic oscillator
-        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
         e_reference = 0.0
         R_reference = np.array([0.0])
 
         R0 = np.array([1.0])
-        e, R = pes.minimize_geom(R0)
+        e, R = self.pes1D_harmonic_classical.minimize_geom(R0)
         np.testing.assert_allclose(e, e_reference)
         np.testing.assert_allclose(R, R_reference)
 
         # Shifted harmonic oscillator
-        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5', 'x0': '2.0'})
         e_reference = 1.0
         R_reference = np.array([2.0])
 
         R0 = np.array([-10.0])
-        e, R = pes.minimize_geom(R0)
+        e, R = self.pes1D_shifted_harmonic_classical.minimize_geom(R0)
         np.testing.assert_allclose(e, e_reference)
         np.testing.assert_allclose(R, R_reference)
 
     def test_plot1d(self):
-        pes = oneDP.OneDPolynomial(1, **{'a': '1.0 0.0 0.5', 'x0': '2.0'})
-        pes.plot_1D(np.array([0.0]), 0, -10.0, 10.0, 2.0)
+        self.pes1D_shifted_harmonic_classical.plot_1D(np.array([0.0]), 0, -10.0, 10.0, 2.0)
 
         points_reference = np.array([-10., -8., -6., -4., -2., 0., 2., 4., 6., 8., 10.])
         values_reference = np.array([73., 51., 33., 19., 9., 3., 1., 3., 9., 19., 33.])
@@ -133,24 +136,22 @@ class OneDPolynomialTest(unittest.TestCase):
         os.remove("pes_1d.plt")
 
     def test_get_Hessian(self):
-        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5'})
         Hessian_reference = np.array([[1.0]])
         R = np.array([0.0])
 
-        Hessian = pes.get_Hessian(R)
+        Hessian = self.pes1D_harmonic_classical.get_Hessian(R)
         np.testing.assert_allclose(Hessian, Hessian_reference)
 
-        pes = oneDP.OneDPolynomial(1, **{'a': '0.0 0.0 0.5 0.1 0.01'})
         Hessian_reference = np.array([[1.0+0.6+0.12]])
         R = np.array([1.0])
 
-        Hessian = pes.get_Hessian(R)
+        Hessian = self.pes1D_anharmonic_classical.get_Hessian(R)
         np.testing.assert_allclose(Hessian, Hessian_reference)
 
         Hessian_reference = np.array([[1.0-0.6+0.12]])
         R = np.array([-1.0])
 
-        Hessian = pes.get_Hessian(R)
+        Hessian = self.pes1D_anharmonic_classical.get_Hessian(R)
         np.testing.assert_allclose(Hessian, Hessian_reference)
 
 

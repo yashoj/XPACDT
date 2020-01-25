@@ -58,7 +58,7 @@ class Morse1D(itemplate.PotentialInterface):
         Overall vertical shift to the potential.
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "Morse1D", 1, 1,
                                               max(parameters.n_beads),

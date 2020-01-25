@@ -33,6 +33,7 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.Morse1D as morse1d
+import XPACDT.Input.Inputfile as infile
 
 
 class Morse1DTest(unittest.TestCase):
@@ -44,8 +45,8 @@ class Morse1DTest(unittest.TestCase):
         re = 2.0
         b = 0.0
 
-        self.pes_1_nb = morse1d.Morse1D(1, **{'De': De, 'a': a, 're': re, 'b': b})
-        self.pes_2_nb = morse1d.Morse1D(2, **{'De': De, 'a': a, 're': re, 'b': b})
+        self.pes_1_nb = morse1d.Morse1D(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_1.in"))
+        self.pes_2_nb = morse1d.Morse1D(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_2.in"))
 
         return
 

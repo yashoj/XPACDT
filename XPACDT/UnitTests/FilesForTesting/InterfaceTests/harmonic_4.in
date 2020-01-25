@@ -1,0 +1,50 @@
+$system                     # general parameters
+
+seed = 0                    # Seed for random number generator
+dof = 1                     # the number of degrees of freedom
+job = propagate	            # The job type (possible: sample, propagate, analyze)
+Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
+folder = test               # the folder for the trajectories
+
+$end
+
+##############################################################################
+
+$OneDPolynomial # must match the interface specified; specific to each interface
+
+a = 0 0 0.5
+x0 = 0
+$end
+
+##############################################################################
+
+$rpmd
+beads = 4
+beta = 8
+$end
+
+##############################################################################
+
+$nuclei_propagator             # nuclei propagator input
+
+method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
+timestep = 1.0 au      # timestep in fs or au
+
+$end
+
+##############################################################################
+
+$coordinates	           # coordinates given here
+
+type = mass-value      # coordinate format (possible: mass-value, xyz)
+1.0 0.0 1.0 2.0 3.0
+$end
+
+##############################################################################
+
+$momenta               # momenta, must be the same ordering as coordinates
+0.0 0.0 0.0 0.0
+$end
+
+##############################################################################
+

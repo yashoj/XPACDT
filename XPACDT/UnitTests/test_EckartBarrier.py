@@ -33,16 +33,14 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.EckartBarrier as eckart
+import XPACDT.Input.Inputfile as infile
 
 
 class EckartBarrierTest(unittest.TestCase):
 
     def test_creation(self):
-        with self.assertRaises(RuntimeError):
-            eckart.EckartBarrier()
-
-        pes_asym = eckart.EckartBarrier(**{'A': -18.0/np.pi, 'B': 54.0/np.pi, 'L': 4.0/np.sqrt(3.0*np.pi)})
-        pes_asym2 = eckart.EckartBarrier(**{'d': -18.0/np.pi, 'h': 6.0/np.pi, 'w': 1.0, 'm': 1.0})
+        pes_asym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_asym.in"))
+        pes_asym2 = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_asym2.in"))
         self.assertEqual(pes_asym.name, 'EckartBarrier')
         self.assertEqual(pes_asym.A, -18.0/np.pi)
         self.assertEqual(pes_asym.B, 54.0/np.pi)
@@ -53,8 +51,8 @@ class EckartBarrierTest(unittest.TestCase):
         self.assertAlmostEqual(pes_asym2.B, 54.0/np.pi)
         self.assertAlmostEqual(pes_asym2.L, 4.0/np.sqrt(3.0*np.pi))
 
-        pes_sym = eckart.EckartBarrier(**{'A': 0, 'B': 0.0363857, 'L': 0.330235})
-        pes_sym2 = eckart.EckartBarrier(**{'d': 0, 'h': 0.0363857/4.0, 'w': 0.00476288299, 'm': 1836.0})
+        pes_sym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_sym.in"))
+        pes_sym2 = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_sym2.in"))
         self.assertEqual(pes_sym.name, 'EckartBarrier')
         self.assertEqual(pes_sym.A, 0)
         self.assertEqual(pes_sym.B, 0.0363857)
@@ -66,21 +64,21 @@ class EckartBarrierTest(unittest.TestCase):
         self.assertAlmostEqual(pes_sym2.L, 0.330235, places=3)
 
         with self.assertRaises(ValueError):
-            eckart.EckartBarrier(**{'A': 'miep', 'B': 2.0, 'L': 1.0})
+            eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_1.in"))
 
         with self.assertRaises(AssertionError):
-            eckart.EckartBarrier(**{'A': '2.0', 'B': 2.0, 'L': 1.0})
+            eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_2.in"))
 
         with self.assertRaises(AssertionError):
-            eckart.EckartBarrier(**{'A': '-2.0', 'B': -2.0, 'L': 1.0})
+            eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_3.in"))
 
         with self.assertRaises(AssertionError):
-            eckart.EckartBarrier(**{'A': '-2.0', 'B': 2.0, 'L': -1.0})
+            eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_4.in"))
 
         return
 
     def test_calculate_adiabatic_all(self):
-        pes_asym = eckart.EckartBarrier(**{'A': -18.0/np.pi, 'B': 54.0/np.pi, 'L': 4.0/np.sqrt(3.0*np.pi)})
+        pes_asym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_asym.in"))
 
         # test the given parameters
         with self.assertRaises(AssertionError):
@@ -131,7 +129,7 @@ class EckartBarrierTest(unittest.TestCase):
         np.testing.assert_allclose(pes_asym._adiabatic_energy_centroid, np.array([4.5/np.pi]), atol=1e-6)
         np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, np.array([[-1.09936]]), atol=1e-5)
 
-        pes_sym = eckart.EckartBarrier(**{'A': 0, 'B': 0.0363857, 'L': 0.330235})
+        pes_sym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_sym.in"))
 
         with self.assertRaises(AssertionError):
             pes_sym._calculate_adiabatic_all([0.0], None)
@@ -182,13 +180,13 @@ class EckartBarrierTest(unittest.TestCase):
         np.testing.assert_allclose(pes_sym._adiabatic_gradient_centroid, np.array([[0.0]]), atol=1e-5)
 
     def test_get_Hessian(self):
-        pes_asym = eckart.EckartBarrier(**{'A': -18.0/np.pi, 'B': 54.0/np.pi, 'L': 4.0/np.sqrt(3.0*np.pi)})
+        pes_asym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_asym.in"))
         Hessian_reference_asym = np.array([[-1.0]])
         R = np.array([-4.0/np.sqrt(3.0*np.pi) * np.log(2)])
         Hessian = pes_asym.get_Hessian(R)
         np.testing.assert_allclose(Hessian, Hessian_reference_asym)
 
-        pes_sym = eckart.EckartBarrier(**{'A': 0, 'B': 0.0363857, 'L': 0.330235})
+        pes_sym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_sym.in"))
         Hessian_reference_sym = np.array([[-0.0363857/(8*0.330235*0.330235)]])
         R = np.array([0.0])
         Hessian = pes_sym.get_Hessian(R)

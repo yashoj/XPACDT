@@ -65,20 +65,6 @@ class VelocityVerletTest(unittest.TestCase):
         parameters_quartic_4_nb = infile.Inputfile("FilesForTesting/SystemTests/quartic_4.in")
         self.pes1D_quartic_4_nb = adiabatic.AdiabaticElectrons(parameters_quartic_4_nb)
 
-
-        # self.pes1D_harmonic_4_nb = adiabatic.AdiabaticElectrons(
-        #         {'system': {'Interface': 'OneDPolynomial'},
-        #          'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
-        # self.pes1D_shifted_harmonic_4_nb = adiabatic.AdiabaticElectrons(
-        #         {'system': {'Interface': 'OneDPolynomial'},
-        #          'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}}, [4])
-        # self.pes1D_anharmonic_4_nb = adiabatic.AdiabaticElectrons(
-        #         {'system': {'Interface': 'OneDPolynomial'},
-        #          'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}}, [4])
-        # self.pes1D_quartic_4_nb = adiabatic.AdiabaticElectrons(
-        #         {'system': {'Interface': 'OneDPolynomial'},
-        #          'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}}, [4])
-
         # TODO: also multi-D potential for more testing
         return
 

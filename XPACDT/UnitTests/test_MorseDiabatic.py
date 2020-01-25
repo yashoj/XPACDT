@@ -33,32 +33,25 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.MorseDiabatic as morsedia
+import XPACDT.Input.Inputfile as infile
 
 
 class MorseDiabaticTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_model1_1_nb = morsedia.MorseDiabatic(1, **{'n_states': '3',
-                                                            'model_type': 'model_1'})
-        self.pes_model1_2_nb = morsedia.MorseDiabatic(2, **{'n_states': '3',
-                                                            'model_type': 'model_1'})
+        self.pes_model1_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1.in"))
+        self.pes_model1_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2.in"))
 
-        self.pes_model2_1_nb = morsedia.MorseDiabatic(1, **{'n_states': '3',
-                                                            'model_type': 'model_2'})
-        self.pes_model2_2_nb = morsedia.MorseDiabatic(2, **{'n_states': '3',
-                                                            'model_type': 'model_2'})
+        self.pes_model2_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_1.in"))
+        self.pes_model2_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_2.in"))
 
-        self.pes_model3_1_nb = morsedia.MorseDiabatic(1, **{'n_states': '3',
-                                                            'model_type': 'model_3'})
-        self.pes_model3_2_nb = morsedia.MorseDiabatic(2, **{'n_states': '3',
-                                                            'model_type': 'model_3'})
+        self.pes_model3_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_1.in"))
+        self.pes_model3_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_2.in"))
+
 
         return
 
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = morsedia.MorseDiabatic(1)
-
         self.assertEqual(self.pes_model1_1_nb.name, 'MorseDiabatic')
         self.assertEqual(self.pes_model1_1_nb.model_type, 'model_1')
 

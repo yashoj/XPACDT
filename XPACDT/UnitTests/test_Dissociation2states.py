@@ -33,22 +33,21 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.Dissociation2states as diss2S
+import XPACDT.Input.Inputfile as infile
 
 
 class Dissociation2statesTest(unittest.TestCase):
     
     def setUp(self):
-        self.pes_strong_1_nb = diss2S.Dissociation2states(1, **{'model_type': 'strong_coupling'})
-        self.pes_strong_2_nb = diss2S.Dissociation2states(2, **{'model_type': 'strong_coupling'})
-        self.pes_weak_1_nb = diss2S.Dissociation2states(1, **{'model_type': 'weak_coupling'})
-        self.pes_weak_2_nb = diss2S.Dissociation2states(2, **{'model_type': 'weak_coupling'})
+        self.pes_strong_1_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_1.in"))
+        
+        self.pes_strong_2_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_2.in"))
+        self.pes_weak_1_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_1.in"))
+        self.pes_weak_2_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_2.in"))
 
         return
 
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = diss2S.Dissociation2states(1)
-
         self.assertEqual(self.pes_strong_1_nb.name, 'Dissociation2states')
         self.assertEqual(self.pes_strong_1_nb.model_type, 'strong_coupling')
 

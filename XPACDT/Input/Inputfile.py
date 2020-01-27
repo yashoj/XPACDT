@@ -273,7 +273,7 @@ class Inputfile(collections.MutableMapping):
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self.__momenta = np.loadtxt(d)
+                self.__momenta = np.loadtxt(d, ndmin=2)
             elif section[0:14] == "$positionShift":
                 d = StringIO(section[14:])
                 self.__positionShift = np.loadtxt(d)
@@ -369,7 +369,7 @@ class Inputfile(collections.MutableMapping):
                  The string of values read from the input file.
 
         Returns
-        ----------
+        -------
         dictonary
                  A dictonary representation of the parsed text. For
                  each line in the input a key, value pair is generated.

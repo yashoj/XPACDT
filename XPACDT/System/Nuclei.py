@@ -72,9 +72,6 @@ class Nuclei(object):
     """
 
     def __init__(self, input_parameters, time):
-
-        self.time = time
-
         # coordinates, masses from input
         self.__masses = input_parameters.masses
         self.__n_beads = input_parameters.n_beads
@@ -90,6 +87,8 @@ class Nuclei(object):
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
             self.attach_nuclei_propagator(input_parameters)
+
+        self.time = time
 
         return
 
@@ -121,6 +120,7 @@ class Nuclei(object):
 
     @time.setter
     def time(self, f):
+        self.electrons.set_time(f)
         self.__time = f
 
     @property
@@ -252,7 +252,7 @@ class Nuclei(object):
         """
         return (self.n_dof == other.n_dof
                 and self.n_beads == other.n_beads
-                and self.beta == other.beta
+                and self.beta is other.beta
                 and (self.positions == other.positions).all()
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())

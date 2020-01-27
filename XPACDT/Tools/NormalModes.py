@@ -148,11 +148,11 @@ def get_sampling_modes(system, parameters):
     # For details see the method documentaion.
     modes = parameters.get("sampling").get("modes")
     if modes is None or modes == '':
-        modelist = range(system.n_dof)
+        modelist = range(system.nuclei.n_dof)
     elif modes == 'linear':
-        modelist = range(5, system.n_dof)
+        modelist = range(5, system.nuclei.n_dof)
     elif modes == 'nonlinear':
-        modelist = range(6, system.n_dof)
+        modelist = range(6, system.nuclei.n_dof)
     else:
         modelist = [int(i) for i in modes.split()]
 

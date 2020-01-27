@@ -36,7 +36,7 @@ from scipy import stats
 import XPACDT.Dynamics.MassiveAndersen as ma
 import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.System.AdiabaticElectrons as adiabatic
-
+import XPACDT.Input.Inputfile as infile
 
 class MassiveAndersenTest(unittest.TestCase):
 
@@ -126,9 +126,7 @@ class MassiveAndersenTest(unittest.TestCase):
         # function in velocity verlet
 
         # 1 dof, 4 beads, beta = 8.0
-        pes1D_harmonic = adiabatic.AdiabaticElectrons(
-                {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
+        pes1D_harmonic = adiabatic.AdiabaticElectrons(infile.Inputfile("FilesForTesting/SystemTests/harmonic_4.in"))
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}
@@ -154,9 +152,7 @@ class MassiveAndersenTest(unittest.TestCase):
 
         # 1 dof, 4 beads, beta = 8.0
         np.random.seed(0)
-        pes1D_harmonic = adiabatic.AdiabaticElectrons(
-                {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
+        pes1D_harmonic = adiabatic.AdiabaticElectrons(infile.Inputfile("FilesForTesting/SystemTests/harmonic_4.in"))
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}

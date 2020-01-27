@@ -120,7 +120,6 @@ class Nuclei(object):
 
     @time.setter
     def time(self, f):
-        self.electrons.set_time(f)
         self.__time = f
 
     @property

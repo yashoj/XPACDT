@@ -33,8 +33,6 @@ electrons in the system. """
 
 import sys
 
-import XPACDT.Dynamics.MCElectronDynamics as mcel
-
 
 class Electrons:
     """
@@ -80,10 +78,6 @@ class Electrons:
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
                              pes_name)(parameters)
 
-        self.ionization = None
-        if 'LargeHops' in parameters:
-            self.ionization = mcel.IonizationState(parameters, self.pes)
-
     @property
     def name(self):
         """str : The name of the specific electronic method implemented."""
@@ -119,17 +113,6 @@ class Electrons:
         raise NotImplementedError("This function must be implemented in all"
                                   " classes deriving from the Electrons"
                                   " template")
-
-    def set_time(self, time):
-        """Sets the time for the Ionization dynamics.
-
-        Parameters
-        ----------
-        time : float
-            Time to be set in au.
-        """
-        if self.ionization is not None:
-            self.ionization.time = time
 
     def energy(self, R, centroid=False):
         """Calculate the electronic energy at the current geometry.
@@ -205,12 +188,9 @@ class Electrons:
         implemented by any child class.
         """
 
-        if self.ionization is not None:
-            self.ionization.step(time_propagate)
-        else:
-            raise NotImplementedError("This function must be implemented in all"
-                                      " classes deriving from the Electrons"
-                                      " template")
+        raise NotImplementedError("This function must be implemented in all"
+                                  " classes deriving from the Electrons"
+                                  " template")
 
     def get_population(self, proj, basis_requested):
         """ Get electronic population for a certain adiabatic or diabatic

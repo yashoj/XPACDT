@@ -534,7 +534,7 @@ class PotentialInterface:
         assert (self.primary_basis == 'diabatic'), \
             ("Diabatic gradient is not defined for the electronic basis used.")
 
-        if self._changed(R, None, None):
+        if self._changed(R, None):
             self._calculate_diabatic_all(R)
             self._is_adiabatic_calculated = False
             

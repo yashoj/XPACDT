@@ -144,7 +144,7 @@ class InputfileTest(unittest.TestCase):
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(KeyError):
             parameters._parse_xyz(input_string)
 
         # test too many/few coordinates given

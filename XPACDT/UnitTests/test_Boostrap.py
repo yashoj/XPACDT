@@ -33,7 +33,7 @@
 import numpy as np
 import unittest
 
-import XPACDT.Tools.Boostrap as bs
+import XPACDT.Tools.Bootstrap as bs
 
 
 class BootstrapTest(unittest.TestCase):

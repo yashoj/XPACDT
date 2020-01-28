@@ -114,14 +114,14 @@ class Molcas(PotentialInterface):
         if tmpdir is None:
             tmpdir = Path.cwd() / "tmp" / "molcas_interface" / today
 
-        dirnames = sorted(map(str, tmpdir.glob("*/")), reverse=True)
+        dirnames = sorted(tmpdir.glob("*/"), reverse=True)
 
         self._id = 1
 
         # Find the last folder in tmpdir and set the ID of the current instance
-        for name in dirnames:
+        for d in dirnames:
             try:
-                self._id = int(name) + 1
+                self._id = int(str(d.name)) + 1
                 break
             except ValueError:
                 pass
@@ -212,18 +212,20 @@ class Molcas(PotentialInterface):
 
                 section_num += 1
 
-    def _load_template(self, template_name):
+    def _template_path(self, template_name):
         local_dir = Path(__file__).parent.resolve()
-        template = local_dir / template_name
-        return template.read_text()
+        return local_dir / template_name
+
+    def _load_template(self, template_name):
+        return self._template_path(template_name).read_text()
 
     def _molcas_subprocess(self, *args):
         """
         Start MOLCAS as a subprocess and return its output as a string.
 
-        Ignore MOLCAS rc file (-ign option) and use a minimal environnement
-        containing only the PATH variable and MOLCAS related shell variables
-        defined based on the content of the input file.
+        Use a minimal environnement containing only the PATH variable
+        and MOLCAS related shell variables defined based on the content of 
+        the input file. Does not ignore MOLCAS .rc file.
 
         Parameters
         ----------
@@ -232,7 +234,7 @@ class Molcas(PotentialInterface):
         """
         try:
             res = subprocess.run(
-                [self._molcas_executable, "-ign", *args],
+                [self._molcas_executable, *args],
                 env=self._molcas_env,  # Define environnement variables
                 text=True,  # Everything treated as string rather than binary
                 stdout=subprocess.PIPE,  # Redirect output
@@ -271,11 +273,10 @@ class Molcas(PotentialInterface):
         Test that the molcas executable name exists and that it's version is
         supported (currently 8.2 or later).
         """
-        empty_input = self._load_template("empty.input")
+        empty_input = self._template_path("empty.input")
 
         # Run molcas with empty input file to only have base output
         output = self._molcas_subprocess(empty_input)
-
         version_info, = PATTERNS["molcas version"].findall(output)
         version, major, minor = version_info
         major = int(major)

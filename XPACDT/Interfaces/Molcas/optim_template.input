@@ -1,6 +1,6 @@
 &GATEWAY
     coord = {xyz_file}
-    basis = {nosym}
+    basis = {basis}
     group = nosym
 
 >> DOWHILE

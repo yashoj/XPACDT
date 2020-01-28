@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #  **************************************************************************
 #
 #  XPACDT, eXtended PolyAtomic Chemical Dynamics Toolkit
@@ -28,31 +30,20 @@
 #
 #  **************************************************************************
 
-"""Module containing some mathematical functions customized to the need of the
-program."""
+import unittest
+
+import XPACDT.Tools.Memory as mem
 
 
-def linear_interpolation_1d(x_fraction, y_initial, y_final):
-    """ Performs linear interpolation (and extrapolation) in 1 dimension to
-    obtain y value at `x_fraction` between the intial and final x values.
-    TODO: write properly: x_fraction = (x_required - x_initial) / (x_final - x_initial)
+class MemoryTest(unittest.TestCase):
 
-    Parameters
-    ----------
-    x_fraction : float
-        Fraction between initial and final x values. Needs to be less than
-        or equal to 1.
-    y_initial : ndarray
-        Initial y value. Can be any dimensional ndarray.
-    y_final : ndarray
-        Final y value. Same shape as y_initial.
+    def setUp(self):
+        pass
 
-    Returns
-    -------
-    ndarray of floats (same as y_initial)
-        Interpolated value at `x_fraction` between the intial and final values.
-    """
-    # Asserting x_fraction <= 1 is not done since sometimes scipy.integrate.ode
-    # has it more than 1 for adaptive time step so it does linear extrapolation
-    # instead, which is still fine with this function.
-    return ((1. - x_fraction) * y_initial + x_fraction * y_final)
+    def test_getsize(self):
+        raise NotImplementedError("Please implement a test!")
+
+
+if __name__ == "__main__":
+    suite = unittest.TestLoader().loadTestsFromTestCase(MemoryTest)
+    unittest.TextTestRunner().run(suite)

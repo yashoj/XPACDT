@@ -280,6 +280,7 @@ filename = blah                 # Name for output file
 step = index 1 2 3              # Time step indices to be used. Optional: if not given, all steps will be used.
                                 # Can also be "step = last" in which case just the index of the last time step 
                                 # from each trajectory is used.
+n_bootstrap = 1000              # integer (default: 1000). The number of resampling used in the bootstrap.
 $end
 
 ### more comments!!

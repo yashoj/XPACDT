@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -26,6 +27,11 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #  **************************************************************************
+
+""" Module implementing thermostatted sampling, i.e., drawing samples from a
+long, thermostatted (MD) trajectory.
+"""
+
 
 import copy
 
@@ -46,10 +52,6 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
     n_sample : int
         Actual number of samples required.
 
-    Other Parameters
-    ----------------
-    TODO
-
     Returns
     -------
     systems : (n_sample) list of XPACDT.Dynamics.System
@@ -61,11 +63,13 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
                            " file, but required in thermostatted sampling.")
 
     sample_parameters = parameters.get('sampling')
-    assert('samples' in sample_parameters), "Number of " \
-        "samples required, but not given."
-    assert('time' in sample_parameters), "Time for each sampling run " \
-        "required, but not given."
-    assert('thermostat' in parameters), "No thermostat parameters given!"
+
+    if 'time' not in sample_parameters:
+        raise KeyError("\nXPACDT: Time for each sampling run "
+                       "required, but not given.")
+
+    if 'thermostat' not in parameters:
+        raise KeyError("\nXPACDT: No thermostat parameters given!")
 
     sampling_time = units.parse_time(sample_parameters.get('time', '0.0 fs'))
 

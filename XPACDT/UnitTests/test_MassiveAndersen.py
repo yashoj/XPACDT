@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -37,6 +38,7 @@ import XPACDT.Dynamics.MassiveAndersen as ma
 import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.System.AdiabaticElectrons as adiabatic
 import XPACDT.Input.Inputfile as infile
+
 
 class MassiveAndersenTest(unittest.TestCase):
 

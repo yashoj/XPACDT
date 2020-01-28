@@ -759,9 +759,9 @@ class PotentialInterface:
         R0 : (n_dof) ndarray of floats
              The starting position for the minimization.
         S : integer, optional, Default: 0
-            The state to be plotted.
+            The state to be minimized.
         picture : string, optional, ('adiabatic', 'diabatic')
-            Whether adiabatic or diabatic PES should be plotted.
+            Whether adiabatic or diabatic PES should be minimized.
 
         Returns
         ----------

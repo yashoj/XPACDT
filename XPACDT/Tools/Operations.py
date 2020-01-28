@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,8 +28,9 @@
 #
 #  **************************************************************************
 
-""" Module to perform operations on a system log to obtain some observales
-and perform analysis. """
+""" Module to perform operations on a XPACDT.System.Nuclei object, e.g.,
+obtained from the system log, to obtain some observables and perform
+analysis. """
 
 import numpy as np
 import argparse
@@ -338,11 +340,10 @@ def electronic_state(arguments, log_nuclei):
         parser.print_help()
         return None
 
-    # Where to check for these asserts?
-    assert (opts.proj < log_nuclei.electrons.pes.n_states),\
-        ("State to be projected onto is greater than the number of states. "
-         "Note: State count starts from 0. Given state to project is: "
-         + str(opts.proj))
+    if (opts.proj >= log_nuclei.electrons.pes.n_states):
+        raise ValueError("\nXPACDT: State to be projected onto is greater than"
+                         " the number of states. Note: State count starts from"
+                         " 0. Given state to project is: " + str(opts.proj))
 
     current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
 

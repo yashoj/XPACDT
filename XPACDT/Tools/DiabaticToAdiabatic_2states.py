@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -47,8 +48,7 @@ def get_adiabatic_energy(V):
     V_ad : (2) ndarrays of floats /or/ (2, n_beads) ndarrays of floats
         Adiabatic potential energies for the two states.
     """
-    # TODO: Do we really need this checks? Isn't V matrix built from n_states?
-    # Also check for hermiticity?
+
     assert ((V.shape[0] == 2) and (V.shape[1] == 2)),\
            ("Diabatic energy matrix needs to have exactly 2 states")
 
@@ -131,7 +131,8 @@ def get_NAC(V, dV):
     square_of_root = diff_diag * diff_diag + 4 * V[0, 1] * V[0, 1]
     grad_diff_diag = dV[1, 1] - dV[0, 0]
 
-    nac[0, 1] = (dV[0, 1] * diff_diag - V[0, 1] * grad_diff_diag) / square_of_root
+    nac[0, 1] = (dV[0, 1] * diff_diag - V[0, 1] * grad_diff_diag)\
+        / square_of_root
     nac[1, 0] = -1. * nac[0, 1]
 
     return nac

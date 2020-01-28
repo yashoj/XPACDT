@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -29,7 +30,6 @@
 #
 #  **************************************************************************
 
-import math
 import numpy as np
 import unittest
 
@@ -888,7 +888,7 @@ class OperationsTest(unittest.TestCase):
                                             self.log_classical)
         self.assertEqual(state, 1.0)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             state = operations.electronic_state("-b adiabatic -p 2".split(),
                                                 log_sh_classical)
 

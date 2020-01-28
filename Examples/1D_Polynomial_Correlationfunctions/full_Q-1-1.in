@@ -4,7 +4,6 @@ Interface = OneDPolynomial
 job = full
 picklefile = pickle.dat
 folder = q_1_1
-override
 $end
 
 $OneDPolynomial
@@ -21,6 +20,7 @@ $sampling
 method = Thermostatted
 samples = 5000
 time = 2.0 fs
+overwrite
 $end
 
 $nuclei_propagator

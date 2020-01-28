@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -46,7 +47,7 @@ class Morse1D(itemplate.PotentialInterface):
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
 
-    Other Parameters
+    Other Parameters (as given in the input file)
     ----------------
     De : float or string of float
         Defines the well depth of the potential.
@@ -58,7 +59,7 @@ class Morse1D(itemplate.PotentialInterface):
         Overall vertical shift to the potential.
     """
 
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, parameters):
 
         itemplate.PotentialInterface.__init__(self, "Morse1D", 1, 1,
                                               max(parameters.n_beads),
@@ -114,17 +115,16 @@ class Morse1D(itemplate.PotentialInterface):
         """float : Overall vertical shift to the potential. """
         return self.__b
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
         ----------
-        R, P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions `R` and momenta `P` representing the
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the
             system in au. The first axis represents the degrees of freedom and
-            the second axis is the beads. `P` is not used in this potential
-            and thus defaults to None.
+            the second axis is the beads.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.

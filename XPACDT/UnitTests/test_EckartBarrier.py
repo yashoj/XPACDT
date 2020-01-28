@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -66,29 +67,19 @@ class EckartBarrierTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_1.in"))
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_2.in"))
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_3.in"))
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_fail_4.in"))
 
         return
 
     def test_calculate_adiabatic_all(self):
         pes_asym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_asym.in"))
-
-        # test the given parameters
-        with self.assertRaises(AssertionError):
-            pes_asym._calculate_adiabatic_all([0.0], None)
-
-        with self.assertRaises(AssertionError):
-            pes_asym._calculate_adiabatic_all(np.array([0.0]), None)
-
-        with self.assertRaises(AssertionError):
-            pes_asym._calculate_adiabatic_all(np.array([[[0.0]]]), None)
 
         # test correct potential values and gradients
         pes_asym._calculate_adiabatic_all(np.array([[-100.0]]), None)
@@ -130,15 +121,6 @@ class EckartBarrierTest(unittest.TestCase):
         np.testing.assert_allclose(pes_asym._adiabatic_gradient_centroid, np.array([[-1.09936]]), atol=1e-5)
 
         pes_sym = eckart.EckartBarrier(infile.Inputfile("FilesForTesting/InterfaceTests/input_eckart_sym.in"))
-
-        with self.assertRaises(AssertionError):
-            pes_sym._calculate_adiabatic_all([0.0], None)
-
-        with self.assertRaises(AssertionError):
-            pes_sym._calculate_adiabatic_all(np.array([0.0]), None)
-
-        with self.assertRaises(AssertionError):
-            pes_sym._calculate_adiabatic_all(np.array([[[0.0]]]), None)
 
         # test correct potential values and gradients
         pes_sym._calculate_adiabatic_all(np.array([[-70.0]]), None)

@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -146,6 +147,18 @@ class TullyModelTest(unittest.TestCase):
         np.testing.assert_allclose(
                 self.pes_C_2_nb._diabatic_gradient_centroid, [[[0.0], [0.09]],
                                                               [[0.09], [0.0]]], rtol=1e-7)
+
+    def test_get_V_dV_11(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_V_dV_22(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_V_dV_12(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

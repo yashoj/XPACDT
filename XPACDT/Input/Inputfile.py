@@ -319,7 +319,7 @@ class Inputfile(collections.MutableMapping):
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self.__momenta = np.loadtxt(d)
+                self.__momenta = np.loadtxt(d, ndmin=2)
             elif section[0:14] == "$positionShift":
                 d = StringIO(section[14:])
                 self.__positionShift = np.loadtxt(d)

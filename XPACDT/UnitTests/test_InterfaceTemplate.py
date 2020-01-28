@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -228,9 +229,39 @@ class InterfaceTemplateTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             pes._get_adiabatic_from_diabatic(R)
 
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
         # TODO: add more tests with more beads and 3 state test using morse diabatic
 
         return
+
+    def test_adiabatic_energy(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_adiabatic_gradient(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_nac(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_diabatic_energy(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_diabatic_gradient(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_energy_wrapper(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_gradient_wrapper(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

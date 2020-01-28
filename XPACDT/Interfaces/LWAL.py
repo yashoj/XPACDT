@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -28,7 +29,8 @@
 #  **************************************************************************
 
 """ This module connects to the LWAL F+H2 PES.
-G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
+G. Li, H.-J. Werner, F. Lique, and M. H. Alexander,
+J. Chem. Phys. 127, 174302 (2007).
 """
 
 import numpy as np
@@ -46,7 +48,8 @@ class LWAL(itemplate.PotentialInterface):
     The ordering of the atoms is as follows:
     F, H, H
 
-    G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
+    G. Li, H.-J. Werner, F. Lique, and M. H. Alexander,
+    J. Chem. Phys. 127, 174302 (2007).
 
     Parameters
     ----------
@@ -60,7 +63,7 @@ class LWAL(itemplate.PotentialInterface):
                                               max(parameters.n_beads),
                                               'adiabatic')
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -71,10 +74,6 @@ class LWAL(itemplate.PotentialInterface):
             degrees of freedom and the second axis the beads.
             Please note that Cartesian coordinates of the atoms are used and 
             have to be ordered in the following way: F, H, H
-        P : (n_dof, n_beads) ndarray of floats, optional
-            The momenta of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads. This is not
-            used in this potential and thus defaults to None.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.

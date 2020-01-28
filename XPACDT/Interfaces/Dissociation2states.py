@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -29,7 +30,8 @@
 #
 #  **************************************************************************
 
-""" This module represents a two state dissociation potential in one dimension."""
+""" This module represents a two state dissociation potential
+ in one dimension."""
 
 import numpy as np
 import os
@@ -47,8 +49,6 @@ class Dissociation2states(itemplate.PotentialInterface):
     Please note the change in variables compared to the paper: E -> De,
     qo -> re, qo12 -> r12c.
 
-    TODO: Add form of diagonal and off-diagonal terms; and aliases from paper!
-
     Parameters
     ----------
     parameters : XPACDT.Input.Inputfile
@@ -63,21 +63,22 @@ class Dissociation2states(itemplate.PotentialInterface):
     def __init__(self, parameters, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "Dissociation2states", 1,
-                                              2, max(parameters.n_beads), 
+                                              2, max(parameters.n_beads),
                                               'diabatic')
 
         pes_parameters = parameters.get(self.name)
 
-        assert (isinstance(pes_parameters.get('model_type'), str)), \
-            "Parameter 'model_type' not given or not given as string."
+        if 'model_type' not in pes_parameters:
+            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
         self.__model_type = pes_parameters.get('model_type')
 
         # Read model parameters from file
         param_file = os.path.join(os.path.dirname(itemplate.__file__),
                                   "model_parameters/dissociation_potential.param")
         all_params = infile.Inputfile(param_file)
-        assert (self.model_type in all_params.keys()), \
-            "Type of morse diabatic model not found."
+        if (self.model_type not in all_params.keys()):
+            raise ValueError("\nXPACDT: Wrong Dissociation model requested."
+                             " Please use:" + str(all_params.keys()))
         model_params = all_params.get(self.model_type)
 
         # Setting all the paramters
@@ -100,18 +101,17 @@ class Dissociation2states(itemplate.PotentialInterface):
         """string : Model number to be used."""
         return self.__model_type
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate and set diabatic and adiabatic matrices for energies and
         gradients of beads and centroid.
 
         Parameters:
         ----------
-        R, P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions `R` and momenta `P` representing the
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the
             system in au. The first axis represents the degrees of freedom and
-            the second axis is the beads. `P` is not used in this potential
-            and thus defaults to None.
+            the second axis is the beads.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.

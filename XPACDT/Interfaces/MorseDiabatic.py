@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -42,17 +43,16 @@ import XPACDT.Input.Inputfile as infile
 class MorseDiabatic(itemplate.PotentialInterface):
     """
     Two or three state morse diabatic potential in one dimension.
-    The diagonal terms are morse potential and off-diagonal couplings are gaussian.
+    The diagonal terms are morse potential and off-diagonal couplings are
+    gaussian.
     Reference: Chem. Phys. Lett. 349, 521-529 (2001)
-
-    TODO: Add form of diagonal and off-diagonal terms!
 
     Parameters
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
 
-    Other Parameters
+    Other Parameters (as given in the input)
     ----------------
     model_type : {'model_1', 'model_2', 'model_3'}
         String denoting model number to be used.
@@ -60,7 +60,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
         Number of morse diabatic states (possible: 2, 3).
     """
 
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, parameters):
 
         pes_parameters = parameters.get("MorseDiabatic")
 
@@ -70,23 +70,27 @@ class MorseDiabatic(itemplate.PotentialInterface):
             raise type(e)(str(e) + "\nXPACDT: Parameter 'n_states' for morse "
                                    "diabatic not convertable to int. "
                                    "'n_states' is " + pes_parameters.get('n_states'))
-        assert ((n_states == 2) or (n_states == 3)), \
-               ("Only 2 or 3 states possible for morse diabatic potential")
+
+        if not (2 <= n_states <= 3):
+            raise ValueError("\nXPACDT: Only 2 or 3 states possible for morse"
+                             " diabatic potential")
 
         itemplate.PotentialInterface.__init__(self, "MorseDiabatic", 1,
-                                              n_states, max(parameters.n_beads), 
+                                              n_states, max(parameters.n_beads),
                                               'diabatic')
 
-        assert (isinstance(pes_parameters.get('model_type'), str)), \
-            "Parameter 'model_type' not given or not given as string."
+        if 'model_type' not in pes_parameters:
+            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
         self.__model_type = pes_parameters.get('model_type')
 
         # Read model parameters from file
         param_file = os.path.join(os.path.dirname(itemplate.__file__),
                                   "model_parameters/morse_diabatic_potential.param")
         all_params = infile.Inputfile(param_file)
-        assert (self.model_type in all_params.keys()), \
-            "Type of morse diabatic model not found."
+        if (self.model_type not in all_params.keys()):
+            raise ValueError("\nXPACDT: Wrong Morse diabatic model requested."
+                             " Please use:" + str(all_params.keys()))
+
         model_params = all_params.get(self.model_type)
 
         # Setting all the paramters
@@ -118,18 +122,17 @@ class MorseDiabatic(itemplate.PotentialInterface):
         """string : Model number to be used."""
         return self.__model_type
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate and set diabatic and adiabatic matrices for energies and
         gradients of beads and centroid.
 
         Parameters:
         ----------
-        R, P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions `R` and momenta `P` representing the
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the
             system in au. The first axis represents the degrees of freedom and
-            the second axis is the beads. `P` is not used in this potential
-            and thus defaults to None.
+            the second axis is the beads.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.
@@ -223,7 +226,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
             Diagonal diabatic energy term.
         """
 
-        return (self.__de[i] * (1. - np.exp(-self.__beta[i] * (R[0] - self.__re[i])))**2 + self.__c[i])
+        return (self.__de[i] * (1. - np.exp(-self.__beta[i] * (R[0] - self.__re[i])))**2
+                + self.__c[i])
 
     def _get_off_diag_V(self, R, A_ij, as_ij, r_ij):
         """
@@ -262,7 +266,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
             Diagonal diabatic gradient term.
         """
 
-        return (2. * self.__beta[i] * self.__de[i] * np.exp(-self.__beta[i] * (R - self.__re[i]))
+        return (2. * self.__beta[i] * self.__de[i]
+                * np.exp(-self.__beta[i] * (R - self.__re[i]))
                 * (1. - np.exp(-self.__beta[i] * (R - self.__re[i]))))
 
     def _get_off_diag_grad(self, R, A_ij, as_ij, r_ij):
@@ -283,7 +288,8 @@ class MorseDiabatic(itemplate.PotentialInterface):
             Off-diagonal diabatic gradient term.
         """
 
-        return (-2. * as_ij * A_ij * (R - r_ij) * np.exp(- as_ij * (R - r_ij)**2))
+        return (-2. * as_ij * A_ij * (R - r_ij)
+                * np.exp(- as_ij * (R - r_ij)**2))
 
     def _get_diabatic_energy_matrix(self, R):
         """

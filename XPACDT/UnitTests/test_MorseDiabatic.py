@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -173,6 +174,26 @@ class MorseDiabaticTest(unittest.TestCase):
                                    [[[ 1.05984926e-03], [-6.85614332e-10], [ 6.85614332e-10]],
                                     [[-6.85614332e-10], [-7.25000490e-03], [ 0.0]],
                                     [[ 6.85614332e-10], [ 0.0], [-2.85951767e-02]]], rtol=1e-7)
+
+    def test_get_diag_V(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_off_diag_V(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_diag_grad(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_off_diag_grad(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_diabatic_energy_matrix(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

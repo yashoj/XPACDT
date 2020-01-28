@@ -1,0 +1,14 @@
+&GATEWAY
+    coord = {xyz_file}
+    basis = {nosym}
+    group = nosym
+
+>> DOWHILE
+
+    &SEWARD
+
+    &SCF
+
+    &SLAPAF
+
+>> ENDDO

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from XPACDT.Interfaces.InterfaceTemplate import PotentialInterface
 from XPACDT.Interfaces.Molcas.Patterns import PATTERNS
+from XPACDT.Tools.XYZ import format_xyz, parse_xyz
 
 
 class MolcasError(Exception):
@@ -107,6 +108,7 @@ class Molcas(PotentialInterface):
 
         # TODO Move to template ? Use getter ?
         self.n_atoms = n_dof // 3
+        self._atoms = ["H", "H"]
 
         # Use the current date in the MOLCAS project name and temporary dir
         # to have a clean ordering of files
@@ -212,10 +214,6 @@ class Molcas(PotentialInterface):
 
                 section_num += 1
 
-    def _template_path(self, template_name):
-        local_dir = Path(__file__).parent.resolve()
-        return local_dir / template_name
-
     def _load_template(self, template_name):
         return self._template_path(template_name).read_text()
 
@@ -263,10 +261,15 @@ class Molcas(PotentialInterface):
         self._write_xyz(R[:, 0])
         self._molcas_subprocess("-new", self._optim_input_file)
 
-        _, coord = parse_xyz(self._outputdir / f"{self._id_str}.Opt.xyz")
+        xyz_file = self._outputdir / f"{self._id_str}.Opt.xyz"
+        _, coord = parse_xyz(filename=xyz_file)
+        coord = np.hstack(coord)
         # TODO Collect hessian
-
         return coord
+
+    def _template_path(self, template_name):
+        local_dir = Path(__file__).parent.resolve()
+        return local_dir / template_name
 
     def _test_molcas(self):
         """
@@ -283,27 +286,12 @@ class Molcas(PotentialInterface):
         minor = int(minor)
 
         # TODO Move this to some kind of logging system
+        # TODO Add more log info (project name, tmp dir)
         print(f"MOLCAS version {version} is used.")
 
         if major < 8 or (major == 8 and minor < 2):
             raise RuntimeError(f"XPACDT only support Molcas 8.2 or later, "
                                f"but was started with Molcas {version}")
-
-    def _xyz(self, r):
-        """
-        Transform the given nuclear degrees of freedom `r` in a string in
-        XYZ format.
-
-        Parameters
-        ----------
-        r : (n_dof,) ndarray of floats
-            Nuclei positions
-        """
-        # TODO Use stored atom named once this is implemented
-        # NOTE THis could be defined at the template level
-        positions = r.reshape(self.n_atoms, 3)
-        lines = [" ".join(["H", *map(str, pos)]) for pos in positions]
-        return "\n".join(lines)
 
     def _write_xyz(self, r):
         """
@@ -314,21 +302,4 @@ class Molcas(PotentialInterface):
         r : (n_dof,) ndarray of floats
             Nuclei positions
         """
-        xyz_str = self._xyz_template.format(
-            n_atoms=self.n_atoms,
-            xyz=self._xyz(r))
-
-        self._xyz_file.write_text(xyz_str)
-
-
-def parse_xyz(values=None, filename=None):
-    # TODO put this as an external function and replace InputFile._parse_xyz
-    # TODO implement retrieval of nuclei masses
-    # TODO better checks
-    if values is not None:
-        filename = StringIO(values)
-
-    atoms = np.loadtxt(filename, skiprows=2, usecols=0, dtype=str)
-    coord = np.loadtxt(filename, skiprows=2, usecols=(1, 2, 3))
-
-    return atoms, coord
+        self._xyz_file.write_text(format_xyz(self._atoms, r))

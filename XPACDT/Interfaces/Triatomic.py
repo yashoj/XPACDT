@@ -52,12 +52,6 @@ import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
 import XPACDT.Tools.Units as units
 
-# add some global variable that lists all implemented pes and masses
-available_pes = {'BKMP2': { 'masses': [units.atom_mass('H'), units.atom_mass('H'), units.atom_mass('H')]},
-                 'LWAL': { 'masses': [units.atom_mass('F'), units.atom_mass('H'), units.atom_mass('H')]},
-                 'CW': { 'masses': [units.atom_mass('Cl'), units.atom_mass('H'), units.atom_mass('H')]}
-                 }
-
 class Triatomic(itemplate.PotentialInterface):
     """
     Triatomic PES.
@@ -67,7 +61,7 @@ class Triatomic(itemplate.PotentialInterface):
     max_n_beads : int, optional
         Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
 
-    Other Parameters
+    Other Parameters 
     ----------------
     name : string
         The name of the PES requested.
@@ -75,9 +69,9 @@ class Triatomic(itemplate.PotentialInterface):
     def __init__(self, max_n_beads=1, **kwargs):
         pes_name = kwargs.get('name')
 
-        if pes_name not in available_pes:
-            raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + pes_name)
-            # TODO: Maybe print the available pes
+        if pes_name not in self.available_pes:
+            raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + pes_name
+                               + " Available: " + str(self.available_pes.keys()))
  
         self.__pot = importlib.import_module("XPACDT.Interfaces."+ pes_name + "_module.pot")
 
@@ -86,13 +80,21 @@ class Triatomic(itemplate.PotentialInterface):
                                               max_n_beads, 'adiabatic')
 
         self.__data_path = os.path.dirname(self.__pot.__file__) + "/"        
-        self.__masses = available_pes.get(pes_name).get('masses')
+        self.__masses = self.available_pes.get(pes_name).get('masses')
         
         if pes_name == 'CW':
             # For proper Hessian derivatives! Numerically tested for stability!
             self._DERIVATIVE_STEPSIZE = 7e-3
         
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    @property
+    def available_pes(self):
+        """ Dictonary of the implemented PES routines and the associated masses."""
+        return {'BKMP2': { 'masses': [units.atom_mass('H'), units.atom_mass('H'), units.atom_mass('H')]},
+                 'LWAL': { 'masses': [units.atom_mass('F'), units.atom_mass('H'), units.atom_mass('H')]},
+                 'CW': { 'masses': [units.atom_mass('Cl'), units.atom_mass('H'), units.atom_mass('H')]}
+               }
+
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -102,18 +104,10 @@ class Triatomic(itemplate.PotentialInterface):
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
             Please note that Cartesian coordinates of the atoms are used here.
-        P : (n_dof, n_beads) ndarray of floats, optional
-            The momenta of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads. This is not
-            used in this potential and thus defaults to None.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.
         """
-
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
 
         self._adiabatic_energy = np.zeros((1, R.shape[1]))
         self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])

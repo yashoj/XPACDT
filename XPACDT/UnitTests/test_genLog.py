@@ -214,7 +214,7 @@ class genLogTest(unittest.TestCase):
 
     @unittest.skip("Please implement a test here.")
     def test_setup_outfiles(self):
-        pass
+        raise NotImplementedError("Please implement a test here.")
 
 
 if __name__ == "__main__":

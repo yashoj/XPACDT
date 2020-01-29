@@ -57,7 +57,7 @@ class SamplingTest(unittest.TestCase):
 
     @unittest.skip("Please implement a test here.")
     def test_sample(self):
-        pass
+        raise NotImplementedError("Please implement a test here.")
 
     def test_shifts(self):
         coordinate_ref = np.array([[2.0], [1.0], [4.0], [-2.0]])

@@ -70,8 +70,7 @@ class AnalysisTest(unittest.TestCase):
 
     @unittest.skip("Please implement as an integrated test.")
     def test_do_analysis(self):
-        # TODO: Implement a more integrated test here!
-        raise NotImplementedError("Please implement a test here!!")
+        raise NotImplementedError("Please implement a test here.")
 
     def test_check_command(self):
         with self.assertRaises(ValueError):

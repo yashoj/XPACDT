@@ -39,11 +39,11 @@ class xpacdtTest(unittest.TestCase):
 
     @unittest.skip("Please implement a test here.")
     def test_resource_path(self):
-        pass
+        raise NotImplementedError("Please implement a test here.")
 
     @unittest.skip("Please implement a test here.")
     def test_print_helpfile(self):
-        pass
+        raise NotImplementedError("Please implement a test here.")
 
 
 if __name__ == "__main__":

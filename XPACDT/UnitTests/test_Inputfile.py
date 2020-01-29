@@ -268,13 +268,13 @@ class InputfileTest(unittest.TestCase):
         # Implicity tested in parse modules - not clear how to test separately.
         pass
 
+    @unittest.skip("Please implement a test here.")
     def test_parse_beads(self):
         raise NotImplementedError("Please implement a test here!!")
-        pass
 
+    @unittest.skip("Please implement a test here.")
     def test_parse_masses(self):
         raise NotImplementedError("Please implement a test here!!")
-        pass
 
 
 if __name__ == "__main__":

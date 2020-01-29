@@ -116,9 +116,11 @@ class Dissociation2statesTest(unittest.TestCase):
                 self.pes_weak_2_nb._diabatic_gradient_centroid, [[[0.00410023], [1.63312314e-04]],
                                                                  [[1.63312314e-04], [-0.01239246]]], rtol=1e-6)
 
+    @unittest.skip("Please implement a test here.")
     def test_get_diag_V_grad(self):
         raise NotImplementedError("Please implement a test here.")
 
+    @unittest.skip("Please implement a test here.")
     def test_get_off_diag_V_grad(self):
         raise NotImplementedError("Please implement a test here.")
 

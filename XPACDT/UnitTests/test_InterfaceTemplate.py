@@ -91,6 +91,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         # '_recalculate_adiabatic' function which in turn calculates all the
         # adiabatic properties.
         R = np.array([[0.]])
+        # FIXME The variable V is never used
         V = pes.diabatic_energy(R, SI=None, SJ=None, centroid=False,
                                 return_matrix=True)
 

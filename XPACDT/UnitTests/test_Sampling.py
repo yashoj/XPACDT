@@ -57,8 +57,8 @@ class SamplingTest(unittest.TestCase):
         self.parameters_momentum_shift_xyz = infile.Inputfile("FilesForTesting/SamplingTest/input_momentum_shift_xyz.in")
         self.system_momentum_xyz = xSystem.System(self.parameters_momentum_shift_xyz)
 
+    @unittest.skip("Please implement a test here.")
     def test_sample(self):
-        raise NotImplementedError("Please implement a test here!!")
         pass
 
     def test_shifts(self):

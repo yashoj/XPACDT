@@ -146,7 +146,7 @@ class InputfileTest(unittest.TestCase):
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
 
-#        with self.assertRaises(AttributeError):
+        # with self.assertRaises(AttributeError):
         with self.assertRaises(RuntimeError):
             parameters._parse_xyz(input_string)
 
@@ -274,9 +274,10 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_array_equal(parameters.positionShift, positionShift_ref)
         np.testing.assert_array_equal(parameters.momentumShift, momentumShift_ref)
 
+    @unittest.skip("Implicitly tested in parse modules.")
     def test_format_coordinates(self):
         # Implicity tested in parse modules - not clear how to test separately.
-        return
+        pass
 
 
 if __name__ == "__main__":

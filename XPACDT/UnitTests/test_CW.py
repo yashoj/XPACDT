@@ -46,14 +46,14 @@ class CWTest(unittest.TestCase):
         self.assertEqual(self.pes.name, 'CW')
 
     def test_calculate_adiabatic_all(self):
-        # H2 minimum 
+        # H2 minimum
         energy_ref = np.zeros((1, 1)) - 0.00139  # lowered by SO
         gradient_ref = np.zeros((1, 9, 1))
         self.pes._calculate_adiabatic_all(self.pes._from_internal([1.4005706, 40.0, 0.0]).reshape(-1, 1), None)
         np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-6)
         np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-4)
 
-        # HCl minimum 
+        # HCl minimum
         energy_ref = np.zeros((1, 1)) + 0.004114
         gradient_ref = np.zeros((1, 9, 1))
         self.pes._calculate_adiabatic_all(self.pes._from_internal([120.0, 60.0+2.41003, 0.0]).reshape(-1, 1), None)
@@ -81,7 +81,7 @@ class CWTest(unittest.TestCase):
 
     def test_minimize(self):
         # H2
-        fun_ref = - 0.00139 # lowered by SO
+        fun_ref = -0.00139  # lowered by SO
         x_ref = np.array([40.0, 0.0, 0.0, -0.700279, 0.0, 0.0, 0.700279, 0.0, 0.0])
         fun, x = self.pes.minimize_geom(self.pes._from_internal([1.4, 40.0, 0.0]))
         np.testing.assert_allclose(fun_ref, fun, atol=1e-6)

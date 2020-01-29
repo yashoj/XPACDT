@@ -38,14 +38,22 @@ import XPACDT.System.AdiabaticElectrons as elec
 class AdiabaticElectronsTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes1D_harmonic = elec.AdiabaticElectrons({'system': {'Interface': 'OneDPolynomial'},
-                                                       'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [1])
-        self.pes1D_shifted_harmonic = elec.AdiabaticElectrons({'system': {'Interface': 'OneDPolynomial'},
-                                                               'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}}, [1])
-        self.pes1D_anharmonic = elec.AdiabaticElectrons({'system': {'Interface': 'OneDPolynomial'},
-                                                         'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}}, [1])
-        self.pes1D_quartic = elec.AdiabaticElectrons({'system': {'Interface': 'OneDPolynomial'},
-                                                      'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}}, [1])
+        self.pes1D_harmonic = elec.AdiabaticElectrons(
+            {'system': {'Interface': 'OneDPolynomial'},
+             'OneDPolynomial': {'a': "0.0 0.0 0.5"}},
+            [1])
+        self.pes1D_shifted_harmonic = elec.AdiabaticElectrons(
+            {'system': {'Interface': 'OneDPolynomial'},
+             'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}},
+            [1])
+        self.pes1D_anharmonic = elec.AdiabaticElectrons(
+            {'system': {'Interface': 'OneDPolynomial'},
+             'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}},
+            [1])
+        self.pes1D_quartic = elec.AdiabaticElectrons(
+            {'system': {'Interface': 'OneDPolynomial'},
+             'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}},
+            [1])
 
         return
 

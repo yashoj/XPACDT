@@ -217,12 +217,11 @@ class MassiveAndersenTest(unittest.TestCase):
         np.testing.assert_allclose(np.std(x_arr, axis=0), x_std_ref, rtol=1e-7)
 
         for i in range(nb):
-            mean, var, std = stats.bayes_mvs(p_arr[:, 0, i], alpha=0.95)
+            mean, _, std = stats.bayes_mvs(p_arr[:, 0, i], alpha=0.95)
             mean_min, mean_max = mean[1]
             std_min, std_max = std[1]
             self.assertTrue(mean_min < p_mean_ref < mean_max)
             self.assertTrue(std_min < p_std_ref < std_max)
-
 
     def test_generation(self):
         # test temperature consistency check
@@ -230,7 +229,8 @@ class MassiveAndersenTest(unittest.TestCase):
                         'sampling': {'temperature': '1.0'}}
         mass = np.array([1.])
         with self.assertRaises(RuntimeError):
-            thermostat = ma.MassiveAndersen(input_params, mass)
+            ma.MassiveAndersen(input_params, mass)
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(MassiveAndersenTest)

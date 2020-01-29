@@ -67,11 +67,10 @@ class AnalysisTest(unittest.TestCase):
         self.systems[-1].nuclei.momenta = np.random.randn(*shape)
         self.systems[-1].do_log()
 
-#    def test_do_analysis(self):
-#        # TODO: Implement a more integrated test here!
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-#
+    @unittest.skip("Please implement a test here.")
+    def test_do_analysis(self):
+        # TODO: Implement a more integrated test here!
+        raise NotImplementedError("Please implement a test here!!")
 
     def test_check_command(self):
         with self.assertRaises(ValueError):
@@ -296,7 +295,7 @@ class AnalysisTest(unittest.TestCase):
         dir_list = analysis.get_directory_list(file_name='pickle.dat')
         self.assertSequenceEqual(dir_list, dir_list_ref2)
 
-# TODO: make sure these are always removed!
+        # TODO: make sure these are always removed!
         for d in dir_list_ref:
             shutil.rmtree(d)
 
@@ -316,7 +315,7 @@ class AnalysisTest(unittest.TestCase):
         sys = analysis.get_systems(dir_list_ref, 'pickle.dat', None)
         self.assertTrue(isinstance(sys, collections.Iterable))
 
-# TODO: make sure these are always removed!
+        # TODO: make sure these are always removed!
         for d in dir_list_ref:
             shutil.rmtree(d)
 

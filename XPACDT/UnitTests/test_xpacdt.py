@@ -37,12 +37,12 @@ import XPACDT.Bin.xpacdt as xpacdt
 
 class xpacdtTest(unittest.TestCase):
 
+    @unittest.skip("Please implement a test here.")
     def test_resource_path(self):
-        raise NotImplementedError("Please implement a test here!!")
         pass
 
+    @unittest.skip("Please implement a test here.")
     def test_print_helpfile(self):
-        raise NotImplementedError("Please implement a test here!!")
         pass
 
 

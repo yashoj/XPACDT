@@ -90,17 +90,11 @@ class Inputfile(collections.MutableMapping):
 
         self._parse_file()
 
-        if 'system' in self.store:
+        if 'system' in self:
 
             if 'dof' in self.get('system'):
                 try:
                     self.__n_dof = int(self.get('system').get('dof'))
-
-                    # Some interfaces have variable degrees of freedom and need
-                    # to know the actual number at setup time
-                    interface_name = self.get('system').get('Interface')
-                    if interface_name is not None:
-                        self.get(interface_name)['n_dof'] = str(self.__n_dof)
 
                 except ValueError as e:
                     raise type(e)(str(e) + "\nXPACDT: Number of degrees of"
@@ -112,7 +106,7 @@ class Inputfile(collections.MutableMapping):
                 raise RuntimeError("\nXPACDT: number of degrees of freedom"
                                    " not given in the input file.")
 
-            if 'rpmd' in self.store:
+            if 'rpmd' in self:
                 if 'beads' not in self.get("rpmd"):
                     raise RuntimeError("\nXPACDT: No number of beads "
                                        "given for RPMD in the input file.")
@@ -218,7 +212,8 @@ class Inputfile(collections.MutableMapping):
         else:
             self.__n_beads = n
 
-        return
+        self["n_beads"] = self.n_beads
+        self["max_n_beads"] = max(self.n_beads)
 
     @property
     def beta(self):
@@ -335,11 +330,11 @@ class Inputfile(collections.MutableMapping):
                 except IndexError:
                     values = ""
 
-                if keyword in self.store:
+                if keyword in self:
                     raise KeyError("\nXPACDT: Key '" + keyword +
                                    "' defined twice!")
                 else:
-                    self.store[keyword] = self._parse_values(values)
+                    self[keyword] = self._parse_values(values)
 
     def _parse_xyz(self, values):
         """
@@ -478,7 +473,7 @@ class Inputfile(collections.MutableMapping):
                                        "given does not match n_beads given"
                                        " in the input.")
 
-                self.__coordinates = self.__coordinates.reshape((self.n_dof, max(self.n_beads)))
+                self.__coordinates = self.__coordinates.reshape((self.n_dof, self["max_n_beads"]))
 
                 try:
                     self.__momenta = self.__momenta.reshape(self.__coordinates.shape)

@@ -72,8 +72,8 @@ class PotentialInterface:
     DERIVATIVE_STEPSIZE
     """
 
-    def __init__(self, name, n_dof, n_states=1, max_n_beads=1,
-                 primary_basis='adiabatic', **kwargs):
+    def __init__(self, name, n_dof=1, n_states=1, max_n_beads=1,
+                 primary_basis='adiabatic', **additional_parameters):
         self.__name = name
         self.__n_dof = n_dof
         self.__n_states = n_states

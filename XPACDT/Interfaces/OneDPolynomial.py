@@ -32,10 +32,10 @@
 
 import numpy as np
 
-import XPACDT.Interfaces.InterfaceTemplate as itemplate
+from XPACDT.Interfaces.InterfaceTemplate import PotentialInterface
 
 
-class OneDPolynomial(itemplate.PotentialInterface):
+class OneDPolynomial(PotentialInterface):
     """
     One-dimensional polynomial potential of the form:
     :math:`V(x) = \\sum_{i=0}^{N} a_i (x-x_0)^i`.
@@ -55,30 +55,29 @@ class OneDPolynomial(itemplate.PotentialInterface):
         here.
     """
 
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, OneDPolynomial={}, **global_parameters):
+        PotentialInterface.__init__(self, "OneDPolynomial",
+                                    primary_basis='adiabatic',
+                                    **global_parameters)
 
-        itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1,
-                                              max(parameters.n_beads),
-                                              'adiabatic')
+        self._parse_parameters(**OneDPolynomial)
 
-        pes_parameters = parameters.get(self.name)
-
+    def _parse_parameters(self, x0=0.0, a=None):
         try:
-            self.__x0 = float(pes_parameters.get('x0', 0.0))
+            self.__x0 = float(x0)
         except ValueError as e:
             raise type(e)(str(e) + "\nXPACDT: Parameter 'x0' for polynomials "
-                                   "not convertable to floats. x0 is "
-                                   + pes_parameters.get('x0'))
+                                   f"not convertible to floats. x0 is {x0}")
 
-        if ('a' not in pes_parameters):
+        if a is None:
             raise KeyError("\nXPACDT: Parameters 'a' for polynomials not"
                            " given in the input.")
         try:
-            self.__as = [float(f) for f in pes_parameters.get('a').split()]
+            self.__as = [float(f) for f in a.split()]
         except ValueError as e:
             raise type(e)(str(e) + "\nXPACDT: Parameters 'a' for polynomials "
-                                   "not convertable to floats."
-                                   " a is " + pes_parameters.get('a'))
+                                   "not convertable to an array of floats."
+                                   f" a is {a}.")
 
     @property
     def a(self):

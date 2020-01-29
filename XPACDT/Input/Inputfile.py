@@ -214,11 +214,13 @@ class Inputfile(collections.MutableMapping):
                              " for all degrees of freedom.")
 
         if len(n) == 1:
+            # Duplicate the number of beads in each degree of freedom
             self.__n_beads = n * self.n_dof
         else:
             self.__n_beads = n
 
-        return
+        self["n_beads"] = self.n_beads
+        self["max_n_beads"] = max(self.n_beads)
 
     @property
     def beta(self):

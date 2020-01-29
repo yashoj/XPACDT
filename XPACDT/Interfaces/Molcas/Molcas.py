@@ -86,28 +86,23 @@ class Molcas(PotentialInterface):
         Path of the file containing the MOLCAS input file describing the
         RASSCF part of the computation.
     """
-    def __init__(self,
-                 max_n_beads=1,
-                 n_dof=1,
-                 n_states=1,
-                 tmpdir=None,
-                 molcas_executable="molcas",
-                 basis="",
-                 rasscf_filepath=Path(),
-                 **kwargs):
-
-        if max_n_beads != 1:
-            raise NotImplementedError(
-                    "Beads not supported for Molcas interface yet.")
-
+    # TODO lowercase everything in input file
+    def __init__(self, Molcas=None, **global_parameters):
         super().__init__("Molcas",
-                         n_dof,
-                         n_states,
-                         max_n_beads,
-                         "adiabatic")
+                         primary_basis="adiabatic",
+                         **global_parameters)
+
+        print(global_parameters["n_beads"])
+        print(dict(**global_parameters))
+
+        if self.max_n_beads != 1:
+            raise NotImplementedError(
+                    "Beads not supported for Molcas interface yet "
+                    f"(input gave max_n_beads = {self.max_n_beads}).")
+
 
         # TODO Move to template ? Use getter ?
-        self.n_atoms = n_dof // 3
+        self.n_atoms = self.n_dof // 3
         self._atoms = ["H", "H"]
 
         # Use the current date in the MOLCAS project name and temporary dir
@@ -180,8 +175,7 @@ class Molcas(PotentialInterface):
 
         self._optim_input_file.write_text(optim_input)
 
-    def _calculate_adiabatic_all(self, R, P, S=0):
-        # TODO Take the current state in account
+    def _calculate_adiabatic_all(self, R, S=None):
         self._write_xyz(R[:, 0])
 
         full_output = self._molcas_subprocess(self._nac_input_file)

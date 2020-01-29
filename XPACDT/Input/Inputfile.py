@@ -46,6 +46,8 @@ import re
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
 
+from XPACDT.Tools.XYZ import parse_xyz
+
 
 class Inputfile(collections.MutableMapping):
     """Basic representation of all the input parameters given to XPACDT. It
@@ -208,6 +210,8 @@ class Inputfile(collections.MutableMapping):
                              " for all degrees of freedom.")
 
         if len(n) == 1:
+            # Clone the number of beads for each degree of freedom
+            # NOTE works because n is a list
             self.__n_beads = n * self.n_dof
         else:
             self.__n_beads = n
@@ -305,7 +309,9 @@ class Inputfile(collections.MutableMapping):
                     raise AttributeError("\nXPACDT: Coordinate type not given.")
 
                 if self._c_type == 'xyz':
-                    self._parse_xyz(values)
+                    atom_symbols, masses, coord = parse_xyz(string=values)
+                    self._parse_masses(masses)
+                    self.__coordinates = coord
                 elif self._c_type == 'mass-value':
                     self._parse_mass_value(values)
                 else:
@@ -335,38 +341,6 @@ class Inputfile(collections.MutableMapping):
                                    "' defined twice!")
                 else:
                     self[keyword] = self._parse_values(values)
-
-    def _parse_xyz(self, values):
-        """
-        Parse coordinate input that have an atom symbol and the corresponding
-        xyz coordinates per line. The format has to be as follows. The first
-        entry per line gives the atom symbol. The next three entries give the
-        xyz positions in bohr. Each RPMD bead has to come in a new line!
-
-        The results are stored in self.masses, which are the au (not amu!)
-        masses for each atom, and in self.coordinates, which is a two-d
-        numpy array of floats.
-
-        Parameters
-        ----------
-        values : str
-            String representation of the input.
-        """
-
-        self._c_type = "xyz"
-        d = StringIO(values)
-        try:
-            mc = np.loadtxt(d, ndmin=2,
-                            converters={0: lambda s: units.atom_mass(str(s)[2])})
-        except AttributeError as e:
-            raise type(e)(str(e) + "\nXPACDT: Unknwon atomic symbol given!")
-        except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Too few/many coordinates given. "
-                                   "Please check the error for the line "
-                                   "number with the first inconsistency.")
-
-        self._parse_masses(mc[:, 0])
-        self.__coordinates = mc[:, 1:].copy()
 
     def _parse_mass_value(self, values):
         """

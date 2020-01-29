@@ -31,7 +31,8 @@
 """Module to handle units."""
 
 import re
-from scipy.constants import physical_constants, femto, pico, atto, centi, pi
+from scipy.constants import physical_constants, femto, pico, atto, centi, pi,\
+                            angstrom
 
 
 # Boltzmann constant in atomic units
@@ -45,6 +46,7 @@ nm_to_cm = centi/physical_constants['Bohr radius'][0] \
 # Conversion of Hartree energy to eV and vice versa
 hartree_to_eV = physical_constants['Hartree energy in eV'][0]
 eV_to_hartree = 1.0 / hartree_to_eV
+angstrom_to_bohr = physical_constants["atomic unit of length"][0] / angstrom
 
 
 def parse_time(time_string):
@@ -112,10 +114,9 @@ def atom_mass(symbol):
     conversion = physical_constants['atomic mass constant'][0]\
         / physical_constants['atomic unit of mass'][0]
     try:
-        return atoms.get(standard_symbol) * conversion
-    except TypeError:
-        raise KeyError("\nXPACDT: Error obtaining element weight: "
-                       + standard_symbol)
+        return atoms[standard_symbol] * conversion
+    except KeyError:
+        raise KeyError(f"XPACDT: Unkown atomic symbol {standard_symbol}")
 
 
 # from http://www.ciaaw.org/atomic-masses.htm

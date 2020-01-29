@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -30,19 +31,17 @@
 """Module containing some mathematical functions customized to the need of the
 program."""
 
-import math
-import numpy as np
-
 
 def linear_interpolation_1d(x_fraction, y_initial, y_final):
-    """ Performs linear interpolation in 1 dimension to obtain y value at
-    `x_fraction` between the intial and final x values.
+    """ Performs linear interpolation (and extrapolation) in 1 dimension to
+    obtain y value at `x_fraction` between the intial and final x values.
     TODO: write properly: x_fraction = (x_required - x_initial) / (x_final - x_initial)
 
     Parameters
     ----------
     x_fraction : float
-        Fraction between initial and final x values. Needs to be less than or equal to 1.
+        Fraction between initial and final x values. Needs to be less than
+        or equal to 1.
     y_initial : ndarray
         Initial y value. Can be any dimensional ndarray.
     y_final : ndarray

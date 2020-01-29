@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -36,7 +37,7 @@ import numpy as np
 def angle(v1, v2):
     """ Returns the angle in radians between vectors `v1` and `v2`. The values
     of the angle are from :math:`0` to :math:`\pi`. This version is
-    numerically stable.
+    numerically stable also for small angles.
     See: www.cs.berkeley.edu/~wkahan/MathH110/Cross.pdf (page 15)
 
     Parameters

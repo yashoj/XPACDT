@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -33,19 +34,15 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.Morse1D as morse1d
+import XPACDT.Input.Inputfile as infile
 
 
 class Morse1DTest(unittest.TestCase):
 
     def setUp(self):
         # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
-        De = 0.02278
-        a = 0.686
-        re = 2.0
-        b = 0.0
-
-        self.pes_1_nb = morse1d.Morse1D(1, **{'De': De, 'a': a, 're': re, 'b': b})
-        self.pes_2_nb = morse1d.Morse1D(2, **{'De': De, 'a': a, 're': re, 'b': b})
+        self.pes_1_nb = morse1d.Morse1D(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_1.in"))
+        self.pes_2_nb = morse1d.Morse1D(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_2.in"))
 
         return
 
@@ -104,6 +101,10 @@ class Morse1DTest(unittest.TestCase):
         Hessian = self.pes_1_nb.get_Hessian(np.array([2.0]))
         Hessian_reference = np.array([[2. * 0.686**2 * 0.02278]])
         np.testing.assert_allclose(Hessian, Hessian_reference)
+
+    def test_get_V_grad(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

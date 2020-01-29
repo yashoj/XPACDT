@@ -42,14 +42,14 @@ class NucleiTest(unittest.TestCase):
         self.parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
         self.parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
 
-        self.nuclei_classical = Nuclei.Nuclei(4, self.parameters_classical, 0.0)
-        self.nuclei_rpmd = Nuclei.Nuclei(4, self.parameters_rpmd, 0.0)
+        self.nuclei_classical = Nuclei.Nuclei(self.parameters_classical, 0.0)
+        self.nuclei_rpmd = Nuclei.Nuclei(self.parameters_rpmd, 0.0)
 
         self.parameters_classical_1D = infile.Inputfile("FilesForTesting/SystemTests/Classical_1D.in")
         self.parameters_rpmd_1D = infile.Inputfile("FilesForTesting/SystemTests/RPMD_1D.in")
 
-        self.nuclei_classical_1D = Nuclei.Nuclei(1, self.parameters_classical_1D, 0.0)
-        self.nuclei_rpmd_1D = Nuclei.Nuclei(1, self.parameters_rpmd_1D, 0.0)
+        self.nuclei_classical_1D = Nuclei.Nuclei(self.parameters_classical_1D, 0.0)
+        self.nuclei_rpmd_1D = Nuclei.Nuclei(self.parameters_rpmd_1D, 0.0)
         pass
 
     def test_propagate(self):
@@ -64,7 +64,7 @@ class NucleiTest(unittest.TestCase):
                                       self.parameters_classical.momenta*2.0)
 
         # Reset nuclei
-        self.nuclei_classical = Nuclei.Nuclei(4, self.parameters_classical,
+        self.nuclei_classical = Nuclei.Nuclei(self.parameters_classical,
                                               0.0)
         self.nuclei_classical.propagator = DummyProp(1.0)
         self.nuclei_classical.propagate(5.0)
@@ -80,7 +80,7 @@ class NucleiTest(unittest.TestCase):
         np.testing.assert_array_equal(self.nuclei_classical.momenta,
                                       momenta_ref)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(RuntimeError):
             self.nuclei_classical.propagate(1.5)
 
         ### 4 bead case
@@ -93,7 +93,7 @@ class NucleiTest(unittest.TestCase):
                                       self.parameters_rpmd.momenta*2.0)
 
         # Reset nuclei
-        self.nuclei_rpmd = Nuclei.Nuclei(4, self.parameters_rpmd, 0.0)
+        self.nuclei_rpmd = Nuclei.Nuclei(self.parameters_rpmd, 0.0)
         self.nuclei_rpmd.propagator = DummyProp(1.0)
         self.nuclei_rpmd.propagate(5.0)
         coordinates_ref = np.copy(self.parameters_rpmd.coordinates)
@@ -108,7 +108,7 @@ class NucleiTest(unittest.TestCase):
         np.testing.assert_array_equal(self.nuclei_rpmd.momenta,
                                       momenta_ref)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(RuntimeError):
             self.nuclei_rpmd.propagate(1.5)
 
         return
@@ -134,74 +134,74 @@ class NucleiTest(unittest.TestCase):
                                              rpmd_centroid)
         pass
 
-    def test_parse_dof(self):
+    def test_get_selected_quantities(self):
         with self.assertRaises(NotImplementedError):
-            self.nuclei_classical.parse_dof("m,0,1")
+            self.nuclei_classical.get_selected_quantities("m,0,1")
 
         with self.assertRaises(NotImplementedError):
-            self.nuclei_classical.parse_dof("m,0,1", quantity='p')
+            self.nuclei_classical.get_selected_quantities("m,0,1", quantity='p')
 
         with self.assertRaises(NotImplementedError):
-            self.nuclei_classical.parse_dof("m,0,1", quantity='v')
+            self.nuclei_classical.get_selected_quantities("m,0,1", quantity='v')
 
-            self.nuclei_classical.parse_dof("m,0,1", beads=True)
-
-        with self.assertRaises(NotImplementedError):
-            self.nuclei_classical.parse_dof("m,0,1", quantity='p', beads=True)
+            self.nuclei_classical.get_selected_quantities("m,0,1", beads=True)
 
         with self.assertRaises(NotImplementedError):
-            self.nuclei_classical.parse_dof("m,0,1", quantity='v', beads=True)
+            self.nuclei_classical.get_selected_quantities("m,0,1", quantity='p', beads=True)
+
+        with self.assertRaises(NotImplementedError):
+            self.nuclei_classical.get_selected_quantities("m,0,1", quantity='v', beads=True)
 
         with self.assertRaises(RuntimeError):
-            self.nuclei_classical.parse_dof("0,2", quantity='y')
+            self.nuclei_classical.get_selected_quantities("0,2", quantity='y')
 
         values_ref = np.array([2.0, 4.0])
-        values = self.nuclei_classical.parse_dof("0,2")
+        values = self.nuclei_classical.get_selected_quantities("0,2")
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([0.05, 1.25/2.1])
-        values = self.nuclei_classical.parse_dof("1,3", quantity='v')
+        values = self.nuclei_classical.get_selected_quantities("1,3", quantity='v')
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([-1.0, 2.0, 1.25])
-        values = self.nuclei_classical.parse_dof("0,2,3", quantity='p')
+        values = self.nuclei_classical.get_selected_quantities("0,2,3", quantity='p')
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([[2.0], [4.0]])
-        values = self.nuclei_classical.parse_dof("0,2", beads=True)
+        values = self.nuclei_classical.get_selected_quantities("0,2", beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([[0.05], [1.25/2.1]])
-        values = self.nuclei_classical.parse_dof("1,3", quantity='v', beads=True)
+        values = self.nuclei_classical.get_selected_quantities("1,3", quantity='v', beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([[-1.0], [2.0], [1.25]])
-        values = self.nuclei_classical.parse_dof("0,2,3", quantity='p', beads=True)
+        values = self.nuclei_classical.get_selected_quantities("0,2,3", quantity='p', beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
         # RPMD
         values_ref = np.array([8.4/4, 1.9/4])
-        values = self.nuclei_rpmd.parse_dof("0,2")
+        values = self.nuclei_rpmd.get_selected_quantities("0,2")
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([-0.3/4/2, 0.85/4/2.1])
-        values = self.nuclei_rpmd.parse_dof("1,3", quantity='v')
+        values = self.nuclei_rpmd.get_selected_quantities("1,3", quantity='v')
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([2.2/4, 7.4/4, 0.85/4])
-        values = self.nuclei_rpmd.parse_dof("0,2,3", quantity='p')
+        values = self.nuclei_rpmd.get_selected_quantities("0,2,3", quantity='p')
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([[2.0, 3.0, 1.0, 2.4], [4.0, -2.0, -0.1, 0.0]])
-        values = self.nuclei_rpmd.parse_dof("0,2", beads=True)
+        values = self.nuclei_rpmd.get_selected_quantities("0,2", beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([[0.05, -0.05, -0.25, 0.1], [1.25/2.1, -0.5/2.1, 0.1/2.1, 0.0]])
-        values = self.nuclei_rpmd.parse_dof("1,3", quantity='v', beads=True)
+        values = self.nuclei_rpmd.get_selected_quantities("1,3", quantity='v', beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
         values_ref = np.array([[-1.0, 1.2, 2.0, 0.0], [2.0, -0.1, 2.5, 3.0], [1.25, -0.5, 0.1, 0.0]])
-        values = self.nuclei_rpmd.parse_dof("0,2,3", quantity='p', beads=True)
+        values = self.nuclei_rpmd.get_selected_quantities("0,2,3", quantity='p', beads=True)
         np.testing.assert_array_equal(values_ref, values)
 
         return
@@ -323,6 +323,23 @@ class NucleiTest(unittest.TestCase):
 
         # TODO: add test for more that 1 dimensions
         return
+
+    def test_init_electrons(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_attach_nuclei_propagator(self):
+        raise NotImplementedError("Please implement a test here!!")
+        pass
+
+    def test_getCOM(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+        pass
+
+    def test_print_size(self):
+        # Not really clear how to test this. Here for completness sake.
+        pass
 
 
 class DummyProp(object):

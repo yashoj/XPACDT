@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -41,12 +42,19 @@ import XPACDT.Tools.Geometry as geom
 
 class BKMP2(itemplate.PotentialInterface):
     """
-    BKMP2 PES. No parameters required.
+    BKMP2 PES. No additional parameters required.
+
+    Parameters
+    ----------
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
+
     """
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
         pot.pes_init()
         itemplate.PotentialInterface.__init__(self, "BKMP2", 9, 1,
-                                              max_n_beads, 'adiabatic')
+                                               max(parameters.n_beads),
+                                              'adiabatic')
 
     def _calculate_adiabatic_all(self, R, P=None, S=None):
         """

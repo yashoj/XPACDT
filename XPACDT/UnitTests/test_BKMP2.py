@@ -35,12 +35,13 @@ import unittest
 import XPACDT.Interfaces.BKMP2 as bkmp2
 import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
+import XPACDT.Input.Inputfile as infile
 
 
 class BKMP2Test(unittest.TestCase):
 
     def setUp(self):
-        self.pes = bkmp2.BKMP2()
+        self.pes = bkmp2.BKMP2(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
 
     def test_creation(self):
         self.assertEqual(self.pes.name, 'BKMP2')

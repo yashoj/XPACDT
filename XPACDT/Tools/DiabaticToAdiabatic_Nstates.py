@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -84,9 +85,6 @@ def get_adiabatic_gradient(R, func_diabatic_energy, step):
     dV_ad = []
 
     # Get gradients for each dof using symmetric finite difference
-    # TODO: maybe have a different module to do numerics efficiently
-    # TODO: maybe can be made more efficient by computing only for upper
-    #       triangle part of the matrix and use hermiticity property
     for i in range(n_dof):
         R_step = R.copy()
         R_step[i] += step
@@ -136,8 +134,7 @@ def get_NAC(V, dV):
           /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats
         NAC for each state given in matrix form.
     """
-    # TODO: Comparing with 2 state dia2ad, the sign is negative, could be
-    # possibly due to phase factor in adiabatic states. Does that matter??
+
     n_states = V.shape[0]
     nac = np.zeros_like(dV)
 

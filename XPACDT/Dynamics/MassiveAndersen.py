@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,7 +28,7 @@
 #
 #  **************************************************************************
 
-""" This module holds the defines te massive Andersen Thermostat.
+""" This module defines the massive Andersen Thermostat.
 """
 
 import numpy as np
@@ -49,17 +50,9 @@ class MassiveAndersen(object):
     input_parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
     masses : (n_dof) ndarray of floats
-        The atomic masses of the current system in au.
-
-    Other Parameters
-    ----------------
-    Within the inputfile the timescale for resampling and the temperature
-    need to be given. Either as 'time' (in fs or au) and 'temperature' (in K)
-    in the thermostat section (first priority) or the sampling sections.
+        The nuclear masses of the current system in au.
     """
     def __init__(self, input_parameters, masses):
-        # TODO: basic argument parsing here
-
         thermo_parameters = input_parameters.get('thermostat')
         sampling_parameters = input_parameters.get('sampling')
 
@@ -72,7 +65,7 @@ class MassiveAndersen(object):
                 sampling_temperature = float(sampling_parameters.
                                              get('temperature').split()[0])
 
-                # Avoid round of errors; There should be really no difference
+                # Avoid round-off errors; There should be really no difference
                 # in results if temperatures given deviate by 1e-4
                 if abs(self.temperature - sampling_temperature) > 1e-4:
                     raise RuntimeError("Temperatures given in thermostat"
@@ -116,5 +109,7 @@ class MassiveAndersen(object):
             n_beads = P.shape[1]
             sigmas = np.sqrt(np.ones_like(P) * self.mass[:, None] * n_beads
                              / self.beta)
+            # Make sure that the momenta are actually changed in the calling
+            # modules. P = ... won't work.
             P[:, :] = np.random.normal(np.zeros_like(sigmas), sigmas)
         return

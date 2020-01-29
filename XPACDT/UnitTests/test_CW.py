@@ -35,12 +35,13 @@ import unittest
 import XPACDT.Interfaces.CW as cw
 import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
+import XPACDT.Input.Inputfile as infile
 
 
 class CWTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes = cw.CW()
+        self.pes = cw.CW(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
 
     def test_creation(self):
         self.assertEqual(self.pes.name, 'CW')

@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -52,6 +53,10 @@ def do_Fixed_sampling(system, parameters, n_sample):
     systems : (n_sample) list of XPACDT.Dynamics.System
         A list of n_sample copies of the given system.
     """
+
+    if system.nuclei.momenta is None:
+        raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
+                           " file, but required in fixed sampling.")
 
     systems = []
     for i in range(n_sample):

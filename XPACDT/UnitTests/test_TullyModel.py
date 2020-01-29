@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -33,26 +34,24 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.TullyModel as tullym
+import XPACDT.Input.Inputfile as infile
 
 
 class TullyModelTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_A_1_nb = tullym.TullyModel(1, **{'model_type': 'model_A'})
-        self.pes_A_2_nb = tullym.TullyModel(2, **{'model_type': 'model_A'})
+        self.pes_A_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_1.in"))
+        self.pes_A_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_2.in"))
 
-        self.pes_B_1_nb = tullym.TullyModel(1, **{'model_type': 'model_B'})
-        self.pes_B_2_nb = tullym.TullyModel(2, **{'model_type': 'model_B'})
+        self.pes_B_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_1.in"))
+        self.pes_B_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_2.in"))
 
-        self.pes_C_1_nb = tullym.TullyModel(1, **{'model_type': 'model_C'})
-        self.pes_C_2_nb = tullym.TullyModel(2, **{'model_type': 'model_C'})
+        self.pes_C_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_1.in"))
+        self.pes_C_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_2.in"))
 
         return
 
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = tullym.TullyModel(1)
-
         self.assertEqual(self.pes_A_1_nb.name, 'TullyModel')
         self.assertEqual(self.pes_A_1_nb.model_type, 'model_A')
 
@@ -148,6 +147,18 @@ class TullyModelTest(unittest.TestCase):
         np.testing.assert_allclose(
                 self.pes_C_2_nb._diabatic_gradient_centroid, [[[0.0], [0.09]],
                                                               [[0.09], [0.0]]], rtol=1e-7)
+
+    def test_get_V_dV_11(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_V_dV_22(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_get_V_dV_12(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

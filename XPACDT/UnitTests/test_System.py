@@ -134,7 +134,7 @@ class SystemTest(unittest.TestCase):
         # reset system
         self.system = xSystem.System(self.parameters)
         self.system.nuclei.propagator = DummyProp(0.3)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(RuntimeError):
             self.system.step(1.0)
 
         return

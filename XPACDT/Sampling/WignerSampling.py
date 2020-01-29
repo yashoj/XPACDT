@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,9 +28,10 @@
 #
 #  **************************************************************************
 
-""" Modul that implements Wigner sampling of a system. Details on Wigner
-sampling can be found in TODO: add paper. Please note that Wigner sampling
-only makes sense in a classical calculation and not for RPMD. """
+""" Module that implements Wigner sampling of a system. Details on Wigner
+sampling can be found in Physical Review A 98, 063421 (2018).
+Please note that Wigner sampling only makes sense in a classical calculation
+and not for RPMD. """
 
 import copy
 import numpy as np
@@ -44,8 +46,6 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
     a thermal distribution is sampled. A list of systems located at the
     sampled phase-space points is given back.
 
-    # The following things are assumed to be set in parameters:
-    # TODO move all optional stuff to parameters...
 
     Parameters
     ----------
@@ -65,14 +65,14 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
         A list of systems located at the sampled phase-space points.
     """
 
-    assert('samples' in parameters.get('sampling')), "Number of " \
-        "samples required not given."
-
     x0 = system.nuclei.positions[:, 0]
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
 
-    assert((omega > 0.0).all()), "Negative frequency given for sampling. " \
-                                 + "omega = " + str(omega)
+    if (omega <= 0).any():
+        raise RuntimeError("\nXPACDT: Negative frequency given for sampling. "
+                           + "omega = " + str(omega)
+                           + " Please make sure that the input geometry"
+                           " is optimized.")
 
     # Get the width of the ground state distribution
     sigma_x = np.sqrt(1.0 / (2.0 * omega * nm_masses))

@@ -1,0 +1,18 @@
+$system  ## inline comment
+dof = 1
+Interface = Morse1D
+$end 
+
+$Morse1D
+De = 0.02278
+a = 0.686
+re = 2.0
+b = 0.0 
+$end
+
+$rpmd
+beads = 2
+beta = 1.0
+$end
+
+

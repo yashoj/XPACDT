@@ -1,0 +1,8 @@
+$system
+dof = 6
+$end
+
+$rpmd
+beads = 2
+beta = 1.0
+$end

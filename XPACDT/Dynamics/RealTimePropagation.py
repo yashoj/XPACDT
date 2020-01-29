@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -29,7 +30,7 @@
 #
 #  **************************************************************************
 
-""" This module defines all required routines to propagate a given system in
+""" This module implements all required routines to propagate a given system in
 real time."""
 
 import os
@@ -39,11 +40,8 @@ import XPACDT.Tools.Units as units
 
 
 def propagate(system, input_parameters):
-    """ Propagate the system as given in the input file. The system state is
-    saved in a pickle file.
-
-    TODO: Talk more about
-    possibilities for given things in the input file.
+    """ Propagate the system as given in the input file. The system history is
+    saved to a pickle file during or after propagation.
 
     Parameters
     ----------
@@ -70,7 +68,8 @@ def propagate(system, input_parameters):
         system.nuclei.init_electrons(input_parameters)
         system.do_log(True)
 
-    # Set desired propagator
+    # Reset beta; Set desired propagator
+    system.nuclei.beta = input_parameters.beta
     system.nuclei.attach_nuclei_propagator(input_parameters)
 
     # Obtain times for propagation and output
@@ -84,13 +83,19 @@ def propagate(system, input_parameters):
 
     # set up pickle file
     name_folder = sys_parameters.get('folder')
+    if not os.path.isdir(name_folder):
+        try:
+            os.mkdir(name_folder)
+        except OSError:
+            sys.stderr.write("Creation of trajectory folder failed!")
+            raise
     name_file = sys_parameters.get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
+    
 
     while(system.nuclei.time < time_end):
         system.step(timestep_output, True)
 
-        # TODO: Learn how to append in pickle and maybe do that
         if 'intermediate_write' in prop_parameters:
             pickle.dump(system, open(path_file, 'wb'), -1)
 

@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -56,7 +57,7 @@ class FixedSamplingTest(unittest.TestCase):
                                        rtol=1e-7)
             np.testing.assert_allclose(s.nuclei.momenta, momenta_ref,
                                        rtol=1e-7)
-            # TODO: more attributes to be checked?
+            self.assertEqual(s.nuclei, self.system.nuclei)
 
 
 if __name__ == "__main__":

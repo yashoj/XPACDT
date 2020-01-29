@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -31,15 +32,12 @@
 
 import numpy as np
 import os
+import shutil
 import unittest
 
 import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
 import XPACDT.Sampling.Sampling as sampling
-
-# TODO: How would a good test look like?
-# TODO: Obtaining the normal modes only makes sense if we have more potentials
-#       to be used in the tests or the option to read a Hessian from file!
 
 
 class SamplingTest(unittest.TestCase):
@@ -58,7 +56,7 @@ class SamplingTest(unittest.TestCase):
         self.system_momentum_xyz = xSystem.System(self.parameters_momentum_shift_xyz)
 
     def test_sample(self):
-        raise NotImplementedError("Please implement a test here!!")
+        raise NotImplementedError("Please implement an integrated test here!!")
         pass
 
     def test_shifts(self):
@@ -115,6 +113,9 @@ class SamplingTest(unittest.TestCase):
 
         os.rmdir('test')
 
+    def tearDown(self):
+        if os.path.isdir('test'):
+            shutil.rmtree('test')
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(SamplingTest)

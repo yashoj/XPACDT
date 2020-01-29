@@ -1,0 +1,15 @@
+$system  ## inline comment
+dof = 1
+Interface = Dissociation2states
+$end 
+
+$Dissociation2states
+model_type = weak_coupling
+$end
+
+$rpmd
+beads = 2
+beta = 1.0
+$end
+
+

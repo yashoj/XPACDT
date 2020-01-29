@@ -58,16 +58,20 @@ class Triatomic(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
-    Other Parameters 
+    Other Parameters (as given in the input file)
     ----------------
     name : string
         The name of the PES requested.
     """
-    def __init__(self, max_n_beads=1, **kwargs):
-        pes_name = kwargs.get('name')
+    def __init__(self, parameters, **kwargs):
+        itemplate.PotentialInterface.__init__(self, 'Triatomic', 9, 1,
+                                              max(parameters.n_beads), 'adiabatic')
+
+        pes_parameters = parameters.get(self.name)
+        pes_name = pes_parameters.get('name')
 
         if pes_name not in self.available_pes:
             raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + pes_name
@@ -76,8 +80,6 @@ class Triatomic(itemplate.PotentialInterface):
         self.__pot = importlib.import_module("XPACDT.Interfaces."+ pes_name + "_module.pot")
 
         self.__pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, pes_name, 9, 1,
-                                              max_n_beads, 'adiabatic')
 
         self.__data_path = os.path.dirname(self.__pot.__file__) + "/"        
         self.__masses = self.available_pes.get(pes_name).get('masses')

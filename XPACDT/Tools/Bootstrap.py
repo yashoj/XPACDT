@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -34,7 +35,8 @@ import numpy as np
 
 def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
     """Performs a basic bootstrapping analysis to obtain the standard error
-    of a certain property averaged over the ensemble of trajectories.
+    of a certain property averaged over the ensemble of trajectories. No
+    resampling is done if `is_2D` is True.
     See: https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
 
     Parameters
@@ -53,6 +55,7 @@ def bootstrap(data, function, n_bootstrap=1000, is_2D=False):
         currently.
 
     Returns:
+    -------
         m : (nfunc) ndarray of floats
             The mean value of the function over the sample
         s : (nfunc) ndarray of floats

@@ -1,0 +1,10 @@
+$system  ## inline comment
+dof = 9
+Interface = Triatomic
+$end 
+
+$Triatomic
+name = LWAL
+$end
+
+

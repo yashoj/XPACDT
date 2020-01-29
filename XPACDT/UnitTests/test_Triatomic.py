@@ -35,19 +35,23 @@ import unittest
 import XPACDT.Interfaces.Triatomic as triatomic
 import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
-
+import XPACDT.Input.Inputfile as infile
 
 class TriatomicTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_bkmp2 = triatomic.Triatomic(**{'name': 'BKMP2'})
-        self.pes_cw = triatomic.Triatomic(**{'name': 'CW'})
-        self.pes_lwal = triatomic.Triatomic(**{'name': 'LWAL'})
+        self.pes_bkmp2 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
+        self.pes_cw = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
+        self.pes_lwal = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+
+        self.pes_bkmp2_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2_4.in"))
+        self.pes_cw_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw_4.in"))
+        self.pes_lwal_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal_4.in"))
 
     def test_creation(self):
-        self.assertEqual(self.pes_bkmp2.name, 'BKMP2')
-        self.assertEqual(self.pes_cw.name, 'CW')
-        self.assertEqual(self.pes_lwal.name, 'LWAL')
+        self.assertEqual(self.pes_bkmp2.name, 'Triatomic')
+        self.assertEqual(self.pes_cw.name, 'Triatomic')
+        self.assertEqual(self.pes_lwal.name, 'Triatomic')
 
     def test_calculate_adiabatic_all(self):
         # BKMP2
@@ -73,16 +77,16 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_bkmp2._adiabatic_gradient, gradient_ref, atol=1e-10)
 
         # RPMD
-        x0 = self.pes_bkmp2._from_internal([1.757, 2.6355, 0.0])
-        x1 = self.pes_bkmp2._from_internal([400.0, 800.0, 0.0])
-        x2 = self.pes_bkmp2._from_internal([1.4014718, 80.0, 0.0])
-        x3 = self.pes_bkmp2._from_internal([1.757, 2.6355, 0.0])
+        x0 = self.pes_bkmp2_4._from_internal([1.757, 2.6355, 0.0])
+        x1 = self.pes_bkmp2_4._from_internal([400.0, 800.0, 0.0])
+        x2 = self.pes_bkmp2_4._from_internal([1.4014718, 80.0, 0.0])
+        x3 = self.pes_bkmp2_4._from_internal([1.757, 2.6355, 0.0])
         x = np.column_stack((x0, x1, x2, x3))
-        self.pes_bkmp2._calculate_adiabatic_all(x, None)
+        self.pes_bkmp2_4._calculate_adiabatic_all(x, None)
         energy_ref = np.array([[-0.15917577, 0.0, -0.17449577, -0.15917577]])
         gradient_ref = np.zeros((1, 9, 4))
-        np.testing.assert_allclose(self.pes_bkmp2._adiabatic_energy, energy_ref, atol=1e-5)
-        np.testing.assert_allclose(self.pes_bkmp2._adiabatic_gradient, gradient_ref, atol=1e-6)
+        np.testing.assert_allclose(self.pes_bkmp2_4._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes_bkmp2_4._adiabatic_gradient, gradient_ref, atol=1e-6)
 
         # LWAL
         # H2 minimum
@@ -116,17 +120,17 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_lwal._adiabatic_gradient, gradient_ref, atol=1e-4)
 
         # RPMD
-        x0 = self.pes_lwal._from_internal([1.401168, 40.0, 0.0])
-        x1 = self.pes_lwal._from_internal([80.0, 40.0+1.7335, 0.0])
-        x2 = self.pes_lwal._from_internal([1.443, 2.936+0.5*1.443, 0.0])
-        x3 = self.pes_lwal._from_internal([1.457, R, gamma])
+        x0 = self.pes_lwal_4._from_internal([1.401168, 40.0, 0.0])
+        x1 = self.pes_lwal_4._from_internal([80.0, 40.0+1.7335, 0.0])
+        x2 = self.pes_lwal_4._from_internal([1.443, 2.936+0.5*1.443, 0.0])
+        x3 = self.pes_lwal_4._from_internal([1.457, R, gamma])
         x = np.column_stack((x0, x1, x2, x3))
-        self.pes_lwal._calculate_adiabatic_all(x, None)
+        self.pes_lwal_4._calculate_adiabatic_all(x, None)
         energy_ref = np.array([[0.0, -0.050454, 0.003428, 0.002616]])
         gradient_ref = np.zeros((1, 9, 4))
         gradient_ref[0, :, 2] = save_adiabatic_gradient[0]
-        np.testing.assert_allclose(self.pes_lwal._adiabatic_energy, energy_ref, atol=1e-5)
-        np.testing.assert_allclose(self.pes_lwal._adiabatic_gradient, gradient_ref, atol=1e-4)
+        np.testing.assert_allclose(self.pes_lwal_4._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes_lwal_4._adiabatic_gradient, gradient_ref, atol=1e-4)
 
         # CW
         # H2 minimum 
@@ -151,16 +155,16 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_cw._adiabatic_gradient, gradient_ref, atol=1e-4)
 
         # RPMD
-        x0 = self.pes_cw._from_internal([1.854, 3.631, 0.0])
-        x1 = self.pes_cw._from_internal([1.4005706, 40.0, 0.0])
-        x2 = self.pes_cw._from_internal([120.0, 60.0+2.41003, 0.0])
-        x3 = self.pes_cw._from_internal([1.854, 3.631, 0.0])
+        x0 = self.pes_cw_4._from_internal([1.854, 3.631, 0.0])
+        x1 = self.pes_cw_4._from_internal([1.4005706, 40.0, 0.0])
+        x2 = self.pes_cw_4._from_internal([120.0, 60.0+2.41003, 0.0])
+        x3 = self.pes_cw_4._from_internal([1.854, 3.631, 0.0])
         x = np.column_stack((x0, x1, x2, x3))
-        self.pes_cw._calculate_adiabatic_all(x, None)
+        self.pes_cw_4._calculate_adiabatic_all(x, None)
         energy_ref = np.array([[0.012107, -0.00139, 0.004114, 0.012107]])
         gradient_ref = np.zeros((1, 9, 4))
-        np.testing.assert_allclose(self.pes_cw._adiabatic_energy, energy_ref, atol=1e-5)
-        np.testing.assert_allclose(self.pes_cw._adiabatic_gradient, gradient_ref, atol=1e-4)
+        np.testing.assert_allclose(self.pes_cw_4._adiabatic_energy, energy_ref, atol=1e-5)
+        np.testing.assert_allclose(self.pes_cw_4._adiabatic_gradient, gradient_ref, atol=1e-4)
         
     def test_minimize(self):
         # BKMP2

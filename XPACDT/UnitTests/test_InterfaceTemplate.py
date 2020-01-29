@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -36,6 +37,7 @@ import unittest
 import XPACDT.Interfaces.InterfaceTemplate as IT
 import XPACDT.Interfaces.TullyModel as tullym
 import XPACDT.Interfaces.MorseDiabatic as morsedia
+import XPACDT.Input.Inputfile as infile
 
 
 class InterfaceTemplateTest(unittest.TestCase):
@@ -85,7 +87,7 @@ class InterfaceTemplateTest(unittest.TestCase):
 
     def test_recalculate_adiabatic(self):
         # test for 2 state potential
-        pes = tullym.TullyModel(1, **{'model_type': 'model_C'})
+        pes = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_1.in"))
 
         ### Testing if trying to access adiabatic energy runs
         # '_recalculate_adiabatic' function which in turn calculates all the
@@ -196,7 +198,7 @@ class InterfaceTemplateTest(unittest.TestCase):
 
     def test_get_adiabatic_from_diabatic(self):
         # test for 2 state potential
-        pes = tullym.TullyModel(1, **{'model_type': 'model_C'})
+        pes = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_1.in"))
         R = np.array([[0.]])
         pes._calculate_diabatic_all(R)
         pes._get_adiabatic_from_diabatic(R)
@@ -221,16 +223,46 @@ class InterfaceTemplateTest(unittest.TestCase):
                                     [[2.7e-05/(0.01 + 3.6e-07)], [0.0]]], rtol=1e-7)
 
         # test for 3 state potential
-        pes = morsedia.MorseDiabatic(1, **{'n_states': '3', 'model_type': 'model_1'})
+        pes = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1.in"))
         R = np.array([[0.]])
         pes._calculate_diabatic_all(R)
 
         with self.assertRaises(AssertionError):
             pes._get_adiabatic_from_diabatic(R)
 
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
         # TODO: add more tests with more beads and 3 state test using morse diabatic
 
         return
+
+    def test_adiabatic_energy(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_adiabatic_gradient(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_nac(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_diabatic_energy(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_diabatic_gradient(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_energy_wrapper(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    def test_gradient_wrapper(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

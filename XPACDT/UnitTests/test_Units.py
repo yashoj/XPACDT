@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -37,10 +38,6 @@ import XPACDT.Tools.Units as units
 
 class UnitsTest(unittest.TestCase):
 
-#    def setUp(self):
-#        # todo create input file here.
-#        self.input = infile.Inputfile("input.in")
-
     def test_atom_mass(self):
         # from https://en.wikipedia.org/wiki/Electron_rest_mass
         amu_to_au = 1.0 / 5.48579909065e-4
@@ -58,8 +55,6 @@ class UnitsTest(unittest.TestCase):
         np.testing.assert_allclose(units.atom_mass('2H'), mass_d_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('D'), mass_d_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('O18'), mass_o18_ref, rtol=1e-3)
-#        np.testing.assert_allclose(units.atom_mass('1'), mass_h_ref, rtol=1e-3)
-#        np.testing.assert_allclose(units.atom_mass('8'), mass_o_ref, rtol=1e-3)
 
     def test_parse_time(self):
         time_string = "1 au"

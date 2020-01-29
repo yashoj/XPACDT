@@ -1,0 +1,16 @@
+$system  ## inline comment
+dof = 1
+Interface = MorseDiabatic
+$end 
+
+$MorseDiabatic
+model_type = model_3
+n_states = 3
+$end
+
+$rpmd
+beads = 2
+beta = 1.0
+$end
+
+

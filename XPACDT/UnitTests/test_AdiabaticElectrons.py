@@ -33,27 +33,23 @@ import numpy as np
 import unittest
 
 import XPACDT.System.AdiabaticElectrons as elec
+import XPACDT.Input.Inputfile as infile
 
 
 class AdiabaticElectronsTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes1D_harmonic = elec.AdiabaticElectrons(
-            {'system': {'Interface': 'OneDPolynomial'},
-             'OneDPolynomial': {'a': "0.0 0.0 0.5"}},
-            [1])
-        self.pes1D_shifted_harmonic = elec.AdiabaticElectrons(
-            {'system': {'Interface': 'OneDPolynomial'},
-             'OneDPolynomial': {'a': "0.0 0.0 0.5", 'x0': '1.0'}},
-            [1])
-        self.pes1D_anharmonic = elec.AdiabaticElectrons(
-            {'system': {'Interface': 'OneDPolynomial'},
-             'OneDPolynomial': {'a': "0.0 0.0 0.5 0.1 0.01"}},
-            [1])
-        self.pes1D_quartic = elec.AdiabaticElectrons(
-            {'system': {'Interface': 'OneDPolynomial'},
-             'OneDPolynomial': {'a': "0.0 0.0 0.0 0.0 0.25"}},
-            [1])
+        parameters_harmonic = infile.Inputfile("FilesForTesting/SystemTests/harmonic.in")
+        self.pes1D_harmonic = elec.AdiabaticElectrons(parameters_harmonic)
+
+        parameters_shifted_harmonic = infile.Inputfile("FilesForTesting/SystemTests/harmonic_shifted.in")
+        self.pes1D_shifted_harmonic = elec.AdiabaticElectrons(parameters_shifted_harmonic)
+
+        parameters_anharmonic = infile.Inputfile("FilesForTesting/SystemTests/anharmonic.in")
+        self.pes1D_anharmonic = elec.AdiabaticElectrons(parameters_anharmonic)
+
+        parameters_quartic = infile.Inputfile("FilesForTesting/SystemTests/quartic.in")
+        self.pes1D_quartic = elec.AdiabaticElectrons(parameters_quartic)
 
         return
 
@@ -123,6 +119,11 @@ class AdiabaticElectronsTest(unittest.TestCase):
         energy = self.pes1D_quartic.energy(np.array([[1.0]]))
         self.assertAlmostEqual(energy, energy_ref)
 
+    def test_current_state(self):
+        pass
+    
+    def test_get_populations(self):
+        pass
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(AdiabaticElectronsTest)

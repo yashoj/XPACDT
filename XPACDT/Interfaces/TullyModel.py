@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -29,7 +30,8 @@
 #
 #  **************************************************************************
 
-""" This module represents two state Tully model potentials in one dimension."""
+""" This module represents two state Tully model potentials in
+ one dimension."""
 
 import numpy as np
 
@@ -43,66 +45,64 @@ class TullyModel(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
-    Other Parameters
+    Other Parameters (as given in the input file)
     ----------------
     model_type : {'model_A', 'model_B', 'model_C'}
         String denoting model type to be used.
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters):
 
         itemplate.PotentialInterface.__init__(self, "TullyModel", 1, 2,
-                                              max_n_beads, 'diabatic')
+                                              max(parameters.n_beads),
+                                              'diabatic')
 
-        assert (isinstance(kwargs.get('model_type'), str)), \
-            "Parameter 'model_type' not given or not given as string."
-        self.model_type = kwargs.get('model_type')
+        pes_parameters = parameters.get(self.name)
 
-        # TODO: Need to add 'try' and setting to default warning?
+        if 'model_type' not in pes_parameters:
+            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
+        self.__model_type = pes_parameters.get('model_type')
+        if (self.__model_type not in ['model_A', 'model_B', 'model_C']):
+            raise ValueError("\nXPACDT: Wrong Tully model requested. Please"
+                             "use 'model_A', 'model_B' or 'model_C'.")
+
         if (self.model_type == 'model_A'):
-            self.__A = float(kwargs.get('A', 0.01))
-            self.__B = float(kwargs.get('B', 1.6))
-            self.__C = float(kwargs.get('C', 0.005))
-            self.__D = float(kwargs.get('D', 1.0))
+            self.__A = 0.01
+            self.__B = 1.6
+            self.__C = 0.005
+            self.__D = 1.0
 
         elif (self.model_type == 'model_B'):
-            self.__A = float(kwargs.get('A', 0.1))
-            self.__B = float(kwargs.get('B', 0.28))
-            self.__C = float(kwargs.get('C', 0.015))
-            self.__D = float(kwargs.get('D', 0.06))
-            self.__Eo = float(kwargs.get('Eo', 0.05))
+            self.__A = 0.1
+            self.__B = 0.28
+            self.__C = 0.015
+            self.__D = 0.06
+            self.__Eo = 0.05
 
         elif (self.model_type == 'model_C'):
-            self.__A = float(kwargs.get('A', 0.0006))
-            self.__B = float(kwargs.get('B', 0.1))
-            self.__C = float(kwargs.get('C', 0.9))
+            self.__A = 0.0006
+            self.__B = 0.1
+            self.__C = 0.9
 
     @property
     def model_type(self):
         """string : Model number to be used."""
         return self.__model_type
 
-    @model_type.setter
-    def model_type(self, m):
-        assert (m in ['model_A', 'model_B', 'model_C']),\
-               ("Type of Tully model selected not available.")
-        self.__model_type = m
-
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate and set diabatic and adiabatic matrices for energies and
         gradients of beads and centroid.
 
         Parameters:
         ----------
-        R, P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions `R` and momenta `P` representing the
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the
             system in au. The first axis represents the degrees of freedom and
-            the second axis is the beads. `P` is not used in this potential
-            and thus defaults to None.
+            the second axis is the beads.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.

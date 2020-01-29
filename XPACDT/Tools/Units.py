@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -34,17 +35,31 @@ from scipy.constants import physical_constants, femto, pico, atto, centi, pi
 
 
 # Boltzmann constant in atomic units
-boltzmann = physical_constants['electron volt-hartree relationship'][0] * physical_constants['Boltzmann constant in eV/K'][0]
+boltzmann = physical_constants['electron volt-hartree relationship'][0] \
+          * physical_constants['Boltzmann constant in eV/K'][0]
+
 # Normal mode eigenvalues to wave numbers
-nm_to_cm = centi/physical_constants['Bohr radius'][0]/physical_constants['inverse fine-structure constant'][0] / 2.0 / pi
+nm_to_cm = centi/physical_constants['Bohr radius'][0] \
+         / physical_constants['inverse fine-structure constant'][0] / 2.0 / pi
 
 # Conversion of Hartree energy to eV and vice versa
 hartree_to_eV = physical_constants['Hartree energy in eV'][0]
 eV_to_hartree = 1.0 / hartree_to_eV
 
+
 def parse_time(time_string):
     """ Takes a string with a time and converts it to the numerical value
     in atomic units.
+
+    Parameters
+    ----------
+    time_string : string
+        Input string defining the time value and its unit.
+
+    Returns
+    -------
+    float
+        Given time value in atomic units.
     """
 
     value, unit = time_string.split()
@@ -58,16 +73,32 @@ def parse_time(time_string):
     elif unit == "as":
         conversion = atto / physical_constants['atomic unit of time'][0]
     else:
-        raise RuntimeError("Unit conversion failed:", unit)
+        raise RuntimeError("\nXPACDT: Unit conversion failed:", unit)
 
     return float(value) * conversion
 
 
 def atom_mass(symbol):
-    """ Return the mass of an atom in atomic units.
+    """ Return the mass of an atom in atomic units. The mass for the most
+    abundant isotope is returned if just the symbol is given. Other isotopes
+    can be accessed by also giving the mass number. Currently, only symbols
+    up to 'Sn' are implemented.
+
+    Parameters
+    ----------
+    symbol : string
+        The atom symbol to get the mass for. Please note that specific isotopes
+        can be accessed as X-N, where X is the atom symbol and N is the mass
+        number for that isotope. Specific other symbols are allowed like 'D'
+        for deuterium and 'Mu' for Muonium.
+
+    Return
+    ------
+    float :
+        mass of the given element (or isotope) in atomic units
+        (not atomic mass units).
     """
 
-    # TODO: Add map for atom name and atom number
     if symbol == 'D':
         standard_symbol = 'H-2'
     else:
@@ -77,17 +108,14 @@ def atom_mass(symbol):
         standard_symbol = atom
         if len(number) > 0:
             standard_symbol += "-" + number
-        
 
-    conversion = physical_constants['atomic mass constant'][0] / physical_constants['atomic unit of mass'][0]
+    conversion = physical_constants['atomic mass constant'][0]\
+        / physical_constants['atomic unit of mass'][0]
     try:
         return atoms.get(standard_symbol) * conversion
-
-        # Using alternative periodic tables
-        # return atomic_mass(symbol) * conversion
-        # return element(symbol).atomic_weight * conversion
-    except:
-        raise RuntimeError("Error obtaining element weight: " + standard_symbol)
+    except TypeError:
+        raise KeyError("\nXPACDT: Error obtaining element weight: "
+                       + standard_symbol)
 
 
 # from http://www.ciaaw.org/atomic-masses.htm

@@ -44,9 +44,9 @@ class genLogTest(unittest.TestCase):
         self.parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
         self.parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
 
-        self.nuclei_classical = nuclei.Nuclei(4, self.parameters_classical,
+        self.nuclei_classical = nuclei.Nuclei(self.parameters_classical,
                                               None)
-        self.nuclei_rpmd = nuclei.Nuclei(4, self.parameters_rpmd, None)
+        self.nuclei_rpmd = nuclei.Nuclei(self.parameters_rpmd, None)
 
     def test_write_R(self):
         time_reference = np.random.rand()
@@ -197,7 +197,7 @@ class genLogTest(unittest.TestCase):
         param_sh_classical = infile.Inputfile("FilesForTesting/SystemTests/input_SH_classical.in")
         param_sh_classical["SurfaceHoppingElectrons"]["initial_state"] = state_reference
 
-        nuclei_sh_classical = nuclei.Nuclei(1, param_sh_classical, time_reference)
+        nuclei_sh_classical = nuclei.Nuclei(param_sh_classical, time_reference)
         log = nuclei_sh_classical
 
         outfile = open("state.log", 'w')

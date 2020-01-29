@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -36,6 +37,7 @@ import unittest
 import XPACDT.Tools.DiabaticToAdiabatic_Nstates as dia2ad
 import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad2S
 import XPACDT.Interfaces.MorseDiabatic as morsedia
+import XPACDT.Input.Inputfile as infile
 
 
 class DiabaticToAdiabaticNstatesTest(unittest.TestCase):
@@ -89,7 +91,7 @@ class DiabaticToAdiabaticNstatesTest(unittest.TestCase):
         #       to 2 state module value. Also add 3 state tests.
 
         # 1 bead, 1 dof, 2 states test
-        pes = morsedia.MorseDiabatic(1, **{'n_states': '2', 'model_type': 'model_1'})
+        pes = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1-2states.in"))
 
         R = np.array([[3.4]])
         pes._calculate_diabatic_all(R)
@@ -106,7 +108,7 @@ class DiabaticToAdiabaticNstatesTest(unittest.TestCase):
         np.testing.assert_allclose(dV_ad_centroid, dV_ad_centroid_ref, rtol=1e-7)
 
         # 2 bead, 1 dof, 2 states test
-        pes = morsedia.MorseDiabatic(2, **{'n_states': '2', 'model_type': 'model_1'})
+        pes =  morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2-2states.in"))
 
         R = np.array([[3.4, 4.8]])
         pes._calculate_diabatic_all(R)

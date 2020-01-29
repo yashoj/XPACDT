@@ -1,0 +1,12 @@
+$system  ## inline comment
+dof = 9
+Interface = EckartBarrier
+$end 
+
+$EckartBarrier
+A = -5.729577951308232
+B = 17.188733853924695
+L = 1.3029400317411197
+$end
+
+

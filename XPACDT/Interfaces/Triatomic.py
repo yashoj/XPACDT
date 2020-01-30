@@ -76,8 +76,13 @@ class Triatomic(itemplate.PotentialInterface):
         if pes_name not in self.available_pes:
             raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + pes_name
                                + " Available: " + str(self.available_pes.keys()))
- 
-        self.__pot = importlib.import_module("XPACDT.Interfaces."+ pes_name + "_module.pot")
+
+        try:
+            self.__pot = importlib.import_module("XPACDT.Interfaces."+ pes_name + "_module.pot")
+        except ModuleNotFoundError as e:
+            raise type(e)(str(e) + "\nXPACDT: One of the compiled triatomic PES ("
+                          + pes_name + ") could not be imported. Please make sure"
+                          " that it was properly compiled.")
 
         self.__pot.pes_init()
 

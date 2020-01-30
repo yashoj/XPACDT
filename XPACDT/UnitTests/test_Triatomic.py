@@ -31,29 +31,90 @@
 
 import numpy as np
 import unittest
+import warnings
 
 import XPACDT.Interfaces.Triatomic as triatomic
 import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
 import XPACDT.Input.Inputfile as infile
 
+def setUpModule():
+    try:
+        triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
+    except ModuleNotFoundError as e:
+        print("BKMP2 PES could not be imported. Is it compiled properly? Will skip all related tests.")
+        
+    try:            
+        triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
+    except ModuleNotFoundError as e:
+        print("CW PES could not be imported. Is it compiled properly? Will skip all related tests.")
+        
+    try:
+        triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+    except ModuleNotFoundError as e:
+        print("LWAL PES could not be imported. Is it compiled properly? Will skip all related tests.")
+        
+    return
+
 class TriatomicTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_bkmp2 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
-        self.pes_cw = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
-        self.pes_lwal = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+        try:
+            self.pes_bkmp2 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
+            self.pes_bkmp2_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2_4.in"))
+        except ModuleNotFoundError as e:
+            self.pes_bkmp2 = None
+            self.pes_bkmp2_4 = None
+#            print("BKMP2 PES could not be imported. Is it compiled properly? Will skip all related tests.")
+            warnings.warn("BKMP2 PES could not be imported. Is it compiled properly? Will skip all related tests.", ImportWarning)
+            
+        try:            
+            self.pes_cw = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
+            self.pes_cw_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw_4.in"))
+        except ModuleNotFoundError as e:
+            self.pes_cw = None
+            self.pes_cw_4 = None
 
-        self.pes_bkmp2_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2_4.in"))
-        self.pes_cw_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw_4.in"))
-        self.pes_lwal_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal_4.in"))
+        try:
+            self.pes_lwal = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+            self.pes_lwal_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal_4.in"))
+        except ModuleNotFoundError as e:
+            self.pes_lwal = None
+            self.pes_lwal_4 = None
 
     def test_creation(self):
-        self.assertEqual(self.pes_bkmp2.name, 'Triatomic')
-        self.assertEqual(self.pes_cw.name, 'Triatomic')
-        self.assertEqual(self.pes_lwal.name, 'Triatomic')
+        with self.subTest():
+            if self.pes_bkmp2 is None:
+                self.skipTest("BKMP2 PES not compiled properly.")
+            self.assertEqual(self.pes_bkmp2.name, 'Triatomic')
+
+        with self.subTest():
+            if self.pes_cw is None:
+                self.skipTest("CW PES not compiled properly.")
+            self.assertEqual(self.pes_cw.name, 'Triatomic')
+
+        with self.subTest():
+            if self.pes_lwal is None:
+                self.skipTest("LWAL PES not compiled properly.")
+            self.assertEqual(self.pes_lwal.name, 'Triatomic')
 
     def test_calculate_adiabatic_all(self):
+        with self.subTest():
+            if self.pes_bkmp2 is None:
+                self.skipTest("BKMP2 PES not compiled properly.")
+            self.__bkmp2_calculate_adiabatic_all()
+
+        with self.subTest():
+            if self.pes_cw is None:
+                self.skipTest("CW PES not compiled properly.")
+            self.__cw_calculate_adiabatic_all()
+
+        with self.subTest():
+            if self.pes_lwal is None:
+                self.skipTest("LWAL PES not compiled properly.")
+            self.__lwal_calculate_adiabatic_all()
+
+    def __bkmp2_calculate_adiabatic_all(self):
         # BKMP2
         # Full Asymptote
         energy_ref = np.zeros((1, 1))
@@ -88,6 +149,7 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_bkmp2_4._adiabatic_energy, energy_ref, atol=1e-5)
         np.testing.assert_allclose(self.pes_bkmp2_4._adiabatic_gradient, gradient_ref, atol=1e-6)
 
+    def __lwal_calculate_adiabatic_all(self):
         # LWAL
         # H2 minimum
         energy_ref = np.zeros((1, 1)) 
@@ -132,6 +194,7 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_lwal_4._adiabatic_energy, energy_ref, atol=1e-5)
         np.testing.assert_allclose(self.pes_lwal_4._adiabatic_gradient, gradient_ref, atol=1e-4)
 
+    def __cw_calculate_adiabatic_all(self):
         # CW
         # H2 minimum 
         energy_ref = np.zeros((1, 1)) - 0.00139  # lowered by SO
@@ -167,6 +230,23 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_cw_4._adiabatic_gradient, gradient_ref, atol=1e-4)
         
     def test_minimize(self):
+        with self.subTest():
+            if self.pes_bkmp2 is None:
+                self.skipTest("BKMP2 PES not compiled properly.")
+            self.__bkmp2_minimize()
+
+        with self.subTest():
+            if self.pes_cw is None:
+                self.skipTest("CW PES not compiled properly.")
+            self.__cw_minimize()
+
+        with self.subTest():
+            if self.pes_lwal is None:
+                self.skipTest("LWAL PES not compiled properly.")
+            self.__lwal_minimize()
+
+
+    def __bkmp2_minimize(self):
         # BKMP2
         fun_ref = -0.17449577
         x_ref = np.array([40.0, 0.0, 0.0, 0.70073594, 0.0, 0.0, -0.70073594, 0.0, 0.0])
@@ -174,6 +254,7 @@ class TriatomicTest(unittest.TestCase):
         self.assertAlmostEqual(fun_ref, fun)
         np.testing.assert_allclose(x, x_ref)
 
+    def __lwal_minimize(self):
         # LWAL
         fun_ref = 0.0
         x_ref = np.array([100.0, 0.0, 0.0, -0.700584, 0.0, 0.0, 0.700584, 0.0, 0.0])
@@ -181,6 +262,7 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(fun_ref, fun, atol=1e-5)
         np.testing.assert_allclose(x, x_ref, atol=1e-5)
 
+    def __cw_minimize(self):
         # CW
         # H2
         fun_ref = - 0.00139 # lowered by SO
@@ -197,6 +279,22 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(x, x_ref, atol=1e-3)
         
     def test_get_Hessian(self):
+        with self.subTest():
+            if self.pes_bkmp2 is None:
+                self.skipTest("BKMP2 PES not compiled properly.")
+            self.__bkmp2_get_Hessian()
+
+        with self.subTest():
+            if self.pes_cw is None:
+                self.skipTest("CW PES not compiled properly.")
+            self.__cw_get_Hessian()
+
+        with self.subTest():
+            if self.pes_lwal is None:
+                self.skipTest("LWAL PES not compiled properly.")
+            self.__lwal_get_Hessian()
+
+    def __bkmp2_get_Hessian(self):
         # BKMP2
         freq_ref = np.zeros(9)
         freq_ref[8] = 4403
@@ -215,6 +313,7 @@ class TriatomicTest(unittest.TestCase):
         freq = nm.get_normal_modes(hessian, [units.atom_mass('H')]*9)[0]*units.nm_to_cm
         np.testing.assert_allclose(freq, freq_ref, atol=4.0)
 
+    def __lwal_get_Hessian(self):
         # LWAL 
         freq_ref = np.zeros(9)
         freq_ref[8] = 4406
@@ -235,6 +334,7 @@ class TriatomicTest(unittest.TestCase):
         freq = nm.get_normal_modes(hessian, [units.atom_mass('F')]*3 + [units.atom_mass('H')]*6)[0]*units.nm_to_cm
         np.testing.assert_allclose(freq[[0, 7, 8]], freq_ref[[0, 7, 8]], atol=5.0)
 
+    def __cw_get_Hessian(self):
         # CW
         # HCl
         freq_ref = np.zeros(9)
@@ -262,60 +362,92 @@ class TriatomicTest(unittest.TestCase):
         np.testing.assert_allclose(freq, freq_ref, atol=10.0)
         
     def test_from_internal(self):
+        with self.subTest():
+            if self.pes_bkmp2 is None:
+                self.skipTest("BKMP2 PES not compiled properly.")
+            self.__from_internal(self.pes_bkmp2)
+
+        with self.subTest():
+            if self.pes_cw is None:
+                self.skipTest("CW PES not compiled properly.")
+            self.__from_internal(self.pes_cw)
+
+        with self.subTest():
+            if self.pes_lwal is None:
+                self.skipTest("LWAL PES not compiled properly.")
+            self.__from_internal(self.pes_lwal)
+
+    def __from_internal(self, pes):
         # colinear
         internal = np.array([2.0, 4.0, 0.0])
         cartesian_ref = np.array([4.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
-        cartesian = self.pes_bkmp2._from_internal(internal)
+        cartesian = pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes_bkmp2._from_cartesian_to_internal(cartesian))
+        np.testing.assert_allclose(internal, pes._from_cartesian_to_internal(cartesian))
 
         # perpendicular
         internal = np.array([2.0, 4.0, np.pi/2.0])
         cartesian_ref = np.array([ 0.0, 4.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
-        cartesian = self.pes_bkmp2._from_internal(internal)
+        cartesian = pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref, atol=1e-10)
-        np.testing.assert_allclose(internal, self.pes_bkmp2._from_cartesian_to_internal(cartesian))
+        np.testing.assert_allclose(internal, pes._from_cartesian_to_internal(cartesian))
 
         # 45 degrees off
         internal = np.array([2.0, 4.0, np.pi/4.0])
         cartesian_ref = np.array([4.0/np.sqrt(2.0), 4.0/np.sqrt(2.0), 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
-        cartesian = self.pes_bkmp2._from_internal(internal)
+        cartesian = pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes_bkmp2._from_cartesian_to_internal(cartesian))
+        np.testing.assert_allclose(internal, pes._from_cartesian_to_internal(cartesian))
 
         # -45 degrees off
         internal = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
         cartesian_ref = np.array([4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
-        cartesian = self.pes_bkmp2._from_internal(internal)
+        cartesian = pes._from_internal(internal)
         np.testing.assert_allclose(cartesian, cartesian_ref)
-        np.testing.assert_allclose(internal, self.pes_bkmp2._from_cartesian_to_internal(cartesian))
+        np.testing.assert_allclose(internal, pes._from_cartesian_to_internal(cartesian))
 
     def test_from_cartesian_to_internal(self):
+        with self.subTest():
+            if self.pes_bkmp2 is None:
+                self.skipTest("BKMP2 PES not compiled properly.")
+            self.__from_cartesian_to_internal(self.pes_bkmp2)
+
+        with self.subTest():
+            if self.pes_cw is None:
+                self.skipTest("CW PES not compiled properly.")
+            self.__from_cartesian_to_internal(self.pes_cw)
+
+        with self.subTest():
+            if self.pes_lwal is None:
+                self.skipTest("LWAL PES not compiled properly.")
+            self.__from_cartesian_to_internal(self.pes_lwal)
+
+    def __from_cartesian_to_internal(self, pes):
         # colinear
         cartesian = np.array([3.8, 0.0, 0.0, -1.2, 0.0, 0.0, 1.2, 0.0, 0.0])
         internal_ref = np.array([2.4, 3.8, 0.0])
-        internal = self.pes_bkmp2._from_cartesian_to_internal(cartesian)
+        internal = pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
-        np.testing.assert_allclose(cartesian, self.pes_bkmp2._from_internal(internal))
+        np.testing.assert_allclose(cartesian, pes._from_internal(internal))
 
         # perpendicular
         cartesian = np.array([4.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 1.0, 0.0])
         internal_ref = np.array([2.0, 4.0, np.pi/2.0])
-        internal = self.pes_bkmp2._from_cartesian_to_internal(cartesian)
+        internal = pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
 
         # 'random' in space, 1st H along axis
         cartesian = np.array([-1.25 , -3.25, -1.18198052, 1.0, -1.0, 2.0, 0.5, -1.5, 2.0-1.0/np.sqrt(2.0)])
         internal_ref = np.array([1.0, 4.0, 2.0*np.pi])
-        internal = self.pes_bkmp2._from_cartesian_to_internal(cartesian)
+        internal = pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
 
         # -45 degrees off
         cartesian = np.array([4.0/np.sqrt(2.0), -4.0/np.sqrt(2.0), 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
         internal_ref = np.array([2.0, 4.0, 2.0*np.pi-np.pi/4.0])
-        internal = self.pes_bkmp2._from_cartesian_to_internal(cartesian)
+        internal = pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)
-        np.testing.assert_allclose(cartesian, self.pes_bkmp2._from_internal(internal))
+        np.testing.assert_allclose(cartesian, pes._from_internal(internal))
 
 
 if __name__ == "__main__":

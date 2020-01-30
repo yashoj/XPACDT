@@ -27,32 +27,27 @@
 #
 #  **************************************************************************
 
-"""TODO"""
+
 import numpy as np
 import XPACDT.System.Electrons as electrons
 import XPACDT.Tools.Units as units
+import scipy.linalg as sl
 
 
 class NRPMDElectrons(electrons.Electrons):
-    """ TODO
-    """
+
     
     def __init__(self, parameters, n_beads, R=None, P=None):
 
-
         electrons.Electrons.__init__(self, "NRPMDElectrons", parameters, n_beads, 'diabatic')
 
-#        self.n_states=int(parameters.get("NRPMDElektrons").get("n_states"))
-#        self.n_beads=int(parameters.get("Nuclei").get("n_beads"))
-        self.initstate=int(parameters.get("NRPMDElectrons").get("initial_states"))
-        self.tstep=units.parse_time(parameters.get("NRPMDElectrons").get("timestep"))
-#        self.inittime=int(parameters.get("system").get("time"))
-#        self.n_atoms=int(parameters.get("Nuclei").get("n_atoms"))
+        self.initstate = int(parameters.get("NRPMDElectrons").get("initial_states"))
+        self.tstep = units.parse_time(parameters.get("NRPMDElectrons").get("timestep"))
         
-        self.q = np.zeros((self.pes.n_states,self.pes.max_n_beads))
-        self.p = np.zeros((self.pes.n_states,self.pes.max_n_beads))
+        self.q = np.zeros((self.pes.n_states, self.pes.max_n_beads))
+        self.p = np.zeros((self.pes.n_states, self.pes.max_n_beads))
         self.Einsmatrix = np.identity(self.pes.n_states)
-        angles = 2.0*np.pi*np.random.random((self.pes.n_states,self.pes.max_n_beads))           
+        angles = 2.0*np.pi*np.random.random((self.pes.n_states, self.pes.max_n_beads))           
        
         self.q = np.sin(angles)
         self.p = np.cos(angles)
@@ -60,10 +55,9 @@ class NRPMDElectrons(electrons.Electrons):
         self.q[self.initstate,:] *= np.sqrt(3)
         self.p[self.initstate,:] *= np.sqrt(3)
 
-#        print(self.q)
-#        print(self.p)
        
     def step(self, R, **kwargs):
+
         """Calculate the stepwise propagation of position and momentum of the system electrons as defined
         by the systems PES.
 
@@ -79,11 +73,38 @@ class NRPMDElectrons(electrons.Electrons):
         Returns
         -------
         (n_states, n_beads) ndarrays of float /or/ float
-        The position and momenta of the systems electrons of the systems PES at each bead position or at the centroid
-        in hartree.
-        """
-# doing the exact step from Richardson and Thoss
-        
+        The position and momenta of the systems electrons of the systems PES at 
+        each bead position or at the centroid in hartree.
+        """        
+
+#      the exact step from Richardson and Thoss
+        potential = self.pes.diabatic_energy(R,return_matrix=True).transpose(2,0,1)
+        q_mat = np.zeros_like(self.q)
+        p_mat = np.zeros_like(self.p)
+        for i in range(self.pes.max_n_beads):
+            Potential=potential[i]
+#            print("Potential[i]", Potential)
+#            print("q[i]",self.q[i])
+            q_mat[:,i] = (np.matmul((sl.cosm(Potential*self.tstep)),\
+                                np.expand_dims(self.q[:,i], axis=-1))+\
+                        np.matmul((sl.sinm(Potential*self.tstep)),\
+                                np.expand_dims(self.p[:,i], axis=-1)))\
+                                .reshape(-1)#,self.pes.max_n_beads) #bitte überarbeiten 
+            p_mat[:,i] = (np.matmul((sl.cosm(Potential*self.tstep)),\
+                                np.expand_dims(self.p[:,i], axis=-1))-\
+                        np.matmul((sl.sinm(Potential*self.tstep)),\
+                                np.expand_dims(self.q[:,i], axis=-1)))\
+                                .reshape(-1)#,self.pes.max_n_beads) #bitte bearbeiten
+
+#       TESTING testing TESTING !!!! 
+            print("q_mat", q_mat)
+            print("p_mat", p_mat)
+#       renaming for later circles  
+#        self.q = q_mat
+#        self.p = p_mat
+
+# alte Implementierung für die Steps
+
         for i in range(self.pes.n_states):
             for j in range(self.pes.n_states):
                 self.p[i,:] -= 0.5*self.tstep*self.pes.diabatic_energy(R,i,j)*self.q[j,:]
@@ -93,13 +114,16 @@ class NRPMDElectrons(electrons.Electrons):
         for i in range(self.pes.n_states):
             for j in range(self.pes.n_states):
                 self.p[i,:] -= 0.5*self.tstep*self.pes.diabatic_energy(R,i,j)*self.q[j,:]
+        print("q_alt",self.q.shape)
+        print("alt_q",self.q)
+        print("alt_p",self.p)
 
- #       print(self.q)
- #       print(self.p)
 
-        return self.q,self.p
+        return
+
 
     def energy(self, R, centroid=False):
+
         """Calculate the electronic energy at the current geometry as defined
         by the systems PES.
 
@@ -118,21 +142,25 @@ class NRPMDElectrons(electrons.Electrons):
         The energy of the systems PES at each bead position or at the centroid
         in hartree.
         """
-        Elek_energy=np.zeros(self.pes.max_n_beads)
 
-        for i in range(self.pes.n_states):
-            for j in range(self.pes.n_states):
-          #Potential=n_beads-vector
-                Potential=self.pes.diabatic_energy(R,i,j)
-                Elek_energy[:] += 0.5*Potential[:]*\
-                (self.q[i,:]*self.q[j,:] + self.p[i,:]*self.p[j,:] - self.Einsmatrix[i,j])
-        
-  #      print(self.pes.diabatic_energy)
-    #    print(Elek_energy)
-            
-        return Elek_energy
+#       shape (ns,ns,nb) => (nb,ns,ns)
+        Potential = self.pes.diabatic_energy(R, return_matrix=True).transpose(2,0,1) 
+#       calculate the energy within matrixcalkulus  
+        Elek_mat_energy = 0.5 * (np.matmul(np.matmul(np.expand_dims(self.q, axis=-1)\
+            .transpose(1,2,0),Potential),np.expand_dims(self.q, axis=-1)\
+            .transpose(1,0,2)).reshape(-1,self.pes.max_n_beads)+\
+            np.matmul(np.matmul(np.expand_dims(self.p, axis=-1)\
+            .transpose(1,2,0),Potential),np.expand_dims(self.p, axis=-1)\
+            .transpose(1,0,2)).reshape(-1,self.pes.max_n_beads)-\
+            np.trace(Potential,axis1=1,axis2=2).reshape(-1,self.pes.max_n_beads)) 
+#       reshape the vector to max_n_beads only
+        Elek_mat_energy=Elek_mat_energy.reshape(self.pes.max_n_beads)
+
+        return Elek_mat_energy
+
 
     def gradient(self, R, centroid=False):
+
         """Calculate the gradient of the electronic energy at the current
         geometry as defined by the systems PES.
 
@@ -151,13 +179,103 @@ class NRPMDElectrons(electrons.Electrons):
         The gradient of the systems PES at each bead position or at the
         centroid in hartree/au.
         """
-        IMP=np.zeros_like(R)
 
+#       shape (ns,ns,nb,ndof) => (nb,ndof,ns,ns)
+        Gradient=self.pes.diabatic_gradient(R,return_matrix=True).transpose(2,3,0,1) 
+#       calculate the gradient within matrixcalkulus  
+        Elek_mat_gradient = -0.5 * (np.matmul(np.matmul(np.expand_dims(self.q, axis=-1)\
+            .transpose(1,2,0), Gradient),np.expand_dims(self.q, axis=-1)\
+            .transpose(1,0,2)).reshape(-1, self.pes.max_n_beads)+\
+            np.matmul(np.matmul(np.expand_dims(self.p, axis=-1)\
+            .transpose(1,2,0), Gradient),np.expand_dims(self.p, axis=-1)\
+            .transpose(1,0,2)).reshape(-1, self.pes.max_n_beads)-\
+            np.trace(Gradient, axis1=2, axis2=3).reshape(-1, self.pes.max_n_beads)) 
+#       reshape the vector to max_n_beads only
+        Elek_mat_gradient = Elek_mat_gradient.reshape(-1, self.pes.max_n_beads)
+
+        return Elek_mat_gradient
+
+
+    def get_population(self, R, centroid=False):
+
+        """Calculate the population estimator of the electronic mapping states 
+        at the current geometry as defined by the systems PES.
+
+        Parameters
+        ----------
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions representing the system in au. The
+            first index represents the degrees of freedom, the second one the
+            beads.
+        centroid : bool, default False
+            If the energy of the centroid should be returned.
+
+        Returns
+        -------
+        (n_states) ndarray of floats 
+        """
+
+        self.Estimator = np.zeros(self.pes.n_states)
         for i in range(self.pes.n_states):
-            for j in range(self.pes.n_states):
-                Gradient=self.pes.diabatic_gradient(R,i,j)
-                for n in range(self.pes.n_dof):
-                    IMP[n,:] -= (0.5*Gradient[n,:]*\
-                    (self.q[i,n]*self.q[j,n] + self.p[i,n]*self.p[j,n] - self.Einsmatrix[i,j]))
+            for j in range(self.pes.max_n_beads):
+                self.Estimator[i] += (1 / (2 * self.pes.max_n_beads))*\
+                (self.q[i, j]*self.q[i, j] + self.p[i, j]*self.p[i, j] - 1.0)
 
-        return IMP
+#        print("Estimator",self.Estimator)
+
+        return self.Estimator
+
+
+# ========================================================================================
+
+# alte Implementierung für die Steps
+
+#        for i in range(self.pes.n_states):
+#            for j in range(self.pes.n_states):
+#                self.p[i,:] -= 0.5*self.tstep*self.pes.diabatic_energy(R,i,j)*self.q[j,:]
+#        for i in range(self.pes.n_states):
+#            for j in range(self.pes.n_states):
+#                self.q[i,:] += self.tstep*self.pes.diabatic_energy(R,i,j)*self.p[j,:]
+#        for i in range(self.pes.n_states):
+#            for j in range(self.pes.n_states):
+#                self.p[i,:] -= 0.5*self.tstep*self.pes.diabatic_energy(R,i,j)*self.q[j,:]
+#        print("q_alt",self.q.shape)
+#        print("alt_q",self.q)
+#        print("alt_p",self.p)    
+
+# alte Implementierung für die Energie
+
+#      
+#                Elek_energy=np.zeros(self.pes.max_n_beads)
+#
+#        for i in range(self.pes.n_states):
+#            for j in range(self.pes.n_states):
+#          #Potential=n_beads-vector
+#                Potential=self.pes.diabatic_energy(R,i,j)
+#                Elek_energy[:] += 0.5*Potential[:]*\
+#                (self.q[i,:]*self.q[j,:] + self.p[i,:]*self.p[j,:] - self.Einsmatrix[i,j])
+
+
+# alte Implemtierung für den Gradienten
+
+#        IMP=np.zeros_like(R)
+#
+#       for i in range(self.pes.n_states):
+#            for j in range(self.pes.n_states):
+#                Gradient=self.pes.diabatic_gradient(R,i,j)
+#                for n in range(self.pes.n_dof):
+#                    IMP[n,:] -= (0.5*Gradient[n,:]*\
+#                     (self.q[i,n]*self.q[j,n] + self.p[i,n]*self.p[j,n] - self.Einsmatrix[i,j]))
+
+
+# Zeug für die Population
+        
+#        self.m_d_0=0.0
+#        for i in range(self.pes.max_n_beads):
+#            for j in range(self.pes.n_states):
+#                self.m_d_0*=(0.5*(self.q[i,j]*self.q[i,j] + self.p[i,j]*self.p[i,j] - 1.0)\
+#                             -np.kron(j,self.initstate))
+        
+#        pop=np.zeros(self.pes.n_states)
+#        for i in range(self.pes.n_states):
+#        pop[i]=m_d_0*initRPdensity*Estimator[i]    

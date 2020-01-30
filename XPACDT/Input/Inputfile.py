@@ -46,7 +46,23 @@ import re
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
 
-from XPACDT.Tools.XYZ import parse_xyz
+from XPACDT.Tools.Coordinates import parse_xyz, parse_mass_value
+
+
+class XPACDTInputError(Exception):
+    def __init__(self, msg="Missing key",
+                 section=None, key=None, caused_by=None):
+        if section is not None:
+            msg += f"\n[Section] {section}"
+
+        if key is not None:
+            msg += f"\n  [key] {key}"
+
+        if caused_by is not None:
+            msg += ("\nThis error was caused by the following error:\n"
+                    f"{caused_by}")
+
+        super().__init__(msg)
 
 
 class Inputfile(collections.MutableMapping):
@@ -75,12 +91,6 @@ class Inputfile(collections.MutableMapping):
     def __init__(self, inputfile):
 
         self.store = dict()
-        self.__momenta = None
-        self.__masses = None
-        self.__coordinates = None
-
-        self.__positionShift = None
-        self.__momentumShift = None
 
         self._filename = inputfile
         if not os.path.isfile(self._filename):
@@ -92,52 +102,54 @@ class Inputfile(collections.MutableMapping):
 
         self._parse_file()
 
-        if 'system' in self:
+        try:
+            system = self["system"]
+        except KeyError:
+            raise XPACDTInputError("The $system section is missing.")
 
-            if 'dof' in self.get('system'):
-                try:
-                    self.__n_dof = int(self.get('system').get('dof'))
+        try:
+            self["n_dof"] = int(system["dof"])
+        except KeyError:
+            raise XPACDTInputError(section="system", key="dof")
+        except ValueError as e:
+            raise XPACDTInputError("The number of degree of freedom can "
+                                   "not be converted to int.",
+                                   section="system",
+                                   key="dof",
+                                   caused_by=e)
 
-                except ValueError as e:
-                    raise type(e)(str(e) + "\nXPACDT: Number of degrees of"
-                                           "freedom cannot be converted to int.")
-                if self.__n_dof < 1:
-                    raise RuntimeError("\nXPACDT: number of degrees of freedom"
-                                       " given is less than 1.")
-            else:
-                raise RuntimeError("\nXPACDT: number of degrees of freedom"
-                                   " not given in the input file.")
+        if self.n_dof < 1:
+            raise XPACDTInputError("The number of degree of freedom must be "
+                                   "greater than 1.",
+                                   section="system",
+                                   key="dof")
 
-            if 'rpmd' in self:
-                if 'beads' not in self.get("rpmd"):
-                    raise RuntimeError("\nXPACDT: No number of beads "
-                                       "given for RPMD in the input file.")
-                if 'beta' not in self.get("rpmd"):
-                    raise RuntimeError("\nXPACDT: No beta "
-                                       "given for RPMD in the input file.")
-                self._parse_beads(self.get('rpmd').get('beads'))
+        if "rpmd" in self:
+            rpmd = self["rpmd"]
 
-                try:
-                    self.__beta = float(self.get('rpmd').get('beta'))
-                    if self.__beta <= 0:
-                        raise RuntimeError("\nXPACDT: Beta has to be greater"
-                                           " than 0.")
-                except ValueError as e:
-                    raise type(e)(str(e) + "\nXPACDT: Beta cannot be"
-                                           " converted to float.")
-            else:
-                self._parse_beads('1')
-                # In the case when RPMD is not used (i.e. n_beads=1),
-                # 'beta' should not be used anywhere, so setting it to NaN.
-                self.__beta = np.nan
+            try:
+                self._parse_beads(rpmd["beads"])
+            except KeyError:
+                raise XPACDTInputError(section="rpmd", key="beads")
+
+            try:
+                self["beta"] = float(rpmd["beta"])
+            except KeyError:
+                raise XPACDTInputError(section="rpmd", key="beta")
+            except ValueError as e:
+                raise XPACDTInputError("beta can not be converted to float",
+                                       section="rpmd",
+                                       key="beta",
+                                       caused_by=e)
         else:
-            raise KeyError("\nXPACDT: No system parameters are given in the"
-                           " input file.")
+            self._parse_beads('1')
+            # In the case when RPMD is not used (i.e. n_beads=1),
+            # 'beta' should not be used anywhere, so setting it to NaN.
+            self["beta"] = np.nan
 
-        if self.__coordinates is not None:
-            self.__format_coordinates()
+        self.__format_coordinates()
 
-        self.__commands = {k: self[k] for k in self.keys() if 'command' in k}
+        self["commands"] = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:
             self.commands[key]['name'] = key
             self.commands[key]['results'] = []
@@ -146,36 +158,24 @@ class Inputfile(collections.MutableMapping):
     def commands(self):
         """dict : Contains all input sections for 'commands' used in
         the analysis."""
-        return self.__commands
+        return self["commands"]
 
     @property
     def masses(self):
         """(n_dof) ndarray of floats: Array containing the masses of each
         degree of freedom in au."""
-        return self.__masses
-
-    def _parse_masses(self, m):
-        """Set the masses for each degree of freedom.
-
-        Parameters
-        ----------
-        m : (n_dof) ndarray
-            Array containing the masses in au.
-        """
-        if np.any([(i <= 0.0) for i in m]):
-            raise ValueError("\nXPACDT: Masses of 0 or below given in input.")
-        self.__masses = m.copy()
+        return self["masses"]
 
     @property
     def n_dof(self):
         """int: Number of degrees of freedom."""
-        return self.__n_dof
+        return self["n_dof"]
 
     @property
     def n_beads(self):
         """(n_dof) list of ints: List containing the number of beads for each
         degree of freedom."""
-        return self.__n_beads
+        return self["n_beads"]
 
     def _parse_beads(self, n_string):
         """Set the number of beads from a string given in the input file and
@@ -212,17 +212,16 @@ class Inputfile(collections.MutableMapping):
         if len(n) == 1:
             # Clone the number of beads for each degree of freedom
             # NOTE works because n is a list
-            self.__n_beads = n * self.n_dof
+            self["n_beads"] = n * self.n_dof
         else:
-            self.__n_beads = n
+            self["n_beads"] = n
 
-        self["n_beads"] = self.n_beads
         self["max_n_beads"] = max(self.n_beads)
 
     @property
     def beta(self):
         """ float : Inverse temperature for ring polymer springs in a.u."""
-        return self.__beta
+        return self["beta"]
 
     @property
     def coordinates(self):
@@ -230,30 +229,21 @@ class Inputfile(collections.MutableMapping):
         of each degree of freedom in au. The first axis is the degrees of
         freedom and the second axis the beads."""
 
-        # assure correct format.
-        if self._c_type != 'xpacdt':
-            self.__format_coordinates()
-        return self.__coordinates
+        return self["coordinates"]
 
     @property
     def positionShift(self):
         """(n_dof) ndarray of floats: Array containing a shift that should
         be applied to the position centroid of each degree of freedom in au."""
 
-        # assure correct format.
-        if self._c_type != 'xpacdt':
-            self.__format_coordinates()
-        return self.__positionShift
+        return self["positionShift"]
 
     @property
     def momentumShift(self):
         """(n_dof) ndarray of floats: Array containing a shift that should
         be applied to the momentum centroid of each degree of freedom in au."""
 
-        # assure correct format.
-        if self._c_type != 'xpacdt':
-            self.__format_coordinates()
-        return self.__momentumShift
+        return self["momentumShift"]
 
     @property
     def momenta(self):
@@ -261,15 +251,20 @@ class Inputfile(collections.MutableMapping):
         of each degree of freedom in au. The first axis is the degrees of
         freedom and the second axis the beads."""
 
-        # assure correct format.
-        if self._c_type != 'xpacdt':
-            self.__format_coordinates()
-        return self.__momenta
+        return self["momenta"]
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
 
     def __setitem__(self, key, value):
+        if key in self.store:
+            raise KeyError(f"Key can only be set once in InputFile, but {key}"
+                           f"recieved a new value {value}.")
+
+        if key == "masses":
+            if np.any([(m <= 0.0) for m in value]):
+                raise XPACDTInputError("Negative mass given.")
+
         self.store[self.__keytransform__(key)] = value
 
     def __delitem__(self, key):
@@ -306,27 +301,49 @@ class Inputfile(collections.MutableMapping):
                     self._c_type = match.group(2)
                     values = match.group(3)
                 except AttributeError:
-                    raise AttributeError("\nXPACDT: Coordinate type not given.")
+                    raise XPACDTInputError(section="coordinates", key="type")
 
-                if self._c_type == 'xyz':
-                    atom_symbols, masses, coord = parse_xyz(string=values)
-                    self._parse_masses(masses)
-                    self.__coordinates = coord
-                elif self._c_type == 'mass-value':
-                    self._parse_mass_value(values)
-                else:
-                    raise ValueError("\nXPACDT: Coordinate type not"
-                                     " understood: " + self._c_type)
+                try:
+                    if self._c_type == 'xyz':
+                        atom_symbols, masses, coord = parse_xyz(string=values)
+                        self["atom_symbols"] = atom_symbols
+                        self["masses"] = masses
+                        self["raw_coordinates"] = coord
+                    elif self._c_type == 'mass-value':
+                        masses, coord = parse_mass_value(values)
+                        self["masses"] = masses
+                        self["raw_coordinates"] = coord
+                    else:
+                        raise XPACDTInputError(
+                            f"Invalid coordinate type {self._c_type}. Allowed "
+                            "types are xyz and mass-value.",
+                            section="coordinates",
+                            key="type")
+                except ValueError as e:
+                    raise XPACDTInputError(
+                        "Coordinate data was not correctly formatted.",
+                        section="coordinates",
+                        caused_by=e)
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self.__momenta = np.loadtxt(d, ndmin=2)
+                self["raw_momenta"] = np.loadtxt(d, ndmin=2)
             elif section[0:14] == "$positionShift":
                 d = StringIO(section[14:])
-                self.__positionShift = np.loadtxt(d)
+                self["positionShift"] = np.loadtxt(d).flatten()
+
+                if len(self["positionShfit"]) != self["n_dof"]:
+                    raise XPACDTInputError(
+                        "Position shift dimension does not match the number "
+                        "of degrees of freedom")
             elif section[0:14] == "$momentumShift":
                 d = StringIO(section[14:])
-                self.__momentumShift = np.loadtxt(d)
+                self["momentumShift"] = np.loadtxt(d).flatten()
+
+                if len(self["positionShfit"]) != self["n_dof"]:
+                    raise XPACDTInputError(
+                        "Position shift dimension does not match the number "
+                        "of degrees of freedom")
             else:
                 match = re.search(r"\$(\w+)\W*(.*)", section,
                                   flags=re.DOTALL)
@@ -336,43 +353,7 @@ class Inputfile(collections.MutableMapping):
                 except IndexError:
                     values = ""
 
-                if keyword in self:
-                    raise KeyError("\nXPACDT: Key '" + keyword +
-                                   "' defined twice!")
-                else:
-                    self[keyword] = self._parse_values(values)
-
-    def _parse_mass_value(self, values):
-        """
-        Parse coordinate input that has a mass and a coordinate value per line.
-        The format has to be as follows. The first entry per line gives the
-        mass for this degree of freedom (in au, not amu). The next entry is
-        the coordinate values for this degree of freedom. All bead values have
-        to be given in one line.
-
-        The results are stored in self.masses, which are the au (not amu!)
-        masses for each atom, and in self.coordinates, which is a two-d
-        numpy array of floats.
-
-        Parameters
-        ----------
-        values : str
-            String representation of the input.
-        """
-
-        self._c_type = "mass-value"
-        d = StringIO(values)
-        try:
-            # TODO: This needs to be replaced if different number of beads
-            # per DOF can be used!
-            mc = np.loadtxt(d, ndmin=2)
-        except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Too few/many beads given. "
-                                   "Please check the error for the line "
-                                   "number with the first inconsistency.")
-
-        self._parse_masses(mc[:, 0])
-        self.__coordinates = mc[:, 1:].copy()
+                self[keyword] = self._parse_values(values)
 
     def _parse_values(self, values):
         """
@@ -402,8 +383,8 @@ class Inputfile(collections.MutableMapping):
                 value_dict[key_value[0].strip()] = key_value[1].strip()
 
             else:
-                raise ValueError("\nXPACDT: Too many '=' in a key-Value pair: "
-                                 + key_value_pair)
+                raise XPACDTInputError("To many '=' in the following line:\n"
+                                       f"{key_value}")
 
         return value_dict
 
@@ -412,95 +393,91 @@ class Inputfile(collections.MutableMapping):
         axis is the degrees of freedom and the second axis the beads. If
         momenta are present we also reformat those. """
 
+        if "raw_momenta" in self:
+            if self["raw_coordinates"].shape != self["raw_momenta"].shape:
+                raise XPACDTInputError(
+                    "Number of momenta and coordinates does not match",
+                    section="coordinates/momenta")
+
         if self._c_type == 'mass-value':
-            if self.__coordinates.shape[0] != self.n_dof:
-                raise RuntimeError("\nXPACDT: Number of coordinates given do"
-                                   " not match n_dof given in the input.")
+            n_coord, coord_dim = self["raw_coordinates"].shape
+            if n_coord != self.n_dof:
+                raise XPACDTInputError(
+                    f"Number of coordinates ({n_coord}) given does "
+                    f"not match n_dof given in the input ({self.n_dof}).",
+                    section="coordinates")
 
             # Check if only centroid value is given for more than one beads,
             # if yes, sample free ring polymer distribution
-            if (self.__coordinates.shape[1] == 1 and max(self.n_beads) > 1):
+            if (coord_dim == 1 and self["max_n_beads"] > 1):
 
-                rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
-                rp_momenta = np.zeros((self.n_dof, max(self.n_beads)))
-                NMtransform_type = self.get('rpmd').get("nm_transform",
-                                                        "matrix")
+                rp_coord = np.zeros((self.n_dof, self["max_n_beads"]))
+                rp_momenta = np.zeros((self.n_dof, self["max_n_beads"]))
+                NMtransform_type = self['rpmd'].get("nm_transform", "matrix")
                 RPtransform = RPtrafo.RingPolymerTransformations(
                                 self.n_beads, NMtransform_type)
 
                 for i in range(self.n_dof):
                     rp_coord[i] = RPtransform.sample_free_rp_coord(
                         self.n_beads[i], self.masses[i], self.beta,
-                        self.__coordinates[i, 0])
-                    if self.__momenta is not None:
+                        self["raw_coordinates"][i, 0])
+                    if "raw_momenta" in self:
                         rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                             self.n_beads[i], self.masses[i], self.beta,
-                            self.__momenta[i, 0])
+                            self["raw_momenta"][i, 0])
 
-                self.__coordinates = rp_coord.copy()
-                if self.__momenta is not None:
-                    self.__momenta = rp_momenta.copy()
+                self["coordinates"] = rp_coord.copy()
+
+                if "raw_momenta" in self:
+                    self["momenta"] = rp_momenta.copy()
 
             else:
-                if self.__coordinates.shape[1] != max(self.n_beads):
-                    raise RuntimeError("\nXPACDT: Number of bead coordinates"
-                                       "given does not match n_beads given"
-                                       " in the input.")
+                if coord_dim != self["max_n_beads"]:
+                    raise XPACDTInputError(
+                        f"Number of coordinates ({n_coord}) given does "
+                        f"not match n_dof given in the input ({self.n_dof}).",
+                        section="coordinates")
 
-                self.__coordinates = self.__coordinates.reshape((self.n_dof, self["max_n_beads"]))
+                shape = (self.n_dof, self["max_n_beads"])
+                self["coordinates"] = self["raw_coordinates"].reshape(shape)
 
-                try:
-                    self.__momenta = self.__momenta.reshape(self.__coordinates.shape)
-
-                # No momenta set
-                except AttributeError:
-                    pass
-                # Wrong number of momenta given
-                except ValueError as e:
-                    raise type(e)(str(e) + "\nXPACDT: Number of given momenta "
-                                           "and coordinates do not match!")
-
-            self._flatten_shifts()
-            self._c_type = 'xpacdt'
+                if "raw_momenta" in self:
+                    self["momenta"] = self["raw_momenta"].reshape(shape)
 
         elif self._c_type == 'xyz':
             if self.n_dof % 3 != 0:
-                raise ValueError("\nXPACDT: Degrees of freedom needs to be"
-                                 "multiple of 3 for 'xyz' format")
+                raise XPACDTInputError("Degrees of freedom needs to be "
+                                       "multiple of 3 for 'xyz' format.",
+                                       section="coordinates")
 
-            if (self.__coordinates.shape[0] != self.n_dof // 3
-                and self.__coordinates.shape[0] != np.sum(self.n_beads) // 3):
+            n_coord, coord_dim = self["raw_coordinates"].shape
+            if (n_coord != self.n_dof // 3
+                    and n_coord != np.sum(self.n_beads) // 3):
 
-                raise RuntimeError("\nXPACDT: Number of coordinates given do"
-                                   " not match n_dof and n_beads given in"
-                                   " the input.")
+                raise XPACDTInputError("Number of coordinates given do"
+                                       " not match n_dof and n_beads given in"
+                                       " the input.",
+                                       section="coordinates")
 
             # TODO: Need to check if all dof of an atom has same nbeads?
 
             # Check if all bead values are given for each degree of freedom;
             # if not, sample from free rp distribution
-            if (self.__coordinates.shape[0] == np.sum(self.n_beads) // 3):
+            if (n_coord == np.sum(self.n_beads) // 3):
                 # reordering; only works for same number of beads for now!
                 n_max = max(self.n_beads)
-                self._parse_masses(self.masses[::n_max])
-                self._parse_masses(np.array([self.masses[i//3]
-                                            for i in range(self.n_dof)]))
-                self.__coordinates = np.array([self.__coordinates[i::n_max]
-                                               for i in range(n_max)])\
+                # Bypass the 'only write once' policy by accessing .store
+                # directly
+                self.store["masses"] = self.masses[::n_max]
+                self["coordinates"] = np.array(
+                    [self["raw_coordinates"][i::n_max] for i in range(n_max)])\
                     .flatten().reshape((self.n_dof, -1), order='F')
 
-                try:
-                    self.__momenta = np.array([self.__momenta[i::n_max]
-                                               for i in range(n_max)])\
-                        .flatten().reshape(self.__coordinates.shape, order='F')
+                if "raw_momenta" in self:
+                    self["momenta"] = np.array(
+                        [self["raw_momenta"][i::n_max] for i in range(n_max)])\
+                        .flatten().reshape(self["coordinates"].shape, order='F')
 
-                # No momenta set
-                except (AttributeError, TypeError):
-                    pass
-                # Wrong number of momenta given
-                except ValueError as e:
-                    raise type(e)(str(e) + "\nXPACDT: Number of given momenta "
-                                           "and coordinates does not match!")
             else:
                 masses_dof = np.zeros(self.n_dof)
                 rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
@@ -514,43 +491,15 @@ class Inputfile(collections.MutableMapping):
                     masses_dof[i] = self.masses[i//3]
                     rp_coord[i] = RPtransform.sample_free_rp_coord(
                         self.n_beads[i], masses_dof[i], self.beta,
-                        self.__coordinates[i // 3, i % 3])
-                    if self.__momenta is not None:
+                        self["raw_coordinates"][i // 3, i % 3])
+                    if "raw_momenta" in self:
                         rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                             self.n_beads[i], masses_dof[i], self.beta,
-                            self.__momenta[i // 3, i % 3])
+                            self["raw_momenta"][i // 3, i % 3])
 
-                self._parse_masses(masses_dof)
-                self.__coordinates = rp_coord.copy()
-                if self.__momenta is not None:
-                    self.__momenta = rp_momenta.copy()
+                self["masses"] = masses_dof
+                self["coordinates"] = rp_coord.copy()
+                if "raw_momenta" in self:
+                    self["momenta"] = rp_momenta.copy()
 
-            self._flatten_shifts()
-
-            self._c_type = 'xpacdt'
-
-    def _flatten_shifts(self):
-        """Function to flatten then given position or momentum shift to
-        one-dimensional arrays.
-        """
-        if self.__positionShift is not None:
-            self.__positionShift = self.__positionShift.reshape(-1)
-            if len(self.__positionShift) != self.n_dof:
-                raise RuntimeError("\nXPACDT: Number of coordinates in "
-                                   "position shift does not match number "
-                                   "of degrees of freedom given: "
-                                   + str(self.n_dof) + " != "
-                                   + str(len(self.__positionShift)))
-
-        if self.__momentumShift is not None:
-            self.__momentumShift = self.__momentumShift.reshape(-1)
-            if len(self.__momentumShift) != self.n_dof:
-                raise RuntimeError("\nXPACDT: Number of coordinates in "
-                                   "momentum shift does not match number "
-                                   "of degrees of freedom given: "
-                                   + str(self.n_dof) + " != "
-                                   + str(len(self.__momentumShift)))
-
-        return
-
-# TODO: we changed some requirements which might fail tests -> check
+        self._c_type = 'xpacdt'

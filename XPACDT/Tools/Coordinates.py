@@ -6,6 +6,38 @@ from pathlib import Path
 from XPACDT.Tools.Units import atom_mass, angstrom_to_bohr
 
 
+def parse_mass_value(string):
+    """
+    Parse coordinate input that has a mass and a coordinate value per line.
+    The format has to be as follows. The first entry per line gives the
+    mass for this degree of freedom (in au, not amu). The next entry is
+    the coordinate values for this degree of freedom. All bead values have
+    to be given in one line.
+
+    # TODO Correct the docstring
+    The results are stored in self.masses, which are the au (not amu!)
+    masses for each atom, and in self.coordinates, which is a two-d
+    numpy array of floats.
+
+    Parameters
+    ----------
+    string : str
+        String representation of the input.
+    """
+    d = StringIO(string)
+    try:
+        # TODO: This needs to be replaced if different number of beads
+        # per DOF can be used!
+        mc = np.loadtxt(d, ndmin=2)
+    except ValueError:
+        raise ValueError("The mass-value data is not correctly formatted."
+                         f"mass-value data:\n{string}")
+
+    masses = mc[:, 0]
+    coord = mc[:, 1:]
+    return masses, coord
+
+
 def format_xyz(atoms, r, full=True):
     """
     Transform the given nuclear degrees of freedom `r` in a string in

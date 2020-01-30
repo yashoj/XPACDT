@@ -256,6 +256,14 @@ class Nuclei(object):
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
+    def make_sparse(self):
+        """ Decrease size of the object for sparse logging.
+        Right now this removes the propagator object.
+        """
+
+        self.__propagator = None
+        
+
     def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system. This
         creates a XPACDT.System.Electrons object.

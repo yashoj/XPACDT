@@ -147,7 +147,8 @@ class Inputfile(collections.MutableMapping):
             # 'beta' should not be used anywhere, so setting it to NaN.
             self["beta"] = np.nan
 
-        self.__format_coordinates()
+        if "raw_coordinates" in self:
+            self.__format_coordinates()
 
         self["commands"] = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:

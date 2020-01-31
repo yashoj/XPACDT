@@ -123,9 +123,9 @@ class NormalModesTest(unittest.TestCase):
 
         return
 
+    @unittest.skip("Please implement a test here.")
     def test_get_sampling_modes(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        raise NotImplementedError("Please implement a test here.")
 
 
 if __name__ == "__main__":

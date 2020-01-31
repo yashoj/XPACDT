@@ -68,8 +68,9 @@ class AnalysisTest(unittest.TestCase):
         self.systems[-1].nuclei.momenta = np.random.randn(*shape)
         self.systems[-1].do_log()
 
+    @unittest.skip("Please implement as an integrated test.")
     def test_do_analysis(self):
-        raise NotImplementedError("Please implement as an integrated test!!")
+        raise NotImplementedError("Please implement a test here.")
 
     def test_check_command(self):
         with self.assertRaises(ValueError):

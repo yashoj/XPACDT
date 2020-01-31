@@ -148,14 +148,17 @@ class TullyModelTest(unittest.TestCase):
                 self.pes_C_2_nb._diabatic_gradient_centroid, [[[0.0], [0.09]],
                                                               [[0.09], [0.0]]], rtol=1e-7)
 
+    @unittest.skip("Please implement a test here.")
     def test_get_V_dV_11(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_get_V_dV_22(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_get_V_dV_12(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")

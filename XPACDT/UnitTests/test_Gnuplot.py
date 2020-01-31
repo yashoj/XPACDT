@@ -40,6 +40,7 @@ class GnuplotTest(unittest.TestCase):
     def setUp(self):
         pass
 
+    @unittest.skip("Please implement a test here.")
     def test_write_gnuplot_file(self):
         raise NotImplementedError("Please implement a test!")
 

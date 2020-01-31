@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -67,11 +68,9 @@ class AnalysisTest(unittest.TestCase):
         self.systems[-1].nuclei.momenta = np.random.randn(*shape)
         self.systems[-1].do_log()
 
-#    def test_do_analysis(self):
-#        # TODO: Implement a more integrated test here!
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-#
+    @unittest.skip("Please implement as an integrated test.")
+    def test_do_analysis(self):
+        raise NotImplementedError("Please implement a test here.")
 
     def test_check_command(self):
         with self.assertRaises(ValueError):
@@ -296,7 +295,6 @@ class AnalysisTest(unittest.TestCase):
         dir_list = analysis.get_directory_list(file_name='pickle.dat')
         self.assertSequenceEqual(dir_list, dir_list_ref2)
 
-# TODO: make sure these are always removed!
         for d in dir_list_ref:
             shutil.rmtree(d)
 
@@ -304,7 +302,6 @@ class AnalysisTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             analysis.get_systems(None, None, None)
 
-        # TODO generate a list of systems and store them to be read by pickle etc.
         dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
         dir_list_ref2 = ["./trj_0", "./trj_2"]
         for d in dir_list_ref:
@@ -316,9 +313,14 @@ class AnalysisTest(unittest.TestCase):
         sys = analysis.get_systems(dir_list_ref, 'pickle.dat', None)
         self.assertTrue(isinstance(sys, collections.Iterable))
 
-# TODO: make sure these are always removed!
         for d in dir_list_ref:
             shutil.rmtree(d)
+
+    def tearDown(self):
+        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
+        for d in dir_list_ref:
+            if os.path.isdir(d):
+                shutil.rmtree(d)
 
 
 if __name__ == "__main__":

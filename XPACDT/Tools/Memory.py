@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -55,7 +56,8 @@ def getsize(obj):
         """
 
     if isinstance(obj, BLACKLIST):
-        raise TypeError('getsize() does not take argument of type: '+ str(type(obj)))
+        raise TypeError('getsize() does not take argument of type: '
+                        + str(type(obj)))
 
     seen_ids = set()
     size = 0

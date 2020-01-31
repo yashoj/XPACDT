@@ -45,15 +45,15 @@ class InputfileTest(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             infile.Inputfile("input.in")
 
-        infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
+        infile.Inputfile("FilesForTesting/InputfileTest/input_minimal.in")
 
         return
 
     def test_parse_file(self):
-        with self.assertRaises(IOError):
+        with self.assertRaises(KeyError):
             infile.Inputfile("FilesForTesting/InputfileTest/input_doubleKey.in")
 
-        with self.assertRaises(IOError):
+        with self.assertRaises(ValueError):
             infile.Inputfile("FilesForTesting/InputfileTest/input_doubleEqual.in")
 
         input_reference = {"system": {"miep": "muh", "blah": "", "blubb": "",
@@ -70,7 +70,7 @@ class InputfileTest(unittest.TestCase):
         return
 
     def test_parse_values(self):
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_minimal.in")
 
         key_value_reference = {"miep": "kuh"}
         key_value = parameters._parse_values("miep = kuh")
@@ -84,15 +84,13 @@ class InputfileTest(unittest.TestCase):
         key_value = parameters._parse_values("muh ")
         self.assertDictEqual(key_value_reference, key_value)
 
-        with self.assertRaises(IOError):
+        with self.assertRaises(ValueError):
             key_value = parameters._parse_values("mehrere = ist = doof")
 
         return
 
     def test_parse_xyz(self):
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
-        parameters.n_dof = 6
-        parameters.n_beads = '1'
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-1.in")
 
         mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
                              34631.970366, 34631.970366, 34631.970366])
@@ -107,7 +105,7 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # with two beads
-        parameters.n_beads = '2'
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-2.in")
         coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1],
                                    [2.0, 2.1], [1.0, 1.1], [4.0, 4.1]])
         input_string = "H 1.0 2.0 3.0 \n" \
@@ -121,7 +119,7 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
         # with four beads
-        parameters.n_beads = '4'
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-4.in")
         coordinate_ref = np.array([[1.0, 1.1, 1.2, 1.3],
                                    [2.0, 2.1, 2.2, 2.3],
                                    [3.0, 3.1, 3.2, 3.3],
@@ -146,8 +144,7 @@ class InputfileTest(unittest.TestCase):
         input_string = "J 1.0 2.0 3.0 \n" \
             + "F 2.0 1.0 4.0 \n"
 
-#        with self.assertRaises(AttributeError):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(KeyError):
             parameters._parse_xyz(input_string)
 
         # test too many/few coordinates given
@@ -164,10 +161,8 @@ class InputfileTest(unittest.TestCase):
         pass
 
     def test_parse_mass_value(self):
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
-        parameters.n_dof = 2
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-4.in")
         # 4 beads test
-        parameters.n_beads = '4'
 
         mass_ref = np.array([1837.3624, 34631.9731])
         coordinate_ref = np.array([[1.0, 2.0, 3.0, 4.0], [2.0, 1.0, 4.0, 5.0]])
@@ -180,7 +175,7 @@ class InputfileTest(unittest.TestCase):
                                    rtol=1e-7)
 
         # 1 bead test
-        parameters.n_beads = '1'
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-1.in")
 
         mass_ref = np.array([1837.3624, 34631.9731])
         coordinate_ref = np.array([[1.0], [2.0]])
@@ -201,10 +196,7 @@ class InputfileTest(unittest.TestCase):
     def test_parse_mass_value_free_rp_sampling(self):
         # So far only shape of output and centroid value tested; maybe add
         # test for distribution?
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
-        parameters.n_dof = 2
-        parameters.n_beads = '4'
-        parameters.beta = 1
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-4.in")
         parameters['rpmd'] = {'nm_transform': 'matrix'}
 
         mass_ref = np.array([1, 3])
@@ -224,10 +216,7 @@ class InputfileTest(unittest.TestCase):
     def test_parse_xyz_free_rp_sampling(self):
         # So far only shape of output and centroid value tested; maybe add
         # test for distribution?
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_empty.in")
-        parameters.n_dof = 6
-        parameters.n_beads = '4'
-        parameters.beta = 1
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-4.in")
         parameters['rpmd'] = {'nm_transform': 'matrix'}
 
         mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
@@ -274,9 +263,18 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_array_equal(parameters.positionShift, positionShift_ref)
         np.testing.assert_array_equal(parameters.momentumShift, momentumShift_ref)
 
+    @unittest.skip("Implicitly tested in parse modules.")
     def test_format_coordinates(self):
         # Implicity tested in parse modules - not clear how to test separately.
-        return
+        pass
+
+    @unittest.skip("Please implement a test here.")
+    def test_parse_beads(self):
+        raise NotImplementedError("Please implement a test here!!")
+
+    @unittest.skip("Please implement a test here.")
+    def test_parse_masses(self):
+        raise NotImplementedError("Please implement a test here!!")
 
 
 if __name__ == "__main__":

@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -41,8 +42,6 @@ class AdiabaticElectrons(electrons.Electrons):
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
-    n_beads : (n_dof) list of int
-        The number of beads for each degree of freedom.
     masses_nuclei : (n_dof) ndarray of floats
         The masses of each nuclear degree of freedom in au. This is not needed
         for this particular electron subclass.
@@ -52,9 +51,9 @@ class AdiabaticElectrons(electrons.Electrons):
         subclass.
     """
 
-    def __init__(self, parameters, n_beads, masses_nuclei=None, R=None, P=None):
+    def __init__(self, parameters, masses_nuclei=None, R=None, P=None):
         electrons.Electrons.__init__(self, "AdiabaticElectrons", parameters,
-                                     n_beads, "adiabatic")
+                                     "adiabatic")
 
     def step(self, R, P, time_propagate, **kwargs):
         """ Dummy implementation of the step, as adiabatic electrons have no
@@ -62,6 +61,11 @@ class AdiabaticElectrons(electrons.Electrons):
         """
 
         return
+
+    @property
+    def current_state(self):
+        """ Int. Here we are always in the lowest state."""
+        return 0
 
     def energy(self, R, centroid=False):
         """Calculate the electronic energy at the current geometry as defined
@@ -80,7 +84,7 @@ class AdiabaticElectrons(electrons.Electrons):
         -------
         (n_beads) ndarray of float /or/ float
         The energy of the systems PES at each bead position or at the centroid
-        in hartree.
+        in au.
         """
         return self.pes.adiabatic_energy(R, centroid=centroid)
 
@@ -105,3 +109,25 @@ class AdiabaticElectrons(electrons.Electrons):
         """
 
         return self.pes.adiabatic_gradient(R, centroid=centroid)
+
+    def get_population(self, proj, basis_requested):
+        """ Here we are always in the lowest state. Thus we will return 1 for
+        `proj` = 0 and 0 else.
+
+        Parameters
+        ----------
+        proj : int
+            State to be projected onto in the basis given by `basis_requested`.
+        basis_requested : str
+            Electronic basis to be used. Can be "adiabatic" or "diabatic".
+
+        Returns
+        -------
+        float
+            Electronic population value.
+        """
+
+        if proj == 0:
+            return 1.0
+        else:
+            return 0.0

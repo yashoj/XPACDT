@@ -35,12 +35,13 @@ import unittest
 import XPACDT.Interfaces.LWAL as lwal
 import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
+import XPACDT.Input.Inputfile as infile
 
 
 class LWALTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes = lwal.LWAL()
+        self.pes = lwal.LWAL(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
 
     def test_creation(self):
         self.assertEqual(self.pes.name, 'LWAL')
@@ -160,7 +161,7 @@ class LWALTest(unittest.TestCase):
         np.testing.assert_allclose(internal, internal_ref)
 
         # 'random' in space, 3rd H along axis
-        cartesian = np.array([-1.25 , -3.25, -1.18198052, 1.0, -1.0, 2.0, 0.5, -1.5, 2.0-1.0/np.sqrt(2.0)])
+        cartesian = np.array([-1.25, -3.25, -1.18198052, 1.0, -1.0, 2.0, 0.5, -1.5, 2.0-1.0/np.sqrt(2.0)])
         internal_ref = np.array([1.0, 4.0, 2.0*np.pi])
         internal = self.pes._from_cartesian_to_internal(cartesian)
         np.testing.assert_allclose(internal, internal_ref)

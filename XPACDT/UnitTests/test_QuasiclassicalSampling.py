@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -36,10 +37,6 @@ import unittest
 import XPACDT.Sampling.QuasiclassicalSampling as qcs
 import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
-
-# TODO: How to properly test? Use some seeding for random number generator
-# and obtain actual values to compare to?
-# TODO: Use other PES once available!
 
 
 class QuasiclassicalSamplingTest(unittest.TestCase):

@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,7 +28,7 @@
 #
 #  **************************************************************************
 
-"""This is a template for creating and unifying classes that represent the
+"""This is a unfied template for implementing classes that represent the
 electrons in the system. """
 
 import sys
@@ -45,8 +46,6 @@ class Electrons:
         The name of the specific electronic method implemented.
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
-    n_beads : (n_dof) list of int
-        The number of beads for each degree of freedom.
     basis : {'adiabatic', 'diabatic'}
         Electronic state basis representation. Default: 'adiabatic'
 
@@ -55,28 +54,29 @@ class Electrons:
     name
     pes
     basis
+    current_state
     """
 
-    def __init__(self, name, parameters, n_beads, basis='adiabatic'):
+    def __init__(self, name, parameters, basis='adiabatic'):
 
         self.__name = name
+        self.basis = basis
 
         # Set up potential interface
         pes_name = parameters.get("system").get("Interface", None)
 
-        assert(pes_name is not None), \
-            ("Potential energy surface interface not specified.")
-        assert(pes_name in parameters), \
-            ("No input parameters for chosen potential energy surface interface.")
+        if pes_name is None:
+            raise KeyError("\nXPACDT: Potential energy surface interface "
+                           "not specified in $system section.")
+
+        if pes_name not in parameters:
+            raise KeyError("\nXPACDT: No input parameters for chosen potential"
+                           " energy surface interface.")
 
         __import__("XPACDT.Interfaces." + pes_name)
 
-        self.basis = basis
-        # TODO: 'n_beads' doesn't need to be passed as parameter but instead
-        #       can be inferred from 'parameters.n_beads'; however how to use
-        #       this format in unittest? Get input from file?
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(max(n_beads), **parameters.get(pes_name))
+                             pes_name)(parameters)
 
     @property
     def name(self):
@@ -87,10 +87,11 @@ class Electrons:
     def pes(self):
         """XPACDT.Interfaces.InterfaceTemplate : Representation of the PES."""
         return self.__pes
-    
+
     @property
     def basis(self):
-        """{'adiabatic', 'diabatic'} : Electronic state basis representation."""
+        """{'adiabatic', 'diabatic'} : Electronic state basis
+        representation."""
         return self.__basis
 
     @basis.setter
@@ -98,13 +99,20 @@ class Electrons:
         assert (b in ['adiabatic', 'diabatic']),\
                ("Electronic state basis representation not available.")
         self.__basis = b
-        
+
     @property
     def current_state(self):
         """Int : Current electronic state of the system. All beads are in same
-        state for now. This needs to be defined by any child class which has
+        state for now.
+
+        Notes
+        -----
+        This needs to be defined by any child class which has
         this property, if not it throws a NotImplemented Error."""
-        raise NotImplementedError
+
+        raise NotImplementedError("This function must be implemented in all"
+                                  " classes deriving from the Electrons"
+                                  " template")
 
     def energy(self, R, centroid=False):
         """Calculate the electronic energy at the current geometry.
@@ -120,10 +128,19 @@ class Electrons:
 
         Returns
         -------
+        (n_beads) ndarray of float /or/ float
+        The energy of the electronic system at each bead position or at the
+        centroid in au.
+
+        Notes
+        -----
         This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
-        raise NotImplementedError
+
+        raise NotImplementedError("This function must be implemented in all"
+                                  " classes deriving from the Electrons"
+                                  " template")
 
     def gradient(self, R, centroid=False):
         """Calculate the gradient of the electronic energy at the current
@@ -140,10 +157,19 @@ class Electrons:
 
         Returns
         -------
+        (n_dof, n_beads) ndarray of floats /or/ (n_dof) ndarray of floats
+        The gradient of the electronic energy at each bead position or at the
+        centroid in hartree/au.
+
+        Notes
+        -----
         This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
-        raise NotImplementedError
+
+        raise NotImplementedError("This function must be implemented in all"
+                                  " classes deriving from the Electrons"
+                                  " template")
 
     def step(self, R, P, time_propagate, **kwargs):
         """Advance the electronic subsytem by a given time.
@@ -156,16 +182,21 @@ class Electrons:
         time_propagate : float
             The time to advance the electrons in au.
 
-        Returns
-        -------
+        Notes
+        -----
         This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
-        raise NotImplementedError
+
+        raise NotImplementedError("This function must be implemented in all"
+                                  " classes deriving from the Electrons"
+                                  " template")
 
     def get_population(self, proj, basis_requested):
-        """ Get electronic population for a certain adiabatic or diabatic state
-        regardless of whichever basis the electron uses.
+        """ Get electronic population for a certain adiabatic or diabatic
+        state. Adiabatic populations can always be obtained. Diabatic
+        populations can only be obtained for potentials that are based on a
+        diabatic model.
 
         Parameters
         ----------
@@ -176,7 +207,15 @@ class Electrons:
 
         Returns
         -------
+        float
+            Electronic population value.
+
+        Notes
+        -----
         This function throws a NotImplemented Error and needs to be
         implemented by any child class.
         """
-        raise NotImplementedError
+
+        raise NotImplementedError("This function must be implemented in all"
+                                  " classes deriving from the Electrons"
+                                  " template")

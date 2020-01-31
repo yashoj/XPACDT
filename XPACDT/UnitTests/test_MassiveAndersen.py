@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -36,6 +37,7 @@ from scipy import stats
 import XPACDT.Dynamics.MassiveAndersen as ma
 import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.System.AdiabaticElectrons as adiabatic
+import XPACDT.Input.Inputfile as infile
 
 
 class MassiveAndersenTest(unittest.TestCase):
@@ -126,9 +128,7 @@ class MassiveAndersenTest(unittest.TestCase):
         # function in velocity verlet
 
         # 1 dof, 4 beads, beta = 8.0
-        pes1D_harmonic = adiabatic.AdiabaticElectrons(
-                {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
+        pes1D_harmonic = adiabatic.AdiabaticElectrons(infile.Inputfile("FilesForTesting/SystemTests/harmonic_4.in"))
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}
@@ -154,9 +154,7 @@ class MassiveAndersenTest(unittest.TestCase):
 
         # 1 dof, 4 beads, beta = 8.0
         np.random.seed(0)
-        pes1D_harmonic = adiabatic.AdiabaticElectrons(
-                {'system': {'Interface': 'OneDPolynomial'},
-                 'OneDPolynomial': {'a': "0.0 0.0 0.5"}}, [4])
+        pes1D_harmonic = adiabatic.AdiabaticElectrons(infile.Inputfile("FilesForTesting/SystemTests/harmonic_4.in"))
         mass = np.array([2.])
         input_params = {'thermostat': {'method': 'MassiveAndersen',
                                        'temperature': '39471.891342'}}
@@ -217,12 +215,11 @@ class MassiveAndersenTest(unittest.TestCase):
         np.testing.assert_allclose(np.std(x_arr, axis=0), x_std_ref, rtol=1e-7)
 
         for i in range(nb):
-            mean, var, std = stats.bayes_mvs(p_arr[:, 0, i], alpha=0.95)
+            mean, _, std = stats.bayes_mvs(p_arr[:, 0, i], alpha=0.95)
             mean_min, mean_max = mean[1]
             std_min, std_max = std[1]
             self.assertTrue(mean_min < p_mean_ref < mean_max)
             self.assertTrue(std_min < p_std_ref < std_max)
-
 
     def test_generation(self):
         # test temperature consistency check
@@ -230,7 +227,8 @@ class MassiveAndersenTest(unittest.TestCase):
                         'sampling': {'temperature': '1.0'}}
         mass = np.array([1.])
         with self.assertRaises(RuntimeError):
-            thermostat = ma.MassiveAndersen(input_params, mass)
+            ma.MassiveAndersen(input_params, mass)
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(MassiveAndersenTest)

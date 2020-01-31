@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -29,7 +30,6 @@
 #
 #  **************************************************************************
 
-import math
 import numpy as np
 import unittest
 
@@ -42,8 +42,8 @@ class OperationsTest(unittest.TestCase):
 
     def setUp(self):
         # Set up nuclei as log
-        self.log_classical = nuclei.Nuclei(4, infile.Inputfile("FilesForTesting/OperationsTest/input_classicalNuclei.in"), 0.0)
-        self.log_rpmd = nuclei.Nuclei(4, infile.Inputfile("FilesForTesting/OperationsTest/input_rpmdNuclei.in"), 0.0)
+        self.log_classical = nuclei.Nuclei(infile.Inputfile("FilesForTesting/OperationsTest/input_classicalNuclei.in"), 0.0)
+        self.log_rpmd = nuclei.Nuclei( infile.Inputfile("FilesForTesting/OperationsTest/input_rpmdNuclei.in"), 0.0)
 
     def test_position(self):
         with self.assertRaises(RuntimeError):
@@ -879,16 +879,16 @@ class OperationsTest(unittest.TestCase):
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
         param_classical["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
+        log_sh_classical = nuclei.Nuclei(param_classical, 0.0)
 
         with self.assertRaises(RuntimeError):
             state = operations.electronic_state([], log_sh_classical)
 
-        # This function is not implemented in OneDPolynomial interface.
-        with self.assertRaises(NotImplementedError):
-            state = operations.electronic_state("-b adiabatic -p 0".split(),
-                                                self.log_classical)
-        with self.assertRaises(AssertionError):
+        state = operations.electronic_state("-b adiabatic -p 0".split(),
+                                            self.log_classical)
+        self.assertEqual(state, 1.0)
+
+        with self.assertRaises(ValueError):
             state = operations.electronic_state("-b adiabatic -p 2".split(),
                                                 log_sh_classical)
 
@@ -903,7 +903,7 @@ class OperationsTest(unittest.TestCase):
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
         param_classical["SurfaceHoppingElectrons"]["basis"] = "diabatic"
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
+        log_sh_classical = nuclei.Nuclei(param_classical, 0.0)
         state = operations.electronic_state("-b diabatic -p 0".split(),
                                             log_sh_classical)
         np.testing.assert_array_equal(state, [0.0])
@@ -920,7 +920,7 @@ class OperationsTest(unittest.TestCase):
         param_classical["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
         param_classical["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
+        log_sh_classical = nuclei.Nuclei(param_classical, 0.0)
         log_sh_classical.positions = np.array([[-1.0e5]])
         # This is done just to reset all pes quantities to current position value.
         # The transformation matrix here is U = [[0, -1], [1, 0]]
@@ -935,7 +935,7 @@ class OperationsTest(unittest.TestCase):
         np.testing.assert_allclose(state, [1.], atol=1e-7)
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
+        log_sh_classical = nuclei.Nuclei(param_classical, 0.0)
         log_sh_classical.positions = np.array([[-1.0e5]])
         log_sh_classical.electrons.energy(log_sh_classical.positions)
 
@@ -951,7 +951,7 @@ class OperationsTest(unittest.TestCase):
         param_classical["SurfaceHoppingElectrons"]["basis"] = "diabatic"
         param_classical["SurfaceHoppingElectrons"]["rpsh_type"] = "bead"
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 0
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
+        log_sh_classical = nuclei.Nuclei(param_classical, 0.0)
         log_sh_classical.positions = np.array([[-1.0e5]])
         # This is done just to reset all pes quantities to current position value.
         # The transformation matrix here is U = [[0, -1], [1, 0]]
@@ -966,7 +966,7 @@ class OperationsTest(unittest.TestCase):
         np.testing.assert_allclose(state, [1.], atol=1e-7)
 
         param_classical["SurfaceHoppingElectrons"]["initial_state"] = 1
-        log_sh_classical = nuclei.Nuclei(1, param_classical, 0.0)
+        log_sh_classical = nuclei.Nuclei(param_classical, 0.0)
         log_sh_classical.positions = np.array([[-1.0e5]])
         log_sh_classical.electrons.energy(log_sh_classical.positions)
 

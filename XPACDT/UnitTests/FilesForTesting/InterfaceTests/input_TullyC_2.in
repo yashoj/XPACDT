@@ -1,0 +1,15 @@
+$system  ## inline comment
+dof = 1
+Interface = TullyModel
+$end 
+
+$TullyModel
+model_type = model_C
+$end
+
+$rpmd
+beads = 2
+beta = 1.0
+$end
+
+

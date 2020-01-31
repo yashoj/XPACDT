@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -122,10 +123,9 @@ class NormalModesTest(unittest.TestCase):
 
         return
 
-# TODO: not tested yet due to moving it around
+    @unittest.skip("Please implement a test here.")
     def test_get_sampling_modes(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        raise NotImplementedError("Please implement a test here.")
 
 
 if __name__ == "__main__":

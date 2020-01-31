@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -41,10 +42,10 @@ class OneDPolynomial(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
-    Other Parameters
+    Other Parameters (as given in the input file)
     ----------------
     x0 : float or string of float
         Equilibrium position of the polynomial.
@@ -54,27 +55,30 @@ class OneDPolynomial(itemplate.PotentialInterface):
         here.
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters, **kwargs):
 
         itemplate.PotentialInterface.__init__(self, "OneDPolynomial", 1, 1,
-                                              max_n_beads, 'adiabatic')
+                                              max(parameters.n_beads),
+                                              'adiabatic')
+
+        pes_parameters = parameters.get(self.name)
 
         try:
-            self.__x0 = float(kwargs.get('x0', 0.0))
+            self.__x0 = float(pes_parameters.get('x0', 0.0))
         except ValueError as e:
             raise type(e)(str(e) + "\nXPACDT: Parameter 'x0' for polynomials "
                                    "not convertable to floats. x0 is "
-                                   + kwargs.get('x0'))
+                                   + pes_parameters.get('x0'))
 
-        assert (isinstance(kwargs.get('a'), str)), \
-            "Parameters 'a' for polynomials not given or not given as " \
-            "string."
+        if ('a' not in pes_parameters):
+            raise KeyError("\nXPACDT: Parameters 'a' for polynomials not"
+                           " given in the input.")
         try:
-            self.__as = [float(f) for f in kwargs.get('a').split()]
+            self.__as = [float(f) for f in pes_parameters.get('a').split()]
         except ValueError as e:
             raise type(e)(str(e) + "\nXPACDT: Parameters 'a' for polynomials "
                                    "not convertable to floats."
-                                   " a is " + kwargs.get('a'))
+                                   " a is " + pes_parameters.get('a'))
 
     @property
     def a(self):
@@ -87,17 +91,16 @@ class OneDPolynomial(itemplate.PotentialInterface):
         """float : The equilibrium position. Default is x0=0. """
         return self.__x0
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
         ----------
-        R, P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions `R` and momenta `P` representing the
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the
             system in au. The first axis represents the degrees of freedom and
-            the second axis is the beads. `P` is not used in this potential
-            and thus defaults to None.
+            the second axis is the beads.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.

@@ -35,12 +35,13 @@ import unittest
 import XPACDT.Interfaces.BKMP2 as bkmp2
 import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
+import XPACDT.Input.Inputfile as infile
 
 
 class BKMP2Test(unittest.TestCase):
 
     def setUp(self):
-        self.pes = bkmp2.BKMP2()
+        self.pes = bkmp2.BKMP2(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
 
     def test_creation(self):
         self.assertEqual(self.pes.name, 'BKMP2')
@@ -53,7 +54,7 @@ class BKMP2Test(unittest.TestCase):
         np.testing.assert_allclose(self.pes._adiabatic_energy, energy_ref, atol=1e-5)
         np.testing.assert_allclose(self.pes._adiabatic_gradient, gradient_ref, atol=1e-10)
 
-        # H2 minimum 
+        # H2 minimum
         energy_ref = np.zeros((1, 1)) + -0.17449577
         gradient_ref = np.zeros((1, 9, 1))
         self.pes._calculate_adiabatic_all(self.pes._from_internal([1.4014718, 80.0, 0.0]).reshape(-1, 1), None)

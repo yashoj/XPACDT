@@ -42,6 +42,7 @@ from io import StringIO
 import numpy as np
 import os
 import re
+import yaml
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
@@ -204,27 +205,6 @@ class Inputfile(collections.MutableMapping):
 
         self["max_n_beads"] = max(self.n_beads)
 
-    @property
-    def beta(self):
-        """ float : Inverse temperature for ring polymer springs in a.u."""
-        return self["beta"]
-
-    @property
-    def coordinates(self):
-        """(n_dof, n_beads) ndarray of floats: Array containing the coordinates
-        of each degree of freedom in au. The first axis is the degrees of
-        freedom and the second axis the beads."""
-
-        return self["coordinates"]
-
-    @property
-    def momenta(self):
-        """(n_dof, n_beads) ndarray of floats: Array containing the momenta
-        of each degree of freedom in au. The first axis is the degrees of
-        freedom and the second axis the beads."""
-
-        return self["momenta"]
-
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
 
@@ -251,11 +231,24 @@ class Inputfile(collections.MutableMapping):
     def __keytransform__(self, key):
         return key
 
-    def __getattribute__(self, attribute):
+    def __getattr__(self, attribute):
         if attribute in self:
             return self[attribute]
 
-        return super().__getattribute__(attribute)
+        raise AttributeError()
+
+    def __deepcopy__(self, memo):
+        return Inputfile(self._filename)
+
+    def __str__(self):
+        d = {**self.store}
+        for key, val in d.items():
+            try:
+                # Transform every numpy array to a list of lists
+                d[key] = val.tolist()
+            except AttributeError:
+                pass
+        return yaml.dump(d)
 
     def _parse_file(self):
         """

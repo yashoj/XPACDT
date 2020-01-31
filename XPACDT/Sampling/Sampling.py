@@ -113,14 +113,14 @@ def sample(system, parameters, do_return=False):
                                                             n_samples_required)
 
     # Shift centroid position and/or momenta if requested
-    if parameters.positionShift is not None:
+    if "positionShift" in parameters:
         for system in sampled_systems:
-            system.nuclei.positions += parameters.positionShift[:, None]
+            system.nuclei.positions += parameters["positionShift"][:, None]
             system.do_log(init=True)
 
-    if parameters.momentumShift is not None:
+    if "momentumShift" in parameters:
         for system in sampled_systems:
-            system.nuclei.momenta += parameters.momentumShift[:, None]
+            system.nuclei.momenta += parameters["momentumShift"][:, None]
             system.do_log(init=True)
 
     if do_return is True:

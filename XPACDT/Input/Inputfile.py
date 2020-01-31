@@ -68,7 +68,11 @@ class XPACDTInputError(Exception):
 class Inputfile(collections.MutableMapping):
     """Basic representation of all the input parameters given to XPACDT. It
     inherits from the MutableMapping Abstract Base Class defined in the
-    collections module. This makes the Inputfile behave like a dictonary.
+    collections module. This makes the Inputfile behave like a dictionnary.
+
+    For covenience all attributes can be accessed either through the standard
+    way (`Inputfile.attribute`) or through the dictionnary syntax
+    (`Inputfile["attribute"]`).
 
     Parameters
     ----------
@@ -79,11 +83,15 @@ class Inputfile(collections.MutableMapping):
     -----------
     commands
     masses
+    atom_symbols
     n_dof
     n_beads
+    max_n_beads
     beta
+    raw_coordinates
     coordinates
     positionShift
+    raw_momenta
     momenta
     momentumShift
     """
@@ -154,29 +162,6 @@ class Inputfile(collections.MutableMapping):
         for key in self.commands:
             self.commands[key]['name'] = key
             self.commands[key]['results'] = []
-
-    @property
-    def commands(self):
-        """dict : Contains all input sections for 'commands' used in
-        the analysis."""
-        return self["commands"]
-
-    @property
-    def masses(self):
-        """(n_dof) ndarray of floats: Array containing the masses of each
-        degree of freedom in au."""
-        return self["masses"]
-
-    @property
-    def n_dof(self):
-        """int: Number of degrees of freedom."""
-        return self["n_dof"]
-
-    @property
-    def n_beads(self):
-        """(n_dof) list of ints: List containing the number of beads for each
-        degree of freedom."""
-        return self["n_beads"]
 
     def _parse_beads(self, n_string):
         """Set the number of beads from a string given in the input file and
@@ -265,6 +250,12 @@ class Inputfile(collections.MutableMapping):
 
     def __keytransform__(self, key):
         return key
+
+    def __getattribute__(self, attribute):
+        if attribute in self:
+            return self[attribute]
+
+        return super().__getattribute__(attribute)
 
     def _parse_file(self):
         """

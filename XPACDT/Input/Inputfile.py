@@ -232,20 +232,6 @@ class Inputfile(collections.MutableMapping):
         return self["coordinates"]
 
     @property
-    def positionShift(self):
-        """(n_dof) ndarray of floats: Array containing a shift that should
-        be applied to the position centroid of each degree of freedom in au."""
-
-        return self["positionShift"]
-
-    @property
-    def momentumShift(self):
-        """(n_dof) ndarray of floats: Array containing a shift that should
-        be applied to the momentum centroid of each degree of freedom in au."""
-
-        return self["momentumShift"]
-
-    @property
     def momenta(self):
         """(n_dof, n_beads) ndarray of floats: Array containing the momenta
         of each degree of freedom in au. The first axis is the degrees of

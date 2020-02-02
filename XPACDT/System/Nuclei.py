@@ -371,7 +371,7 @@ class Nuclei(object):
 
         prop_method = prop_parameters.get('method')
         __import__("XPACDT.Dynamics." + prop_method + "Propagator")
-        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
+        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method + "Propagator"],
                                     prop_method)(self.electrons, self.masses,
                                                  self.n_beads, self.beta,
                                                  **prop_parameters)

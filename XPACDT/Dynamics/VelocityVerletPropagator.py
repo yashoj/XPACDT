@@ -132,7 +132,7 @@ class VelocityVerlet(object):
 
         method = thermo_parameters.get('method')
         __import__("XPACDT.Dynamics." + method + "Thermostat")
-        self.__thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
+        self.__thermostat = getattr(sys.modules["XPACDT.Dynamics." + method + "Thermostat"],
                                     method)(input_parameters, masses)
 
     def propagate(self, R, P, time_propagation):

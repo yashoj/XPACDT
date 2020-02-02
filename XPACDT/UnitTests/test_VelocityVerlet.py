@@ -32,7 +32,7 @@
 import numpy as np
 import unittest
 
-import XPACDT.Dynamics.VelocityVerlet as vv
+import XPACDT.Dynamics.VelocityVerletPropagator as vv
 import XPACDT.System.AdiabaticElectrons as adiabatic
 import XPACDT.Input.Inputfile as infile
 

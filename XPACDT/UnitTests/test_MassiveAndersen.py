@@ -34,7 +34,7 @@ import numpy as np
 import unittest
 from scipy import stats
 
-import XPACDT.Dynamics.MassiveAndersen as ma
+import XPACDT.Dynamics.MassiveAndersenThermostat as ma
 import XPACDT.Dynamics.VelocityVerlet as vv
 import XPACDT.System.AdiabaticElectrons as adiabatic
 import XPACDT.Input.Inputfile as infile

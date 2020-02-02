@@ -131,7 +131,7 @@ class VelocityVerlet(object):
             raise KeyError("\nXPACDT:No thermostat method given.")
 
         method = thermo_parameters.get('method')
-        __import__("XPACDT.Dynamics." + method)
+        __import__("XPACDT.Dynamics." + method + "Thermostat")
         self.__thermostat = getattr(sys.modules["XPACDT.Dynamics." + method],
                                     method)(input_parameters, masses)
 

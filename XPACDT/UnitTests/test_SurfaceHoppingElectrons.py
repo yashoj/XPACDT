@@ -36,7 +36,7 @@ import unittest
 
 import XPACDT.System.SurfaceHoppingElectrons as sh
 import XPACDT.Input.Inputfile as infile
-import XPACDT.System.Nuclei as Nuclei
+import XPACDT.System.Nuclei as nuclei
 
 
 class SurfaceHoppingTest(unittest.TestCase):
@@ -1361,63 +1361,65 @@ class SurfaceHoppingTest(unittest.TestCase):
         # Test all ode solvers give same result in all pictures after long propagation
         # Test norm conservation after long propagation.
         
-#        # Schroedinger picture
-#        R = np.array([[-1.0e5]])
-#        P = np.array([[10.0]])
-#        param = self.param_classical
-#        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
-#        param["SurfaceHoppingElectrons"]["n_steps"] = 100
-#        #param["TullyModel"]["model_type"] = "model_A"
-#        sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-#                                                            param.masses, param.coordinates,
-#                                                            param.momenta)
-#        
-#        with self.assertRaises(AssertionError):
-#            sh_electrons_classical.step(R, P, 1.)
-#
-#        c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
-#        c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
-#        H_ref = np.array([[[-0.0006+0.j, 0.+0.j], [0.+0.j, 0.0006+0.j]]])
-#        sh_electrons_classical._old_H_e = np.zeros_like(H_ref)
-#        sh_electrons_classical._c_coeff = c.copy()
-#
-#        
-#        sh_electrons_classical.step(R, P, 1., **{'step_index': 'after_nuclei'})
-##        np.testing.assert_allclose(
-##                sh_electrons_classical._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
-##                c_ref, rtol=1e-4)
-#
-#        # No change
-#        sh_electrons_classical.step(R, P, 1., **{'step_index': 'before_nuclei'})
-#
-#        # Test for change
-#        sh_electrons_classical.step(R, P, 1., **{'step_index': 'after_nuclei'})
-#
-#        # 2 c-coefficients
-#        param = self.param_rpmd
-#        param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
-#        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
-#        param["SurfaceHoppingElectrons"]["n_steps"] = 100
-#        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-#                                                       param.masses, param.coordinates,
-#                                                       param.momenta)
-#
-#        R = np.array([[-1.0e5, -1.0e5]])
-#        P = np.array([[10.0, 10.0]])
-#        c = np.array([[1.+0.j, 0.+0.j],
-#                      [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
-#        H_ref = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]],
-#                      [[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
-#        sh_electrons_rpmd._old_H_e = np.zeros_like(H_ref)
-#        sh_electrons_rpmd._c_coeff = c.copy()
-#        c_ref = [[0.-1.j, 0.+0.j],
-#                 [(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
-#        
-#        sh_electrons_rpmd.step(R, P, 1., **{'step_index': 'after_nuclei'})
+        # NAC at R=0 in Tully C is negligible so there should not be any change in momenta.
         
+        # Schroedinger picture
+        R = np.array([[-1.0e5]])
+        P = np.array([[10.0]])
+        param = self.param_classical
+        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
+        param["SurfaceHoppingElectrons"]["n_steps"] = 100
+        #param["TullyModel"]["model_type"] = "model_A"
+        sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
+                                                            param.masses, param.coordinates,
+                                                            param.momenta)
+        
+        with self.assertRaises(AssertionError):
+            sh_electrons_classical.step(R, P, 1.)
+
+        c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
+        c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
+        H_ref = np.array([[[-0.0006+0.j, 0.+0.j], [0.+0.j, 0.0006+0.j]]])
+        sh_electrons_classical._old_H_e = np.zeros_like(H_ref)
+        sh_electrons_classical._c_coeff = c.copy()
+
+        
+        sh_electrons_classical.step(R, P, 1., **{'step_index': 'after_nuclei'})
 #        np.testing.assert_allclose(
-#                sh_electrons_rpmd._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+#                sh_electrons_classical._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
 #                c_ref, rtol=1e-4)
+
+        # No change
+        sh_electrons_classical.step(R, P, 1., **{'step_index': 'before_nuclei'})
+
+        # Test for change
+        sh_electrons_classical.step(R, P, 1., **{'step_index': 'after_nuclei'})
+
+        # 2 c-coefficients
+        param = self.param_rpmd
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
+        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
+        param["SurfaceHoppingElectrons"]["n_steps"] = 100
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
+                                                       param.masses, param.coordinates,
+                                                       param.momenta)
+
+        R = np.array([[-1.0e5, -1.0e5]])
+        P = np.array([[10.0, 10.0]])
+        c = np.array([[1.+0.j, 0.+0.j],
+                      [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
+        H_ref = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]],
+                      [[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
+        sh_electrons_rpmd._old_H_e = np.zeros_like(H_ref)
+        sh_electrons_rpmd._c_coeff = c.copy()
+        c_ref = [[0.-1.j, 0.+0.j],
+                 [(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
+        
+        sh_electrons_rpmd.step(R, P, 1., **{'step_index': 'after_nuclei'})
+        
+        np.testing.assert_allclose(
+                sh_electrons_rpmd._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+                c_ref, rtol=1e-4)
         
         return
 
@@ -2223,14 +2225,492 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         return
 
-    @unittest.skip("Please implement a test here.")
     def test_momentum_rescaling(self):
-        # Nuclei initialized to test for conservation of energy
-        nuclei_classical = Nuclei.Nuclei(self.param_classical, 0.0)
-        nuclei_rpmd = Nuclei.Nuclei(self.param_rpmd, 0.0)
+        # Nuclei initialized to test for conservation of energy by checking with initial energy using .copy for float
+        # To test here: NAC, diabatic or adiabatic gradient rescaling
+        # for centroid or bead rescaling (nb=1 (same) and nb=2 cases)
+        # For model A: the terms are ....
 
+        ### 1 bead case
         R = np.array([[0.0]])
-        P = np.array([[10.0]])
+        param = self.param_classical
+        param["TullyModel"]["model_type"] = "model_A"
+
+        ## NAC rescaling
+        param["SurfaceHoppingElectrons"]["rescaling_type"] = "nac"
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+
+        # centroid rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "centroid"
+
+        # From state 1 to 2, not always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+        P = np.array([[0.1]])
+
+        # Hopping to same state is not allowed
+        with self.assertRaises(AssertionError):
+            nuclei_classical.electrons._momentum_rescaling(R, P, 0)
+
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertFalse(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.1]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[0.2]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.0]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+        
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0.2]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[0.2 * math.sqrt(2)]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[-0.2]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.2 * math.sqrt(2)]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.2]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        # bead rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "bead"
+
+        # From state 1 to 2, not always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0.1]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertFalse(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.1]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[0.2]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.0]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0.2]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[0.2 * math.sqrt(2)]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[-0.2]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.2 * math.sqrt(2)]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.2]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        ## diabatic gradient rescaling -  Here no change since for Tully A, V11==V22
+        param["SurfaceHoppingElectrons"]["rescaling_type"] = "gradient"
+        param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
+
+        # centroid rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "centroid"
+
+        # From state 1 to 2
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[1.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[-1.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[-1.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[1.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        # bead rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "bead"
+
+        # From state 1 to 2
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[1.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[-1.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[-1.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[1.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[0.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        ## adiabatic gradient rescaling -  use Tully C perhaps
+        param["SurfaceHoppingElectrons"]["rescaling_type"] = "gradient"
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+
+        # centroid rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "centroid"
+
+        # From state 1 to 2
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+        P = np.array([[1.]])
+
+        # A_kj = 0 here which shouldn't be allowed.
+        with self.assertRaises(AssertionError):
+            nuclei_classical.electrons._momentum_rescaling(R, P, 1)
+
+        # Using Tully C
+        param["TullyModel"]["model_type"] = "model_C"
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertFalse(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[math.sqrt(16 * math.sqrt(0.01 + 3.6e-07))]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy_centroid.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy_centroid, E_ref)
+
+        # bead rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "bead"
+        # First try with Tully model A
+        param["TullyModel"]["model_type"] = "model_A"
+
+        # From state 1 to 2
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+        P = np.array([[1.]])
+
+        # A_kj = 0 here which shouldn't be allowed.
+        with self.assertRaises(AssertionError):
+            nuclei_classical.electrons._momentum_rescaling(R, P, 1)
+
+        # Using Tully C
+        param["TullyModel"]["model_type"] = "model_C"
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertFalse(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_classical = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[math.sqrt(16 * math.sqrt(0.01 + 3.6e-07))]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        P = np.array([[0.]])
+        E_ref = nuclei_classical.energy.copy()
+        self.assertTrue(nuclei_classical.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_classical.energy, E_ref)
+
+        ### 2 bead case
+        param = self.param_rpmd
+        param["TullyModel"]["model_type"] = "model_A"
+
+        ## NAC rescaling
+        param["SurfaceHoppingElectrons"]["rescaling_type"] = "nac"
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+
+        # centroid rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "centroid"
+        R = np.array([[-1., 1.]])
+
+        # From state 1 to 2, not always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[-0.2, 0.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertFalse(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[-0.2, 0.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        P = np.array([[0.1, 0.3]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[-0.1, 0.1]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0.1, 0.3]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.1 + 0.2 * math.sqrt(2),
+                                        0.1 + 0.2 * math.sqrt(2)]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        P = np.array([[-1., 1.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-1.2, 0.8]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        # bead rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "bead"
+        R = np.array([[0., -1.0e5]])
+
+        # From state 1 to 2, not always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0., 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertFalse(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        P = np.array([[math.sqrt(0.12), 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 1.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[math.sqrt(0.12), 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[math.sqrt(0.24), 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        P = np.array([[-math.sqrt(0.12), 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-math.sqrt(0.24), 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        ## diabatic gradient rescaling
+        param["SurfaceHoppingElectrons"]["rescaling_type"] = "gradient"
+        param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
+
+        # centroid rescaling - Here no change since for Tully A, V11==V22
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "centroid"
+        R = np.array([[-1., 1.]])
+
+        # From state 1 to 2
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0., 2.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 2.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        # From state 2 to 1
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[-0.2, 0.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-0.2, 0.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        # bead rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "bead"
+        R = np.array([[0., -1.0e5]])
+
+        # From state 1 to 2, not always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0., 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertFalse(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        P = np.array([[math.sqrt(0.08), 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 1.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0., 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[-math.sqrt(0.08), 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        ## adiabatic gradient rescaling - use Tully model C
+        param["SurfaceHoppingElectrons"]["rescaling_type"] = "gradient"
+        param["SurfaceHoppingElectrons"]["basis"] = "adiabatic"
+        param["TullyModel"]["model_type"] = "model_C"
+
+        # centroid rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "centroid"
+        R = np.array([[-1., 1.]])
+        p_ref = math.sqrt(8 * math.sqrt(0.01 + 3.6e-07))
+
+        # From state 1 to 2
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[-1., 1.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertFalse(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[-1., 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        P = np.array([[2*p_ref - 1., 2*p_ref + 1.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[math.sqrt(3) * p_ref - 1,
+                                        math.sqrt(3) * p_ref + 1]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[p_ref - 1, p_ref + 1]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[math.sqrt(2) * p_ref - 1,
+                                        math.sqrt(2) * p_ref + 1]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        P = np.array([[-1., 1.]])
+        E_ref = nuclei_rpmd.energy_centroid.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[p_ref - 1, p_ref + 1]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy_centroid, E_ref)
+
+        # bead rescaling
+        param["SurfaceHoppingElectrons"]["rpsh_rescaling"] = "bead"
+        R = np.array([[0., -1.0e5]])
+
+        # From state 1 to 2, not always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 0
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0., 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertFalse(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        P = np.array([[math.sqrt(8. * (0.0006 + math.sqrt(0.01 + 3.6e-07))),
+                       1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 1))
+        np.testing.assert_allclose(P, [[0., 1.]], atol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        # From state 2 to 1, always hop
+        param["SurfaceHoppingElectrons"]["initial_state"] = 1
+        nuclei_rpmd = nuclei.Nuclei(param, 0.0)
+
+        P = np.array([[0., 1.]])
+        E_ref = nuclei_rpmd.energy.copy()
+        self.assertTrue(nuclei_rpmd.electrons._momentum_rescaling(R, P, 0))
+        np.testing.assert_allclose(P, [[2 * math.sqrt(0.0012 + 2 * math.sqrt(0.01+3.6e-07)),
+                                        1.]], rtol=1e-7)
+        self.assertAlmostEqual(nuclei_rpmd.energy, E_ref)
+
+        # TODO: add test for more than 1 dof once higher dimensional multistate
+        #       potentials are available.
 
     def test_get_population(self):
         ### 1 bead case

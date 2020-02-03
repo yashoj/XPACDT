@@ -1011,6 +1011,10 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             True if there is enough energy to change state (momentum rescaling
             is done in this case), False if not.
         """
+
+        assert (new_state != self.current_state),\
+               ("New state to hop cannot be the same as the old state.")
+
         if (self.rpsh_rescaling == 'centroid'):
             centroid = True
         else:
@@ -1059,6 +1063,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             # Not enough energy
             return False
         else:
+            assert (A_kj != 0.0),\
+                   ("A_kj in momentum rescaling is 0. Try different rescaling"
+                    " type. Currently it is: " + self.rescaling_type + " in"
+                    " basis: " + self.basis)
+
             # Take the least possible change
             if (B_kj < 0.):
                 factor = (B_kj + math.sqrt(inside_root)) / (2. * A_kj)

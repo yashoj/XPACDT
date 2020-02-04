@@ -39,12 +39,16 @@ start with a '#' character."""
 import collections
 from errno import ENOENT
 from io import StringIO
+import logging
 import numpy as np
 import os
 import re
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
+
+
+logger = logging.getLogger(__name__)
 
 
 class Inputfile(collections.MutableMapping):
@@ -71,7 +75,7 @@ class Inputfile(collections.MutableMapping):
     """
 
     def __init__(self, inputfile):
-
+        logger.info(f"Inputfile '{inputfile}' is read.'")
         self.store = dict()
         self.__momenta = None
         self.__masses = None
@@ -88,6 +92,7 @@ class Inputfile(collections.MutableMapping):
         with open(self._filename, 'r') as infile:
             self._intext = infile.read()
 
+        logger.debug(f"Input file content:\n---\n{self._intext}\n---")
         self._parse_file()
 
         if 'system' in self.store:

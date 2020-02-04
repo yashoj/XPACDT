@@ -12,6 +12,7 @@ _static
 _templates
 *.exe.spec
 *.status
+XPACDT.log
 XPACDT.*rst
 
 output_docu

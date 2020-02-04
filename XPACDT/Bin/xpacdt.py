@@ -34,8 +34,9 @@
 """
 
 import argparse
-import datetime
 import git
+import logging
+import logging.config
 import inspect
 import numpy as np
 import os
@@ -50,6 +51,41 @@ import XPACDT.Tools.Analysis as analysis
 import XPACDT.Tools.Operations as operations
 import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
+
+
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "simple": {
+                "format": "%(asctime)s [%(name)s] %(levelname)s - %(message)s",
+                "datefmt": "%H:%M:%S"
+            }
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "INFO",
+                "formatter": "simple",
+                "stream": "ext://sys.stdout"
+            },
+            "file": {
+                "class": "logging.FileHandler",
+                "level": "DEBUG",
+                "formatter": "simple",
+                "filename": "XPACDT.log",
+                "mode": "w"
+            }
+        },
+        "root": {
+            "level": "DEBUG",
+            "handlers": ["console", "file"]
+        }
+    }
+)
+
+logger = logging.getLogger(__name__)
 
 
 def resource_path(relativePath):
@@ -90,6 +126,8 @@ def print_helpfile(filename):
 def start():
     """Start any XPACDT calculation."""
 
+    logger.info(f"XPACDT started")
+
     # Save version used for later reference; either from git repository or from
     # .version file included by the PyInstaller program
     try:
@@ -106,10 +144,8 @@ def start():
     version_file.write("Branch: " + branch_name + " \n")
     version_file.write("Commit: " + hexsha + " \n")
     version_file.close()
-    print("Branch: " + branch_name)
-    print("Commit: " + hexsha)
-    now = datetime.datetime.now()
-    print(now)
+    logger.info("Branch: " + branch_name)
+    logger.info("Commit: " + hexsha)
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(add_help=False)
@@ -174,13 +210,13 @@ def start():
 
     # Get input file
     if args.InputFile is None:
-        print("Input file required!")
+        logger.error("Input file required!")
         return
-    print("The inputfile '" + args.InputFile + "' is read! \n")
     input_parameters = infile.Inputfile(args.InputFile)
 
     # Initialize random number generators
     seed = int(input_parameters.get('system').get('seed', time.time()))
+    logger.debug(f"Random seed set to {seed}")
     random.seed(seed)
     np.random.seed(seed)
 
@@ -338,4 +374,3 @@ def start():
 # This is a wrapper for the setup function!
 if __name__ == "__main__":
     start()
-

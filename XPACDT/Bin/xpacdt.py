@@ -202,7 +202,7 @@ def start():
                            " given in input.")
         __import__("XPACDT.Interfaces." + pes_name)
         pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                      pes_name)(**input_parameters.get(pes_name))
+                      pes_name)(input_parameters)
 
         plot_params = input_parameters.get("plot")
         # Parse grid parameters

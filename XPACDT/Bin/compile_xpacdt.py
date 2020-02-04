@@ -38,12 +38,14 @@ import inspect
 import os
 import subprocess as sp
 
-def get_python_files(folder, base_path, suffix='.py', exclusion=['__init__.py'], contains=""):
-    """ Obtain a list of all files ending with a given suffix (e.g. '.py'). The files
-    are given relative to the XPACDT main folder, i.e., XPACDT/SUBFOLDERs/FILE.
-    A list of filenames to ignore can be given. Also a subtring which has to be in 
-    each file can be given.
-    
+
+def get_named_files(folder, base_path, suffix='.py',
+                    exclusion=['__init__.py'], contains=""):
+    """ Obtain a list of all files ending with a given suffix (e.g. '.py').
+    The files are given relative to the XPACDT main folder, i.e.,
+    XPACDT/SUBFOLDERs/FILE. A list of filenames to ignore can be given. Also a
+    subtring which has to be in each file can be given.
+
     Parameters
     ----------
     folder : string
@@ -58,12 +60,12 @@ def get_python_files(folder, base_path, suffix='.py', exclusion=['__init__.py'],
         A substring each file has to contain.
 
     Returns
-    list of string :
+    list of string:
         A list containing all files with the given suffix, containing the
         given substring and not in the exclusion list. File paths are given
         relative to the XPACDT base path given.
     """
-    
+
     allEntries = os.listdir(folder)
     files = []
     for entry in allEntries:
@@ -73,91 +75,102 @@ def get_python_files(folder, base_path, suffix='.py', exclusion=['__init__.py'],
         if entry.endswith(suffix) and os.path.isfile(path):
             if entry not in exclusion and contains in entry:
                 files.append(rel_entry)
-                               
+
     return files
 
 
 def discover_hidden_imports(current_path, base_path):
     """ Discover hidden imports for packaging XPACDT and generate the required
-    string containing the command line options for PyInstaller. Currently, the following
-    imports will be used: All *py files in "Interfaces" except the InterfaceTemplate,
-    all SamplingApproaches in "Sampling". All Electron Implementations in "System". All
-    Thermostats in "Dynamics" that contain 'Thermostat' and all nuclei propagators in
-    "Dynamics" that contain 'Propagator'.
+    string containing the command line options for PyInstaller. Currently, the
+    following imports will be used: All *py files in "Interfaces" except the
+    InterfaceTemplate, all SamplingApproaches in "Sampling". All Electron
+    Implementations in "System". All Thermostats in "Dynamics" that contain
+    'Thermostat' and all nuclei propagators in "Dynamics" that contain
+    'Propagator'.
 
     Parameters
     ----------
     current_path : string
-        The path to the folder containing this file. It is used to obtain relative paths
-        for the file discovery.
+        The path to the folder containing this file. It is used to obtain
+        relative paths for the file discovery.
     base_path : string
         The XPACDT base path.
 
     Returns
     -------
     string:
-         A string containing all the command line arguments for hidden imports for running
-         the PyInstaller.
+         A string containing all the command line arguments for hidden imports
+         for running the PyInstaller.
     """
     files_to_import = []
     # All Interfaces
-    files_to_import += get_python_files(os.path.join(current_path, "../Interfaces"), base_path, 
-                                        exclusion=["__init__.py", "InterfaceTemplate.py"])
+    files_to_import += get_named_files(os.path.join(current_path, "../Interfaces"),
+                                       base_path,
+                                       exclusion=["__init__.py", "InterfaceTemplate.py"])
+
     # All Sampling Methods
-    files_to_import += get_python_files(os.path.join(current_path, "../Sampling"), base_path, 
-                                        exclusion=["__init__.py", "Sampling.py"])
+    files_to_import += get_named_files(os.path.join(current_path, "../Sampling"),
+                                       base_path,
+                                       exclusion=["__init__.py", "Sampling.py"])
+
     # All Electrons
-    files_to_import += get_python_files(os.path.join(current_path, "../System"), base_path, 
-                                        exclusion=["__init__.py", "System.py", "Nuclei.py", "Electrons.py"])
+    files_to_import += get_named_files(os.path.join(current_path, "../System"),
+                                       base_path,
+                                       exclusion=["__init__.py", "System.py", "Nuclei.py", "Electrons.py"])
+
     # All Thermostats (Naming convention: ...Thermostat)
-    files_to_import += get_python_files(os.path.join(current_path, "../Dynamics"), base_path, contains="Thermostat")
-    # All Nuclei Propagators (Naming convention: ...Propagator) 
-    files_to_import += get_python_files(os.path.join(current_path, "../Dynamics"), base_path, contains="Thermostat")
+    files_to_import += get_named_files(os.path.join(current_path, "../Dynamics"),
+                                       base_path, contains="Thermostat")
+
+    # All Nuclei Propagators (Naming convention: ...Propagator)
+    files_to_import += get_named_files(os.path.join(current_path, "../Dynamics"),
+                                       base_path, contains="Thermostat")
 
     import_base = ""
     for filename in files_to_import:
-        import_base += "--hidden-import='" + filename[:-3].replace("/", ".") + "' " 
+        import_base += "--hidden-import='" \
+            + filename[:-3].replace("/", ".") + "' "
 
     return import_base
 
+
 def discover_data_files(current_path, base_path):
-    """ Discover interface data files and generate the required string 
-    containing the command line options for PyInstaller to include them in the final 
-    output file. Data files have to end with '.dat' to be included.
+    """ Discover interface data files and generate the required string
+    containing the command line options for PyInstaller to include them in the
+    final output file. Data files have to end with '.dat' to be included.
 
     Parameters
     ----------
     current_path : string
-        The path to the folder containing this file. It is used to obtain relative paths
-        for the file discovery.
+        The path to the folder containing this file. It is used to obtain
+        relative paths for the file discovery.
     base_path : string
         The XPACDT base path.
 
     Returns
     -------
     string:
-         A string containing all the command line arguments for added data files for
-         the PyInstaller.
+         A string containing all the command line arguments for added data
+         files for the PyInstaller.
     """
 
     interface_path = os.path.normpath(os.path.join(current_path, "../Interfaces/"))
-   
+
     data_files = []
     allEntries = os.listdir(interface_path)
     for entry in allEntries:
         path = os.path.join(interface_path, entry)
         if os.path.isdir(path):
-            data_files += get_python_files(path, base_path, suffix=".dat")
-
+            data_files += get_named_files(path, base_path, suffix=".dat")
 
     data_import = ""
     for data_file in data_files:
         add_file = os.path.join(base_path, data_file)
 
-        data_import += "--add-data '" + add_file + ":" + os.path.split(data_file)[0] + "' "
+        data_import += "--add-data '" + add_file + ":" \
+            + os.path.split(data_file)[0] + "' "
 
     return data_import
-
 
 
 if __name__ == "__main__":
@@ -180,47 +193,13 @@ if __name__ == "__main__":
     add_file = os.path.join(current_path, "helptext/*.txt")
     command_base += "--add-data '" + add_file + ":helptext' "
 
-
-    # Include PES data files (TODO: automatize)
+    # Include PES data files
     command_base += discover_data_files(current_path, xpacdt_base_path)
-    # add_file = os.path.join(current_path,
-    #                         "../Interfaces/LWAL_module/fhhfit_1050.dat")
-    # command_base += "--add-data '" + add_file +\
-    #                 ":XPACDT/Interfaces/LWAL_module' "
 
-    # add_file = os.path.join(current_path,
-    #                         "../Interfaces/LWAL_module/fhhfit_1078_new.dat")
-    # command_base += "--add-data '" + add_file +\
-    #                 ":XPACDT/Interfaces/LWAL_module' "
-
-    # add_file = os.path.join(current_path,
-    #                         "../Interfaces/CW_module/cwfit.dat")
-    # command_base += "--add-data '" + add_file +\
-    #                 ":XPACDT/Interfaces/CW_module' "
-
-    
     # Generate hidden imports
     command_base += " --onefile "
     command_base += "--hidden-import='git' "
     command_base += discover_hidden_imports(current_path, xpacdt_base_path)
-
-    # command_base += "--hidden-import='XPACDT.System.AdiabaticElectrons' "
-    # command_base += "--hidden-import='XPACDT.System.SurfaceHoppingElectrons' "
-    # command_base += "--hidden-import='XPACDT.Dynamics.MassiveAndersen' "
-    # command_base += "--hidden-import='XPACDT.Dynamics.VelocityVerlet' "
-    # command_base += "--hidden-import='XPACDT.Sampling.FixedSampling' "
-    # command_base += "--hidden-import='XPACDT.Sampling.QuasiclassicalSampling' "
-    # command_base += "--hidden-import='XPACDT.Sampling.ThermostattedSampling' "
-    # command_base += "--hidden-import='XPACDT.Sampling.WignerSampling' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.BKMP2' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.CW' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.LWAL' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.EckartBarrier' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.OneDPolynomial' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.TullyModel' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.MorseDiabatic' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.Morse1D' "
-    # command_base += "--hidden-import='XPACDT.Interfaces.Dissociation2states' "
 
     # For xpacdt.py
     command = command_base + "--runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
@@ -235,4 +214,3 @@ if __name__ == "__main__":
     p.wait()
 
     exit
-

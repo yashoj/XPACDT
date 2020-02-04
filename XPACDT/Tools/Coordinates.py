@@ -105,25 +105,30 @@ def parse_xyz(string=None, filename=None):
 
     if string is not None:
         skip = 0
-        filename = StringIO(string)
     elif filename is not None:
         skip = 2
-        string = Path(filename).read_text().lower()
-        if "bohr" not in string and "a.u." not in string:
+        string = Path(filename).read_text()
+        if "bohr" not in string.lower() and "a.u." not in string.lower():
             conversion_factor = angstrom_to_bohr
     else:
         raise ValueError("Either values or filename should not be None.")
 
     # The atom symbols are in the first column
-    atom_symbols = np.loadtxt(filename, skiprows=skip, usecols=0, dtype=str)
+    # NOTE: A new StringIO object must be created at each run as it is
+    # consumed when read.
+    atom_symbols = np.loadtxt(StringIO(string), skiprows=skip, usecols=0,
+                              dtype=str)
     try:
         # Columns 1 to 3 contains the coordinates
-        coord = np.loadtxt(filename, skiprows=skip, usecols=(1, 2, 3))
+        coord = np.loadtxt(StringIO(string), skiprows=skip, usecols=(1, 2, 3))
     except Exception:
         raise ValueError("The XYZ data is not correctly formatted.\n"
                          f"XYZ data:\n{string}")
 
-    coord = conversion_factor*np.hstack(coord)
-    masses = np.array(list(map(atom_mass, atom_symbols)))
+    # Unique masses
+    m = np.array(list(map(atom_mass, atom_symbols)))
+    # Masses are expected to be given for each dof so we have to repeat
+    # each of them 3 times
+    masses = np.hstack(np.vstack([m, m, m]).T)
 
-    return atom_symbols, masses, coord
+    return atom_symbols, masses, conversion_factor*coord

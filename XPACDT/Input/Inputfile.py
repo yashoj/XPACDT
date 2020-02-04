@@ -416,7 +416,7 @@ class Inputfile(collections.MutableMapping):
             The string of values read from the input file.
 
         Returns
-        ----------
+        -------
         dictonary
             A dictonary representation of the parsed text. For
             each line in the input a key, value pair is generated.

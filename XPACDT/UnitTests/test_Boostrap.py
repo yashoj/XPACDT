@@ -41,6 +41,7 @@ class BootstrapTest(unittest.TestCase):
     def setUp(self):
         pass
 
+    @unittest.skip("Please implement a test.")
     def test_bootstrap(self):
         raise NotImplementedError("Please implement a test!")
 

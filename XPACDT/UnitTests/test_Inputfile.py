@@ -263,17 +263,18 @@ class InputfileTest(unittest.TestCase):
         np.testing.assert_array_equal(parameters.positionShift, positionShift_ref)
         np.testing.assert_array_equal(parameters.momentumShift, momentumShift_ref)
 
+    @unittest.skip("Implicitly tested in parse modules.")
     def test_format_coordinates(self):
         # Implicity tested in parse modules - not clear how to test separately.
-        return
+        pass
 
+    @unittest.skip("Please implement a test here.")
     def test_parse_beads(self):
         raise NotImplementedError("Please implement a test here!!")
-        pass
 
+    @unittest.skip("Please implement a test here.")
     def test_parse_masses(self):
         raise NotImplementedError("Please implement a test here!!")
-        pass
 
 
 if __name__ == "__main__":

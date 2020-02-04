@@ -219,6 +219,9 @@ class Inputfile(collections.MutableMapping):
 
         self.store[self.__keytransform__(key)] = value
 
+    def __contains__(self, key):
+        return key in self.store
+
     def __delitem__(self, key):
         del self.store[self.__keytransform__(key)]
 
@@ -232,7 +235,9 @@ class Inputfile(collections.MutableMapping):
         return key
 
     def __getattr__(self, attribute):
-        if attribute in self:
+        # Checking if the attribute is "store" avoid infinite recurstion when
+        # loading from pickle file.
+        if attribute != "store" and attribute in self.store:
             return self[attribute]
 
         raise AttributeError()

@@ -7,7 +7,7 @@ $system                     # general parameters
 
 # Required parameters
 dof = 4                     # integer: the number of degrees of freedom
-job = sample	                # (sample, propagate, analyze, plot, full): The job type.
+job = sample	                # (optimize, sample, propagate, analyze, plot, full): The job type.
 
 Interface = OneDPolynomial  # (OneDPolynomial, Triatomic, EckartBarrier, Morse1D, MorseDiabatic, Dissociation2states, TullyModel)
             	                # The interface to the potential to be used.

@@ -105,13 +105,13 @@ class OneDPolynomialTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes1D_shifted_anharmonic_4_nb._adiabatic_energy_centroid, np.array([1.138125]))
         np.testing.assert_allclose(self.pes1D_shifted_anharmonic_4_nb._adiabatic_gradient_centroid, np.array([[0.58]]))
 
-    def test_minimize_geom(self):
+    def test_optimize_geometry(self):
         # Harmonic oscillator
         e_reference = 0.0
         R_reference = np.array([0.0])
 
         R0 = np.array([1.0])
-        e, R = self.pes1D_harmonic_classical.minimize_geom(R0)
+        e, R = self.pes1D_harmonic_classical.optimize_geometry(R0)
         np.testing.assert_allclose(e, e_reference)
         np.testing.assert_allclose(R, R_reference)
 
@@ -120,7 +120,7 @@ class OneDPolynomialTest(unittest.TestCase):
         R_reference = np.array([2.0])
 
         R0 = np.array([-10.0])
-        e, R = self.pes1D_shifted_harmonic_classical.minimize_geom(R0)
+        e, R = self.pes1D_shifted_harmonic_classical.optimize_geometry(R0)
         np.testing.assert_allclose(e, e_reference)
         np.testing.assert_allclose(R, R_reference)
 

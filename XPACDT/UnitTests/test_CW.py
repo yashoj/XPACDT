@@ -84,14 +84,14 @@ class CWTest(unittest.TestCase):
         # H2
         fun_ref = -0.00139  # lowered by SO
         x_ref = np.array([40.0, 0.0, 0.0, -0.700279, 0.0, 0.0, 0.700279, 0.0, 0.0])
-        fun, x = self.pes.minimize_geom(self.pes._from_internal([1.4, 40.0, 0.0]))
+        fun, x = self.pes.optimize_geometry(self.pes._from_internal([1.4, 40.0, 0.0]))
         np.testing.assert_allclose(fun_ref, fun, atol=1e-6)
         np.testing.assert_allclose(x, x_ref, atol=1e-3)
 
         # HCl
         fun_ref = 0.004114
         x_ref = np.array([62.41003, 0.0, 0.0, -60.0, 0.0, 0.0, 60.0, 0.0, 0.0])
-        fun, x = self.pes.minimize_geom(self.pes._from_internal([120.0, 60.0+2.410, 0.0]))
+        fun, x = self.pes.optimize_geometry(self.pes._from_internal([120.0, 60.0+2.410, 0.0]))
         np.testing.assert_allclose(fun_ref, fun, atol=1e-6)
         np.testing.assert_allclose(x, x_ref, atol=1e-3)
 

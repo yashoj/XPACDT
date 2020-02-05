@@ -93,7 +93,7 @@ class LWALTest(unittest.TestCase):
     def test_minimize(self):
         fun_ref = 0.0
         x_ref = np.array([100.0, 0.0, 0.0, -0.700584, 0.0, 0.0, 0.700584, 0.0, 0.0])
-        fun, x = self.pes.minimize_geom(self.pes._from_internal([1.4, 100.0, 0.0]))
+        fun, x = self.pes.optimize_geometry(self.pes._from_internal([1.4, 100.0, 0.0]))
         np.testing.assert_allclose(fun_ref, fun, atol=1e-5)
         np.testing.assert_allclose(x, x_ref, atol=1e-5)
 

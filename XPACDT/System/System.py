@@ -82,6 +82,11 @@ class System(object):
         # TODO: See Ticket XPACDT-65
         pass
 
+    def optimize_geometry(self):
+        self.nuclei.optimize_geometry()
+        # Reset log with optimized geometry as initial state
+        self.do_log(init=True)
+
     @property
     def nuclei(self):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""

@@ -300,6 +300,8 @@ def start():
 
     # Run job
     if job == "full" or args.PropagationInputFile is not None:
+        system.optimize_geometry()
+
         # run sampling first
         print("Running Sampling...", end='', flush=True)
         systems = sampling.sample(system, input_parameters, do_return=True)

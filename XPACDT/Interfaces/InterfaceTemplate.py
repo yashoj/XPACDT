@@ -751,7 +751,7 @@ class PotentialInterface:
 
         return
 
-    def minimize_geom(self, R0, S=0, picture='adiabatic'):
+    def optimize_geometry(self, R0, S=0, picture='adiabatic'):
         """Find the potential minimum employing the Newton-CG method
         as implemented in Scipy.
 

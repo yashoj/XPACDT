@@ -35,6 +35,8 @@ import numpy as np
 import warnings
 import sys
 
+from itertools import repeat
+
 import XPACDT.Tools.Memory as mem
 
 
@@ -432,3 +434,7 @@ class Nuclei(object):
         print("\t momenta {: .2f} KB".format(mem.getsize(self.momenta) / 1024))
         print("\t propagator {: .2f} KB".format(mem.getsize(self.propagator) / 1024))
         print("\t electrons {: .2f} KB".format(mem.getsize(self.electrons) / 1024))
+
+    def optimize_geometry(self):
+        energy, r = self.electrons.pes.optimize_geometry(self.x_centroid)
+        self.positions = np.vstack([list(repeat(x, self.n_dof)) for x in r])

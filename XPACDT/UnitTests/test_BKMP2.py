@@ -83,7 +83,7 @@ class BKMP2Test(unittest.TestCase):
     def test_minimize(self):
         fun_ref = -0.17449577
         x_ref = np.array([0.70073594, 0.0, 0.0, -0.70073594, 0.0, 0.0, 40.0, 0.0, 0.0])
-        fun, x = self.pes.minimize_geom(self.pes._from_internal([2.0, 40.0, 0.0]))
+        fun, x = self.pes.optimize_geometry(self.pes._from_internal([2.0, 40.0, 0.0]))
         self.assertAlmostEqual(fun_ref, fun)
         np.testing.assert_allclose(x, x_ref)
 

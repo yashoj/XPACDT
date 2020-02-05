@@ -88,12 +88,12 @@ class Morse1DTest(unittest.TestCase):
         np.testing.assert_allclose(self.pes_2_nb._adiabatic_gradient_centroid,
                                    [[0.0]], rtol=1e-7)
 
-    def test_minimize_geom(self):
+    def test_optimize_geometry(self):
         e_reference = 0.0
         R_reference = np.array([2.0])
 
         R0 = np.array([1.0])
-        e, R = self.pes_1_nb.minimize_geom(R0)
+        e, R = self.pes_1_nb.optimize_geometry(R0)
         np.testing.assert_allclose(e, e_reference, atol=1e-8)
         np.testing.assert_allclose(R, R_reference, rtol=1e-6)
 

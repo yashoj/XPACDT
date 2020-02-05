@@ -51,6 +51,23 @@ from XPACDT.Tools.Coordinates import parse_xyz, parse_mass_value
 
 
 class XPACDTInputError(Exception):
+    """
+    Exception raise whenever an input file can not be parsed correctly.
+
+    Parameters
+    ----------
+    msg : str, optional. Default: "Missing key".
+        The cause of the error.
+
+    section : str, optional. Default: None.
+        The section of the input file that is faulty.
+
+    key : str, optional. Default: None.
+        The key associated with a faulty value.
+
+    caused_by : Exception, optional. Default: None.
+        An exception that caused the current failure.
+    """
     def __init__(self, msg="Missing key",
                  section=None, key=None, caused_by=None):
         if section is not None:

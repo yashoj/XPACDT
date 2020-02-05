@@ -61,7 +61,7 @@ class XPACDTInputError(Exception):
 
         if caused_by is not None:
             msg += ("\nThis error was caused by the following error:\n"
-                    f"{caused_by}")
+                    f"{type(caused_by)}: {caused_by}")
 
         super().__init__(msg)
 
@@ -176,26 +176,35 @@ class Inputfile(collections.MutableMapping):
         """
         try:
             n = [int(i) for i in n_string.split()]
-        except ValueError:
-            raise ValueError("\nXPACDT: Number of beads not convertable to"
-                             " int.")
+        except ValueError as e:
+            raise XPACDTInputError("Number of beads not convertable to int.",
+                                   section="rpmd",
+                                   key="beads",
+                                   caused_by=e)
 
         if len(n) != 1 and len(n) != self.n_dof:
-            raise ValueError("\nXPACDT: Wrong length for number of beads"
-                             " given. Either a single integer or one integer"
-                             " per dof should be given.")
+            raise XPACDTInputError(
+                "Wrong length for number of beads given. Either a single "
+                "integer or one integer per dof should be given.",
+                section="rpmd",
+                key="beads")
 
         if np.any([(i < 1) for i in n]):
-            raise ValueError("\nXPACDT: Number of beads needs to be more than"
-                             " zero.")
+            raise XPACDTInputError("Number of beads needs to be more than"
+                                   " zero.",
+                                   section="rpmd",
+                                   key="beads")
 
         if np.any([(i != 1 and (i % 2 != 0)) for i in n]):
-            raise ValueError("\nXPACDT: Number of beads not 1 or even.")
+            raise XPACDTInputError("Number of beads not 1 nor even.",
+                                   section="rpmd",
+                                   key="beads")
 
         # Keep number of beads same for now
         if np.any([(i != n[0]) for i in n]):
-            raise ValueError("\nXPACDT: Number of beads needs to be the same"
-                             " for all degrees of freedom.")
+            raise NotImplementedError("Different number of beads for each "
+                                      "degrees of freedom has not yet been "
+                                      "implemented.")
 
         if len(n) == 1:
             # Clone the number of beads for each degree of freedom

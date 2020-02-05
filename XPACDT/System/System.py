@@ -82,11 +82,6 @@ class System(object):
         # TODO: See Ticket XPACDT-65
         pass
 
-    def optimize_geometry(self):
-        self.nuclei.optimize_geometry()
-        # Reset log with optimized geometry as initial state
-        self.do_log(init=True)
-
     @property
     def nuclei(self):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
@@ -149,3 +144,14 @@ class System(object):
         # Use a sprase log by removing the propagator object
         if sparse:
             self.__log[-1].propagator = None
+
+    def optimize_geometry(self):
+        """
+        Optimize the geometry of the underlying nuclei.
+
+        The log record is resetted after the optimization is performed and
+        the optimized geometry is set as the initial state.
+        """
+        self.nuclei.optimize_geometry()
+        # Reset log with optimized geometry as initial state
+        self.do_log(init=True)

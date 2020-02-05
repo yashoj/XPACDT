@@ -436,5 +436,11 @@ class Nuclei(object):
         print("\t electrons {: .2f} KB".format(mem.getsize(self.electrons) / 1024))
 
     def optimize_geometry(self):
+        """
+        Optimize the positions of the nuclei in place.
+
+        If multiple beads are present, they are all set to the new optimized
+        geometry.
+        """
         energy, r = self.electrons.pes.optimize_geometry(self.x_centroid)
         self.positions = np.vstack([list(repeat(x, self.n_dof)) for x in r])

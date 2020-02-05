@@ -30,8 +30,11 @@
 #
 #  **************************************************************************
 
+import logging
 import unittest
 
 if __name__ == '__main__':
+    # Disable logging
+    logging.disable(logging.CRITICAL)
     testsuite = unittest.TestLoader().discover('.')
     unittest.TextTestRunner(verbosity=2).run(testsuite)

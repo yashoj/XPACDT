@@ -89,10 +89,8 @@ class Inputfile(collections.MutableMapping):
     n_beads
     max_n_beads
     beta
-    raw_coordinates
     coordinates
     positionShift
-    raw_momenta
     momenta
     momentumShift
     """
@@ -108,6 +106,9 @@ class Inputfile(collections.MutableMapping):
 
         with open(self._filename, 'r') as infile:
             self._intext = infile.read()
+
+        self._raw_coordinates = None
+        self._raw_momenta = None
 
         self._parse_file()
 
@@ -156,7 +157,7 @@ class Inputfile(collections.MutableMapping):
             # 'beta' should not be used anywhere, so setting it to NaN.
             self["beta"] = np.nan
 
-        if "raw_coordinates" in self:
+        if self._raw_coordinates is not None:
             self.__format_coordinates()
 
         self["commands"] = {k: self[k] for k in self.keys() if 'command' in k}
@@ -289,11 +290,11 @@ class Inputfile(collections.MutableMapping):
                                                         input_string=values)
                         self["atom_symbols"] = atom_symbols
                         self["masses"] = masses
-                        self["raw_coordinates"] = coord
+                        self._raw_coordinates = coord
                     elif self._c_type == 'mass-value':
                         masses, coord = parse_mass_value(values)
                         self["masses"] = masses
-                        self["raw_coordinates"] = coord
+                        self._raw_coordinates = coord
                     else:
                         raise XPACDTInputError(
                             f"Invalid coordinate type {self._c_type}. Allowed "
@@ -308,7 +309,7 @@ class Inputfile(collections.MutableMapping):
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self["raw_momenta"] = np.loadtxt(d, ndmin=2)
+                self._raw_momenta = np.loadtxt(d, ndmin=2)
             elif section[0:14] == "$positionShift":
                 d = StringIO(section[14:])
                 self["positionShift"] = np.loadtxt(d).flatten()
@@ -374,14 +375,14 @@ class Inputfile(collections.MutableMapping):
         axis is the degrees of freedom and the second axis the beads. If
         momenta are present we also reformat those. """
 
-        if "raw_momenta" in self:
-            if self["raw_coordinates"].shape != self["raw_momenta"].shape:
+        if self._raw_momenta is not None:
+            if self._raw_coordinates.shape != self._raw_momenta.shape:
                 raise XPACDTInputError(
                     "Number of momenta and coordinates does not match",
                     section="coordinates/momenta")
 
         if self._c_type == 'mass-value':
-            dof_given, beads_given = self["raw_coordinates"].shape
+            dof_given, beads_given = self._raw_coordinates.shape
             if dof_given != self.n_dof:
                 raise XPACDTInputError(
                     f"Number of coordinates ({dof_given}) given does "
@@ -401,15 +402,15 @@ class Inputfile(collections.MutableMapping):
                 for i in range(self.n_dof):
                     rp_coord[i] = RPtransform.sample_free_rp_coord(
                         self.n_beads[i], self.masses[i], self.beta,
-                        self["raw_coordinates"][i, 0])
-                    if "raw_momenta" in self:
+                        self._raw_coordinates[i, 0])
+                    if self._raw_momenta is not None:
                         rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                             self.n_beads[i], self.masses[i], self.beta,
-                            self["raw_momenta"][i, 0])
+                            self._raw_momenta[i, 0])
 
                 self["coordinates"] = rp_coord.copy()
 
-                if "raw_momenta" in self:
+                if self._raw_momenta is not None:
                     self["momenta"] = rp_momenta.copy()
 
             else:
@@ -421,10 +422,10 @@ class Inputfile(collections.MutableMapping):
                         section="coordinates")
 
                 shape = (self.n_dof, self["max_n_beads"])
-                self["coordinates"] = self["raw_coordinates"].reshape(shape)
+                self["coordinates"] = self._raw_coordinates.reshape(shape)
 
-                if "raw_momenta" in self:
-                    self["momenta"] = self["raw_momenta"].reshape(shape)
+                if self._raw_momenta is not None:
+                    self["momenta"] = self._raw_momenta.reshape(shape)
 
         elif self._c_type == 'xyz':
             if self.n_dof % 3 != 0:
@@ -433,7 +434,7 @@ class Inputfile(collections.MutableMapping):
                     f"'xyz' format, {self.n_dof} was given.",
                     section="coordinates")
 
-            dof_given, beads_given = self["raw_coordinates"].shape
+            dof_given, beads_given = self._raw_coordinates.shape
             if (dof_given != self.n_dof // 3
                     and dof_given != np.sum(self.n_beads) // 3):
 
@@ -455,12 +456,12 @@ class Inputfile(collections.MutableMapping):
                 # directly
                 self.store["masses"] = self.masses[::n_max]
                 self["coordinates"] = np.array(
-                    [self["raw_coordinates"][i::n_max] for i in range(n_max)])\
+                    [self._raw_coordinates[i::n_max] for i in range(n_max)])\
                     .flatten().reshape((self.n_dof, -1), order='F')
 
-                if "raw_momenta" in self:
+                if self._raw_momenta is not None:
                     self["momenta"] = np.array(
-                        [self["raw_momenta"][i::n_max] for i in range(n_max)])\
+                        [self._raw_momenta[i::n_max] for i in range(n_max)])\
                         .flatten().reshape(self["coordinates"].shape, order='F')
 
             else:
@@ -476,15 +477,15 @@ class Inputfile(collections.MutableMapping):
                     masses_dof[i] = self.masses[i//3]
                     rp_coord[i] = RPtransform.sample_free_rp_coord(
                         self.n_beads[i], masses_dof[i], self.beta,
-                        self["raw_coordinates"][i // 3, i % 3])
-                    if "raw_momenta" in self:
+                        self._raw_coordinates[i // 3, i % 3])
+                    if self._raw_momenta is not None:
                         rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                             self.n_beads[i], masses_dof[i], self.beta,
-                            self["raw_momenta"][i // 3, i % 3])
+                            self._raw_momenta[i // 3, i % 3])
 
                 self["masses"] = masses_dof
                 self["coordinates"] = rp_coord.copy()
-                if "raw_momenta" in self:
+                if self._raw_momenta is not None:
                     self["momenta"] = rp_momenta.copy()
 
         self._c_type = 'xpacdt'

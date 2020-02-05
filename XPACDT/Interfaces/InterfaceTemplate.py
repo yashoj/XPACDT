@@ -263,8 +263,6 @@ class PotentialInterface:
         assert (R.dtype == 'float64'), "Position array not real!"
         assert (R.shape[0] == self.n_dof), "Position array degrees of freedom"\
                                            " does not match!"
-        assert (R.shape[1] == self.max_n_beads), "Position array number of"\
-                                                 " beads does not match!"
 
         if self._old_R is None:
             self._old_R = R.copy()
@@ -773,7 +771,6 @@ class PotentialInterface:
 
         Raises a RuntimeError if unsuccessful.
         """
-
         old_thresh = self.__SAVE_THRESHOLD
         self.__SAVE_THRESHOLD = 1e-15
         results = spminimize(lambda x : self._energy_wrapper(x, S=S, picture=picture),

@@ -145,7 +145,9 @@ class SystemTest(unittest.TestCase):
         # Resetting the position is the responsability of Nuclei
         # Correctness of the optimization is the responsability of the
         # PotentialInterface
-        system = xSystem.System(self.parameters)
+        parameters = infile.Inputfile(
+            "FilesForTesting/SystemTests/RPMD_1D.in")
+        system = xSystem.System(parameters)
         system.__log = [1, 2, 3, 4, 5]
         system.optimize_geometry()
         self.assertEqual(len(system.log), 1)

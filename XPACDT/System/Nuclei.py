@@ -166,6 +166,7 @@ class Nuclei(object):
     @property
     def x_centroid(self):
         """ (n_dof) ndarray of floats : The centroid of each coordinate. """
+        c = np.mean(self.positions, axis=1)
         return np.mean(self.positions, axis=1)
 
     @property
@@ -443,4 +444,5 @@ class Nuclei(object):
         geometry.
         """
         energy, r = self.electrons.pes.optimize_geometry(self.x_centroid)
-        self.positions = np.vstack([list(repeat(x, self.n_dof)) for x in r])
+        self.positions = np.vstack([list(repeat(x, b))
+                                    for x, b in zip(r, self.n_beads)])

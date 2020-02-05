@@ -346,7 +346,7 @@ class NucleiTest(unittest.TestCase):
         # Make sure each bead is resetted to the same value
         # Correctness of the optimization is the responsability of the
         # potential interface
-        nuclei = Nuclei.Nuclei(self.parameters_rpmd, 0.0)
+        nuclei = Nuclei.Nuclei(self.parameters_rpmd_1D, 0.0)
         nuclei.optimize_geometry()
         beads = nuclei.positions
         np.testing.assert_array_equal(beads[0], beads[-1])

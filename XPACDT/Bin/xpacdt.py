@@ -259,8 +259,10 @@ def start():
         system = pickle.load(open(path_file, 'rb'))
         # Updating input parameters appropriately
         system.parameters = input_parameters
+        initiated = False
     else:
         system = xSystem.System(input_parameters)
+        initiated = True
 
     # Run job
     if job == "full" or args.PropagationInputFile is not None:
@@ -325,7 +327,7 @@ def start():
 
     elif job == "propagate":
         print("Running Real time propagation...", end='', flush=True)
-        rt.propagate(system, input_parameters)
+        rt.propagate(system, input_parameters, initiated)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     else:

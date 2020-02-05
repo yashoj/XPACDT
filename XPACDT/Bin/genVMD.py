@@ -72,7 +72,8 @@ def start():
 
 
 def gen_XYZ(system, folder):
-    """ Output XYZ files for the centroids and the beads.
+    """ Output XYZ files for the centroids and the beads. The data is stored
+    in "centroids.xyz" and "beads.xyz", respectively.
 
     Parameters
     ----------

@@ -126,9 +126,9 @@ def parse_xyz(string=None, filename=None):
                          f"XYZ data:\n{string}")
 
     # Unique masses
-    m = np.array(list(map(atom_mass, atom_symbols)))
+    masses = np.array(list(map(atom_mass, atom_symbols)))
     # Masses are expected to be given for each dof so we have to repeat
     # each of them 3 times
-    masses = np.hstack(np.vstack([m, m, m]).T)
+    masses = np.hstack([(m, m, m) for m in masses])
 
     return atom_symbols, masses, conversion_factor*coord

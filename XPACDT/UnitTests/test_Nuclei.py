@@ -336,11 +336,20 @@ class NucleiTest(unittest.TestCase):
     def test_getCOM(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
-    
+
     @unittest.skip("Please implement a test here.")
     def test_print_size(self):
         # Not really clear how to test this. Here for completness sake.
         pass
+
+    def test_optimize_geometry(self):
+        # Make sure each bead is resetted to the same value
+        # Correctness of the optimization is the responsability of the
+        # potential interface
+        nuclei = Nuclei.Nuclei(self.parameters_rpmd, 0.0)
+        nuclei.optimize_geometry()
+        beads = nuclei.positions
+        np.testing.assert_array_equal(beads[0], beads[-1])
 
 
 class DummyProp(object):

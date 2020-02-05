@@ -30,6 +30,7 @@
 #  **************************************************************************
 
 import copy
+import numpy as np
 import unittest
 
 import XPACDT.System.System as xSystem
@@ -138,6 +139,18 @@ class SystemTest(unittest.TestCase):
             self.system.step(1.0)
 
         return
+
+    def test_optimize_geometry(self):
+        # Make sure the log is resetted after geometry optimization
+        # Resetting the position is the responsability of Nuclei
+        # Correctness of the optimization is the responsability of the
+        # PotentialInterface
+        system = xSystem.System(self.parameters)
+        system.__log = [1, 2, 3, 4, 5]
+        system.optimize_geometry()
+        self.assertEqual(len(system.log), 1)
+        np.testing.assert_array_equal(system.log[0].positions,
+                                      system.nuclei.positions)
 
 
 class DummyProp(object):

@@ -129,7 +129,7 @@ class Inputfile(collections.MutableMapping):
 
         if self.n_dof < 1:
             raise XPACDTInputError("The number of degree of freedom must be "
-                                   "greater than 1.",
+                                   "greater or equal to 1.",
                                    section="system",
                                    key="dof")
 
@@ -251,6 +251,10 @@ class Inputfile(collections.MutableMapping):
             try:
                 # Transform every numpy array to a list of lists
                 d[key] = val.tolist()
+            # When the value is not a numpy array, the .tolist() function
+            # does not exist and an AttributeError is raise. In this case
+            # nothing need to be done as the object will be directly
+            # serializable by YAML.
             except AttributeError:
                 pass
         return yaml.dump(d)
@@ -281,7 +285,8 @@ class Inputfile(collections.MutableMapping):
 
                 try:
                     if self._c_type == 'xyz':
-                        atom_symbols, masses, coord = parse_xyz(string=values)
+                        atom_symbols, masses, coord = parse_xyz(
+                                                        input_string=values)
                         self["atom_symbols"] = atom_symbols
                         self["masses"] = masses
                         self["raw_coordinates"] = coord
@@ -359,7 +364,7 @@ class Inputfile(collections.MutableMapping):
                 value_dict[key_value[0].strip()] = key_value[1].strip()
 
             else:
-                raise XPACDTInputError("To many '=' in the following line:\n"
+                raise XPACDTInputError("Too many '=' in the following line:\n"
                                        f"{key_value}")
 
         return value_dict
@@ -376,16 +381,16 @@ class Inputfile(collections.MutableMapping):
                     section="coordinates/momenta")
 
         if self._c_type == 'mass-value':
-            n_coord, coord_dim = self["raw_coordinates"].shape
-            if n_coord != self.n_dof:
+            dof_given, beads_given = self["raw_coordinates"].shape
+            if dof_given != self.n_dof:
                 raise XPACDTInputError(
-                    f"Number of coordinates ({n_coord}) given does "
+                    f"Number of coordinates ({dof_given}) given does "
                     f"not match n_dof given in the input ({self.n_dof}).",
                     section="coordinates")
 
             # Check if only centroid value is given for more than one beads,
             # if yes, sample free ring polymer distribution
-            if (coord_dim == 1 and self["max_n_beads"] > 1):
+            if (beads_given == 1 and self["max_n_beads"] > 1):
 
                 rp_coord = np.zeros((self.n_dof, self["max_n_beads"]))
                 rp_momenta = np.zeros((self.n_dof, self["max_n_beads"]))
@@ -408,10 +413,11 @@ class Inputfile(collections.MutableMapping):
                     self["momenta"] = rp_momenta.copy()
 
             else:
-                if coord_dim != self["max_n_beads"]:
+                if beads_given != self["max_n_beads"]:
                     raise XPACDTInputError(
-                        f"Number of coordinates ({n_coord}) given does "
-                        f"not match n_dof given in the input ({self.n_dof}).",
+                        f"Number of bead coordinates ({beads_given}) given "\
+                        f"does not match the expected number of beads "
+                        f"({self.max_n_beads}).",
                         section="coordinates")
 
                 shape = (self.n_dof, self["max_n_beads"])
@@ -422,24 +428,27 @@ class Inputfile(collections.MutableMapping):
 
         elif self._c_type == 'xyz':
             if self.n_dof % 3 != 0:
-                raise XPACDTInputError("Degrees of freedom needs to be "
-                                       "multiple of 3 for 'xyz' format.",
-                                       section="coordinates")
+                raise XPACDTInputError(
+                    "Degrees of freedom needs to be  multiple of 3 for "
+                    f"'xyz' format, {self.n_dof} was given.",
+                    section="coordinates")
 
-            n_coord, coord_dim = self["raw_coordinates"].shape
-            if (n_coord != self.n_dof // 3
-                    and n_coord != np.sum(self.n_beads) // 3):
+            dof_given, beads_given = self["raw_coordinates"].shape
+            if (dof_given != self.n_dof // 3
+                    and dof_given != np.sum(self.n_beads) // 3):
 
-                raise XPACDTInputError("Number of coordinates given do"
-                                       " not match n_dof and n_beads given in"
-                                       " the input.",
-                                       section="coordinates")
+                raise XPACDTInputError(
+                    f"Number of coordinates given does has n_dof "
+                    "({dof_given}). This doesn't match any of the allowed "
+                    f"values ({self.n_dof // 3} or "
+                    f"{np.sum(self.n_beads) // 3}).",
+                    section="coordinates")
 
             # TODO: Need to check if all dof of an atom has same nbeads?
 
             # Check if all bead values are given for each degree of freedom;
             # if not, sample from free rp distribution
-            if (n_coord == np.sum(self.n_beads) // 3):
+            if (dof_given == np.sum(self.n_beads) // 3):
                 # reordering; only works for same number of beads for now!
                 n_max = max(self.n_beads)
                 # Bypass the 'only write once' policy by accessing .store

@@ -64,16 +64,19 @@ class NRPMDElectronsTest(unittest.TestCase):
     def test_step(self):
 
         R = np.array([[0.0]])
-#        step_ref = 0.0
+        step_ref = (np.array([[-0.33850079], [-1.77728803]]),
+                    np.array([[-0.77959315], [-0.34481733]]))
         step = self.electron.step(R)
-#        step_ref =
-        print("Step", step)
+        np.testing.assert_allclose(step, step_ref, rtol=1e-7)
 
         R = np.array([[1.0e5, -1.0e5]])
-#        step_ref = 0.0
-        step = self.electron_mb.step(R)
-#        step_ref =
-        print("Step", step)
+        step_ref_mb = (np.array([[-0.89549266, -0.27886244],
+                                 [0.62565698, -1.37389828]]),
+                       np.array([[-0.94121693, -0.96033106],
+                                 [-1.38591375, -1.05470541]]))
+        step_mb = self.electron_mb.step(R)
+        np.testing.assert_allclose(step_mb, step_ref_mb, rtol=1e-7)
+
         return
 
     def test_energy(self):
@@ -85,7 +88,7 @@ class NRPMDElectronsTest(unittest.TestCase):
 
         print(energy_ref_classical)
         print("Energy", self.electron.energy(R, centroid=False))
-#       np.testing.assert_allclose(energy, energy_ref_classical)
+        np.testing.assert_allclose(energy, energy_ref_classical, rtol=1e-7)
 
         R = np.array([[1.0e5, -1.0e5]])
 
@@ -94,36 +97,40 @@ class NRPMDElectronsTest(unittest.TestCase):
 
         print(energy_ref_multibeads)
         print("Energy", self.electron_mb.energy(R, centroid=False))
-#       np.testing.assert_allclose(energy, energy_ref_multibeads)
+        np.testing.assert_allclose(energy, energy_ref_multibeads, rtol=1e-7)
 
         return
 
     def test_gradient(self):
 
         R = np.array([[0.0]])
-        gradient_ref = np.array([[-0.078188825]])
+        gradient_ref = np.array([-0.078188825])
         gradient = self.electron.gradient(R, centroid=False)
 
         print(gradient_ref)
         print("Gradient", gradient)
-#       print("Potential", self.electron.pes.diabatic_gradient(R, centroid=False, return_matrix=True)
-#       np.testing.assert_allclose(gradient, gradient_ref, rtol=1e-7)
+        np.testing.assert_allclose(gradient, gradient_ref, rtol=1e-7)
 
         R = np.array([[1.0e5, -1.0e5]])
-        gradient_ref_multibeads = np.array([[0.000000, 0.00000000]])
+        gradient_ref_multibeads = np.array([0.000000, 0.00000000])
         gradient = self.electron_mb.gradient(R, centroid=False)
 
         print(gradient_ref_multibeads)
         print("Gradient", gradient)
-#       print("Potential", self.electron.pes.diabatic_gradient(R, centroid=False, return_matrix=True)
-#       np.testing.assert_allclose(gradient, gradient_ref_multibeads, rtol=1e-7)
+        np.testing.assert_allclose(gradient, gradient_ref_multibeads, rtol=1e-7)
         return
 
     def test_get_population(self):
 
         R = np.array([[0.0]])
+        pop_ref = np.array([0.0, 1.0])
         pop = self.electron.get_population(R, centroid=False)
+        np.testing.assert_allclose(pop, pop_ref, rtol=1e-5)
 
+        R = np.array([[1.0e5, -1.0e5]])
+        pop_ref_mb = np.array([0.0, 1.0])
+        pop_mb = self.electron_mb.get_population(R, centroid=False)
+        np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)
         return
 
 

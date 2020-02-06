@@ -35,8 +35,6 @@ import random
 import scipy.stats
 import unittest
 
-import matplotlib.pyplot as plt
-
 import XPACDT.System.System as xSystem
 import XPACDT.Sampling.ThermostattedSampling as thermo
 import XPACDT.Input.Inputfile as infile
@@ -57,48 +55,17 @@ class ThermostattedSamplingTest(unittest.TestCase):
         samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
                                                    int(self.parameters.get("sampling").get('samples')))
 
-        with open("data.dat", 'w') as outfile:
-            for s in samples:
-                outfile.write(f"{s.nuclei.momenta[0,0]}  {s.nuclei.positions[0,0]} ")
-                outfile.write(f"{s.nuclei.energy} {0.5*s.nuclei.momenta[0,0]**2 + 0.5*s.nuclei.positions[0,0]**2} \n")
-
         energies = [s.nuclei.energy for s in samples]
         statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
         mean_min, mean_max = statistics[0][1]
         dev_min, dev_max = statistics[2][1]
         mean_reference = 1.0 / (315777*units.boltzmann)
 
-        print("----")
-        print(mean_min, mean_max)
-        print(dev_min, dev_max)
-        print(mean_reference)
-        print("***")
-        print(statistics)
-
         self.assertTrue(mean_min < mean_reference < mean_max)
         self.assertTrue(dev_min < mean_reference < dev_max)
-#        self.assertEqual(len(samples), 500)
+        self.assertEqual(len(samples), 2000)
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
-
-
-    def plot_data(self, data):
-        res_mean, res_var, res_std = scipy.stats.bayes_mvs(data, alpha=0.95)
-        fig = plt.figure()  
-        ax = fig.add_subplot(111)
-        ax.hist(data, bins=100, density=True, label='Histogram of data')
-        ax.vlines(res_mean.statistic, 0, 0.5, colors='r', label='Estimated mean')
-        ax.axvspan(res_mean.minmax[0],res_mean.minmax[1], facecolor='r',
-                   alpha=0.2, label=r'Estimated mean (95% limits)')
-        ax.vlines(res_std.statistic, 0, 0.5, colors='g', label='Estimated scale')
-        ax.axvspan(res_std.minmax[0],res_std.minmax[1], facecolor='g', alpha=0.2,
-                   label=r'Estimated scale (95% limits)')
-
-        ax.legend(fontsize=10)
-        ax.set_xlim([-4, 4])
-        ax.set_ylim([0, 0.5])
-        plt.show()
-
 
 
 if __name__ == "__main__":

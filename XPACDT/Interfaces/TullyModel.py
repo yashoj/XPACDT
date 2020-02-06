@@ -56,11 +56,11 @@ class TullyModel(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, parameters):
+    def __init__(self, **parameters):
 
-        itemplate.PotentialInterface.__init__(self, "TullyModel", 1, 2,
-                                              max(parameters.n_beads),
-                                              'diabatic')
+        super().__init__("TullyModel",
+                         n_dof=1, n_states=2, primary_basis='diabatic',
+                         **parameters)
 
         pes_parameters = parameters.get(self.name)
 

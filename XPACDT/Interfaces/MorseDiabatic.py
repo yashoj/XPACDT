@@ -62,7 +62,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
         Number of morse diabatic states (possible: 2, 3).
     """
 
-    def __init__(self, parameters):
+    def __init__(self, **parameters):
 
         pes_parameters = parameters.get("MorseDiabatic")
 
@@ -84,9 +84,9 @@ class MorseDiabatic(itemplate.PotentialInterface):
                 key="n_states",
                 given=n_states)
 
-        itemplate.PotentialInterface.__init__(self, "MorseDiabatic", 1,
-                                              n_states, max(parameters.n_beads),
-                                              'diabatic')
+        super().__init__("MorseDiabatic",
+                         n_dof=1, n_states=n_states, primary_basis='diabatic',
+                         **parameters)
 
         if 'model_type' not in pes_parameters:
             raise XPACDTInputError(section="MorseDiabatic",

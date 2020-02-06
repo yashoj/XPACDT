@@ -54,12 +54,12 @@ class CW(itemplate.PotentialInterface):
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
     """
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, **parameters):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "CW", 9, 1,
-                                              max(parameters.n_beads),
-                                              'adiabatic')
+        super().__init__("CW",
+                         n_dof=9, n_states=1, primary_basis='adiabatic',
+                         **parameters)
         # For proper Hessian derivatives! Numerically tested for stability!
         self._DERIVATIVE_STEPSIZE = 7e-3
 

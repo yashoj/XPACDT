@@ -88,10 +88,10 @@ class EckartBarrier(itemplate.PotentialInterface):
         `w` is a frequency in au. `h`, `d` are energies in au.
         `m` is a mass in au.
     """
-    def __init__(self, parameters, **kwargs):
-        itemplate.PotentialInterface.__init__(self, "EckartBarrier", 1, 1,
-                                              max(parameters.n_beads),
-                                              'adiabatic')
+    def __init__(self, **parameters):
+        super().__init__("EckartBarrier",
+                         n_dof=1, n_states=1, primary_basis='adiabatic',
+                         **parameters)
 
         pes_parameters = parameters.get(self.name)
         if {'A', 'B', 'L'} <= set(pes_parameters):

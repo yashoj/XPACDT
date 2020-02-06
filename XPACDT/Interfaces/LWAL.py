@@ -56,12 +56,12 @@ class LWAL(itemplate.PotentialInterface):
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
     """
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, **parameters):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "LWAL", 9, 1,
-                                              max(parameters.n_beads),
-                                              'adiabatic')
+        super().__init__("LWAL",
+                         n_dof=9, n_states=1, primary_basis='adiabatic',
+                         **parameters)
 
     def _calculate_adiabatic_all(self, R, S=None):
         """

@@ -32,6 +32,7 @@
 """
 
 import numpy as np
+import warnings
 
 import XPACDT.Tools.Units as units
 
@@ -76,10 +77,24 @@ class MassiveAndersen(object):
         else:
             raise RuntimeError("No temperature given for MassiveAndersen!")
 
+        
+        if 'time' not in thermo_parameters:
+            raise KeyError("\nXPACDT: No time given for Massive Andersen "
+                           "thermostat.")
+
+        self.__timescale = units.parse_time(thermo_parameters.get("time"))
+        if sampling_parameters is not None and 'time' in sampling_parameters:
+            sampling_time = units.parse_time(sampling_parameters.get('time'))
+            if abs(self.__timescale - sampling_time) > 1e-4:
+                warnings.warn(f"\nXPACDT: Sampling time ({sampling_time})"
+                              f" and timescale for thermostat ({self.__timescale})"
+                              f"  do not match. Is this desired?",
+                              category=RuntimeWarning)
+
         self.beta = 1.0 / (self.temperature * units.boltzmann)
         self.mass = masses
 
-    def apply(self, R, P, state):
+    def apply(self, R, P, state, time):
         """Apply the thermostat. All Ps are redrawn from a Maxwell-Boltzman
         distribution.
 
@@ -97,6 +112,8 @@ class MassiveAndersen(object):
             1: After the first velocity step.
             2: After the 'verlet' step.
             3. After the second velocity step.
+        time : float
+            The current absolute time of the propagation in au.
 
         Returns
         --------
@@ -106,10 +123,16 @@ class MassiveAndersen(object):
         if state != 0:
             return
         else:
-            n_beads = P.shape[1]
-            sigmas = np.sqrt(np.ones_like(P) * self.mass[:, None] * n_beads
-                             / self.beta)
-            # Make sure that the momenta are actually changed in the calling
-            # modules. P = ... won't work.
-            P[:, :] = np.random.normal(np.zeros_like(sigmas), sigmas)
+            # Check if it is time for applying the thermostat
+            mod_time = (time + 1e-8) % self.__timescale
+            if mod_time < 1e-6:
+                n_beads = P.shape[1]
+                sigmas = np.sqrt(np.ones_like(P) * self.mass[:, None] * n_beads
+                                 / self.beta)
+                # Make sure that the momenta are actually changed in the calling
+                # modules. P = ... won't work.
+                P[:, :] = np.random.normal(np.zeros_like(sigmas), sigmas)
+#                print(f"Resampling at time {time} and state {state} to get:")
+#                print(P)
+#                print("--")
         return

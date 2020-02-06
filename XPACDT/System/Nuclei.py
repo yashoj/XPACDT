@@ -36,6 +36,7 @@ import warnings
 import sys
 
 import XPACDT.Tools.Memory as mem
+import XPACDT.Tools.Units as units
 
 
 class Nuclei(object):
@@ -409,7 +410,7 @@ class Nuclei(object):
                                 **{'step_index': 'before_nuclei'})
             self.positions, self.momenta = \
                 self.__propagator.propagate(self.positions, self.momenta,
-                                            timestep)
+                                            timestep, self.time + i*timestep)
             self.electrons.step(self.positions, self.momenta, timestep,
                                 **{'step_index': 'after_nuclei'})
 

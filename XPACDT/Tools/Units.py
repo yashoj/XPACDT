@@ -46,6 +46,9 @@ nm_to_cm = centi/physical_constants['Bohr radius'][0] \
 hartree_to_eV = physical_constants['Hartree energy in eV'][0]
 eV_to_hartree = 1.0 / hartree_to_eV
 
+# Conversion of atomic unit of time to fs
+au_to_fs = physical_constants['atomic unit of time'][0] / femto
+
 
 def parse_time(time_string):
     """ Takes a string with a time and converts it to the numerical value

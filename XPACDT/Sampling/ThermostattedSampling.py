@@ -80,5 +80,8 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
         system.clear_log()
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.time = 0.0
+#        print("Saved momenta and coordinates are:")
+#        print(systems[-1].nuclei.momenta, systems[-1].nuclei.positions)
+#        print("***")
 
     return systems

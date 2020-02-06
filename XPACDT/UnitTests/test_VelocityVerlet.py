@@ -79,14 +79,14 @@ class VelocityVerletTest(unittest.TestCase):
         # Single time step
         p_ref = np.array([[0.148]])
         r_ref = np.array([[0.52]])
-        rt, pt = propagator.propagate(r, p, 0.2)
+        rt, pt = propagator.propagate(r, p, 0.2, 0.0)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
         # Two time steps
         p_ref = np.array([[0.04304]])
         r_ref = np.array([[0.5296]])
-        rt, pt = propagator.propagate(r, p, 0.4)
+        rt, pt = propagator.propagate(r, p, 0.4, 0.0)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
@@ -102,14 +102,14 @@ class VelocityVerletTest(unittest.TestCase):
         # Single time step
         p_ref = np.array([[0.09494187, -0.58829502,  0.53812469,  0.25122846]])
         r_ref = np.array([[0.51738778,  0.95774543,  0.05227955, -0.48741276]])
-        rt, pt = propagator.propagate(r, p, 0.2)
+        rt, pt = propagator.propagate(r, p, 0.2, 0.0)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
         # Two time steps
         p_ref = np.array([[-0.06724218, -0.89683408,  0.55144043, 0.49871582]])
         r_ref = np.array([[0.51881322,  0.88294329,  0.10715463, -0.44971114]])
-        rt, pt = propagator.propagate(r, p, 0.4)
+        rt, pt = propagator.propagate(r, p, 0.4, 0.0)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
@@ -125,7 +125,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         p_ref = np.array([[0.148]])
         r_ref = np.array([[0.52]])
-        rt, pt = propagator._step(r, p)
+        rt, pt = propagator._step(r, p, 0.0)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
 
@@ -138,7 +138,7 @@ class VelocityVerletTest(unittest.TestCase):
 
         p_ref = np.array([[0.09494187, -0.58829502,  0.53812469,  0.25122846]])
         r_ref = np.array([[0.51738778,  0.95774543,  0.05227955, -0.48741276]])
-        rt, pt = propagator._step(r, p)
+        rt, pt = propagator._step(r, p, 0.0)
         np.testing.assert_allclose(pt, p_ref, rtol=1e-7)
         np.testing.assert_allclose(rt, r_ref, rtol=1e-7)
         return

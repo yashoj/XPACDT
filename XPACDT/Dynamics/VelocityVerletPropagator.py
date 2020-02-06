@@ -135,7 +135,7 @@ class VelocityVerlet(object):
         self.__thermostat = getattr(sys.modules["XPACDT.Dynamics." + method + "Thermostat"],
                                     method)(input_parameters, masses)
 
-    def propagate(self, R, P, time_propagation):
+    def propagate(self, R, P, time_propagation, time):
         """ Advance the given position and momenta for a given time.
 
         Parameters
@@ -145,6 +145,8 @@ class VelocityVerlet(object):
             the degrees of freedom and the second axis the beads.
         time_propagation : float
             The amount of time to advance in au.
+        time : float
+            The current absolute time of the propagation in au.
 
         Returns
         -------
@@ -161,14 +163,14 @@ class VelocityVerlet(object):
             "\nXPACDT: Propagation time is not multiple of velocity verlet timestep."
 
         for j in range(n_steps):
-            Rn, Pn = self._step(Rt, Pt)
+            Rn, Pn = self._step(Rt, Pt, time + j*self.timestep)
             Rt, Pt = Rn.copy(), Pn.copy()
 
         if self.thermostat is not None:
-            self.thermostat.apply(Rn, Pn, 0)
+            self.thermostat.apply(Rn, Pn, 0, time + time_propagation)
         return Rn, Pn
 
-    def _step(self, R, P):
+    def _step(self, R, P, time):
         """ One velocity_verlet step with the internal timestep and for the
         given positions and momenta.
 
@@ -177,6 +179,8 @@ class VelocityVerlet(object):
         R, P : (n_dof, n_beads) ndarray of floats
             The positions `R` and momenta `P` of all beads. The first axis is
             the degrees of freedom and the second axis the beads.
+        time : float
+            The current absolute time of the propagation in au.
 
         Returns
         -------
@@ -187,18 +191,18 @@ class VelocityVerlet(object):
         """
         pt2 = self._velocity_step(P, R)
         if self.thermostat is not None:
-            self.thermostat.apply(R, P, 1)
+            self.thermostat.apply(R, P, 1, time)
 
         # TODO: constraints 1
 
         rt, pt = self._verlet_step(R, pt2)
         # TODO: constraints 2
         if self.thermostat is not None:
-            self.thermostat.apply(rt, pt, 2)
+            self.thermostat.apply(rt, pt, 2, time)
 
         pt = self._velocity_step(pt, rt)
         if self.thermostat is not None:
-            self.thermostat.apply(rt, pt, 3)
+            self.thermostat.apply(rt, pt, 3, time)
         # TODO constraints 3
 
         return rt, pt

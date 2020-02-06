@@ -550,14 +550,16 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         D = sh_electrons_classical._get_kinetic_coupling_matrix(R, P)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R, D),
                                    H_ref_schroedinger, rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R, D),
                                    H_ref_interaction, rtol=1e-7)
@@ -565,14 +567,16 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         D = sh_electrons_classical._get_kinetic_coupling_matrix(R, P)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R, D),
                                    H_ref_schroedinger, rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R, D),
                                    H_ref_interaction, rtol=1e-7)
@@ -580,14 +584,16 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         D = sh_electrons_classical._get_kinetic_coupling_matrix(R, P)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R, D),
                                    H_ref_schroedinger, rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R, D),
                                    H_ref_interaction, rtol=1e-7)
@@ -602,13 +608,15 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R),
                                    H_ref_schroedinger, rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R),
                                    H_ref_interaction, rtol=1e-7)
@@ -616,13 +624,15 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R),
                                    H_ref_schroedinger, rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R),
                                    H_ref_interaction, rtol=1e-7)
@@ -630,13 +640,15 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R),
                                    H_ref_schroedinger, rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_H_matrix(R),
                                    H_ref_interaction, rtol=1e-7)
@@ -652,7 +664,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         V_ad_ref = (math.sqrt(0.04 + 3.6e-07) + 0.0006) * 0.5
         D = sh_electrons_rpmd._get_kinetic_coupling_matrix(R, P)
@@ -661,7 +674,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                      [0. + 0.0j, V_ad_ref + 0.0j]]], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R, D),
                                    [[[0.0 + 0.0j, 0.0 + 0.0j],
@@ -670,7 +684,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         V_ad_ref = math.sqrt(0.01 + 3.6e-07)
         D_ref = -2. * 2.7e-05/(0.01 + 3.6e-07)
@@ -680,7 +695,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                      [1j * D_ref, V_ad_ref + 0.0j]]], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R, D),
                                    [[[0.0 + 0.0j, -1j * D_ref],
@@ -689,7 +705,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         D = sh_electrons_rpmd._get_kinetic_coupling_matrix(R, P)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R, D),
@@ -699,7 +716,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                      [0. + 0.0j, math.sqrt(0.04 + 3.6e-07) + 0.0j]]], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R, D),
                                    [[[0.0 + 0.0j, 0. + 0.0j],
@@ -713,14 +731,16 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R),
                                    [[[0.0006 + 0.0j, 0.1 + 0.0j],
                                      [0.1 + 0.0j, -0.0006 + 0.0j]]], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R),
                                    [[[0.0 + 0.0j, 0.1 + 0.0j],
@@ -729,14 +749,16 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R),
                                    [[[0.0006 + 0.0j, 0.1 + 0.0j],
                                      [0.1 + 0.0j, -0.0006 + 0.0j]]], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R),
                                    [[[0.0 + 0.0j, 0.1 + 0.0j],
@@ -745,7 +767,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R),
                                    [[[0.0006 + 0.0j, 0.0 + 0.0j],
@@ -754,7 +777,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                      [0.2 + 0.0j, -0.0006 + 0.0j]]], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_H_matrix(R),
                                    [[[0.0 + 0.0j, 0.0 + 0.0j],
@@ -771,7 +795,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         with self.assertRaises(AssertionError):
             sh_electrons_classical._get_diff_diag_V_matrix(R)
@@ -787,21 +812,24 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_diff_diag_V_matrix(R),
                                    diff_ref, rtol=1e-7)
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_diff_diag_V_matrix(R),
                                    diff_ref, rtol=1e-7)
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_diff_diag_V_matrix(R),
                                    diff_ref, rtol=1e-7)
@@ -811,21 +839,24 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["basis"] = 'diabatic'
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_diff_diag_V_matrix(R),
                                    V_ref, rtol=1e-7)
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_diff_diag_V_matrix(R),
                                    V_ref, rtol=1e-7)
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         np.testing.assert_allclose(sh_electrons_classical._get_diff_diag_V_matrix(R),
                                    V_ref, rtol=1e-7)
@@ -839,7 +870,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["basis"] = 'adiabatic'
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         V_ad_ref = (math.sqrt(0.04 + 3.6e-07) + 0.0006) * 0.5
         np.testing.assert_allclose(sh_electrons_rpmd._get_diff_diag_V_matrix(R),
@@ -848,7 +880,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_diff_diag_V_matrix(R),
                                    [[[0., 2. * math.sqrt(0.01 + 3.6e-07)],
@@ -856,7 +889,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_diff_diag_V_matrix(R),
                                    [[[0., 0.0012], [-0.0012, 0.]],
@@ -867,21 +901,24 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["basis"] = 'diabatic'
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_diff_diag_V_matrix(R),
                                    [[[0., -0.0012], [0.0012, 0.]]], rtol=1e-7)
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'centroid'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_diff_diag_V_matrix(R),
                                    [[[0., -0.0012], [0.0012, 0.]]], rtol=1e-7)
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         np.testing.assert_allclose(sh_electrons_rpmd._get_diff_diag_V_matrix(R),
                                    [[[0., -0.0012], [0.0012, 0.]],
@@ -894,53 +931,63 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         param = self.param_rpmd
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         # 1 c-coefficient
         c = np.array([[1.+0.j, 0.+0.j]])
         np.testing.assert_allclose(sh_electrons_classical._get_a_kj(c),
-                                   [[[1.+0.j, 0.+0.j], [0.+0.j, 0.+0.j]]], rtol=1e-7)
+                                   [[[1.+0.j, 0.+0.j], [0.+0.j, 0.+0.j]]],
+                                   rtol=1e-7)
 
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
         np.testing.assert_allclose(sh_electrons_classical._get_a_kj(c),
-                                   [[[0.5+0.j, 0.+0.5j], [0.-0.5j, 0.5+0.j]]], rtol=1e-7)
+                                   [[[0.5+0.j, 0.+0.5j], [0.-0.5j, 0.5+0.j]]],
+                                   rtol=1e-7)
 
         # 2 c-coefficients
         c = np.array([[1.+0.j, 0.+0.j],
                       [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
         np.testing.assert_allclose(sh_electrons_rpmd._get_a_kj(c),
                                    [[[1.+0.j, 0.+0.j], [0.+0.j, 0.+0.j]],
-                                    [[0.5+0.j, 0.+0.5j], [0.-0.5j, 0.5+0.j]]], rtol=1e-7)
+                                    [[0.5+0.j, 0.+0.5j], [0.-0.5j, 0.5+0.j]]],
+                                   rtol=1e-7)
 
         ### Interaction picture
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         param = self.param_rpmd
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         # 1 c-coefficient
         phase = np.array([[[0., 0.], [0., 0.]]])
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
         np.testing.assert_allclose(sh_electrons_classical._get_a_kj(c, phase),
-                                   [[[0.5+0.j, 0.+0.5j], [0.-0.5j, 0.5+0.j]]], rtol=1e-7)
+                                   [[[0.5+0.j, 0.+0.5j], [0.-0.5j, 0.5+0.j]]],
+                                   rtol=1e-7)
 
         phase = np.array([[[0., math.pi/2.], [-math.pi/2., 0.]]])
         c = np.array([[1.+0.j, 0.+0.j]])
         np.testing.assert_allclose(sh_electrons_classical._get_a_kj(c, phase),
-                                   [[[1.+0.j, 0.+0.j], [0.+0.j, 0.+0.j]]], rtol=1e-7)
+                                   [[[1.+0.j, 0.+0.j], [0.+0.j, 0.+0.j]]],
+                                   rtol=1e-7)
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
         np.testing.assert_allclose(sh_electrons_classical._get_a_kj(c, phase),
-                                   [[[0.5+0.j, -0.5+0.j], [-0.5+0.j, 0.5+0.j]]], rtol=1e-7)
+                                   [[[0.5+0.j, -0.5+0.j], [-0.5+0.j, 0.5+0.j]]],
+                                   rtol=1e-7)
 
         # 2 c-coefficients
         phase = np.array([[[0., 0.], [0., 0.]],
@@ -949,7 +996,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                       [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
         np.testing.assert_allclose(sh_electrons_rpmd._get_a_kj(c, phase),
                                    [[[1.+0.j, 0.+0.j], [0.+0.j, 0.+0.j]],
-                                    [[0.5+0.j, -0.5+0.j], [-0.5+0.j, 0.5+0.j]]], rtol=1e-7)
+                                    [[0.5+0.j, -0.5+0.j], [-0.5+0.j, 0.5+0.j]]],
+                                   rtol=1e-7)
         return
 
     def test_get_b_jk(self):
@@ -968,7 +1016,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -976,7 +1025,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -986,7 +1036,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -994,7 +1045,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1015,7 +1067,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1023,7 +1076,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1044,7 +1098,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1053,7 +1108,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., -0.1], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1064,7 +1120,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1073,7 +1130,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., -0.1], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1096,7 +1154,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1105,7 +1164,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., -0.05], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1125,7 +1185,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1133,7 +1194,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.1], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1143,7 +1205,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1151,7 +1214,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.1], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1171,7 +1235,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1179,7 +1244,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.05], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1200,7 +1266,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1209,7 +1276,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.], atol=1e-8)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1220,7 +1288,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1229,7 +1298,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.], atol=1e-8)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -1252,7 +1322,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1261,7 +1332,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.], atol=1e-8)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -1282,7 +1354,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = np.zeros_like(H)
         sh_electrons_classical._H_e_total = 2. * H
@@ -1294,7 +1367,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = np.zeros_like(H)
         sh_electrons_classical._H_e_total = 2. * H
@@ -1317,7 +1391,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = np.zeros_like(H)
         sh_electrons_rpmd._H_e_total = 2. * H
@@ -1325,7 +1400,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., 0.05], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = np.zeros_like(H)
         sh_electrons_rpmd._H_e_total = 2. * H
@@ -1345,7 +1421,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'bead'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = np.zeros_like(H)
         sh_electrons_classical._H_e_total = 2. * H
@@ -1357,7 +1434,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0., -0.1], rtol=1e-7)
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = np.zeros_like(H)
         sh_electrons_classical._H_e_total = 2. * H
@@ -1383,7 +1461,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = np.zeros_like(H)
         sh_electrons_rpmd._H_e_total = 2. * H
@@ -1395,7 +1474,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = np.zeros_like(H)
         sh_electrons_rpmd._H_e_total = 2. * H
@@ -1423,7 +1503,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["n_steps"] = 100
         #param["TullyModel"]["model_type"] = "model_A"
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
 
         with self.assertRaises(AssertionError):
@@ -1453,7 +1534,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         param["SurfaceHoppingElectrons"]["n_steps"] = 100
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
 
         R = np.array([[-1.0e5, -1.0e5]])
@@ -1461,7 +1543,7 @@ class SurfaceHoppingTest(unittest.TestCase):
         c = np.array([[1.+0.j, 0.+0.j],
                       [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
         H_ref = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]],
-                      [[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
+                          [[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
         sh_electrons_rpmd._old_H_e = np.zeros_like(H_ref)
         sh_electrons_rpmd._c_coeff = c.copy()
         c_ref = [[0.-1.j, 0.+0.j],
@@ -1488,7 +1570,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_schroedinger_picture
         # Since Runga-Kutta here doesn't have adaptive time step, need smaller
@@ -1502,12 +1585,14 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[(1. / math.sqrt(2)) * np.exp(-1.j*0.5*t_step),
                   -(1.j / math.sqrt(2)) * np.exp(-1.j*t_step)]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_classical._integrator_runga_kutta(0., c, t_step,
+                                                               2.*t_step, prop_func),
                 c_ref, rtol=1e-5)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_interaction_picture
 
@@ -1523,7 +1608,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # No change in interaction picture.
         c_ref = c.copy()
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_runga_kutta(0., c, math.pi, 2.*math.pi, prop_func),
+                sh_electrons_classical._integrator_runga_kutta(0., c, math.pi,
+                                                               2.*math.pi, prop_func),
                 c_ref, rtol=1e-7)
 
         # 2 c-coefficients
@@ -1531,7 +1617,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_schroedinger_picture
 
@@ -1546,12 +1633,14 @@ class SurfaceHoppingTest(unittest.TestCase):
                  [(1. / math.sqrt(2)) * np.exp(-1.j*0.5*t_step),
                   -(1.j / math.sqrt(2)) * np.exp(-1.j*t_step)]]
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_rpmd._integrator_runga_kutta(0., c, t_step,
+                                                          2.*t_step, prop_func),
                 c_ref, rtol=1e-5)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_interaction_picture
 
@@ -1572,7 +1661,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # No change in interaction picture.
         c_ref = c.copy()
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_runga_kutta(0., c, math.pi, 2.*math.pi, prop_func),
+                sh_electrons_rpmd._integrator_runga_kutta(0., c, math.pi,
+                                                          2.*math.pi, prop_func),
                 c_ref, rtol=1e-7)
 
         ### When H(t) is constant
@@ -1580,7 +1670,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_schroedinger_picture
 
@@ -1592,7 +1683,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[(1. / math.sqrt(2)) * np.exp(-1.j*t_step),
                   -(1.j / math.sqrt(2)) * np.exp(-1.j*2.*t_step)]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_classical._integrator_runga_kutta(0., c, t_step,
+                                                               2.*t_step, prop_func),
                 c_ref, rtol=1e-5)
 
         t_step = 0.1
@@ -1606,12 +1698,14 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = 0.5 / math.sqrt(2) * np.array([[exp_plus + 1.j*exp_minus,
                                                 -exp_minus - 1.j*exp_plus]])
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_classical._integrator_runga_kutta(0., c, t_step,
+                                                               2.*t_step, prop_func),
                 c_ref, rtol=1e-4)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_interaction_picture
 
@@ -1627,7 +1721,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # No change in interaction picture.
         c_ref = c.copy()
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_runga_kutta(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_classical._integrator_runga_kutta(0., c, math.pi/2.,
+                                                               math.pi, prop_func),
                 c_ref, rtol=1e-7)
 
         t_step = 0.1
@@ -1646,7 +1741,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = 0.5 / math.sqrt(2) * np.exp(2.j*t_step) \
             * np.array([[exp_plus + 1.j*exp_minus, -exp_minus - 1.j*exp_plus]])
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_classical._integrator_runga_kutta(0., c, t_step,
+                                                               2.*t_step, prop_func),
                 c_ref, rtol=1e-5)
 
         # 2 c-coefficients
@@ -1654,7 +1750,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_schroedinger_picture
 
@@ -1673,12 +1770,14 @@ class SurfaceHoppingTest(unittest.TestCase):
                           [0.5 / math.sqrt(2) * (exp_plus + 1.j*exp_minus),
                            0.5 / math.sqrt(2) * (-exp_minus - 1.j*exp_plus)]])
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_rpmd._integrator_runga_kutta(0., c, t_step,
+                                                          2.*t_step, prop_func),
                 c_ref, rtol=1e-4)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_interaction_picture
 
@@ -1702,7 +1801,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                           [0.5 / math.sqrt(2) * np.exp(2.j*t_step) * (exp_plus + 1.j*exp_minus),
                            0.5 / math.sqrt(2) * np.exp(2.j*t_step) * (-exp_minus - 1.j*exp_plus)]])
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_runga_kutta(0., c, t_step, 2.*t_step, prop_func),
+                sh_electrons_rpmd._integrator_runga_kutta(0., c, t_step,
+                                                          2.*t_step, prop_func),
                 c_ref, rtol=1e-5)
 
         return
@@ -1713,7 +1813,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_schroedinger_picture
 
@@ -1729,7 +1830,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_interaction_picture
 
@@ -1745,7 +1847,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # No change in interaction picture.
         c_ref = c.copy()
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+                sh_electrons_classical._integrator_scipy(0., c, math.pi,
+                                                         2.*math.pi, prop_func),
                 c_ref, rtol=1e-7)
 
         # 2 c-coefficients
@@ -1753,7 +1856,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_schroedinger_picture
 
@@ -1766,12 +1870,14 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[0.-1.j, 0.+0.j],
                  [(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+                sh_electrons_rpmd._integrator_scipy(0., c, math.pi,
+                                                    2.*math.pi, prop_func),
                 c_ref, rtol=1e-4)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_interaction_picture
 
@@ -1792,7 +1898,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # No change in interaction picture.
         c_ref = c.copy()
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
+                sh_electrons_rpmd._integrator_scipy(0., c, math.pi,
+                                                    2.*math.pi, prop_func),
                 c_ref, rtol=1e-7)
 
         ### When H(t) is constant
@@ -1800,7 +1907,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_schroedinger_picture
 
@@ -1810,7 +1918,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_electrons_classical._H_e_total = H.copy()
         c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_scipy(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_classical._integrator_scipy(0., c, math.pi/2.,
+                                                         math.pi, prop_func),
                 c_ref, rtol=1e-5)
 
         H = np.array([[[2.+0.j, 1.+0.j], [1.+0.j, 2.+0.j]]])
@@ -1819,12 +1928,14 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_electrons_classical._H_e_total = H.copy()
         c_ref = [[(1./math.sqrt(2))+0.j, (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_scipy(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_classical._integrator_scipy(0., c, math.pi/2.,
+                                                         math.pi, prop_func),
                 c_ref, rtol=1e-5)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         prop_func = sh_electrons_classical._propagation_equation_interaction_picture
 
@@ -1840,7 +1951,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # No change in interaction picture.
         c_ref = c.copy()
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_scipy(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_classical._integrator_scipy(0., c, math.pi/2.,
+                                                         math.pi, prop_func),
                 c_ref, rtol=1e-7)
 
         H = np.array([[[0.+0.j, 1.+0.j], [1.+0.j, 0.+0.j]]])
@@ -1855,7 +1967,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         c_ref = [[(-1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_scipy(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_classical._integrator_scipy(0., c, math.pi/2.,
+                                                         math.pi, prop_func),
                 c_ref, rtol=1e-5)
 
         # 2 c-coefficients
@@ -1876,12 +1989,14 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))],
                  [(1./math.sqrt(2))+0.j, (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_scipy(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_rpmd._integrator_scipy(0., c, math.pi/2.,
+                                                    math.pi, prop_func),
                 c_ref, rtol=1e-5)
 
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         prop_func = sh_electrons_rpmd._propagation_equation_interaction_picture
 
@@ -1901,7 +2016,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))],
                  [(-1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_scipy(0., c, math.pi/2., math.pi, prop_func),
+                sh_electrons_rpmd._integrator_scipy(0., c, math.pi/2.,
+                                                    math.pi, prop_func),
                 c_ref, rtol=1e-5)
 
         return
@@ -1913,7 +2029,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
         with self.assertRaises(ValueError):
             sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                                param.masses, param.coordinates,
+                                                                param.masses,
+                                                                param.coordinates,
                                                                 param.momenta)
 
         ### When H(t) is diagonal
@@ -1921,7 +2038,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         H = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
@@ -1930,7 +2048,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_unitary(0., c, math.pi, 2.*math.pi),
+                sh_electrons_classical._integrator_unitary(0., c, math.pi,
+                                                           2.*math.pi),
                 c_ref, rtol=1e-7)
 
         # 2 c-coefficients
@@ -1938,7 +2057,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         H = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]],
                       [[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
@@ -1949,7 +2069,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[0.-1.j, 0.+0.j],
                  [(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_unitary(0., c, math.pi, 2.*math.pi),
+                sh_electrons_rpmd._integrator_unitary(0., c, math.pi,
+                                                      2.*math.pi),
                 c_ref, rtol=1e-7)
 
         ### When H(t) is constant
@@ -1957,7 +2078,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         H = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]]])
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
@@ -1965,7 +2087,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_electrons_classical._H_e_total = H.copy()
         c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_unitary(0., c, math.pi/2., math.pi),
+                sh_electrons_classical._integrator_unitary(0., c, math.pi/2.,
+                                                           math.pi),
                 c_ref, rtol=1e-7)
 
         H = np.array([[[2.+0.j, 1.+0.j], [1.+0.j, 2.+0.j]]])
@@ -1974,7 +2097,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_electrons_classical._H_e_total = H.copy()
         c_ref = [[(1./math.sqrt(2))+0.j, (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_classical._integrator_unitary(0., c, math.pi/2., math.pi),
+                sh_electrons_classical._integrator_unitary(0., c, math.pi/2.,
+                                                           math.pi),
                 c_ref, rtol=1e-7)
 
         # 2 c-coefficients
@@ -1982,7 +2106,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         param["SurfaceHoppingElectrons"]["rpsh_type"] = 'density_matrix'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         H = np.array([[[1.+0.j, 0.+0.j], [0.+0.j, 2.+0.j]],
                       [[2.+0.j, 1.+0.j], [1.+0.j, 2.+0.j]]])
@@ -1993,7 +2118,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c_ref = [[(-1.j / math.sqrt(2)), (1.j / math.sqrt(2))],
                  [(1./math.sqrt(2))+0.j, (1.j / math.sqrt(2))]]
         np.testing.assert_allclose(
-                sh_electrons_rpmd._integrator_unitary(0., c, math.pi/2., math.pi),
+                sh_electrons_rpmd._integrator_unitary(0., c, math.pi/2.,
+                                                      math.pi),
                 c_ref, rtol=1e-7)
 
         return
@@ -2007,7 +2133,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
 
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -2029,7 +2156,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                       [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
 
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -2053,7 +2181,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         c = np.array([[(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
 
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = np.zeros_like(H)
         sh_electrons_classical._H_e_total = 2. * H
@@ -2075,7 +2204,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                       [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
 
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = np.zeros_like(H)
         sh_electrons_rpmd._H_e_total = 2. * H
@@ -2105,7 +2235,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         phase = np.array([[[0., math.pi/2.], [-math.pi/2., 0.]]])
 
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = H.copy()
         sh_electrons_classical._H_e_total = H.copy()
@@ -2131,7 +2262,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                           [[0., math.pi/2.], [-math.pi/2., 0.]]])
 
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = H.copy()
         sh_electrons_rpmd._H_e_total = H.copy()
@@ -2158,7 +2290,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         phase = np.array([[[0., math.pi/2.], [-math.pi/2., 0.]]])
 
         sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
-                                                            param.masses, param.coordinates,
+                                                            param.masses,
+                                                            param.coordinates,
                                                             param.momenta)
         sh_electrons_classical._old_H_e = np.zeros_like(H)
         sh_electrons_classical._H_e_total = 2. * H
@@ -2167,7 +2300,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_electrons_classical._old_diff_diag_V = -1. * np.ones_like(phase)
         sh_electrons_classical._diff_diag_V = 3. * np.ones_like(phase)
 
-        derivative_ref = [[(0.1 / math.sqrt(2)) + 0.j, 0. + (0.1j / math.sqrt(2))]]
+        derivative_ref = [[(0.1 / math.sqrt(2)) + 0.j,
+                           0. + (0.1j / math.sqrt(2))]]
         np.testing.assert_allclose(
                 sh_electrons_classical._propagation_equation_interaction_picture(0.5, c, 1.),
                 derivative_ref, rtol=1e-7)
@@ -2188,7 +2322,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                           [[0., math.pi/2.], [-math.pi/2., 0.]]])
 
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
-                                                       param.masses, param.coordinates,
+                                                       param.masses,
+                                                       param.coordinates,
                                                        param.momenta)
         sh_electrons_rpmd._old_H_e = np.zeros_like(H)
         sh_electrons_rpmd._H_e_total = 2. * H
@@ -2198,7 +2333,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_electrons_rpmd._diff_diag_V = 3. * np.ones_like(phase)
 
         derivative_ref = [[0.+0.j, 0.1+0.j],
-                          [(0.1 / math.sqrt(2)) + 0.j, 0. + (0.1j / math.sqrt(2))]]
+                          [(0.1 / math.sqrt(2)) + 0.j,
+                           0. + (0.1j / math.sqrt(2))]]
         np.testing.assert_allclose(
                 sh_electrons_rpmd._propagation_equation_interaction_picture(0.5, c, 1.),
                 derivative_ref, rtol=1e-7)
@@ -2214,7 +2350,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         # Test with 3 states
         params = infile.Inputfile("FilesForTesting/SystemTests/input_SH_classical_3_states.in")
         sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
-                                                           params.masses, params.coordinates,
+                                                           params.masses,
+                                                           params.coordinates,
                                                            params.momenta)
         t = [0., 1., 2.]
         a_kk = 0.5
@@ -2228,7 +2365,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         ### Hop from 1st state to other states above it
         params["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
-                                                           params.masses, params.coordinates,
+                                                           params.masses,
+                                                           params.coordinates,
                                                            params.momenta)
 
         # Probabilities should be [0, 0.2, 0.3]
@@ -2245,7 +2383,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         random.seed(3)
         params["SurfaceHoppingElectrons"]["initial_state"] = 0
         sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
-                                                           params.masses, params.coordinates,
+                                                           params.masses,
+                                                           params.coordinates,
                                                            params.momenta)
         # Now random number should be 0.23796463.; so there is a hop to 3rd
         # state using the same probabilities
@@ -2255,7 +2394,8 @@ class SurfaceHoppingTest(unittest.TestCase):
         ### Hop from 3rd state to other states below
         params["SurfaceHoppingElectrons"]["initial_state"] = 2
         sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
-                                                           params.masses, params.coordinates,
+                                                           params.masses,
+                                                           params.coordinates,
                                                            params.momenta)
         b_jk = [np.array([0.03, 0.0, 0.03]), np.array([0.3, 0.0, 0.1]),
                 np.array([0.07, -0.05, 0.07])]
@@ -2266,7 +2406,8 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         params["SurfaceHoppingElectrons"]["initial_state"] = 2
         sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
-                                                           params.masses, params.coordinates,
+                                                           params.masses,
+                                                           params.coordinates,
                                                            params.momenta)
         b_jk = [np.array([0.0, 0.03, 0.03]), np.array([0., 0.3, 0.1]),
                 np.array([-0.05, 0.07, 0.07])]

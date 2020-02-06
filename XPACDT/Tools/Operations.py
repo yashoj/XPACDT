@@ -30,7 +30,9 @@
 
 """ Module to perform operations on a XPACDT.System.Nuclei object, e.g.,
 obtained from the system log, to obtain some observables and perform
-analysis. """
+analysis. All the functions in this module should return a one dimensional
+numpy array with independent values, the length of which depends upon the
+operation performed."""
 
 import numpy as np
 import argparse
@@ -347,4 +349,4 @@ def electronic_state(arguments, log_nuclei):
 
     current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
 
-    return np.array(current_value)
+    return np.array(current_value).flatten()

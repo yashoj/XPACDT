@@ -34,6 +34,7 @@
 real time."""
 
 import os
+import sys
 import pickle
 
 import XPACDT.Tools.Units as units
@@ -63,10 +64,11 @@ def propagate(system, input_parameters):
 
     if 'continue' not in prop_parameters:
         # set initial time and reset log
-        system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
+        system.reset(time=units.parse_time(prop_parameters.get('time_start',
+                                                               '0.0 fs')))
         # reset the electrons
         system.nuclei.init_electrons(input_parameters)
-        system.do_log(True)
+        system.do_log(init=True)
 
     # Reset beta; Set desired propagator
     system.nuclei.beta = input_parameters.beta
@@ -91,10 +93,9 @@ def propagate(system, input_parameters):
             raise
     name_file = sys_parameters.get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
-    
 
     while(system.nuclei.time < time_end):
-        system.step(timestep_output, True)
+        system.step(timestep_output, sparse=True)
 
         if 'intermediate_write' in prop_parameters:
             pickle.dump(system, open(path_file, 'wb'), -1)

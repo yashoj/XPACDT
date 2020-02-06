@@ -327,7 +327,7 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
 def check_command(command, system):
     """ Check for return size of a command and print warning if longer than 1,
     as this might often be unwanted, unless all returned values are of the same
-    type and independent. Then the warning can be ignored. Also other\
+    type and independent. Then the warning can be ignored. Also other
     consistency checks are performed.
 
     Parameters
@@ -509,8 +509,9 @@ def apply_operation(operation, log_nuclei):
 
     Returns
     -------
-    value :
-        The value resulting from the operations.
+    value : (n_values) ndarray of floats
+        The value resulting from the operations. The length 'n_values' depends
+        on the operation performed.
     """
 
     if '+' not in operation:
@@ -537,7 +538,7 @@ def apply_operation(operation, log_nuclei):
             raise RuntimeError("\nXPACDT: The given operation is not"
                                "implemented. " + " ".join(ops))
 
-    return value
+    return np.array(value).flatten()
 
 
 def get_directory_list(folder='./', file_name=None):

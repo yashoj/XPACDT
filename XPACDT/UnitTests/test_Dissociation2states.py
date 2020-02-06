@@ -40,10 +40,10 @@ import XPACDT.Input.Inputfile as infile
 class Dissociation2statesTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_strong_1_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_1.in"))
-        self.pes_strong_2_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_2.in"))
-        self.pes_weak_1_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_1.in"))
-        self.pes_weak_2_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_2.in"))
+        self.pes_strong_1_nb = diss2S.Dissociation2states(**infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_1.in"))
+        self.pes_strong_2_nb = diss2S.Dissociation2states(**infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_2.in"))
+        self.pes_weak_1_nb = diss2S.Dissociation2states(**infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_1.in"))
+        self.pes_weak_2_nb = diss2S.Dissociation2states(**infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_2.in"))
 
         return
 

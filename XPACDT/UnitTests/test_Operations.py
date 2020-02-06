@@ -43,7 +43,7 @@ class OperationsTest(unittest.TestCase):
     def setUp(self):
         # Set up nuclei as log
         self.log_classical = nuclei.Nuclei(infile.Inputfile("FilesForTesting/OperationsTest/input_classicalNuclei.in"), 0.0)
-        self.log_rpmd = nuclei.Nuclei( infile.Inputfile("FilesForTesting/OperationsTest/input_rpmdNuclei.in"), 0.0)
+        self.log_rpmd = nuclei.Nuclei(infile.Inputfile("FilesForTesting/OperationsTest/input_rpmdNuclei.in"), 0.0)
 
     def test_position(self):
         with self.assertRaises(RuntimeError):

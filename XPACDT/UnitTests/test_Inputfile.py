@@ -34,6 +34,8 @@ import unittest
 
 import XPACDT.Input.Inputfile as infile
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class InputfileTest(unittest.TestCase):
 
@@ -50,10 +52,10 @@ class InputfileTest(unittest.TestCase):
         return
 
     def test_parse_file(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(XPACDTInputError):
             infile.Inputfile("FilesForTesting/InputfileTest/input_doubleKey.in")
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(XPACDTInputError):
             infile.Inputfile("FilesForTesting/InputfileTest/input_doubleEqual.in")
 
         input_reference = {"system": {"miep": "muh", "blah": "", "blubb": "",
@@ -84,36 +86,15 @@ class InputfileTest(unittest.TestCase):
         key_value = parameters._parse_values("muh ")
         self.assertDictEqual(key_value_reference, key_value)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(XPACDTInputError):
             key_value = parameters._parse_values("mehrere = ist = doof")
 
-        return
-
-    def test_parse_xyz(self):
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-1.in")
-
-        mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
-                             34631.970366, 34631.970366, 34631.970366])
-
-        coordinate_ref = np.array([[1.0], [2.0], [3.0], [2.0], [1.0], [4.0]])
-        input_string = "H 1.0 2.0 3.0 \n" \
-            + "F 2.0 1.0 4.0 \n"
-
-        parameters._parse_xyz(input_string)
-        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-                                   rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
-
+    def test_xyz_with_beads(self):
         # with two beads
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-2.in")
+        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_xyz_2_beads.in")
         coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1],
                                    [2.0, 2.1], [1.0, 1.1], [4.0, 4.1]])
-        input_string = "H 1.0 2.0 3.0 \n" \
-            + "H 1.1 2.1 3.1 \n" \
-            + "F 2.0 1.0 4.0 \n" \
-            + "F 2.1 1.1 4.1 \n"
 
-        parameters._parse_xyz(input_string)
         np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
                                    rtol=1e-7)
         np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
@@ -140,99 +121,6 @@ class InputfileTest(unittest.TestCase):
                                    rtol=1e-7)
         np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
 
-        # test unknwon element
-        input_string = "J 1.0 2.0 3.0 \n" \
-            + "F 2.0 1.0 4.0 \n"
-
-        with self.assertRaises(KeyError):
-            parameters._parse_xyz(input_string)
-
-        # test too many/few coordinates given
-        input_string = "H 1.0 2.0 \n" \
-            + "F 2.0 1.0 4.0 \n"
-        with self.assertRaises(ValueError):
-            parameters._parse_xyz(input_string)
-
-        input_string = "H 1.0 2.0 3.0\n" \
-            + "F 2.0 1.0 4.0 6.0\n"
-        with self.assertRaises(ValueError):
-            parameters._parse_xyz(input_string)
-
-        pass
-
-    def test_parse_mass_value(self):
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-4.in")
-        # 4 beads test
-
-        mass_ref = np.array([1837.3624, 34631.9731])
-        coordinate_ref = np.array([[1.0, 2.0, 3.0, 4.0], [2.0, 1.0, 4.0, 5.0]])
-        input_string = "1837.3624 1.0 2.0 3.0 4.0 \n" \
-            + "34631.9731 2.0 1.0 4.0 5.0 \n"
-
-        parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-                                   rtol=1e-7)
-
-        # 1 bead test
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-1.in")
-
-        mass_ref = np.array([1837.3624, 34631.9731])
-        coordinate_ref = np.array([[1.0], [2.0]])
-        input_string = "1837.3624 1.0 \n" \
-            + "34631.9731 2.0 \n"
-
-        parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-                                   rtol=1e-7)
-
-        input_string = "1837.3624 1.0 2.0 \n" \
-            + "34631.9731 2.0 1.0 4.0 \n"
-        with self.assertRaises(ValueError):
-            parameters._parse_mass_value(input_string)
-        pass
-
-    def test_parse_mass_value_free_rp_sampling(self):
-        # So far only shape of output and centroid value tested; maybe add
-        # test for distribution?
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-4.in")
-        parameters['rpmd'] = {'nm_transform': 'matrix'}
-
-        mass_ref = np.array([1, 3])
-        centroid_ref = np.array([1.0, 2.0])
-        input_string = "1.0 1.0 \n" \
-            + "3.0 2.0 \n"
-
-        parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-        self.assertTrue(parameters.coordinates.shape == (2, 4))
-        np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
-                                   centroid_ref, rtol=1e-7)
-        self.assertTrue(parameters.momenta is None)
-
-        return
-
-    def test_parse_xyz_free_rp_sampling(self):
-        # So far only shape of output and centroid value tested; maybe add
-        # test for distribution?
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-4.in")
-        parameters['rpmd'] = {'nm_transform': 'matrix'}
-
-        mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
-                             34631.970366, 34631.970366, 34631.970366])
-        centroid_ref = np.array([1.0, 2.0, 3.0, 2.0, 1.0, 4.0])
-        input_string = "H 1.0 2.0 3.0 \n" \
-            + "F 2.0 1.0 4.0 \n"
-
-        parameters._parse_xyz(input_string)
-        self.assertTrue(parameters.coordinates.shape == (6, 4))
-        np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
-                                   centroid_ref, rtol=1e-7)
-        self.assertTrue(parameters.momenta is None)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
-
-        return
 
     def test_get_section(self):
         section1_reference = {"miep": "muh", "blah": "", "blubb": "",

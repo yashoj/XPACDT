@@ -91,7 +91,7 @@ class DiabaticToAdiabaticNstatesTest(unittest.TestCase):
         #       to 2 state module value. Also add 3 state tests.
 
         # 1 bead, 1 dof, 2 states test
-        pes = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1-2states.in"))
+        pes = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1-2states.in"))
 
         R = np.array([[3.4]])
         pes._calculate_diabatic_all(R)
@@ -108,7 +108,7 @@ class DiabaticToAdiabaticNstatesTest(unittest.TestCase):
         np.testing.assert_allclose(dV_ad_centroid, dV_ad_centroid_ref, rtol=1e-7)
 
         # 2 bead, 1 dof, 2 states test
-        pes =  morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2-2states.in"))
+        pes =  morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2-2states.in"))
 
         R = np.array([[3.4, 4.8]])
         pes._calculate_diabatic_all(R)

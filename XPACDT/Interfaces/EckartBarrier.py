@@ -94,7 +94,7 @@ class EckartBarrier(itemplate.PotentialInterface):
                 f"Inferred number of degree of freedom is {n_dof}, but "
                 "should be 1 for Eckart barrier.",
                 section="EckartBarrier")
-    
+
         super().__init__("EckartBarrier",
                          n_dof=1, n_states=1, primary_basis='adiabatic',
                          **parameters)

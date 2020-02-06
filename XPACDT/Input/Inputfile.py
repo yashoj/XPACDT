@@ -113,6 +113,13 @@ class Inputfile(collections.MutableMapping):
                                    key="dof",
                                    caused_by=e)
 
+        if ("positionShift" in self and
+                len(self["positionShift"]) != self["n_dof"]):
+            raise XPACDTInputError(
+                "Position shift dimension does not match the number "
+                "of degrees of freedom",
+                section="positionShift")
+
         if self.n_dof < 1:
             raise XPACDTInputError("The number of degree of freedom must be "
                                    "greater or equal to 1.",
@@ -205,7 +212,7 @@ class Inputfile(collections.MutableMapping):
 
     def __setitem__(self, key, value):
         if key in self.store:
-            raise KeyError(f"Key can only be set once in InputFile, but {key}"
+            raise KeyError(f"Key can only be set once in InputFile, but {key} "
                            f"recieved a new value {value}.")
 
         if key == "masses":
@@ -235,7 +242,8 @@ class Inputfile(collections.MutableMapping):
         if attribute != "store" and attribute in self.store:
             return self[attribute]
 
-        raise AttributeError()
+        raise AttributeError(
+            f"Object of type Inputfile has no attribute named {attribute}.")
 
     def __deepcopy__(self, memo):
         return Inputfile(self._filename)
@@ -307,19 +315,9 @@ class Inputfile(collections.MutableMapping):
             elif section[0:14] == "$positionShift":
                 d = StringIO(section[14:])
                 self["positionShift"] = np.loadtxt(d).flatten()
-
-                if len(self["positionShfit"]) != self["n_dof"]:
-                    raise XPACDTInputError(
-                        "Position shift dimension does not match the number "
-                        "of degrees of freedom")
             elif section[0:14] == "$momentumShift":
                 d = StringIO(section[14:])
                 self["momentumShift"] = np.loadtxt(d).flatten()
-
-                if len(self["positionShfit"]) != self["n_dof"]:
-                    raise XPACDTInputError(
-                        "Position shift dimension does not match the number "
-                        "of degrees of freedom")
             else:
                 match = re.search(r"\$(\w+)\W*(.*)", section,
                                   flags=re.DOTALL)
@@ -329,6 +327,10 @@ class Inputfile(collections.MutableMapping):
                 except IndexError:
                     values = ""
 
+                if keyword in self:
+                    raise XPACDTInputError(
+                        "Section defined twice.",
+                        section=keyword)
                 self[keyword] = self._parse_values(values)
 
     def _parse_values(self, values):
@@ -410,8 +412,8 @@ class Inputfile(collections.MutableMapping):
             else:
                 if beads_given != self["max_n_beads"]:
                     raise XPACDTInputError(
-                        f"Number of bead coordinates ({beads_given}) given "\
-                        f"does not match the expected number of beads "
+                        f"Number of bead coordinates ({beads_given}) given "
+                        "does not match the expected number of beads "
                         f"({self.max_n_beads}).",
                         section="coordinates")
 

@@ -41,7 +41,7 @@ import XPACDT.Input.Inputfile as infile
 class LWALTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes = lwal.LWAL(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+        self.pes = lwal.LWAL(**infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
 
     def test_creation(self):
         self.assertEqual(self.pes.name, 'LWAL')

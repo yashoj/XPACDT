@@ -40,14 +40,14 @@ import XPACDT.Input.Inputfile as infile
 class TullyModelTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_A_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_1.in"))
-        self.pes_A_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_2.in"))
+        self.pes_A_1_nb = tullym.TullyModel(**infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_1.in"))
+        self.pes_A_2_nb = tullym.TullyModel(**infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyA_2.in"))
 
-        self.pes_B_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_1.in"))
-        self.pes_B_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_2.in"))
+        self.pes_B_1_nb = tullym.TullyModel(**infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_1.in"))
+        self.pes_B_2_nb = tullym.TullyModel(**infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyB_2.in"))
 
-        self.pes_C_1_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_1.in"))
-        self.pes_C_2_nb = tullym.TullyModel(infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_2.in"))
+        self.pes_C_1_nb = tullym.TullyModel(**infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_1.in"))
+        self.pes_C_2_nb = tullym.TullyModel(**infile.Inputfile("FilesForTesting/InterfaceTests/input_TullyC_2.in"))
 
         return
 
@@ -87,7 +87,7 @@ class TullyModelTest(unittest.TestCase):
         np.testing.assert_allclose(
                 self.pes_A_2_nb._diabatic_gradient_centroid, [[[0.016], [0.0]],
                                                               [[0.0], [-0.016]]], rtol=1e-7)
-    
+
         # Model B: 1 bead
         self.pes_B_1_nb._calculate_diabatic_all(np.array([[0.0]]))
         np.testing.assert_allclose(

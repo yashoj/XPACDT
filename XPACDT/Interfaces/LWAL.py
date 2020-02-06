@@ -35,10 +35,12 @@ J. Chem. Phys. 127, 174302 (2007).
 
 import numpy as np
 import os
-import XPACDT.Interfaces.LWAL_module.pot as pot
 
+import XPACDT.Interfaces.LWAL_module.pot as pot
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
+
+from XPACDT.Input.Error import XPACDTInputError
 
 
 class LWAL(itemplate.PotentialInterface):
@@ -56,9 +58,16 @@ class LWAL(itemplate.PotentialInterface):
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
     """
-    def __init__(self, **parameters):
+    def __init__(self, n_dof=9, **parameters):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
+
+        if n_dof != 9:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 9 for LWAL.",
+                section="LWAL")
+
         super().__init__("LWAL",
                          n_dof=9, n_states=1, primary_basis='adiabatic',
                          **parameters)

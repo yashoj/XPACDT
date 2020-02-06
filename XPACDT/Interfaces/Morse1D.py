@@ -61,7 +61,12 @@ class Morse1D(itemplate.PotentialInterface):
         Overall vertical shift to the potential.
     """
 
-    def __init__(self, **parameters):
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Morse 1D model.",
+                section="Morse1D")
 
         super().__init__("Morse1D",
                          n_dof=1, n_states=1, primary_basis='adiabatic',

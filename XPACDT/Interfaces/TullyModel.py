@@ -56,10 +56,16 @@ class TullyModel(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, **parameters):
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Tully model.",
+                section="TullyModel")
 
         super().__init__("TullyModel",
-                         n_dof=1, n_states=2, primary_basis='diabatic',
+                         n_dof=1,
+                         n_states=2, primary_basis='diabatic',
                          **parameters)
 
         pes_parameters = parameters.get(self.name)

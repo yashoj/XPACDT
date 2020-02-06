@@ -62,8 +62,13 @@ class Dissociation2states(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, **parameters):
-
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Dissociation2states.",
+                section="Dissociation2states")
+    
         super().__init__("Dissociation2states",
                          n_dof=1, n_states=2, primary_basis='diabatic',
                          **parameters)

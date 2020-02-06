@@ -88,7 +88,13 @@ class EckartBarrier(itemplate.PotentialInterface):
         `w` is a frequency in au. `h`, `d` are energies in au.
         `m` is a mass in au.
     """
-    def __init__(self, **parameters):
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Eckart barrier.",
+                section="EckartBarrier")
+    
         super().__init__("EckartBarrier",
                          n_dof=1, n_states=1, primary_basis='adiabatic',
                          **parameters)

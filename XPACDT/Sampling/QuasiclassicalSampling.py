@@ -60,10 +60,9 @@ def do_Quasiclassical_sampling(system, parameters, n_sample):
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
 
     if (omega <= 0).any():
-        raise RuntimeError("\nXPACDT: Negative frequency given for sampling. "
-                           + "omega = " + str(omega)
-                           + " Please make sure that the input geometry"
-                           " is optimized.")
+        raise RuntimeError(
+            f"Negative frequency given for sampling (omega = {omega}). Please "
+            "make sure that the input geometry is optimized.")
 
     # Get the quantum numbers or set to 0
     if 'quantum_numbers' in parameters.get("sampling"):

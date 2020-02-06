@@ -39,6 +39,8 @@ import os
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Input.Inputfile as infile
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class MorseDiabatic(itemplate.PotentialInterface):
     """
@@ -67,20 +69,28 @@ class MorseDiabatic(itemplate.PotentialInterface):
         try:
             n_states = int(pes_parameters.get('n_states', 3))
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Parameter 'n_states' for morse "
-                                   "diabatic not convertable to int. "
-                                   "'n_states' is " + pes_parameters.get('n_states'))
+            raise XPACDTInputError(
+                "Parameter 'n_states' for morse diabatic not convertable to "
+                " int.",
+                section="MorseDiabatic",
+                key="n_states",
+                given=pes_parameters["n_states"],
+                caused_by=e)
 
         if not (2 <= n_states <= 3):
-            raise ValueError("\nXPACDT: Only 2 or 3 states possible for morse"
-                             " diabatic potential")
+            raise XPACDTInputError(
+                "Only 2 or 3 states possible for Morse diabatic potential.",
+                section="MorseDiabatic",
+                key="n_states",
+                given=n_states)
 
         itemplate.PotentialInterface.__init__(self, "MorseDiabatic", 1,
                                               n_states, max(parameters.n_beads),
                                               'diabatic')
 
         if 'model_type' not in pes_parameters:
-            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
+            raise XPACDTInputError(section="MorseDiabatic",
+                                   key="model_type")
         self.__model_type = pes_parameters.get('model_type')
 
         # Read model parameters from file

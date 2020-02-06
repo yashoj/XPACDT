@@ -35,9 +35,11 @@ import numpy as np
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class EckartBarrier(itemplate.PotentialInterface):
-    """
+    r"""
     One-dimensional Eckart barrier with parameters `A`, `B`, `L` of the form:
 
     :math:`V(x) = A*y / (1+y) + B*y / (1+y)^2`
@@ -93,69 +95,73 @@ class EckartBarrier(itemplate.PotentialInterface):
 
         pes_parameters = parameters.get(self.name)
         if {'A', 'B', 'L'} <= set(pes_parameters):
-            try:
-                self.__A = float(pes_parameters.get('A'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'A' for Eckart "
-                              "barrier not convertable to float. A is "
-                              + pes_parameters.get('A'))
-            try:
-                self.__B = float(pes_parameters.get('B'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'B' for Eckart "
-                              "barrier not convertable to float. B is "
-                              + pes_parameters.get('B'))
-            try:
-                self.__L = float(pes_parameters.get('L'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'L' for Eckart "
-                              "barrier not convertable to float. L is "
-                              + pes_parameters.get('L'))
+            parameters = []
+            for key in ('A', 'B', 'L'):
+                try:
+                    p = float(pes_parameters[key])
+                except ValueError as e:
+                    raise XPACDTInputError(
+                        f"Parameter '{key}' for Eckart barrier not "
+                        "convertible to float.",
+                        section="EckartBarrier",
+                        key=key,
+                        given=pes_parameters[key],
+                        caused_by=e)
+                parameters.append(p)
+
+            self.__A, self.__B, self.__L = parameters
 
         elif {'w', 'h', 'd', 'm'} <= set(pes_parameters):
-            try:
-                w = float(pes_parameters.get('w'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'w' for Eckart "
-                              "barrier not convertable to float. w is "
-                              + pes_parameters.get('w'))
-            try:
-                h = float(pes_parameters.get('h'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'h' for Eckart "
-                              "barrier not convertable to float. h is "
-                              + pes_parameters.get('h'))
-            try:
-                d = float(pes_parameters.get('d'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'd' for Eckart "
-                              "barrier not convertable to float. d is "
-                              + pes_parameters.get('d'))
+            parameters = []
+            for key in ('w', 'h', 'd', 'm'):
+                try:
+                    p = float(pes_parameters[key])
+                except ValueError as e:
+                    raise XPACDTInputError(
+                        f"Parameter '{key}' for Eckart barrier not "
+                        "convertible to float.",
+                        section="EckartBarrier",
+                        key=key,
+                        given=pes_parameters[key],
+                        caused_by=e)
+                parameters.append(p)
 
-            try:
-                m = float(pes_parameters.get('m'))
-            except ValueError as e:
-                raise type(e)(str(e) + "\nXPACDT: Parameter 'm' for Eckart "
-                              "barrier not convertable to float. m is "
-                              + pes_parameters.get('m'))
+            w, h, d, m = parameters
 
             # conversion here!
             self.__A = d
             self.__B = (math.sqrt(h) + math.sqrt(h-d))**2
             self.__L = math.sqrt(2.0*h*(h-d)) / (w * math.sqrt(m) * math.sqrt(self.__B))
         else:
-            raise RuntimeError("XPACDT: Parameters for Eckart barrier not "
-                               "given properly. Either give A, B, L or give "
-                               "w, h, d.")
+            raise XPACDTInputError(
+                "Parameters for Eckart barrier not given properly. Either "
+                "give 'A', 'B', 'L' or give 'w', 'h', 'd' and 'm'.",
+                section="EckartBarrier",
+                given=pes_parameters)
 
         if (self.__A > 0.0):
-            raise ValueError("\nXPACDT: A not zero or less!")
+            raise XPACDTInputError(
+                "'A' must be non positive. This may happen after conversion "
+                "from the 'w', 'h', 'd' and 'm' parameters.",
+                section="EckartBarrier",
+                key="A",
+                given=self.__A)
 
         if (self.__B <= 0.0):
-            raise ValueError("\nXPACDT: B not positive!")
+            raise XPACDTInputError(
+                "'B' must be strictly positive. This may happen after "
+                "conversion from the 'w', 'h', 'd' and 'm' parameters.",
+                section="EckartBarrier",
+                key="B",
+                given=self.__B)
 
         if (self.__L <= 0.0):
-            raise ValueError("\nXPACDT: L not positive!")
+            raise XPACDTInputError(
+                "'L' must be strictly positive. This may happen after "
+                "conversion from the 'w', 'h', 'd' and 'm' parameters.",
+                section="EckartBarrier",
+                key="L",
+                given=self.__L)
 
     @property
     def A(self):

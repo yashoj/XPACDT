@@ -53,7 +53,7 @@ class BKMP2(itemplate.PotentialInterface):
     def __init__(self, parameters, **kwargs):
         pot.pes_init()
         itemplate.PotentialInterface.__init__(self, "BKMP2", 9, 1,
-                                               max(parameters.n_beads),
+                                              max(parameters.n_beads),
                                               'adiabatic')
 
     def _calculate_adiabatic_all(self, R, P=None, S=None):

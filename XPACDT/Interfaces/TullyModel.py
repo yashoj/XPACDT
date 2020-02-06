@@ -37,6 +37,8 @@ import numpy as np
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class TullyModel(itemplate.PotentialInterface):
     """
@@ -63,11 +65,16 @@ class TullyModel(itemplate.PotentialInterface):
         pes_parameters = parameters.get(self.name)
 
         if 'model_type' not in pes_parameters:
-            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
+            raise XPACDTInputError(section="TullyModel",
+                                   key="model_type")
         self.__model_type = pes_parameters.get('model_type')
         if (self.__model_type not in ['model_A', 'model_B', 'model_C']):
-            raise ValueError("\nXPACDT: Wrong Tully model requested. Please"
-                             "use 'model_A', 'model_B' or 'model_C'.")
+            raise XPACDTInputError(
+                "Invalid Tully model requested. Please use 'model_A', "
+                "'model_B' or 'model_C'.",
+                section="TullyModel",
+                key="model_type",
+                given=self.__model_type)
 
         if (self.model_type == 'model_A'):
             self.__A = 0.01

@@ -33,6 +33,7 @@
 import numpy as np
 
 from XPACDT.Interfaces.InterfaceTemplate import PotentialInterface
+from XPACDT.Input.Error import XPACDTInputError
 
 
 class OneDPolynomial(PotentialInterface):
@@ -66,18 +67,26 @@ class OneDPolynomial(PotentialInterface):
         try:
             self.__x0 = float(x0)
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Parameter 'x0' for polynomials "
-                                   f"not convertible to floats. x0 is {x0}")
+            raise XPACDTInputError(
+                "Parameter 'x0' for polynomials not convertible to floats.",
+                section="OneDPolynomial",
+                key="x0",
+                given=x0,
+                caused_by=e)
 
         if a is None:
-            raise KeyError("\nXPACDT: Parameters 'a' for polynomials not"
-                           " given in the input.")
+            raise XPACDTInputError(section="OneDPolynomial",
+                                   key="a")
         try:
             self.__as = [float(f) for f in a.split()]
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Parameters 'a' for polynomials "
-                                   "not convertable to an array of floats."
-                                   f" a is {a}.")
+            raise XPACDTInputError(
+                "Parameters 'a' for polynomials not convertable to an array "
+                "of floats.",
+                section="OneDPolynomial",
+                key="a",
+                given=a,
+                caused_by=e)
 
     @property
     def a(self):

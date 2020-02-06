@@ -38,6 +38,8 @@ import shutil
 import sys
 import warnings
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 def sample(system, parameters, do_return=False):
     """
@@ -69,11 +71,17 @@ def sample(system, parameters, do_return=False):
     system_parameters = parameters.get('system')
 
     if 'folder' not in system_parameters:
-        raise KeyError("\nXPACDT: No folder for trajectories given.")
+        raise XPACDTInputError("No folder for trajectories given.",
+                               section="system",
+                               key="folder")
     if 'method' not in sampling_parameters:
-        raise KeyError("\nXPACDT: No sampling method specified.")
+        raise XPACDTInputError("No sampling method specified.",
+                               section="sampling",
+                               key="method")
     if 'samples' not in sampling_parameters:
-        raise KeyError("\nXPACDT: Number of samples required not given.")
+        raise XPACDTInputError("Number of samples required not given.",
+                               section="sampling",
+                               key="samples")
 
     # Create or handle trajectory folder.
     n_samples = int(sampling_parameters.get('samples'))
@@ -84,8 +92,12 @@ def sample(system, parameters, do_return=False):
         try:
             os.mkdir(name_folder)
         except OSError as e:
-            raise type(e)(str(e) + "\nXPACDT: Creation of trajectory folder"
-                          " failed!")
+            raise XPACDTInputError(
+                "Impossible to create trajectory folder in the specified "
+                f"folder ({name_folder}).",
+                section="system",
+                key="folder",
+                caused_by=e)
     else:
         trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*'))
         trj_folder_list.sort()
@@ -101,9 +113,11 @@ def sample(system, parameters, do_return=False):
                           " seeds in the input file when adding"
                           " trajectories.")
         else:
-            raise RuntimeError("The trajectory folder already exists and no "
-                               "directive for overwriting old data or adding "
-                               "trajectories is given.")
+            raise XPACDTInputError(
+                "The trajectory folder already exists and no directive for "
+                "overwriting old data or adding trajectories is given.",
+                section="system",
+                key="folder")
 
     # Run sampling method
     method = sampling_parameters.get('method')
@@ -137,8 +151,13 @@ def sample(system, parameters, do_return=False):
             try:
                 os.mkdir(trj_folder)
             except OSError as e:
-                raise type(e)(str(e) + "\nXPACDT: Creation of trajectory"
-                              " folder " + trj_folder + " failed!")
+                raise XPACDTInputError(
+                    "Impossible to create trajectory folder in the specified "
+                    "folder.",
+                    section="system",
+                    key="folder",
+                    given=name_folder,
+                    caused_by=e)
 
             file_name = system_parameters.get('picklefile', 'pickle.dat')
             pickle.dump(sampled_systems[shift],

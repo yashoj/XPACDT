@@ -47,40 +47,8 @@ import yaml
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
 
+from XPACDT.Input.Error import XPACDTInputError
 from XPACDT.Tools.Coordinates import parse_xyz, parse_mass_value
-
-
-class XPACDTInputError(Exception):
-    """
-    Exception raise whenever an input file can not be parsed correctly.
-
-    Parameters
-    ----------
-    msg : str, optional. Default: "Missing key".
-        The cause of the error.
-
-    section : str, optional. Default: None.
-        The section of the input file that is faulty.
-
-    key : str, optional. Default: None.
-        The key associated with a faulty value.
-
-    caused_by : Exception, optional. Default: None.
-        An exception that caused the current failure.
-    """
-    def __init__(self, msg="Missing key",
-                 section=None, key=None, caused_by=None):
-        if section is not None:
-            msg += f"\n[Section] {section}"
-
-        if key is not None:
-            msg += f"\n  [key] {key}"
-
-        if caused_by is not None:
-            msg += ("\nThis error was caused by the following error:\n"
-                    f"{type(caused_by)}: {caused_by}")
-
-        super().__init__(msg)
 
 
 class Inputfile(collections.MutableMapping):

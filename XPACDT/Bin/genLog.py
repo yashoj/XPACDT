@@ -71,6 +71,10 @@ def start():
     parser.add_argument("-s", "--state", action="store_true", dest="state",
                         required=False, help=s_help, default=False)
 
+    e_help = "Generate energy logfile. Default: False."
+    parser.add_argument("-e", "--energy", action="store_true", dest="energy",
+                        required=False, help=e_help, default=False)
+
     args = parser.parse_args()
 
     # Formatting style
@@ -202,6 +206,61 @@ def write_electronic_state(log_nuclei, outfile, width, prec):
     return
 
 
+def write_energy(log_nuclei, outfile, width, prec):
+    """ Write centroid energy to outfile with given precision. The columns
+    represent time in au, centroid kinetic energy in au, centroid potential
+    energy in au and total centroid energy in au.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.kinetic_energy_centroid,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.potential_energy_centroid,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.energy_centroid,
+                  width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def write_energy_rp(log_nuclei, outfile, width, prec):
+    """ Write ring polymer energy to outfile with given precision. The columns
+    represent time in au, ring polymer kinetic energy in au, energy of spring
+    terms of the ring polymer, potential energy in au and total ring polymer
+    energy in au.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.kinetic_energy,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.spring_energy,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.potential_energy,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.energy,
+                  width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
 def setup_outfiles(args):
     """Open output files based on command line arguments.
 
@@ -220,6 +279,9 @@ def setup_outfiles(args):
     # Check command line arguments for additional requests
     if (args.state):
         outfiles['electronic_state'] = open('state.log', 'w')
+    if (args.energy):
+        outfiles['energy'] = open('energy.log', 'w')
+        outfiles['energy_rp'] = open('energy_rp.log', 'w')
 
     return outfiles
 

@@ -350,3 +350,76 @@ def electronic_state(arguments, log_nuclei):
     current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
 
     return np.array(current_value).flatten()
+
+
+def energy(arguments, log_nuclei):
+    """Performs operations related to energy. If no options are
+    given, then it will raise an error.
+
+    Valid options are as follows:
+
+    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
+                      "diabatic". Default: "adiabatic".
+    -p <a> given: State to be projected onto in the basis given by 'basis'.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the state command. See above.
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
+
+    Returns
+    -------
+    (1) ndarray of float
+        Value obtained from energy operation.
+    """
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +energy", add_help=False)
+
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
+
+    parser.add_argument('-t', '--type',
+                        dest='type',
+                        type=str,
+                        default='total',
+                        choices=['total', 'kinetic', 'potential', 'spring'],
+                        required=False,
+                        help='Type of energy to be used. Possible "total",'
+                             ' "kinetic", "potential" or "spring". Default: "total".')
+
+    parser.add_argument('-r', '--rpmd',
+                        dest='rpmd',
+                        action='store_true',
+                        default=False,
+                        help='Use beads instead of centroids.')
+
+    if len(arguments) == 0:
+        raise RuntimeError("XPACDT: No arguments given to position operation.")
+
+    opts = parser.parse_args(arguments)
+
+    if opts.help is True:
+        parser.print_help()
+        return None
+
+    if ((not opts.rpmd) and (opts.type == "spring")):
+        raise RuntimeError("\nXPACDT: Energy of spring terms for centroid"
+                           " does not make sense.")
+
+    energy_attribute = "energy"
+
+    if not opts.rpmd:
+        energy_attribute += "_centroid"
+
+    if not (opts.type == "total"):
+        energy_attribute = opts.type + energy_attribute
+
+    current_value = getattr(log_nuclei, energy_attribute)
+
+    return np.array(current_value).flatten()

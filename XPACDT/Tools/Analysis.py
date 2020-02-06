@@ -534,6 +534,8 @@ def apply_operation(operation, log_nuclei):
             value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
         elif ops[0] == 'state':
             value *= op.electronic_state(ops[1:], log_nuclei)
+        elif ops[0] == 'energy':
+            value *= op.energy(ops[1:], log_nuclei)
         else:
             raise RuntimeError("\nXPACDT: The given operation is not"
                                "implemented. " + " ".join(ops))

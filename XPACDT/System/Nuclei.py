@@ -249,9 +249,12 @@ class Nuclei(object):
             freedom, the same number of beads, thesame positions, momenta
             and masses. False else.
         """
+        # 'beta' is tested using 'is' since it can have the value np.nan
+        # and np.nan == np.nan is False, so need another way to test it.
         return (self.n_dof == other.n_dof
                 and self.n_beads == other.n_beads
                 and self.beta is other.beta
+                and self.time == other.time
                 and (self.positions == other.positions).all()
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())

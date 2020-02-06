@@ -57,22 +57,6 @@ class SystemTest(unittest.TestCase):
 
         return
 
-    def test_clear_log(self):
-        self.system.log.append(copy.deepcopy(self.system.log[0]))
-        self.system.log[-1].time = 1.0
-        self.system.log[-1].positions[0, 0] = 10.0
-
-        self.system.clear_log()
-        self.assertEqual(len(self.system.log), 1)
-        self.assertEqual(self.system.log[0].time, 1.0)
-
-        self.nuclei_ref = copy.deepcopy(self.nuclei)
-        self.nuclei_ref.positions[0, 0] = 10.0
-        self.assertNotEqual(self.system.nuclei, self.nuclei)
-        self.assertEqual(self.system.nuclei, self.nuclei_ref)
-
-        return
-
     def test_reset(self):
         self.system.log.append(copy.deepcopy(self.system.log[0]))
         self.system.log[-1].time = 1.0

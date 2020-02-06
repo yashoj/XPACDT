@@ -114,14 +114,7 @@ class System(object):
         self.__nuclei = copy.deepcopy(self.__log[0])
         if time is not None:
             self.__nuclei.time = time
-        self.do_log(True)
-
-    def clear_log(self):
-        """ Set the current system state as initial state and clear everything
-        else in the log."""
-
-        self.__nuclei = copy.deepcopy(self.__log[-1])
-        self.do_log(True)
+        self.do_log(init=True)
 
     def do_log(self, init=False, sparse=False):
         """ Log the system state to a list called __log. Each entry is a

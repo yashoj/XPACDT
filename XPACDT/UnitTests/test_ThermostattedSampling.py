@@ -63,8 +63,15 @@ class ThermostattedSamplingTest(unittest.TestCase):
         self.assertTrue(mean_min < mean_reference < mean_max)
         self.assertTrue(dev_min < mean_reference < dev_max)
         self.assertEqual(len(samples), 1000)
+
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
+            self.assertEqual(s.nuclei.time, 0.0)
+            # Check if there is only one log nuclei and that it is the same as
+            # its current nuclei.
+            self.assertEqual(len(s.log), 1)
+            self.assertEqual(s.log[0].time, 0.0)
+            self.assertEqual(s.log[0], s.nuclei)
 
 
 if __name__ == "__main__":

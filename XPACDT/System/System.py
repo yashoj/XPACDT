@@ -31,9 +31,14 @@
 """ Module that defines the physical system treated in XPACDT."""
 
 import copy
+import logging
+import time
 
 import XPACDT.System.Nuclei as nuclei
 import XPACDT.Tools.Units as units
+
+
+logger = logging.getLogger(__name__)
 
 
 class System(object):
@@ -152,6 +157,11 @@ class System(object):
         The log record is resetted after the optimization is performed and
         the optimized geometry is set as the initial state.
         """
+        start_time = time.time()
+        logger.info("Optimizing geometry.")
+
         self.nuclei.optimize_geometry()
         # Reset log with optimized geometry as initial state
         self.do_log(init=True)
+
+        logger.info(f"Geometry optimized in {time.time() - start_time:.2f} s.")

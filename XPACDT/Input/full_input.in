@@ -203,6 +203,7 @@ time = 10 fs            # float, time between samples in fs or au; required opti
 
 overwrite               # For sampling with existing folder: overwrite old files; either add or overwrite can be given
 add                     # For sampling with existing folder: add samples up to required number; either add or overwrite can be given
+optimize_geometry       # If present, optimize the geometry before running the sampling
 $end
 
 ##############################################################################

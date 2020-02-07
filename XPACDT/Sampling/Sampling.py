@@ -77,6 +77,9 @@ def sample(system, parameters, do_return=False):
     sampling_parameters = parameters.get('sampling')
     system_parameters = parameters.get('system')
 
+    if "optimize_geometry" in sampling_parameters:
+        system.optimize_geometry()
+
     if 'folder' not in system_parameters:
         raise XPACDTInputError("No folder for trajectories given.",
                                section="system",

@@ -30,20 +30,63 @@
 #
 #  **************************************************************************
 
+import os
 import unittest
 
 import XPACDT.Bin.genVMD as gVMD
+import XPACDT.Input.Inputfile as infile
+import XPACDT.System.System as xsys
 
 
 class xpacdtTest(unittest.TestCase):
 
-    def test_gen_XYZ(self):        
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+    def test_gen_XYZ(self):
+        parameters_anharmonic_4_nb = infile.Inputfile("FilesForTesting/SystemTests/anharmonic_4.in")
+        system = xsys.System(parameters_anharmonic_4_nb)
+        system.step(1, True)
+
+        gVMD.gen_XYZ(system, ".")
+
+        with open("FilesForTesting/BinTest/centroids_reference.txt", "r") as myfile:
+            centroids_reference = myfile.readlines()
+
+        with open("./centroids.xyz", "r") as myfile:
+            centroids = myfile.readlines()
+
+        self.assertEqual(centroids_reference, centroids)
+
+        with open("FilesForTesting/BinTest/beads_reference.txt", "r") as myfile:
+            beads_reference = myfile.readlines()
+
+        with open("./beads.xyz", "r") as myfile:
+            beads = myfile.readlines()
+
+        self.assertEqual(beads_reference, beads)
+
+        os.remove("centroids.xyz")
+        os.remove("beads.xyz")
 
     def test_gen_VMD(self):
-        raise NotImplementedError("Please implement a test here!!")
-        pass
+        gVMD.gen_VMD(".")
+
+        with open("FilesForTesting/BinTest/vmd_reference.txt", "r") as myfile:
+            vmd_reference = myfile.readlines()
+
+        with open("./movie.vmd", "r") as myfile:
+            vmd = myfile.readlines()
+
+        self.assertEqual(vmd_reference, vmd)
+
+        with open("FilesForTesting/BinTest/bash_vmd_reference.txt", "r") as myfile:
+            bash_reference = myfile.readlines()
+
+        with open("./run.sh", "r") as myfile:
+            bash = myfile.readlines()
+
+        self.assertEqual(bash_reference, bash)
+
+        os.remove("movie.vmd")
+        os.remove("run.sh")
 
     @unittest.skip("How to test here?")
     def test_run_VMD(self):

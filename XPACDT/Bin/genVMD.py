@@ -88,9 +88,9 @@ def gen_XYZ(system, folder):
     # number of degrees of freedom is and 'xyz' type
     # Any other system will be reformatted to fit the xyz type and additional
     # degrees of freedom are set to always be 0, the atom symbol for everything
-    # is then assumed to be Na
+    # is then assumed to be Ar for visual purposes
 
-    n_dof = system.n_dof
+    n_dof = system.nuclei.n_dof
     # required number of atoms to save the actual degrees of freedom
     n_atom = math.ceil(n_dof / 3)
     n_dof_required = n_atom * 3
@@ -99,7 +99,7 @@ def gen_XYZ(system, folder):
     n_beads = max(system.nuclei.n_beads)
 
     if n_dof < n_dof_required:
-        symbols = np.array(['Na'] * n_atom)
+        symbols = np.array(['Ar'] * n_atom)
     else:
         # Save in input file and actually get from there
         symbols = np.array([units.atom_symbol(m) for m in system.log[0].masses[::3]])

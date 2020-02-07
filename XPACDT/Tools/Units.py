@@ -82,8 +82,8 @@ def parse_time(time_string):
 def atom_mass(symbol):
     """ Return the mass of an atom in atomic units. The mass for the most
     abundant isotope is returned if just the symbol is given. Other isotopes
-    can be accessed by also giving the mass number. Currently, only symbols
-    up to 'Sn' are implemented.
+    can be accessed by also giving the mass number. All elements with stable
+    isotopes are implemented.
 
     Parameters
     ----------
@@ -120,7 +120,7 @@ def atom_mass(symbol):
 
 
 def atom_symbol(mass):
-    """ Return the symbol of an atom.
+    """ Return the symbol of an atom.  Any reference to isotopes is removed.
 
     Parameters
     ----------
@@ -130,7 +130,7 @@ def atom_symbol(mass):
     Returns
     -------
     symbol : string
-        The symbol of the atom. Any reference to isotopes is removed.
+        The symbol of the atom.
     """
 
     # au to amu

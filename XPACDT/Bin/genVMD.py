@@ -46,7 +46,8 @@ import XPACDT.Tools.Units as units
 
 def start():
     """
-    Generate a VMD readable script. Currently very basic...
+    Generate XYZ files from a XPACDT pickle file and a VMD readable script to
+    display the XPACDT system. Currently very basic...
     """
 
     # Parse command line arguments
@@ -138,7 +139,10 @@ def gen_XYZ(system, folder):
 
 
 def gen_VMD(folder):
-    """ Generates VMD script.
+    """ Generates VMD script 'movie.vmd' and an associated bash script
+    'run.sh'. The VMD script loads the xyz files generated and renders an
+    image for each of them. The bash script actually runs the VMD script and
+    then converts the generated images to a gif and a mp4.
 
     Parameters
     ----------
@@ -146,6 +150,7 @@ def gen_VMD(folder):
         The folder in which to work.
     """
 
+    # movie.vmd is a vmd script to generate images of the system
     file = open(os.path.join(folder, "movie.vmd"), 'w')
     file.write("## Read in centroids:\n")
     file.write("mol new {" + os.path.join(folder, 'centroids.xyz') +
@@ -182,6 +187,8 @@ def gen_VMD(folder):
     file.write("quit\n")
     file.close()
 
+    # run.sh is a bash script to run the vmd script and convert the images to
+    # both a gif and a mp4.
     file = open(os.path.join(folder, "run.sh"), 'w')
     file.write("#!/bin/bash\n\n")
     file.write("rm movie.gif movie.mp4\n\n")
@@ -202,8 +209,7 @@ def run_VMD(folder):
     """
     command = "cd " + folder + "; "
     command += "chmod u+x run.sh; ./run.sh &> run.out"
-    p = sp.Popen(command, shell=True, executable="bash")
-    p.wait()
+    sp.run(command, shell=True, executable="bash")
 
 
 # This is a wrapper for the setup function!

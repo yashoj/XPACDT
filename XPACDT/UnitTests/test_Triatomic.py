@@ -38,6 +38,7 @@ import XPACDT.Tools.NormalModes as nm
 import XPACDT.Tools.Units as units
 import XPACDT.Input.Inputfile as infile
 
+
 def setUpModule():
     try:
         triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
@@ -56,6 +57,7 @@ def setUpModule():
         
     return
 
+
 class TriatomicTest(unittest.TestCase):
 
     def setUp(self):
@@ -65,8 +67,6 @@ class TriatomicTest(unittest.TestCase):
         except ModuleNotFoundError as e:
             self.pes_bkmp2 = None
             self.pes_bkmp2_4 = None
-#            print("BKMP2 PES could not be imported. Is it compiled properly? Will skip all related tests.")
-            warnings.warn("BKMP2 PES could not be imported. Is it compiled properly? Will skip all related tests.", ImportWarning)
             
         try:            
             self.pes_cw = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))

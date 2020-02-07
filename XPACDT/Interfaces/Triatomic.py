@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -45,12 +46,11 @@ G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (
 import importlib
 import numpy as np
 import os
-import sys
 
-import XPACDT
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
 import XPACDT.Tools.Units as units
+
 
 class Triatomic(itemplate.PotentialInterface):
     """
@@ -65,41 +65,56 @@ class Triatomic(itemplate.PotentialInterface):
     ----------------
     name : string
         The name of the PES requested.
+
+    Attributes
+    ----------
+    pes_name
+    available_pes
     """
     def __init__(self, parameters, **kwargs):
         itemplate.PotentialInterface.__init__(self, 'Triatomic', 9, 1,
-                                              max(parameters.n_beads), 'adiabatic')
+                                              max(parameters.n_beads),
+                                              'adiabatic')
 
         pes_parameters = parameters.get(self.name)
-        pes_name = pes_parameters.get('name')
+        self.__pes_name = pes_parameters.get('name')
 
-        if pes_name not in self.available_pes:
-            raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + pes_name
+        if self.pes_name not in self.available_pes:
+            raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + self.pes_name
                                + " Available: " + str(self.available_pes.keys()))
 
         try:
-            self.__pot = importlib.import_module("XPACDT.Interfaces."+ pes_name + "_module.pot")
+            self.__pot = importlib.import_module("XPACDT.Interfaces."+ self.pes_name + "_module.pot")
         except ModuleNotFoundError as e:
             raise type(e)(str(e) + "\nXPACDT: One of the compiled triatomic PES ("
-                          + pes_name + ") could not be imported. Please make sure"
+                          + self.pes_name + ") could not be imported. Please make sure"
                           " that it was properly compiled.")
 
         self.__pot.pes_init()
 
-        self.__data_path = os.path.dirname(self.__pot.__file__) + "/"        
-        self.__masses = self.available_pes.get(pes_name).get('masses')
-        
-        if pes_name == 'CW':
+        self.__data_path = os.path.dirname(self.__pot.__file__) + "/"
+        self.__masses = self.available_pes.get(self.pes_name).get('masses')
+
+        if self.pes_name == 'CW':
             # For proper Hessian derivatives! Numerically tested for stability!
             self._DERIVATIVE_STEPSIZE = 7e-3
-        
+
+    @property
+    def pes_name(self):
+        """ str : Name of the instantiated triatomic PES."""
+        return self.__pes_name
+
     @property
     def available_pes(self):
-        """ Dictonary of the implemented PES routines and the associated masses."""
+        """ Dictonary of the implemented PES routines. The keys are the names 
+        of the implemented PES. Each value will be a dictonary, that holds
+        the masses of the associated atoms in au as a list."""
         return {'BKMP2': { 'masses': [units.atom_mass('H'), units.atom_mass('H'), units.atom_mass('H')]},
                  'LWAL': { 'masses': [units.atom_mass('F'), units.atom_mass('H'), units.atom_mass('H')]},
                  'CW': { 'masses': [units.atom_mass('Cl'), units.atom_mass('H'), units.atom_mass('H')]}
                }
+
+
 
     def _calculate_adiabatic_all(self, R, S=None):
         """
@@ -121,9 +136,6 @@ class Triatomic(itemplate.PotentialInterface):
 
         self._adiabatic_energy_centroid = np.zeros(1)
         self._adiabatic_gradient_centroid = np.zeros((1, R.shape[0]))
-
-        self._energy_centroid = np.zeros(1)
-        self._gradient_centroid = np.zeros((1, R.shape[0]))
 
         # centroid part if more than 1 bead
         if R.shape[1] > 1:

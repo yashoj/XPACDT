@@ -589,9 +589,9 @@ class PotentialInterface:
         ----------
         R : (n_dof) ndarray of floats
             The positions representing the system in au.
-        S : integer, default 0 /or/ tupe of two integers
+        S : integer /or/ tuple of two integers, optional, default 0
             The current state of the system
-            /or/ if tupel is given the current off-diagonal element of the
+            /or/ if tuple is given the current off-diagonal element of the
             diabatic matrix
         centroid : bool, default True
             If the energy of the centroid should be returned.
@@ -609,6 +609,8 @@ class PotentialInterface:
         """
 
         if picture == 'adiabatic':
+            assert(type(S) == int), f"XPACDT: State given to _energy_wrapper"\
+                            " not an integer: {S}."
             if internal:
                 return self.adiabatic_energy(self._from_internal(R)[:, None],
                                              S, centroid)
@@ -639,7 +641,7 @@ class PotentialInterface:
             The positions representing the system in au.
         S : integer, default 0 /or/ tupe of two integers
             The current state of the system
-            /or/ if tupel is given the current off-diagonal element of the
+            /or/ if tuple is given the current off-diagonal element of the
             diabatic matrix
         centroid : bool, default True
             If the gradient of the centroid should be returned.
@@ -655,8 +657,9 @@ class PotentialInterface:
         The gradient at the given geometry in hartree/au.
         """
 
-
         if picture == 'adiabatic':
+            assert(type(S) == int), f"XPACDT: State given to"\
+                            "  _gradient_wrapper not an integer: {S}."
             if internal:
                 return self.adiabatic_gradient(self._from_internal(R)[:, None],
                                                S, centroid)
@@ -691,8 +694,10 @@ class PotentialInterface:
 
         Returns:
         ----------
-        (n_states, n_states) ndarrays of floats if shape of R is (n_dof)
-        /or/ (n_states, n_states, n_beads) ndarrays of floats if shape of R is (n_dof, n_beads)
+        (n_states, n_states) ndarrays of floats
+                        if shape of R is (n_dof)
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
+                        if shape of R is (n_dof, n_beads)
 
             Diabatic energy matrix.
 
@@ -850,7 +855,7 @@ class PotentialInterface:
             should be used throughout the plotting.
         S : integer, default 0 /or/ tupe of two integers
             The state to be plotted,
-            /or/ if tupel is given the off-diagonal element of the
+            /or/ if tuple is given the off-diagonal element of the
             diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
             Whether adiabatic or diabatic PES should be plotted.
@@ -971,7 +976,7 @@ class PotentialInterface:
             should be used throughout the plotting.
         S : integer, default 0 /or/ tupe of two integers
             The state to be plotted,
-            /or/ if tupel is given the off-diagonal element of the
+            /or/ if tuple is given the off-diagonal element of the
             diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
             Whether adiabatic or diabatic PES should be plotted. 

@@ -363,7 +363,8 @@ class Inputfile(collections.MutableMapping):
         if self._c_type == 'xyz':
             self["atom_sybols"], self["masses"], coord = \
                 parse_xyz(input_string=self._coordinates_string,
-                          n_beads=self["n_beads"])
+                          n_beads=self["n_beads"],
+                          n_dof=self["n_dof"])
 
         if self._raw_momenta is not None:
             try:

@@ -55,17 +55,11 @@ class CoordinatesTest(unittest.TestCase):
         self.assertTrue(np.all(atoms[3:] == "F"))
 
         atoms, masses, coordinates = parse_xyz(input_string=input_string,
-                                               n_beads=[1, 1])
+                                               n_beads=[1, 1], n_dof=6)
         np.testing.assert_allclose(coordinates, coordinate_ref, rtol=1e-7)
         np.testing.assert_allclose(masses, mass_ref, rtol=1e-4)
         self.assertTrue(np.all(atoms[:3] == "H"))
         self.assertTrue(np.all(atoms[3:] == "F"))
-
-        # Unbalanced number of beads
-        # NOTE This needs to be removed if variable number of beads is gets
-        # implemente
-        with self.assertRaises(NotImplementedError):
-            parse_xyz(input_string=input_string, n_beads=[2, 6])
 
         # test unknwon element
         input_string = ("J 1.0 2.0 3.0 \n"
@@ -74,8 +68,14 @@ class CoordinatesTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             parse_xyz(input_string=input_string)
 
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ValueError):
+            parse_xyz(input_string=input_string, n_dof=6)
+
+        with self.assertRaises(ValueError):
             parse_xyz(input_string=input_string, n_beads=[1, 1])
+
+        with self.assertRaises(KeyError):
+            parse_xyz(input_string=input_string, n_beads=[1, 1], n_dof=6)
 
         # test too many/few coordinates given
         input_string = ("H 1.0 2.0 \n"
@@ -84,10 +84,10 @@ class CoordinatesTest(unittest.TestCase):
             parse_xyz(input_string=input_string)
 
         with self.assertRaises(ValueError):
-            parse_xyz(input_string=input_string, n_beads=[1, 1])
+            parse_xyz(input_string=input_string, n_beads=[1, 1], n_dof=6)
 
         with self.assertRaises(ValueError):
-            parse_xyz(input_string=input_string, n_beads=[1, 1])
+            parse_xyz(input_string=input_string, n_beads=[1, 1], n_dof=6)
 
         # with two beads
         coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1],
@@ -101,7 +101,7 @@ class CoordinatesTest(unittest.TestCase):
             """
 
         atoms, masses, coordinates = parse_xyz(input_string=input_string,
-                                               n_beads=[2, 2])
+                                               n_beads=[2, 2], n_dof=6)
         np.testing.assert_allclose(coordinates, coordinate_ref, rtol=1e-7)
         np.testing.assert_allclose(masses, mass_ref, rtol=1e-4)
         self.assertTrue(np.all(atoms[:3] == "H"))
@@ -127,11 +127,14 @@ class CoordinatesTest(unittest.TestCase):
             """
 
         atoms, masses, coordinates = parse_xyz(input_string=input_string,
-                                               n_beads=[4, 4])
+                                               n_beads=[4, 4], n_dof=6)
         np.testing.assert_allclose(coordinates, coordinate_ref, rtol=1e-7)
         np.testing.assert_allclose(masses, mass_ref, rtol=1e-4)
         self.assertTrue(np.all(atoms[:3] == "H"))
         self.assertTrue(np.all(atoms[3:] == "F"))
+
+        with self.assertRaises(ValueError):
+            parse_xyz(input_string=input_string, n_beads=[2, 6], n_dof=6)
 
     def test_parse_mass_value(self):
         # 4 beads test
@@ -162,43 +165,11 @@ class CoordinatesTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_mass_value(input_string)
 
-    @unittest.skip("Nooo")
-    def test_mass_value_free_rp_sampling(self):
-        # So far only shape of output and centroid value tested; maybe add
-        # test for distribution?
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_2-4.in")
-        # Bypass the "only set key once" rule by setting .store directly
-        parameters.store['rpmd'] = {'nm_transform': 'matrix'}
+    @unittest.skip("Implement once Molcas interface is setup.")
+    def test_format_xyz(self):
+        pass  # TODO
 
-        mass_ref = np.array([1, 3])
-        centroid_ref = np.array([1.0, 2.0])
-        input_string = "1.0 1.0 \n" \
-            + "3.0 2.0 \n"
 
-        parameters._parse_mass_value(input_string)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-        self.assertTrue(parameters.coordinates.shape == (2, 4))
-        np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
-                                   centroid_ref, rtol=1e-7)
-        self.assertTrue(parameters.momenta is None)
-
-    @unittest.skip("Noooo")
-    def test_xyz_free_rp_sampling(self):
-        # So far only shape of output and centroid value tested; maybe add
-        # test for distribution?
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-4.in")
-        # Bypass the "only set key once" rule by setting .store directly
-        parameters.store['rpmd'] = {'nm_transform': 'matrix'}
-
-        mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
-                             34631.970366, 34631.970366, 34631.970366])
-        centroid_ref = np.array([1.0, 2.0, 3.0, 2.0, 1.0, 4.0])
-        input_string = "H 1.0 2.0 3.0 \n" \
-            + "F 2.0 1.0 4.0 \n"
-
-        parameters._parse_xyz(input_string)
-        self.assertTrue(parameters.coordinates.shape == (6, 4))
-        np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
-                                   centroid_ref, rtol=1e-7)
-        self.assertTrue(parameters.momenta is None)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
+if __name__ == "__main__":
+    suite = unittest.TestLoader().loadTestsFromTestCase(CoordinatesTest)
+    unittest.TextTestRunner().run(suite)

@@ -104,7 +104,7 @@ def format_xyz(atoms, r, full=True):
     return f"{n_atoms}\nbohr\n{core}"
 
 
-def parse_xyz(input_string=None, filename=None, n_beads=None):
+def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
     """
     Parse a XYZ formatted string (passed with the `input_string` keyword), or
     file (which name or path is given by the `filename` keyword).
@@ -137,7 +137,12 @@ def parse_xyz(input_string=None, filename=None, n_beads=None):
         If not None, return an array of shape (n_dof, max(n_beads)) for the
         coordinates. Currently only constant number of beads is supported.
         If n_beads is None, the shape of the coordinates returned is (n_dof,).
-        In all cases, the shape of the atom list and masses is (n_dof,).
+        In all cases, the shape of the atom list and masses is (n_dof,). Can
+        only be None if n_dof is too.
+
+    n_dof : int or None, optional. Default: None
+        If not None, specify the expected number of degree of freedom. Can only
+        be None if n_beads is too.
 
     Return
     ------
@@ -164,6 +169,10 @@ def parse_xyz(input_string=None, filename=None, n_beads=None):
         raise ValueError("Either intput_string or filename should not be "
                          "None.")
 
+    if (n_beads is None) != (n_dof is None):
+        raise ValueError("n_beads and n_dof should either both be None or "
+                         f"both be specified.")
+
     # The atom symbols are in the first column
     # NOTE: A new StringIO object must be created at np.loadtxt run as it is
     # consumed when read.
@@ -178,7 +187,7 @@ def parse_xyz(input_string=None, filename=None, n_beads=None):
         raise ValueError("The XYZ data is not correctly formatted.\n"
                          f"XYZ data:\n{input_string}")
 
-    if n_beads is not None:
+    if n_beads is not None and np.max(n_beads)*n_dof == len(coord)*3:
         max_n_beads = np.max(n_beads)
         if np.any(np.asarray(n_beads) != max_n_beads):
             raise NotImplementedError(
@@ -196,6 +205,15 @@ def parse_xyz(input_string=None, filename=None, n_beads=None):
         coord = beads
     else:
         coord = np.hstack(coord)
+
+        if n_dof is not None:
+            coord = coord[:, None]
+
+    if n_dof is not None and len(coord) != n_dof:
+        raise ValueError(
+            f"Number of degree of freedom given ({n_dof}) does not match "
+            "the input.")
+
 
     # Masses and symbols are expected to be given for each dof so we have to
     # repeat each of them 3 times

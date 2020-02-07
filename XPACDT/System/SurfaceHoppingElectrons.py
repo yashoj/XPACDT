@@ -41,6 +41,8 @@ from scipy.integrate import ode
 import XPACDT.System.Electrons as electrons
 import XPACDT.Tools.MathematicalTools as mtools
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class SurfaceHoppingElectrons(electrons.Electrons):
     """
@@ -89,13 +91,19 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         try:
             self.__n_steps = int(electronic_parameters.get("n_steps", 1))
             if self.n_steps < 1:
-                raise ValueError("\nXPACDT: Number of electronic steps per"
-                                 " nuclear step needs to be more"
-                                 " than or equal to 1. Given in input file: "
-                                 + self.n_steps)
+                raise XPACDTInputError(
+                    "Number of electronic steps per nuclear step needs to be "
+                    f"greater or equal to 1.",
+                    section="SurfaceHoppingElectrons",
+                    key="n_steps",
+                    given=self.n_steps)
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Parameter 'n_steps'"
-                          "for surface hopping not convertable to int.")
+            raise XPACDTInputError(
+                "Parameter 'n_steps' for surface hopping not convertable "
+                "to int.",
+                section="SurfaceHoppingElectrons",
+                key="n_steps",
+                caused_by=e)
 
         self.__rpsh_type = electronic_parameters.get("rpsh_type", "centroid")
         self.__rpsh_rescaling = electronic_parameters.get("rpsh_rescaling", "bead")
@@ -104,40 +112,63 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         self.__ode_solver = electronic_parameters.get("ode_solver", "scipy")
 
         if self.rpsh_type not in ['bead', 'centroid', 'density_matrix']:
-            raise ValueError("\nXPACDT: Ring polymer surface hopping (RPSH)"
-                             " type not available.")
+            raise XPACDTInputError(
+                "Ring polymer surface hopping (RPSH) type must be 'bead', "
+                "'centroid' or 'density_matrix'.",
+                section="SurfaceHoppingElectrons",
+                key="rpsh_type")
         if self.rpsh_rescaling not in ['bead', 'centroid']:
-            raise ValueError("\nXPACDT: RPSH rescaling type not available.")
+            raise XPACDTInputError(
+                "RPSH rescaling type must be 'bead' or 'centroid'.",
+                section="SurfaceHoppingElectrons",
+                key="rpsh_rescaling")
         if self.rescaling_type not in ['nac', 'gradient']:
-            raise ValueError("\nXPACDT: Momentum rescaling type not available.")
+            raise XPACDTInputError(
+                "Momentum rescaling type must be 'nac' or 'gradient'.",
+                section="SurfaceHoppingElectrons",
+                key="rescaling_type")
         if self.evolution_picture not in ['schroedinger', 'interaction']:
-            raise ValueError("\nXPACDT: Evolution picture not available.")
+            raise XPACDTInputError(
+                "Evolution picture must be 'shroedinger' or 'interaction'.",
+                section="SurfaceHoppingElectrons",
+                key="evolution_picture")
         if self.ode_solver not in ['runga_kutta', 'unitary', 'scipy']:
-            raise ValueError("\nXPACDT: ODE solver not available.")
-        if (self.ode_solver == "unitary"):
-            if (self.evolution_picture != "schroedinger"):
-                raise ValueError("\nXPACDT: Evolution picture needs to be"
-                                 " Schroedinger for unitary propagation.")
+            raise XPACDTInputError(
+                "ODE solver must be 'runge_kutta', 'unitary' or 'scipy'.",
+                section="SurfaceHoppingElectrons",
+                key="ode_solver")
+        if (self.ode_solver == "unitary" and
+                self.evolution_picture != "schroedinger"):
+            raise XPACDTInputError(
+                "Evolution picture needs to be Schroedinger for unitary "
+                "propagation.",
+                section="SurfaceHoppingElectrons",
+                key="evolution_picture/ode_solver")
 
         max_n_beads = self.pes.max_n_beads
         n_states = self.pes.n_states
         if (n_states < 2):
-            raise RuntimeError("\nXPACDT: Number of states should be more than"
-                               " or equal to 2 for surface hoping. Else it"
-                               " doesn't make sense to use it.")
+            raise XPACDTInputError(
+                "Number of states should be greater or equal to 2 for "
+                "surface hoping.",
+                section="SurfaceHoppingElectrons")
 
         try:
             initial_state = int(parameters.get("SurfaceHoppingElectrons").get("initial_state"))
             if (initial_state < 0) or (initial_state >= n_states):
-                raise ValueError("\nXPACDT: Initial state is either less 0 or"
-                                 " exceeds total number of "
-                                 "states. Given initial state is "
-                                 + initial_state)
+                raise XPACDTInputError(
+                    "Initial state is either less 0 or exceeds total number "
+                    f"of states.",
+                    section="SurfaceHoppingElectrons",
+                    key="initial_state",
+                    given=initial_state)
         except (TypeError, ValueError) as e:
-            raise type(e)(str(e) + "\nXPACDT: Initial state for surface hopping"
-                          "not given or not convertible to int. Given initial"
-                          "state is "
-                          + parameters.get("SurfaceHoppingElectrons").get("initial_state"))
+            raise XPACDTInputError(
+                "Initial state for surface hopping not given or not "
+                " convertible to int.",
+                section="SurfaceHoppingElectrons",
+                key="initial_state",
+                given=parameters["SurfaceHoppingElectrons"]["initial_state"])
 
         self.__current_state = initial_state
 

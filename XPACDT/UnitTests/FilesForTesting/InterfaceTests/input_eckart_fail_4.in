@@ -1,5 +1,5 @@
 $system  ## inline comment
-dof = 9
+dof = 1
 Interface = EckartBarrier
 $end 
 

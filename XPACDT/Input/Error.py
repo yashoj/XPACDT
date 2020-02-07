@@ -28,44 +28,44 @@
 #
 #  **************************************************************************
 
-""" Very basic sampling using just one set of coordinates and momenta that
-are replicated. """
-
-import copy
+"""Module defining the errors related to the parsing of the input file.
+"""
 
 
-from XPACDT.Input.Error import XPACDTInputError
-
-
-def do_Fixed_sampling(system, parameters, n_sample):
+class XPACDTInputError(Exception):
     """
-    Create n_sample times the same system as sampling.
+    Exception raise whenever an input file can not be parsed correctly.
 
     Parameters
     ----------
-    system : XPACDT.Dynamics.System
-        A representation of the basic system with potential interface set up
-        and a valid starting geometry.
-    parameters : XPACDT input file
-        Dictonary-like presentation of the input file.
-    n_sample : int
-        Actual number of samples required.
+    msg : str, optional. Default: "Missing key".
+        The cause of the error.
 
-    Returns
-    -------
-    systems : (n_sample) list of XPACDT.Dynamics.System
-        A list of n_sample copies of the given system.
+    section : str, optional. Default: None.
+        The section of the input file that is faulty.
+
+    key : str, optional. Default: None.
+        The key associated with a faulty value.
+
+    given : str, optional. Default: None.
+        The value given in the input file.
+
+    caused_by : Exception, optional. Default: None.
+        An exception that caused the current failure.
     """
+    def __init__(self, msg="Missing key",
+                 section=None, key=None, given=None, caused_by=None):
+        if section is not None:
+            msg += f"\n[Section] {section}"
 
-    if system.nuclei.momenta is None:
-        raise XPACDTInputError(
-            "Momenta not provided in system or input file, but required in "
-            "fixed sampling.",
-            section="momenta")
+        if key is not None:
+            msg += f"\n    [key] {key}"
 
-    systems = []
-    # _ is a convention to tell the loop variable is not used
-    for _ in range(n_sample):
-        systems.append(copy.deepcopy(system))
+        if given is not None:
+            msg += f"\n  [given] {given}"
 
-    return systems
+        if caused_by is not None:
+            msg += ("\nThis error was caused by the following error:\n"
+                    f"{type(caused_by)}: {caused_by}")
+
+        super().__init__(msg)

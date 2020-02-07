@@ -37,22 +37,24 @@ import unittest
 import XPACDT.Interfaces.OneDPolynomial as oneDP
 import XPACDT.Input.Inputfile as infile
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class OneDPolynomialTest(unittest.TestCase):
 
     def setUp(self):
 
-        self.pes1D_harmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic.in"))
-        self.pes1D_shifted_harmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_shifted.in"))
-        self.pes1D_shifted_anharmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_shifted.in"))
-        self.pes1D_anharmonic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic.in"))
-        self.pes1D_quartic_classical = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/quartic.in"))
+        self.pes1D_harmonic_classical = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/harmonic.in"))
+        self.pes1D_shifted_harmonic_classical = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_shifted.in"))
+        self.pes1D_shifted_anharmonic_classical = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_shifted.in"))
+        self.pes1D_anharmonic_classical = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic.in"))
+        self.pes1D_quartic_classical = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/quartic.in"))
 
 
-        self.pes1D_harmonic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_4.in"))
-        self.pes1D_shifted_anharmonic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_shifted_4.in"))
-        self.pes1D_anharmonic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_4.in"))
-        self.pes1D_quartic_4_nb = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/quartic_4.in"))
+        self.pes1D_harmonic_4_nb = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_4.in"))
+        self.pes1D_shifted_anharmonic_4_nb = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_shifted_4.in"))
+        self.pes1D_anharmonic_4_nb = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/anharmonic_4.in"))
+        self.pes1D_quartic_4_nb = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/quartic_4.in"))
 
         return
 
@@ -65,11 +67,11 @@ class OneDPolynomialTest(unittest.TestCase):
         self.assertEqual(self.pes1D_shifted_anharmonic_classical.x0, -1.0)
         self.assertSequenceEqual(self.pes1D_shifted_anharmonic_classical.a, [1.0, 0.0, 0.5, 0.1, 0.01])
 
-        with self.assertRaises(ValueError):
-            pes = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_fail1.in"))
+        with self.assertRaises(XPACDTInputError):
+            pes = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_fail1.in"))
 
-        with self.assertRaises(ValueError):
-            pes = oneDP.OneDPolynomial(infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_fail1.in"))
+        with self.assertRaises(XPACDTInputError):
+            pes = oneDP.OneDPolynomial(**infile.Inputfile("FilesForTesting/InterfaceTests/harmonic_fail1.in"))
 
         return
 

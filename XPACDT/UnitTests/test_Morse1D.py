@@ -41,8 +41,8 @@ class Morse1DTest(unittest.TestCase):
 
     def setUp(self):
         # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
-        self.pes_1_nb = morse1d.Morse1D(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_1.in"))
-        self.pes_2_nb = morse1d.Morse1D(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_2.in"))
+        self.pes_1_nb = morse1d.Morse1D(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_1.in"))
+        self.pes_2_nb = morse1d.Morse1D(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1D_2.in"))
 
         return
 

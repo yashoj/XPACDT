@@ -37,6 +37,8 @@ import copy
 
 import XPACDT.Tools.Units as units
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 def do_Thermostatted_sampling(system, parameters, n_sample):
     """ Perform sampling by running a long, thermostatted trajectory and
@@ -59,17 +61,23 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
     """
 
     if system.nuclei.momenta is None:
-        raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
-                           " file, but required in thermostatted sampling.")
+        raise XPACDTInputError(
+            "Momenta not provided in system or input file, but required in "
+            "thermostatted sampling.",
+            section="momenta")
 
     sample_parameters = parameters.get('sampling')
 
     if 'time' not in sample_parameters:
-        raise KeyError("\nXPACDT: Time for each sampling run "
-                       "required, but not given.")
+        raise XPACDTInputError(
+            "Time for each sampling run required, but not given.",
+            section="sampling",
+            key="time")
 
     if 'thermostat' not in parameters:
-        raise KeyError("\nXPACDT: No thermostat parameters given!")
+        raise XPACDTInputError(
+            "A thermostat is required for thermostatted sampling.",
+            section="thermostat")
 
     sampling_time = units.parse_time(sample_parameters.get('time', '0.0 fs'))
 

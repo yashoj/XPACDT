@@ -40,14 +40,14 @@ import XPACDT.Input.Inputfile as infile
 class MorseDiabaticTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_model1_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1.in"))
-        self.pes_model1_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2.in"))
+        self.pes_model1_1_nb = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1.in"))
+        self.pes_model1_2_nb = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2.in"))
 
-        self.pes_model2_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_1.in"))
-        self.pes_model2_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_2.in"))
+        self.pes_model2_1_nb = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_1.in"))
+        self.pes_model2_2_nb = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_2.in"))
 
-        self.pes_model3_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_1.in"))
-        self.pes_model3_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_2.in"))
+        self.pes_model3_1_nb = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_1.in"))
+        self.pes_model3_2_nb = morsedia.MorseDiabatic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_2.in"))
 
 
         return

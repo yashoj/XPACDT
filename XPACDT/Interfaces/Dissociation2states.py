@@ -39,6 +39,8 @@ import os
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Input.Inputfile as infile
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class Dissociation2states(itemplate.PotentialInterface):
     """
@@ -60,16 +62,22 @@ class Dissociation2states(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, parameters, **kwargs):
-
-        itemplate.PotentialInterface.__init__(self, "Dissociation2states", 1,
-                                              2, max(parameters.n_beads),
-                                              'diabatic')
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Dissociation2states.",
+                section="Dissociation2states")
+    
+        super().__init__("Dissociation2states",
+                         n_dof=1, n_states=2, primary_basis='diabatic',
+                         **parameters)
 
         pes_parameters = parameters.get(self.name)
 
         if 'model_type' not in pes_parameters:
-            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
+            raise XPACDTInputError(section="Dissociation2states",
+                                   key="model_type")
         self.__model_type = pes_parameters.get('model_type')
 
         # Read model parameters from file
@@ -77,8 +85,12 @@ class Dissociation2states(itemplate.PotentialInterface):
                                   "model_parameters/dissociation_potential.param")
         all_params = infile.Inputfile(param_file)
         if (self.model_type not in all_params.keys()):
-            raise ValueError("\nXPACDT: Wrong Dissociation model requested."
-                             " Please use:" + str(all_params.keys()))
+            raise XPACDTInputError(
+                "Wrong Dissociation model requested. Please use one from the "
+                f"following list: {all_params.keys()}.",
+                section="Dissociation2states",
+                key="model_type",
+                given=self.model_type)
         model_params = all_params.get(self.model_type)
 
         # Setting all the paramters

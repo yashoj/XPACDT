@@ -38,6 +38,8 @@ import XPACDT.System.SurfaceHoppingElectrons as sh
 import XPACDT.Input.Inputfile as infile
 import XPACDT.System.Nuclei as Nuclei
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class SurfaceHoppingTest(unittest.TestCase):
 
@@ -1857,7 +1859,7 @@ class SurfaceHoppingTest(unittest.TestCase):
         param = self.param_classical
         param["SurfaceHoppingElectrons"]["ode_solver"] = 'unitary'
         param["SurfaceHoppingElectrons"]["evolution_picture"] = 'interaction'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(XPACDTInputError):
             sh_electrons_classical = sh.SurfaceHoppingElectrons(param,
                                                                 param.masses, param.coordinates,
                                                                 param.momenta)

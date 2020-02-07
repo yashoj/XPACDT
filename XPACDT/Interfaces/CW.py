@@ -39,6 +39,8 @@ import XPACDT.Interfaces.CW_module.pot as pot
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class CW(itemplate.PotentialInterface):
     """
@@ -54,12 +56,18 @@ class CW(itemplate.PotentialInterface):
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
     """
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, n_dof=9, **parameters):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "CW", 9, 1,
-                                              max(parameters.n_beads),
-                                              'adiabatic')
+        if n_dof != 9:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 9 for CW.",
+                section="CW")
+
+        super().__init__("CW",
+                         n_dof=9, n_states=1, primary_basis='adiabatic',
+                         **parameters)
         # For proper Hessian derivatives! Numerically tested for stability!
         self._DERIVATIVE_STEPSIZE = 7e-3
 

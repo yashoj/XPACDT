@@ -36,6 +36,8 @@ import numpy as np
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class Morse1D(itemplate.PotentialInterface):
     """
@@ -59,41 +61,37 @@ class Morse1D(itemplate.PotentialInterface):
         Overall vertical shift to the potential.
     """
 
-    def __init__(self, parameters):
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Morse 1D model.",
+                section="Morse1D")
 
-        itemplate.PotentialInterface.__init__(self, "Morse1D", 1, 1,
-                                              max(parameters.n_beads),
-                                              'adiabatic')
+        super().__init__("Morse1D",
+                         n_dof=1, n_states=1, primary_basis='adiabatic',
+                         **parameters)
 
         pes_parameters = parameters.get(self.name)
 
-        try:
-            self.__De = float(pes_parameters.get('De'))
-        except (TypeError, ValueError):
-            print("\nXPACDT: Parameter 'De' for morse potential not given or "
-                  "not convertible to float.\n")
-            raise
+        parameters = []
+        for key in ("De", "a", "re", "b"):
+            if key not in pes_parameters:
+                raise XPACDTInputError(section="Morse1D",
+                                       key=key)
 
-        try:
-            self.__a = float(pes_parameters.get('a'))
-        except (TypeError, ValueError):
-            print("\nXPACDT: Parameter 'a' for morse potential not given or "
-                  "not convertible to float.\n")
-            raise
+            try:
+                parameters.append(float(pes_parameters[key]))
+            except ValueError as e:
+                raise XPACDTInputError(
+                    f"Parameter {key} for Morse potential not convertible to "
+                    "float.",
+                    section="Morse1D",
+                    key=key,
+                    given=pes_parameters[key],
+                    caused_by=e)
 
-        try:
-            self.__re = float(pes_parameters.get('re'))
-        except (TypeError, ValueError):
-            print("\nXPACDT: Parameter 're' for morse potential not given or "
-                  "not convertible to float.\n")
-            raise
-
-        try:
-            self.__b = float(pes_parameters.get('b'))
-        except (TypeError, ValueError):
-            print("\nXPACDT: Parameter 'b' for morse potential not given or "
-                  "not convertible to float.\n")
-            raise
+        self.__De, self.__a, self.__re, self.__b = parameters
 
     @property
     def De(self):

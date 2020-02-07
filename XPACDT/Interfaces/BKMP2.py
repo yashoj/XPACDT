@@ -39,6 +39,8 @@ import XPACDT.Interfaces.BKMP2_module.pot as pot
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class BKMP2(itemplate.PotentialInterface):
     """
@@ -50,11 +52,18 @@ class BKMP2(itemplate.PotentialInterface):
         Dictonary-like presentation of the input file.
 
     """
-    def __init__(self, parameters, **kwargs):
+    def __init__(self, n_dof=9, **parameters):
         pot.pes_init()
-        itemplate.PotentialInterface.__init__(self, "BKMP2", 9, 1,
-                                               max(parameters.n_beads),
-                                              'adiabatic')
+
+        if n_dof != 9:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 9 for CW.",
+                section="CW")
+
+        super().__init__("BKMP2",
+                         n_dof=9, n_states=1, primary_basis='adiabatic',
+                         **parameters)
 
     def _calculate_adiabatic_all(self, R, P=None, S=None):
         """

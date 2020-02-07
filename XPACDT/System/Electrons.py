@@ -33,6 +33,8 @@ electrons in the system. """
 
 import sys
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class Electrons:
     """
@@ -58,7 +60,6 @@ class Electrons:
     """
 
     def __init__(self, name, parameters, basis='adiabatic'):
-
         self.__name = name
         self.basis = basis
 
@@ -66,17 +67,21 @@ class Electrons:
         pes_name = parameters.get("system").get("Interface", None)
 
         if pes_name is None:
-            raise KeyError("\nXPACDT: Potential energy surface interface "
-                           "not specified in $system section.")
+            raise XPACDTInputError(
+                "Potential energy surface interface not specified.",
+                section="system",
+                key="interface")
 
         if pes_name not in parameters:
-            raise KeyError("\nXPACDT: No input parameters for chosen potential"
-                           " energy surface interface.")
+            raise XPACDTInputError(
+                "No input parameters for the selected potential energy "
+                "surface interface.",
+                section=f"{pes_name}")
 
         __import__("XPACDT.Interfaces." + pes_name)
 
         self.__pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                             pes_name)(parameters)
+                             pes_name)(**parameters)
 
     @property
     def name(self):

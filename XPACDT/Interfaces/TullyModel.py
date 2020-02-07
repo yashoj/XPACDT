@@ -37,6 +37,8 @@ import numpy as np
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 
+from XPACDT.Input.Error import XPACDTInputError
+
 
 class TullyModel(itemplate.PotentialInterface):
     """
@@ -54,20 +56,31 @@ class TullyModel(itemplate.PotentialInterface):
         String denoting model type to be used.
     """
 
-    def __init__(self, parameters):
+    def __init__(self, n_dof=1, **parameters):
+        if n_dof != 1:
+            raise XPACDTInputError(
+                f"Inferred number of degree of freedom is {n_dof}, but "
+                "should be 1 for Tully model.",
+                section="TullyModel")
 
-        itemplate.PotentialInterface.__init__(self, "TullyModel", 1, 2,
-                                              max(parameters.n_beads),
-                                              'diabatic')
+        super().__init__("TullyModel",
+                         n_dof=1,
+                         n_states=2, primary_basis='diabatic',
+                         **parameters)
 
         pes_parameters = parameters.get(self.name)
 
         if 'model_type' not in pes_parameters:
-            raise KeyError("\nXPACDT: Parameter 'model_type' not given in input.")
+            raise XPACDTInputError(section="TullyModel",
+                                   key="model_type")
         self.__model_type = pes_parameters.get('model_type')
         if (self.__model_type not in ['model_A', 'model_B', 'model_C']):
-            raise ValueError("\nXPACDT: Wrong Tully model requested. Please"
-                             "use 'model_A', 'model_B' or 'model_C'.")
+            raise XPACDTInputError(
+                "Invalid Tully model requested. Please use 'model_A', "
+                "'model_B' or 'model_C'.",
+                section="TullyModel",
+                key="model_type",
+                given=self.__model_type)
 
         if (self.model_type == 'model_A'):
             self.__A = 0.01

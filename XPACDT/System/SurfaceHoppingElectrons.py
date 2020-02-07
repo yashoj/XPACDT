@@ -137,13 +137,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 "ODE solver must be 'runge_kutta', 'unitary' or 'scipy'.",
                 section="SurfaceHoppingElectrons",
                 key="ode_solver")
-        if (self.ode_solver == "unitary"):
-            if (self.evolution_picture != "schroedinger"):
-                raise XPACDTInputError(
-                    "Evolution picture needs to be Schroedinger for unitary "
-                    "propagation.",
-                    section="SurfaceHoppingElectrons",
-                    key="evolution_picture/ode_solver")
+        if (self.ode_solver == "unitary" and
+                self.evolution_picture != "schroedinger"):
+            raise XPACDTInputError(
+                "Evolution picture needs to be Schroedinger for unitary "
+                "propagation.",
+                section="SurfaceHoppingElectrons",
+                key="evolution_picture/ode_solver")
 
         max_n_beads = self.pes.max_n_beads
         n_states = self.pes.n_states

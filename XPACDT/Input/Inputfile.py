@@ -92,7 +92,7 @@ class Inputfile(collections.MutableMapping):
         with open(self._filename, 'r') as infile:
             self._intext = infile.read()
 
-        self._raw_coordinates = None
+        self._coordinates_string = None
         self._raw_momenta = None
 
         self._parse_file()
@@ -149,8 +149,8 @@ class Inputfile(collections.MutableMapping):
             # 'beta' should not be used anywhere, so setting it to NaN.
             self["beta"] = np.nan
 
-        if self._raw_coordinates is not None:
-            self.__format_coordinates()
+        if self._coordinates_string is not None:
+            self.__parse_coordinates_string()
 
         self["commands"] = {k: self[k] for k in self.keys() if 'command' in k}
         for key in self.commands:
@@ -188,15 +188,15 @@ class Inputfile(collections.MutableMapping):
                                    key="beads")
 
         if np.any([(i != 1 and (i % 2 != 0)) for i in n]):
-            raise XPACDTInputError("Number of beads not 1 nor even.",
+            raise XPACDTInputError("Number of beads must be either 1 or even.",
                                    section="rpmd",
                                    key="beads")
 
         # Keep number of beads same for now
         if np.any([(i != n[0]) for i in n]):
             raise NotImplementedError("Different number of beads for each "
-                                      "degrees of freedom has not yet been "
-                                      "implemented.")
+                                      "degrees of freedom is not yet "
+                                      "available.")
 
         if len(n) == 1:
             # Clone the number of beads for each degree of freedom
@@ -278,36 +278,22 @@ class Inputfile(collections.MutableMapping):
         for section in section_texts:
             if section[0:12] == "$coordinates":
                 try:
-                    match = re.search(r"\$(\w+).*?\n.*type.*=\s*(\S+)(.*)",
+                    match = re.search(r"\$(\w+).*?\n.*type\s*=\s*(\S+)(.*)",
                                       section, flags=re.DOTALL)
                     keyword = match.group(1)
                     self._c_type = match.group(2)
-                    values = match.group(3)
+                    # We defer the parsing of the coordinates to later, for
+                    # when the number of beads is known.
+                    self._coordinates_string = match.group(3)
                 except AttributeError:
                     raise XPACDTInputError(section="coordinates", key="type")
 
-                try:
-                    if self._c_type == 'xyz':
-                        atom_symbols, masses, coord = parse_xyz(
-                                                        input_string=values)
-                        self["atom_symbols"] = atom_symbols
-                        self["masses"] = masses
-                        self._raw_coordinates = coord
-                    elif self._c_type == 'mass-value':
-                        masses, coord = parse_mass_value(values)
-                        self["masses"] = masses
-                        self._raw_coordinates = coord
-                    else:
-                        raise XPACDTInputError(
-                            f"Invalid coordinate type {self._c_type}. Allowed "
-                            "types are xyz and mass-value.",
-                            section="coordinates",
-                            key="type")
-                except ValueError as e:
+                if self._c_type not in ['xyz', 'mass-value']:
                     raise XPACDTInputError(
-                        "Coordinate data was not correctly formatted.",
+                        f"Invalid coordinate type {self._c_type}. Allowed "
+                        "types are 'xyz' and 'mass-value'.",
                         section="coordinates",
-                        caused_by=e)
+                        key="type")
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
@@ -366,122 +352,64 @@ class Inputfile(collections.MutableMapping):
 
         return value_dict
 
-    def __format_coordinates(self):
+    def __parse_coordinates_string(self):
         """ Reformat positions to match the desired format, i.e.,  The first
         axis is the degrees of freedom and the second axis the beads. If
         momenta are present we also reformat those. """
 
+        if self._c_type == 'mass-value':
+            self["masses"], coord = parse_mass_value(self._coordinates_string)
+
+        if self._c_type == 'xyz':
+            self["atom_sybols"], self["masses"], coord = \
+                parse_xyz(input_string=self._coordinates_string,
+                          n_beads=self["n_beads"])
+
         if self._raw_momenta is not None:
-            if self._raw_coordinates.shape != self._raw_momenta.shape:
+            try:
+                self._raw_momenta = self._raw_momenta.reshape(coord.shape)
+            except ValueError as e:
                 raise XPACDTInputError(
                     "Number of momenta and coordinates does not match",
-                    section="coordinates/momenta")
+                    section="coordinates/momenta",
+                    caused_by=e)
 
-        if self._c_type == 'mass-value':
-            dof_given, beads_given = self._raw_coordinates.shape
-            if dof_given != self.n_dof:
-                raise XPACDTInputError(
-                    f"Number of coordinates ({dof_given}) given does "
-                    f"not match n_dof given in the input ({self.n_dof}).",
-                    section="coordinates")
+        dof_given, beads_given = coord.shape
 
-            # Check if only centroid value is given for more than one beads,
-            # if yes, sample free ring polymer distribution
-            if (beads_given == 1 and self["max_n_beads"] > 1):
+        # Check if only centroid value is given for more than one beads,
+        # if yes, sample free ring polymer distribution
+        if (beads_given == 1 and self["max_n_beads"] > 1):
+            rp_coord = np.zeros((self.n_dof, self["max_n_beads"]))
+            rp_momenta = np.zeros((self.n_dof, self["max_n_beads"]))
+            NMtransform_type = self['rpmd'].get("nm_transform", "matrix")
+            RPtransform = RPtrafo.RingPolymerTransformations(
+                            self.n_beads, NMtransform_type)
 
-                rp_coord = np.zeros((self.n_dof, self["max_n_beads"]))
-                rp_momenta = np.zeros((self.n_dof, self["max_n_beads"]))
-                NMtransform_type = self['rpmd'].get("nm_transform", "matrix")
-                RPtransform = RPtrafo.RingPolymerTransformations(
-                                self.n_beads, NMtransform_type)
-
-                for i in range(self.n_dof):
-                    rp_coord[i] = RPtransform.sample_free_rp_coord(
+            for i in range(self.n_dof):
+                rp_coord[i] = RPtransform.sample_free_rp_coord(
+                    self.n_beads[i], self.masses[i], self.beta,
+                    coord[i, 0])
+                if self._raw_momenta is not None:
+                    rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                         self.n_beads[i], self.masses[i], self.beta,
-                        self._raw_coordinates[i, 0])
-                    if self._raw_momenta is not None:
-                        rp_momenta[i] = RPtransform.sample_free_rp_momenta(
-                            self.n_beads[i], self.masses[i], self.beta,
-                            self._raw_momenta[i, 0])
+                        self._raw_momenta[i, 0])
 
-                self["coordinates"] = rp_coord.copy()
+            self["coordinates"] = rp_coord.copy()
 
-                if self._raw_momenta is not None:
-                    self["momenta"] = rp_momenta.copy()
+            if self._raw_momenta is not None:
+                self["momenta"] = rp_momenta.copy()
 
-            else:
-                if beads_given != self["max_n_beads"]:
-                    raise XPACDTInputError(
-                        f"Number of bead coordinates ({beads_given}) given "
-                        "does not match the expected number of beads "
-                        f"({self.max_n_beads}).",
-                        section="coordinates")
+        elif beads_given == self["max_n_beads"]:
+            self["coordinates"] = coord
 
-                shape = (self.n_dof, self["max_n_beads"])
-                self["coordinates"] = self._raw_coordinates.reshape(shape)
-
-                if self._raw_momenta is not None:
-                    self["momenta"] = self._raw_momenta.reshape(shape)
-
-        elif self._c_type == 'xyz':
-            if self.n_dof % 3 != 0:
-                raise XPACDTInputError(
-                    "Degrees of freedom needs to be  multiple of 3 for "
-                    f"'xyz' format, {self.n_dof} was given.",
-                    section="coordinates")
-
-            dof_given, beads_given = self._raw_coordinates.shape
-            if (dof_given != self.n_dof // 3
-                    and dof_given != np.sum(self.n_beads) // 3):
-
-                raise XPACDTInputError(
-                    f"Number of coordinates given does has n_dof "
-                    "({dof_given}). This doesn't match any of the allowed "
-                    f"values ({self.n_dof // 3} or "
-                    f"{np.sum(self.n_beads) // 3}).",
-                    section="coordinates")
-
-            # TODO: Need to check if all dof of an atom has same nbeads?
-
-            # Check if all bead values are given for each degree of freedom;
-            # if not, sample from free rp distribution
-            if (dof_given == np.sum(self.n_beads) // 3):
-                # reordering; only works for same number of beads for now!
-                n_max = max(self.n_beads)
-                # Bypass the 'only write once' policy by accessing .store
-                # directly
-                self.store["masses"] = self.masses[::n_max]
-                self["coordinates"] = np.array(
-                    [self._raw_coordinates[i::n_max] for i in range(n_max)])\
-                    .flatten().reshape((self.n_dof, -1), order='F')
-
-                if self._raw_momenta is not None:
-                    self["momenta"] = np.array(
-                        [self._raw_momenta[i::n_max] for i in range(n_max)])\
-                        .flatten().reshape(self["coordinates"].shape, order='F')
-
-            else:
-                masses_dof = np.zeros(self.n_dof)
-                rp_coord = np.zeros((self.n_dof, max(self.n_beads)))
-                rp_momenta = np.zeros((self.n_dof, max(self.n_beads)))
-                NMtransform_type = self.get('rpmd').get("nm_transform",
-                                                        "matrix")
-                RPtransform = RPtrafo.RingPolymerTransformations(
-                                self.n_beads, NMtransform_type)
-
-                for i in range(self.n_dof):
-                    masses_dof[i] = self.masses[i//3]
-                    rp_coord[i] = RPtransform.sample_free_rp_coord(
-                        self.n_beads[i], masses_dof[i], self.beta,
-                        self._raw_coordinates[i // 3, i % 3])
-                    if self._raw_momenta is not None:
-                        rp_momenta[i] = RPtransform.sample_free_rp_momenta(
-                            self.n_beads[i], masses_dof[i], self.beta,
-                            self._raw_momenta[i // 3, i % 3])
-
-                self["masses"] = masses_dof
-                self["coordinates"] = rp_coord.copy()
-                if self._raw_momenta is not None:
-                    self["momenta"] = rp_momenta.copy()
+            if self._raw_momenta is not None:
+                self["momenta"] = self._raw_momenta
+        else:
+            raise XPACDTInputError(
+                f"Number of bead coordinates ({beads_given}) given "
+                "does not match the given number of beads "
+                f"({self.max_n_beads}).",
+                section="rpmd",
+                key="n_beads")
 
         self._c_type = 'xpacdt'

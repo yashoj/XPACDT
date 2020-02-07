@@ -65,11 +65,12 @@ class InputfileTest(unittest.TestCase):
                                    "temp": "300 K"},
                            "miep": {"": ""}}
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_works.in")
-        self.assertDictEqual(input_reference, parameters.store)
+        # We check section by section as Inputfile add some computed
+        # informations no present in the input file to its dict.
+        for section in input_reference:
+            self.assertDictEqual(input_reference[section], parameters[section])
 
         # TODO: add a test for 'commands'
-
-        return
 
     def test_parse_values(self):
         parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_minimal.in")
@@ -89,39 +90,6 @@ class InputfileTest(unittest.TestCase):
         with self.assertRaises(XPACDTInputError):
             key_value = parameters._parse_values("mehrere = ist = doof")
 
-    def test_xyz_with_beads(self):
-        # with two beads
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_xyz_2_beads.in")
-        coordinate_ref = np.array([[1.0, 1.1], [2.0, 2.1], [3.0, 3.1],
-                                   [2.0, 2.1], [1.0, 1.1], [4.0, 4.1]])
-
-        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-                                   rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
-
-        # with four beads
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_6-4.in")
-        coordinate_ref = np.array([[1.0, 1.1, 1.2, 1.3],
-                                   [2.0, 2.1, 2.2, 2.3],
-                                   [3.0, 3.1, 3.2, 3.3],
-                                   [2.4, 2.5, 2.6, 2.7],
-                                   [1.4, 1.5, 1.6, 1.7],
-                                   [4.0, 4.1, 4.2, 4.3]])
-        input_string = "H 1.0 2.0 3.0 \n" \
-            + "H 1.1 2.1 3.1 \n" \
-            + "H 1.2 2.2 3.2 \n" \
-            + "H 1.3 2.3 3.3 \n" \
-            + "F 2.4 1.4 4.0 \n" \
-            + "F 2.5 1.5 4.1 \n" \
-            + "F 2.6 1.6 4.2 \n" \
-            + "F 2.7 1.7 4.3 \n"
-
-        parameters._parse_xyz(input_string)
-        np.testing.assert_allclose(parameters.coordinates, coordinate_ref,
-                                   rtol=1e-7)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
-
-
     def test_get_section(self):
         section1_reference = {"miep": "muh", "blah": "", "blubb": "",
                               "dof": "4"}
@@ -137,19 +105,6 @@ class InputfileTest(unittest.TestCase):
         self.assertTrue("system" in parameters)
         self.assertTrue("pes" in parameters)
         self.assertFalse("wrong" in parameters)
-
-        return
-
-    def test_flatten_shifts(self):
-        parameters = infile.Inputfile("FilesForTesting/InputfileTest/input_shifts.in")
-        parameters._flatten_shifts()
-        parameters._c_type = 'xpacdt'
-
-        positionShift_ref = np.array([1.0, 2.0, 3.0, 4.0])
-        momentumShift_ref = np.array([-1.0, -2.0, -3.0, -4.0])
-
-        np.testing.assert_array_equal(parameters.positionShift, positionShift_ref)
-        np.testing.assert_array_equal(parameters.momentumShift, momentumShift_ref)
 
     @unittest.skip("Implicitly tested in parse modules.")
     def test_format_coordinates(self):

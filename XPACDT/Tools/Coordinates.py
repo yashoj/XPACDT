@@ -104,9 +104,9 @@ def format_xyz(atoms, r, full=True):
     return f"{n_atoms}\nbohr\n{core}"
 
 
-def parse_xyz(input_string=None, filename=None):
+def parse_xyz(input_string=None, filename=None, n_beads=None):
     """
-    Parse a XYZ formatted string (passed with the `input_string` keyword), or\
+    Parse a XYZ formatted string (passed with the `input_string` keyword), or
     file (which name or path is given by the `filename` keyword).
 
     Strings are expected to only exactly contain the coordinates, and to use
@@ -116,27 +116,38 @@ def parse_xyz(input_string=None, filename=None):
     containing the number of atoms (this line is ignored here) and the second
     being a comment line. If the second line contains the words "bohr" or
     "a.u." this is used as unit, otherwise the unit used is Angstrom. In any
-    case the output is in bohr.
+    case the output is in bohr. This follows the Molcas convention for XYZ
+    files.
 
-    This follows the Molcas convention for XYZ files.
+    If `n_beads` is given, the input is interpreting as having multiple beads,
+    the atoms being repeated for as many times as there are beads associated to
+    them.
+
+    Raise `ValueError` if the input can not be parsed.
 
     Parameters
     ----------
-    input_string : str
+    input_string : str, optional. Default: None
         A string containing coordinates in the XYZ format (in bohr)
 
-    filename : path-like
+    filename : path-like, optional. Default: None
         Path to a file containing coordinates in the XYZ format
+
+    n_beads : list of int or None, optional. Default: None
+        If not None, return an array of shape (n_dof, max(n_beads)) for the
+        coordinates. Currently only constant number of beads is supported.
+        If n_beads is None, the shape of the coordinates returned is (n_dof,).
+        In all cases, the shape of the atom list and masses is (n_dof,).
 
     Return
     ------
-    atom_symbols : (n_atoms,) ndarray of strings
+    atom_symbols : (n_dof,) ndarray of strings
         Names of the atoms
 
     masses : (n_dof,) ndarray of floats
-        Masses of the atoms for each degree of freedom. 
+        Masses of the atoms for each degree of freedom.
 
-    coord : (3*n_atoms,) ndarray of floats
+    coord : (n_dof,) or (n_dof, max(n_beads)) ndarray of floats
         Coordinates of the atoms in bohr
     """
 
@@ -154,10 +165,12 @@ def parse_xyz(input_string=None, filename=None):
                          "None.")
 
     # The atom symbols are in the first column
-    # NOTE: A new StringIO object must be created at each run as it is
+    # NOTE: A new StringIO object must be created at np.loadtxt run as it is
     # consumed when read.
     atom_symbols = np.loadtxt(StringIO(input_string), skiprows=skip, usecols=0,
                               dtype=str)
+    masses = np.array(list(map(atom_mass, atom_symbols)))
+
     try:
         # Columns 1 to 3 contains the coordinates
         coord = np.loadtxt(StringIO(input_string), skiprows=skip, usecols=(1, 2, 3))
@@ -165,10 +178,28 @@ def parse_xyz(input_string=None, filename=None):
         raise ValueError("The XYZ data is not correctly formatted.\n"
                          f"XYZ data:\n{input_string}")
 
-    # Unique masses
-    masses = np.array(list(map(atom_mass, atom_symbols)))
-    # Masses are expected to be given for each dof so we have to repeat
-    # each of them 3 times
+    if n_beads is not None:
+        max_n_beads = np.max(n_beads)
+        if np.any(np.asarray(n_beads) != max_n_beads):
+            raise NotImplementedError(
+                "Variable number of beads not yet supported.")
+
+        n_dof = 3*len(coord) // max_n_beads
+        beads = np.zeros((n_dof, max_n_beads))
+
+        for k in range(max_n_beads):
+            b = coord[k::max_n_beads, :]
+            beads[:, k] = np.hstack(b)
+
+        atom_symbols = atom_symbols[::max_n_beads]
+        masses = masses[::max_n_beads]
+        coord = beads
+    else:
+        coord = np.hstack(coord)
+
+    # Masses and symbols are expected to be given for each dof so we have to
+    # repeat each of them 3 times
+    atom_symbols = np.hstack([(a, a, a) for a in atom_symbols])
     masses = np.hstack([(m, m, m) for m in masses])
 
     return atom_symbols, masses, conversion_factor*coord

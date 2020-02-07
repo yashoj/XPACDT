@@ -32,13 +32,18 @@
 systems for real-time propagation."""
 
 import glob
+import logging
 import os
 import pickle
 import shutil
 import sys
+import time
 import warnings
 
 from XPACDT.Input.Error import XPACDTInputError
+
+
+logger = logging.getLogger(__name__)
 
 
 def sample(system, parameters, do_return=False):
@@ -66,6 +71,8 @@ def sample(system, parameters, do_return=False):
     ------
     If `do_return` is True, the list of samples systems is returned.
     """
+    start_time = time.time()
+    logger.info("Running sampling.")
 
     sampling_parameters = parameters.get('sampling')
     system_parameters = parameters.get('system')
@@ -138,6 +145,7 @@ def sample(system, parameters, do_return=False):
             system.do_log(init=True)
 
     if do_return is True:
+        logger.info(f"Sampling done in {time.time() - start_time:.2f} s.")
         return sampled_systems
 
     # Save stuff to pickle files. Iterate over all possible folders
@@ -163,3 +171,5 @@ def sample(system, parameters, do_return=False):
             pickle.dump(sampled_systems[shift],
                         open(os.path.join(trj_folder, file_name), 'wb'), -1)
             shift += 1
+
+    logger.info(f"Sampling done in {time.time() - start_time:.2f} s.")

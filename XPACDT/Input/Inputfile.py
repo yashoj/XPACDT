@@ -37,13 +37,15 @@ after a '=' character. Blank lines are ignored. Comments can be given and
 start with a '#' character."""
 
 import collections
-from errno import ENOENT
-from io import StringIO
+import copy
 import logging
 import numpy as np
 import os
 import re
 import yaml
+
+from errno import ENOENT
+from io import StringIO
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
@@ -84,7 +86,10 @@ class Inputfile(collections.MutableMapping):
     momentumShift
     """
 
-    def __init__(self, inputfile):
+    def __init__(self, inputfile=None):
+        if inputfile is None:
+            return
+        
         logger.info(f"Inputfile '{inputfile}' is read.'")
         self.store = dict()
 
@@ -251,7 +256,9 @@ class Inputfile(collections.MutableMapping):
             f"Object of type Inputfile has no attribute named {attribute}.")
 
     def __deepcopy__(self, memo):
-        return Inputfile(self._filename)
+        new = Inputfile()
+        new.store = copy.deepcopy(self.store)
+        return new
 
     def __str__(self):
         d = {**self.store}

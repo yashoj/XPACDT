@@ -53,38 +53,6 @@ import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
 
 
-logging.config.dictConfig(
-    {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "simple": {
-                "format": "%(asctime)s [%(name)s] %(levelname)s - %(message)s",
-                "datefmt": "%H:%M:%S"
-            }
-        },
-        "handlers": {
-            "console": {
-                "class": "logging.StreamHandler",
-                "level": "INFO",
-                "formatter": "simple",
-                "stream": "ext://sys.stdout"
-            },
-            "file": {
-                "class": "logging.FileHandler",
-                "level": "DEBUG",
-                "formatter": "simple",
-                "filename": "XPACDT.log",
-                "mode": "w"
-            }
-        },
-        "root": {
-            "level": "DEBUG",
-            "handlers": ["console", "file"]
-        }
-    }
-)
-
 logger = logging.getLogger(__name__)
 
 
@@ -126,8 +94,6 @@ def print_helpfile(filename):
 def start():
     """Start any XPACDT calculation."""
 
-    logger.info(f"XPACDT started")
-
     # Save version used for later reference; either from git repository or from
     # .version file included by the PyInstaller program
     try:
@@ -139,13 +105,6 @@ def start():
         with open(resource_path("") + '.version', 'r') as input_file:
             branch_name = input_file.readline().split()[1]
             hexsha = input_file.readline().split()[1]
-
-    version_file = open('.version', 'w')
-    version_file.write("Branch: " + branch_name + " \n")
-    version_file.write("Commit: " + hexsha + " \n")
-    version_file.close()
-    logger.info("Branch: " + branch_name)
-    logger.info("Commit: " + hexsha)
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(add_help=False)
@@ -178,6 +137,15 @@ def start():
                         dest="AnalysisInputFile",
                         required=False, help=i_help)
 
+    parser.add_argument("--quiet",
+                        dest="Quiet",
+                        required=False,
+                        action="store_const",
+                        const=True,
+                        help=("Suppress part of the output to the shell."
+                              "Output to the XPACDT.log file is not "
+                              "affected."))
+
     args = parser.parse_args()
 
     if args.help is not None:
@@ -208,10 +176,49 @@ def start():
             print("Incorect keyword given to -h :" + args.help)
         return
 
+    loglevel = "INFO" if args.Quiet is None else "WARNING"
+
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "simple": {
+                    "format": ("%(asctime)s [%(name)s] %(levelname)s - "
+                               "%(message)s"),
+                    "datefmt": "%H:%M:%S"
+                }
+            },
+            "handlers": {
+                "console": {
+                    "class": "logging.StreamHandler",
+                    "level": loglevel,
+                    "formatter": "simple",
+                    "stream": "ext://sys.stdout"
+                },
+                "file": {
+                    "class": "logging.FileHandler",
+                    "level": "DEBUG",
+                    "formatter": "simple",
+                    "filename": "XPACDT.log",
+                    "mode": "w"
+                }
+            },
+            "root": {
+                "level": "DEBUG",
+                "handlers": ["console", "file"]
+            }
+        }
+    )
+
+    logger.info("Branch: " + branch_name)
+    logger.info("Commit: " + hexsha)
+
     # Get input file
     if args.InputFile is None:
         logger.error("Input file required!")
         return
+
     input_parameters = infile.Inputfile(args.InputFile)
 
     # Initialize random number generators
@@ -291,7 +298,7 @@ def start():
     name_file = input_parameters.get('system').get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
     if os.path.isfile(path_file):
-        print("Reading system state from pickle file!")
+        logging.warning("Reading system state from pickle file!")
         system = pickle.load(open(path_file, 'rb'))
         # Updating input parameters appropriately
         system.parameters = input_parameters
@@ -303,12 +310,10 @@ def start():
         system.optimize_geometry()
 
         # run sampling first
-        print("Running Sampling...", end='', flush=True)
         systems = sampling.sample(system, input_parameters, do_return=True)
-        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
         # loop and propagate
-        print("Running Real time propagation...", end='', flush=True)
+        print("Running Real time propagation...")
         start_time = time.time()
         # Read new input file if given
         if args.PropagationInputFile is not None:
@@ -357,9 +362,7 @@ def start():
             print("...no analysis requested!")
 
     elif job == "sample":
-        print("Running Sampling...", end='', flush=True)
         sampling.sample(system, input_parameters)
-        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     elif job == "propagate":
         print("Running Real time propagation...", end='', flush=True)

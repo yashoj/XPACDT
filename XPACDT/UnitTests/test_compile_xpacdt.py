@@ -57,7 +57,9 @@ class compile_xpacdtTest(unittest.TestCase):
         reference = ['Interfaces/third.py', 'Interfaces/first.py',
                      'Interfaces/second.py']
         ret = cx.get_named_files("test/Interfaces", "test")
-        self.assertListEqual(reference, ret)
+        self.assertEqual(len(reference), len(ret))
+        for s in reference:
+            self.assertTrue(s in ret)
 
         reference = ['Interfaces/third.py', 'Interfaces/second.py']
         ret = cx.get_named_files("test/Interfaces", "test",
@@ -65,14 +67,18 @@ class compile_xpacdtTest(unittest.TestCase):
         self.assertListEqual(reference, ret)
         reference = ['Interfaces/third.py', 'Interfaces/first.py']
         ret = cx.get_named_files("test/Interfaces", "test", contains='ir')
-        self.assertListEqual(reference, ret)
+        self.assertEqual(len(reference), len(ret))
+        for s in reference:
+            self.assertTrue(s in ret)
 
         reference = ['Interfaces/blah_mod/third.dat',
                      'Interfaces/blah_mod/first.dat',
                      'Interfaces/blah_mod/second.dat']
         ret = cx.get_named_files("test/Interfaces/blah_mod", "test",
                                  suffix='.dat')
-        self.assertListEqual(reference, ret)
+        self.assertEqual(len(reference), len(ret))
+        for s in reference:
+            self.assertTrue(s in ret)
 
         shutil.rmtree("test")
 
@@ -80,15 +86,19 @@ class compile_xpacdtTest(unittest.TestCase):
         reference = "--hidden-import='Interfaces.third' " \
             "--hidden-import='Interfaces.first' " \
             "--hidden-import='Interfaces.second' "
-        ret = cx.discover_hidden_imports("test/Interfaces", "test")
-        self.assertEqual(reference, ret)
+        ret = cx.discover_hidden_imports("test/Interfaces", "test").split()
+        self.assertEqual(len(reference.split()), len(ret))
+        for s in reference.split():
+            self.assertTrue(s in ret)
 
     def test_discover_data_files(self):
         reference = "--add-data 'test/Interfaces/blah_mod/third.dat:Interfaces/blah_mod' " \
             "--add-data 'test/Interfaces/blah_mod/first.dat:Interfaces/blah_mod' " \
             "--add-data 'test/Interfaces/blah_mod/second.dat:Interfaces/blah_mod' "
-        ret = cx.discover_data_files("test/Interfaces", "test")
-        self.assertEqual(reference, ret)
+        ret = cx.discover_data_files("test/Interfaces", "test").split()
+        self.assertEqual(len(reference.split()), len(ret))
+        for s in reference.split():
+            self.assertTrue(s in ret)
 
     def tearDown(self):
         d = "test"

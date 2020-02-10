@@ -97,6 +97,12 @@ class xpacdtTest(unittest.TestCase):
     def test_start(self):
         pass
 
+    def tearDown(self):
+        files = ["centroids.xyz", "beads.xyz", "movie.vmd", "run.sh"]
+        for filename in files:
+            if os.path.exists(filename):
+                os.remove(filename)
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(xpacdtTest)

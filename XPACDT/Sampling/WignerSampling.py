@@ -70,8 +70,9 @@ def do_Wigner_sampling(system, parameters, n_sample, hessian=None):
 
     if (omega <= 0).any():
         raise RuntimeError(
-            f"Negative frequency given for sampling (omega = {omega}). Please "
-            "make sure that the input geometry is optimized.")
+            "\nXPACDT: Negative frequency given for sampling (omega = "
+            f"{omega}). Please make sure that the input geometry is "
+            "optimized.")
 
     # Get the width of the ground state distribution
     sigma_x = np.sqrt(1.0 / (2.0 * omega * nm_masses))

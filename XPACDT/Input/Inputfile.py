@@ -251,15 +251,10 @@ class Inputfile(collections.MutableMapping):
     def __str__(self):
         d = {**self.store}
         for key, val in d.items():
-            try:
-                # Transform every numpy array to a list of lists
+            if type(val) == np.ndarray:
+                # Transform every numpy array to a list of lists as they are
+                # not directly serializable by YAML
                 d[key] = val.tolist()
-            # When the value is not a numpy array, the .tolist() function
-            # does not exist and an AttributeError is raise. In this case
-            # nothing need to be done as the object will be directly
-            # serializable by YAML.
-            except AttributeError:
-                pass
         return yaml.dump(d)
 
     def _parse_file(self):

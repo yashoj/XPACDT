@@ -28,13 +28,14 @@
 #
 #  **************************************************************************
 
-"""Module defining the errors related to the parsing of the input file.
+"""Module defining the errors related to the input file.
 """
 
 
 class XPACDTInputError(Exception):
     """
-    Exception raise whenever an input file can not be parsed correctly.
+    Exception raise whenever an input file can not be parsed correctly, either
+    due to wrong formatting, missing key or inconsistency.
 
     Parameters
     ----------

@@ -58,8 +58,8 @@ class BKMP2(itemplate.PotentialInterface):
         if n_dof != 9:
             raise XPACDTInputError(
                 f"Inferred number of degree of freedom is {n_dof}, but "
-                "should be 9 for CW.",
-                section="CW")
+                "should be 9 for BKMP2.",
+                section="BKMP2")
 
         super().__init__("BKMP2",
                          n_dof=9, n_states=1, primary_basis='adiabatic',

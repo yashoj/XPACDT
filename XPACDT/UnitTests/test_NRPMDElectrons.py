@@ -45,14 +45,17 @@ class NRPMDElectronsTest(unittest.TestCase):
         np.random.seed(seed)
 
         self.parameters = infile.Inputfile("FilesForTesting/SystemTest/input_NRPMD_classical.in")
-        #self.system = xSystem.System(self.parameters0)
-        
+        # self.system = xSystem.System(self.parameters0)
+
+    @unittest.skip("Please implement a test here.")
     def test_step(self):
         return
 
+    @unittest.skip("Please implement a test here.")
     def test_energy(self):
         return
 
+    @unittest.skip("Please implement a test here.")
     def test_gradient(self):
         return
 

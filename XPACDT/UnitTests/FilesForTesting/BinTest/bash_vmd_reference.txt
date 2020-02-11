@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm movie.gif movie.mp4
+
+vmd -e movie.vmd 
+
+convert -delay 10 -loop 1 *.png movie.gif
+ffmpeg -framerate 15 -i %05d.tga.png -s:v 600x750 -c:v libx264 -profile:v high -crf 15 -r 30 -pix_fmt yuv420p movie.mp4 
+
+rm *tga *png

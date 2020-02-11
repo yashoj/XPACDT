@@ -324,19 +324,20 @@ class NucleiTest(unittest.TestCase):
         # TODO: add test for more that 1 dimensions
         return
 
+    @unittest.skip("Please implement a test here.")
     def test_init_electrons(self):
         raise NotImplementedError("Please implement a test here!!")
-        pass
 
+    @unittest.skip("Please implement a test here.")
     def test_attach_nuclei_propagator(self):
         raise NotImplementedError("Please implement a test here!!")
-        pass
 
+    @unittest.skip("Please implement a test here.")
     def test_getCOM(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
-        pass
-
+    
+    @unittest.skip("Please implement a test here.")
     def test_print_size(self):
         # Not really clear how to test this. Here for completness sake.
         pass

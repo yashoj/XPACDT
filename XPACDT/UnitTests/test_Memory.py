@@ -40,6 +40,7 @@ class MemoryTest(unittest.TestCase):
     def setUp(self):
         pass
 
+    @unittest.skip("Please implement a test here.")
     def test_getsize(self):
         raise NotImplementedError("Please implement a test!")
 

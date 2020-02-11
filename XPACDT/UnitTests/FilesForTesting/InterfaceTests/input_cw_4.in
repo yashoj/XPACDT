@@ -7,4 +7,7 @@ $Triatomic
 name = CW
 $end
 
-
+$rpmd
+beads = 4
+beta = 1.0
+$end

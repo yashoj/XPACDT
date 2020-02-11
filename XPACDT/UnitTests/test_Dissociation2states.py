@@ -100,7 +100,7 @@ class Dissociation2statesTest(unittest.TestCase):
         np.testing.assert_allclose(
                 self.pes_strong_2_nb._diabatic_gradient_centroid, [[[0.00689168], [6.27486975e-06]],
                                                                    [[6.27486975e-06], [-0.02064746]]], rtol=1e-6)
-        
+
         # Weak coupling model: 2 beads
         self.pes_weak_2_nb._calculate_diabatic_all(np.array([[2.0, 4.3]]))
         np.testing.assert_allclose(
@@ -116,9 +116,11 @@ class Dissociation2statesTest(unittest.TestCase):
                 self.pes_weak_2_nb._diabatic_gradient_centroid, [[[0.00410023], [1.63312314e-04]],
                                                                  [[1.63312314e-04], [-0.01239246]]], rtol=1e-6)
 
+    @unittest.skip("Please implement a test here.")
     def test_get_diag_V_grad(self):
         raise NotImplementedError("Please implement a test here.")
 
+    @unittest.skip("Please implement a test here.")
     def test_get_off_diag_V_grad(self):
         raise NotImplementedError("Please implement a test here.")
 

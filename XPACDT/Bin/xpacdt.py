@@ -227,8 +227,17 @@ def start():
                              + str(len(dof)) + " != " + str(len(start)))
 
         # Parse electronic parameters
-        state = int(plot_params.get("state", "0"))
         picture = 'diabatic' if 'diabatic' in plot_params else 'adiabatic'
+        state_split = plot_params.get("state", "0").split()
+        if len(state_split) == 1:
+            state = int(state_split[0])
+        elif len(state_split) == 2:
+            state = (int(state_split[0]), int(state_split[1]))
+            if picture == 'adiabatic':
+                raise RuntimeError("\nXPACDT: Cannot plot offdiagonal elements if"
+                                   "picture is adiabatic.")
+        else:
+            raise ValueError("\nXPACDT: Too many state variables given for plotting.")
 
         if len(dof) == 1:
             pes.plot_1D(input_parameters.coordinates[:, 0], dof[0],

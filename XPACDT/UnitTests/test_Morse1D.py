@@ -102,6 +102,7 @@ class Morse1DTest(unittest.TestCase):
         Hessian_reference = np.array([[2. * 0.686**2 * 0.02278]])
         np.testing.assert_allclose(Hessian, Hessian_reference)
 
+    @unittest.skip("Please implement a test here.")
     def test_get_V_grad(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")

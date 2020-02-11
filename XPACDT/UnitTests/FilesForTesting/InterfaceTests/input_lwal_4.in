@@ -4,7 +4,10 @@ Interface = Triatomic
 $end 
 
 $Triatomic
-name = CW
+name = LWAL
 $end
 
-
+$rpmd
+beads = 4
+beta = 1.0
+$end

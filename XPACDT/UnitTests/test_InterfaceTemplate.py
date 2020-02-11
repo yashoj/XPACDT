@@ -93,6 +93,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         # '_recalculate_adiabatic' function which in turn calculates all the
         # adiabatic properties.
         R = np.array([[0.]])
+        # FIXME The variable V is never used
         V = pes.diabatic_energy(R, SI=None, SJ=None, centroid=False,
                                 return_matrix=True)
 
@@ -233,32 +234,37 @@ class InterfaceTemplateTest(unittest.TestCase):
                                   " implmenting the function!!")
         # TODO: add more tests with more beads and 3 state test using morse diabatic
 
-        return
-
+    @unittest.skip("Please implement a test here.")
     def test_adiabatic_energy(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_adiabatic_gradient(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_nac(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_diabatic_energy(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_diabatic_gradient(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_energy_wrapper(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
 
+    @unittest.skip("Please implement a test here.")
     def test_gradient_wrapper(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")

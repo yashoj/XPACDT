@@ -1354,7 +1354,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                    [0.05, 0.], rtol=1e-7)
         
         return
-
+    
+    @unittest.skip("Please implement a test here.")
     def test_step(self):
         # TODO: this seems more like a integrated test, what exactly should be tested here?
         # Test all ode solvers give same result in all pictures after long propagation
@@ -1417,10 +1418,6 @@ class SurfaceHoppingTest(unittest.TestCase):
 #        np.testing.assert_allclose(
 #                sh_electrons_rpmd._integrator_scipy(0., c, math.pi, 2.*math.pi, prop_func),
 #                c_ref, rtol=1e-4)
-        
-        
-        
-        raise NotImplementedError("Please implement a test here!!")
         
         return
 
@@ -2226,6 +2223,7 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         return
 
+    @unittest.skip("Please implement a test here.")
     def test_momentum_rescaling(self):
         # Nuclei initialized to test for conservation of energy
         nuclei_classical = Nuclei.Nuclei(self.param_classical, 0.0)
@@ -2233,10 +2231,6 @@ class SurfaceHoppingTest(unittest.TestCase):
 
         R = np.array([[0.0]])
         P = np.array([[10.0]])
-        
-        raise NotImplementedError("Please implement a test here!!")
-        
-        return
 
     def test_get_population(self):
         ### 1 bead case

@@ -640,7 +640,7 @@ class PotentialInterface:
         ----------
         R : (n_dof) ndarray of floats
             The positions representing the system in au.
-        S : integer, default 0 /or/ tupe of two integers
+        S : integer, default 0 /or/ tuple of two integers
             The current state of the system
             /or/ if tuple is given the current off-diagonal element of the
             diabatic matrix
@@ -854,7 +854,7 @@ class PotentialInterface:
         internal : bool, optional, Default: False
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
-        S : integer, default 0 /or/ tupe of two integers
+        S : integer, default 0 /or/ tuple of two integers
             The state to be plotted,
             /or/ if tuple is given the off-diagonal element of the
             diabatic matrix to be plotted.
@@ -975,7 +975,7 @@ class PotentialInterface:
         internal : bool, optional, Default: False
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
-        S : integer, default 0 /or/ tupe of two integers
+        S : integer, default 0 /or/ tuple of two integers
             The state to be plotted,
             /or/ if tuple is given the off-diagonal element of the
             diabatic matrix to be plotted.

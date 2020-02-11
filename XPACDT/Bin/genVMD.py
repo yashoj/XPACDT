@@ -122,16 +122,27 @@ def gen_XYZ(system, folder):
         beads = extended_beads.reshape(-1, 3, n_beads).swapaxes(1, 2).reshape(-1, 3)
         atoms_b = np.concatenate((symbols.repeat(n_beads)[:, None], beads), axis=1)
 
+        width = 16
+        prec = 8
+
         file_centroid.write(str(len(symbols)) + "\n\n")
         for atom in atoms_c:
-            for value in atom:
-                file_centroid.write(str(value) + "\t")
+            for i, value in enumerate(atom):
+                if i == 0:
+                    file_centroid.write(value + " \t")
+                else:
+                    file_centroid.write("{: {width}.{prec}f} \t".format(float(value),
+                                                                        width=width, prec=prec))
             file_centroid.write("\n")
 
         file_beads.write(str(len(symbols)*n_beads) + "\n\n")
         for atom in atoms_b:
-            for value in atom:
-                file_beads.write(str(value) + "\t")
+            for i, value in enumerate(atom):
+                if i == 0:
+                    file_beads.write(value + " \t")
+                else:
+                    file_beads.write("{: {width}.{prec}f} \t".format(float(value),
+                                                                     width=width, prec=prec))
             file_beads.write("\n")
 
     file_centroid.close()

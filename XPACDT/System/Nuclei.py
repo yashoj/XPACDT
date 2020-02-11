@@ -36,7 +36,6 @@ import warnings
 import sys
 
 import XPACDT.Tools.Memory as mem
-import XPACDT.Tools.Units as units
 
 
 class Nuclei(object):

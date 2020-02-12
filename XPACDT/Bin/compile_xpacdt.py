@@ -36,6 +36,7 @@
 import git
 import inspect
 import os
+from pathlib import Path
 import subprocess as sp
 
 
@@ -66,15 +67,13 @@ def get_named_files(folder, base_path, suffix='.py',
         relative to the XPACDT base path given.
     """
 
-    allEntries = os.listdir(folder)
     files = []
-    for entry in allEntries:
-        path = os.path.normpath(os.path.join(folder, entry))
-        rel_entry = os.path.relpath(path, base_path)
+    for suffix_math in Path(folder).resolve().glob('*' + suffix):
+        relative_path = suffix_math.relative_to(Path(base_path).resolve())
+        filename = relative_path.parts[-1]
 
-        if entry.endswith(suffix) and os.path.isfile(path):
-            if entry not in exclusion and contains in entry:
-                files.append(rel_entry)
+        if filename not in exclusion and contains in filename:
+            files.append(str(relative_path))
 
     return files
 
@@ -104,26 +103,29 @@ def discover_hidden_imports(current_path, base_path):
     """
     files_to_import = []
     # All Interfaces
-    files_to_import += get_named_files(os.path.join(current_path, "../Interfaces"),
+    files_to_import += get_named_files(Path(current_path, "../Interfaces"),
                                        base_path,
-                                       exclusion=["__init__.py", "InterfaceTemplate.py"])
+                                       exclusion=["__init__.py",
+                                                  "InterfaceTemplate.py"])
 
     # All Sampling Methods
-    files_to_import += get_named_files(os.path.join(current_path, "../Sampling"),
+    files_to_import += get_named_files(Path(current_path, "../Sampling"),
                                        base_path,
-                                       exclusion=["__init__.py", "Sampling.py"])
+                                       exclusion=["__init__.py",
+                                                  "Sampling.py"])
 
     # All Electrons
-    files_to_import += get_named_files(os.path.join(current_path, "../System"),
+    files_to_import += get_named_files(Path(current_path, "../System"),
                                        base_path,
-                                       exclusion=["__init__.py", "System.py", "Nuclei.py", "Electrons.py"])
+                                       exclusion=["__init__.py", "System.py",
+                                                  "Nuclei.py", "Electrons.py"])
 
     # All Thermostats (Naming convention: ...Thermostat)
-    files_to_import += get_named_files(os.path.join(current_path, "../Dynamics"),
+    files_to_import += get_named_files(Path(current_path, "../Dynamics"),
                                        base_path, contains="Thermostat")
 
     # All Nuclei Propagators (Naming convention: ...Propagator)
-    files_to_import += get_named_files(os.path.join(current_path, "../Dynamics"),
+    files_to_import += get_named_files(Path(current_path, "../Dynamics"),
                                        base_path, contains="Thermostat")
 
     import_base = ""
@@ -154,21 +156,19 @@ def discover_data_files(current_path, base_path):
          files for the PyInstaller.
     """
 
-    interface_path = os.path.normpath(os.path.join(current_path, "../Interfaces/"))
+    interface_path = Path(current_path, '../Interfaces/').resolve()
+    allEntries = [x for x in interface_path.iterdir() if x.is_dir()]
 
     data_files = []
-    allEntries = os.listdir(interface_path)
-    for entry in allEntries:
-        path = os.path.join(interface_path, entry)
-        if os.path.isdir(path):
-            data_files += get_named_files(path, base_path, suffix=".dat")
+    for path in allEntries:
+        data_files += get_named_files(path, base_path, suffix=".dat")
 
     data_import = ""
     for data_file in data_files:
-        add_file = os.path.join(base_path, data_file)
+        add_file = Path(base_path, data_file)
 
-        data_import += "--add-data '" + add_file + ":" \
-            + os.path.split(data_file)[0] + "' "
+        data_import += "--add-data '" + str(add_file) + ":" \
+            + str(Path(data_file).parent) + "' "
 
     return data_import
 
@@ -176,7 +176,9 @@ def discover_data_files(current_path, base_path):
 if __name__ == "__main__":
     # Get branch and version info.
     # Write to file that will be included in bundle
-    current_path = os.path.abspath(inspect.getsourcefile(lambda: 0))
+    current_path = Path(inspect.getsourcefile(lambda: 0)).resolve()
+
+#    current_path = os.path.abspath()
     repo = git.Repo(path=current_path, search_parent_directories=True)
     branch_name = repo.active_branch.name
     hexsha = repo.head.object.hexsha
@@ -185,12 +187,12 @@ if __name__ == "__main__":
     version_file.write("Commit: " + hexsha + " \n")
     version_file.close()
 
-    current_path = os.path.dirname(current_path)
-    xpacdt_base_path = os.path.split(os.path.split(current_path)[0])[0]
+    current_path = current_path.parent
+    xpacdt_base_path = current_path.parent.parent
 
     command_base = "cd $XPACDTPATH/Bin; "
     command_base += "pyinstaller --add-data '.version:.' "
-    add_file = os.path.join(current_path, "helptext/*.txt")
+    add_file = str(Path(current_path, "helptext/*.txt"))
     command_base += "--add-data '" + add_file + ":helptext' "
 
     # Include PES data files
@@ -204,13 +206,11 @@ if __name__ == "__main__":
     # For xpacdt.py
     command = command_base + "--runtime-tmpdir=\".\" -n xpacdt.exe xpacdt.py; "
 
-    p = sp.Popen(command, shell=True, executable="bash")
-    p.wait()
+    sp.run(command, shell=True, executable="bash")
 
     # For genLog.py
     command = command_base + "--runtime-tmpdir=\".\" -n genLog.exe genLog.py; "
 
-    p = sp.Popen(command, shell=True, executable="bash")
-    p.wait()
+    sp.run(command, shell=True, executable="bash")
 
-    exit
+    exit(0)

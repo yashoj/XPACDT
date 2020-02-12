@@ -132,7 +132,4 @@ class MassiveAndersen(object):
                 # Make sure that the momenta are actually changed in the calling
                 # modules. P = ... won't work.
                 P[:, :] = np.random.normal(np.zeros_like(sigmas), sigmas)
-#                print(f"Resampling at time {time} and state {state} to get:")
-#                print(P)
-#                print("--")
         return

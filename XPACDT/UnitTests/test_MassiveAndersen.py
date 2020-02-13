@@ -62,6 +62,14 @@ class MassiveAndersenTest(unittest.TestCase):
         np.testing.assert_allclose(x, x_ref, rtol=1e-7)
         np.testing.assert_allclose(p, p_ref, rtol=1e-7)
 
+        thermostat.apply(x, p, 1, 0.5)
+        np.testing.assert_allclose(x, x_ref, rtol=1e-7)
+        np.testing.assert_allclose(p, p_ref, rtol=1e-7)
+
+        thermostat.apply(x, p, 0, 0.5)
+        np.testing.assert_allclose(x, x_ref, rtol=1e-7)
+        np.testing.assert_allclose(p, p_ref, rtol=1e-7)
+
         # Apply with change
         x_ref = np.array([[1.0]])
         p_ref = np.array([[1.76405235]])

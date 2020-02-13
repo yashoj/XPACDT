@@ -82,21 +82,13 @@ class NRPMDElectronsTest(unittest.TestCase):
     def test_energy(self):
 
         R = np.array([[0.0]])
-
         energy_ref_classical = np.array([0.0862764724734855])
         energy = self.electron.energy(R, centroid=False)
-
-        print(energy_ref_classical)
-        print("Energy", self.electron.energy(R, centroid=False))
         np.testing.assert_allclose(energy, energy_ref_classical, rtol=1e-7)
 
         R = np.array([[1.0e5, -1.0e5]])
-
         energy_ref_multibeads = np.array([0.1486475271, -0.0006])
         energy = self.electron_mb.energy(R, centroid=False)
-
-        print(energy_ref_multibeads)
-        print("Energy", self.electron_mb.energy(R, centroid=False))
         np.testing.assert_allclose(energy, energy_ref_multibeads, rtol=1e-7)
 
         return
@@ -106,17 +98,11 @@ class NRPMDElectronsTest(unittest.TestCase):
         R = np.array([[0.0]])
         gradient_ref = np.array([-0.078188825])
         gradient = self.electron.gradient(R, centroid=False)
-
-        print(gradient_ref)
-        print("Gradient", gradient)
         np.testing.assert_allclose(gradient, gradient_ref, rtol=1e-7)
 
         R = np.array([[1.0e5, -1.0e5]])
         gradient_ref_multibeads = np.array([0.000000, 0.00000000])
         gradient = self.electron_mb.gradient(R, centroid=False)
-
-        print(gradient_ref_multibeads)
-        print("Gradient", gradient)
         np.testing.assert_allclose(gradient, gradient_ref_multibeads, rtol=1e-7)
         return
 

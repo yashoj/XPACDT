@@ -93,8 +93,6 @@ class NRPMDElectrons(electrons.Electrons):
                                      np.expand_dims(self.q[:, i], axis=-1)))\
                 .reshape(-1)
 
-        print("q_mat", q_mat)
-        print("p_mat", p_mat)
 #       renaming for later circles
         self.q = q_mat
         self.p = p_mat

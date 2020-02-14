@@ -61,7 +61,8 @@ def get_named_files(folder, base_path, suffix='.py',
         A substring each file has to contain.
 
     Returns
-    list of string:
+    -------
+    files : list of string
         A list containing all files with the given suffix, containing the
         given substring and not in the exclusion list. File paths are given
         relative to the XPACDT base path given.
@@ -97,7 +98,7 @@ def discover_hidden_imports(current_path, base_path):
 
     Returns
     -------
-    string:
+    import_base : string
          A string containing all the command line arguments for hidden imports
          for running the PyInstaller.
     """
@@ -130,6 +131,7 @@ def discover_hidden_imports(current_path, base_path):
 
     import_base = ""
     for filename in files_to_import:
+        # replace the .py at the end
         import_base += "--hidden-import='" \
             + filename[:-3].replace("/", ".") + "' "
 
@@ -151,7 +153,7 @@ def discover_data_files(current_path, base_path):
 
     Returns
     -------
-    string:
+    data_import : string
          A string containing all the command line arguments for added data
          files for the PyInstaller.
     """
@@ -178,7 +180,6 @@ if __name__ == "__main__":
     # Write to file that will be included in bundle
     current_path = Path(inspect.getsourcefile(lambda: 0)).resolve()
 
-#    current_path = os.path.abspath()
     repo = git.Repo(path=current_path, search_parent_directories=True)
     branch_name = repo.active_branch.name
     hexsha = repo.head.object.hexsha

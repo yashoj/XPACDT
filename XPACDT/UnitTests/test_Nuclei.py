@@ -336,7 +336,7 @@ class NucleiTest(unittest.TestCase):
     def test_getCOM(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
-    
+
     @unittest.skip("Please implement a test here.")
     def test_print_size(self):
         # Not really clear how to test this. Here for completness sake.

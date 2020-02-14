@@ -358,9 +358,10 @@ def energy(arguments, log_nuclei):
 
     Valid options are as follows:
 
-    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
-                      "diabatic". Default: "adiabatic".
-    -p <a> given: State to be projected onto in the basis given by 'basis'.
+    -t <type> given: Type of energy to be used. This can be "total", "kinetic",
+                     "potential" or "spring". Default: "total". Note: energy
+                     of spring term is not valid for centroid.
+    -r given: Get ring-polymer bead energy instead of centroid energy.
 
     Parameters
     ----------
@@ -397,7 +398,7 @@ def energy(arguments, log_nuclei):
                         dest='rpmd',
                         action='store_true',
                         default=False,
-                        help='Use beads instead of centroids.')
+                        help='Use bead energy instead of centroid energy.')
 
     if len(arguments) == 0:
         raise RuntimeError("XPACDT: No arguments given to position operation.")

@@ -158,6 +158,8 @@ def start():
             operations.momentum(["-h"], None)
             print()
             operations.electronic_state(["-h"], None)
+            print()
+            operations.energy(["-h"], None)
         elif (args.help.lower() == 'plot'
               or args.help.lower() == 'sampling'
               or args.help.lower() == 'propagation'):

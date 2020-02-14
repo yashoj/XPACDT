@@ -100,6 +100,10 @@ def do_analysis(parameters, systems=None):
             steps_to_use = _get_step_list(command, system)
 
             if n_systems == 0:
+                # Create a dictionary with all operations parsed
+                command['all_operations'] = {k: v for k, v in command.items()
+                                             if 'op' in k}
+
                 # Consistency check for operations and print warning if more
                 # than one value is returned.
                 check_command(command, system)

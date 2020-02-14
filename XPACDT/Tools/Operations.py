@@ -38,42 +38,19 @@ import numpy as np
 import argparse
 
 
-def position(arguments, log_nuclei):
-    """Performs operations related to positions. If no options given it
-    will raise an error.
-
-    Valid options are as follows:
-
-    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
-                   gives the first position, or -1 0,3,7 gives the first,
-                   fourth and seventh position. Alternatively, also the
-                   center of mass position can be obtained by giving m and a
-                   comma separated list of degrees of freedom.
-    -2 <b> given:  Like 1. If both given, then the distance between them is
-                   used.
-    -p <a> given: if a single value is calculated (i.e. a distance or single
-                  position) this option projects it onto a certain range.
-                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
-                  or above a value (>,A). If within the given value the
-                  function returns 1.0, else the given pValue.
-    -r given: Use ring-polymer bead positions.
+def arguments_position(arguments):
+    """
 
     Parameters
     ----------
     arguments: list of strings
         Command line type options given to the position command. See above.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
 
     Returns
     -------
-    (n_values) ndarray of floats
-        Values obtained from the position operation. The length depends on
-        the operation to be performed. If, e.g., all bead positions of a
-        single degree of freedom is requested, n_values will be n_beads of
-        that degree of freedom.
+    opts: argparse.Namespace object
+        Options for position operation.
     """
-
     # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +pos", add_help=False)
 
@@ -116,6 +93,45 @@ def position(arguments, log_nuclei):
         parser.print_help()
         return None
 
+    return opts
+
+
+def position(opts, log_nuclei):
+    """Performs operations related to positions. If no options given it
+    will raise an error.
+
+    Valid options are as follows:
+
+    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
+                   gives the first position, or -1 0,3,7 gives the first,
+                   fourth and seventh position. Alternatively, also the
+                   center of mass position can be obtained by giving m and a
+                   comma separated list of degrees of freedom.
+    -2 <b> given:  Like 1. If both given, then the distance between them is
+                   used.
+    -p <a> given: if a single value is calculated (i.e. a distance or single
+                  position) this option projects it onto a certain range.
+                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
+                  or above a value (>,A). If within the given value the
+                  function returns 1.0, else the given pValue.
+    -r given: Use ring-polymer bead positions.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the position command. See above.
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
+
+    Returns
+    -------
+    (n_values) ndarray of floats
+        Values obtained from the position operation. The length depends on
+        the operation to be performed. If, e.g., all bead positions of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom.
+    """
+
     # get coordinate values under consideration here!
     current_value = log_nuclei.get_selected_quantities(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
@@ -133,43 +149,19 @@ def position(arguments, log_nuclei):
     return np.array(current_value).flatten()
 
 
-def momentum(arguments, log_nuclei):
-    """Performs operations related to momenta. If no options given it
-    will raise an error.
-
-    Valid options are as follows:
-
-    -v given: Use velocities instead of momenta.
-    -1 <a> given: momentum value of a given degree of freedom, e.g., -1 0,
-                   gives the first momentum, or -1 0,3,7 gives the first,
-                   fourth and seventh momentum. Alternatively, also the
-                   center of mass momentum can be obtained by giving m and a
-                   comma separated list of degrees of freedom.
-    -2 <b> given: Like 1. If both given, then the relative momentum between
-                   them is used.
-    -p <a> given: if a single value is calculated (i.e. a relative or single
-                  momentum) this option projects it onto a certain range.
-                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
-                  or above a value (>,A). If within the given value the
-                  function returns 1.0, else the given pValue.
-    -r given: Use ring-polymer bead momenta.
+def arguments_momentum(arguments):
+    """
 
     Parameters
     ----------
     arguments: list of strings
-        Command line type options given to the position command. See above.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
+        Command line type options given to the momentum command. See above.
 
     Returns
     -------
-    (n_values) ndarray of floats
-        Values obtained from the momentum operation. The length depends on
-        the operation to be performed. If, e.g., all bead momenta of a
-        single degree of freedom is requested, n_values will be n_beads of
-        that degree of freedom.
+    opts: argparse.Namespace object
+        Options for momentum operation.
     """
-
     # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +mom", add_help=False)
 
@@ -217,6 +209,46 @@ def momentum(arguments, log_nuclei):
     if opts.help is True:
         parser.print_help()
         return None
+
+    return opts
+
+
+def momentum(opts, log_nuclei):
+    """Performs operations related to momenta. If no options given it
+    will raise an error.
+
+    Valid options are as follows:
+
+    -v given: Use velocities instead of momenta.
+    -1 <a> given: momentum value of a given degree of freedom, e.g., -1 0,
+                   gives the first momentum, or -1 0,3,7 gives the first,
+                   fourth and seventh momentum. Alternatively, also the
+                   center of mass momentum can be obtained by giving m and a
+                   comma separated list of degrees of freedom.
+    -2 <b> given: Like 1. If both given, then the relative momentum between
+                   them is used.
+    -p <a> given: if a single value is calculated (i.e. a relative or single
+                  momentum) this option projects it onto a certain range.
+                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
+                  or above a value (>,A). If within the given value the
+                  function returns 1.0, else the given pValue.
+    -r given: Use ring-polymer bead momenta.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the position command. See above.
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
+
+    Returns
+    -------
+    (n_values) ndarray of floats
+        Values obtained from the momentum operation. The length depends on
+        the operation to be performed. If, e.g., all bead momenta of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom.
+    """
 
     quantity = 'v' if opts.vel else 'p'
 
@@ -287,27 +319,18 @@ def _projection(options, values):
     return values
 
 
-def electronic_state(arguments, log_nuclei):
-    """Performs operations related to electronic state. If no options are
-    given, then it will raise an error.
-
-    Valid options are as follows:
-
-    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
-                      "diabatic". Default: "adiabatic".
-    -p <a> given: State to be projected onto in the basis given by 'basis'.
+def arguments_electronic_state(arguments):
+    """
 
     Parameters
     ----------
     arguments: list of strings
         Command line type options given to the state command. See above.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
 
     Returns
     -------
-    (1) ndarray of float
-        Value obtained from state operation.
+    opts: argparse.Namespace object
+        Options for state operation.
     """
 
     # Parse arguments
@@ -342,26 +365,18 @@ def electronic_state(arguments, log_nuclei):
         parser.print_help()
         return None
 
-    if (opts.proj >= log_nuclei.electrons.pes.n_states):
-        raise ValueError("\nXPACDT: State to be projected onto is greater than"
-                         " the number of states. Note: State count starts from"
-                         " 0. Given state to project is: " + str(opts.proj))
-
-    current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
-
-    return np.array(current_value).flatten()
+    return opts
 
 
-def energy(arguments, log_nuclei):
-    """Performs operations related to energy. If no options are
+def electronic_state(opts, log_nuclei):
+    """Performs operations related to electronic state. If no options are
     given, then it will raise an error.
 
     Valid options are as follows:
 
-    -t <type> given: Type of energy to be used. This can be "total", "kinetic",
-                     "potential" or "spring". Default: "total". Note: energy
-                     of spring term is not valid for centroid.
-    -r given: Get ring-polymer bead energy instead of centroid energy.
+    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
+                      "diabatic". Default: "adiabatic".
+    -p <a> given: State to be projected onto in the basis given by 'basis'.
 
     Parameters
     ----------
@@ -373,9 +388,32 @@ def energy(arguments, log_nuclei):
     Returns
     -------
     (1) ndarray of float
-        Value obtained from energy operation.
+        Value obtained from state operation.
     """
 
+    if (opts.proj >= log_nuclei.electrons.pes.n_states):
+        raise ValueError("\nXPACDT: State to be projected onto is greater than"
+                         " the number of states. Note: State count starts from"
+                         " 0. Given state to project is: " + str(opts.proj))
+
+    current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
+
+    return np.array(current_value).flatten()
+
+
+def arguments_energy(arguments):
+    """
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the energy command. See above.
+
+    Returns
+    -------
+    opts: argparse.Namespace object
+        Options for energy operation.
+    """
     # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +energy", add_help=False)
 
@@ -408,6 +446,33 @@ def energy(arguments, log_nuclei):
     if opts.help is True:
         parser.print_help()
         return None
+
+    return opts
+
+
+def energy(opts, log_nuclei):
+    """Performs operations related to energy. If no options are
+    given, then it will raise an error.
+
+    Valid options are as follows:
+
+    -t <type> given: Type of energy to be used. This can be "total", "kinetic",
+                     "potential" or "spring". Default: "total". Note: energy
+                     of spring term is not valid for centroid.
+    -r given: Get ring-polymer bead energy instead of centroid energy.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the state command. See above.
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
+
+    Returns
+    -------
+    (1) ndarray of float
+        Value obtained from energy operation.
+    """
 
     if ((not opts.rpmd) and (opts.type == "spring")):
         raise RuntimeError("\nXPACDT: Energy of spring terms for centroid"

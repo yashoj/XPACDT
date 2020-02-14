@@ -202,7 +202,7 @@ def start():
                            " given in input.")
         __import__("XPACDT.Interfaces." + pes_name)
         pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                      pes_name)(**input_parameters.get(pes_name))
+                      pes_name)(input_parameters)
 
         plot_params = input_parameters.get("plot")
         # Parse grid parameters
@@ -268,8 +268,10 @@ def start():
         system = pickle.load(open(path_file, 'rb'))
         # Updating input parameters appropriately
         system.parameters = input_parameters
+        initiated = False
     else:
         system = xSystem.System(input_parameters)
+        initiated = True
 
     # Run job
     if job == "full" or args.PropagationInputFile is not None:
@@ -334,7 +336,7 @@ def start():
 
     elif job == "propagate":
         print("Running Real time propagation...", end='', flush=True)
-        rt.propagate(system, input_parameters)
+        rt.propagate(system, input_parameters, initiated)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     else:

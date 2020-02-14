@@ -39,7 +39,7 @@ import pickle
 import XPACDT.Tools.Units as units
 
 
-def propagate(system, input_parameters):
+def propagate(system, input_parameters, initiated=False):
     """ Propagate the system as given in the input file. The system history is
     saved to a pickle file during or after propagation.
 
@@ -49,6 +49,10 @@ def propagate(system, input_parameters):
         System that defines the initial geometry and the potential.
     input_parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
+    initiated : bool, optional, default: False
+        True if the system has been recently initiated for the real time propagation
+        from an input file (in xpacdt.py) 
+        False if the system read from file/been sampled before.
     """
 
     if system.nuclei.momenta is None:
@@ -64,8 +68,9 @@ def propagate(system, input_parameters):
     if 'continue' not in prop_parameters:
         # set initial time and reset log
         system.reset(time=units.parse_time(prop_parameters.get('time_start', '0.0 fs')))
-        # reset the electrons
-        system.nuclei.init_electrons(input_parameters)
+        # reset the electrons if not already initiated
+        if not initiated:
+            system.nuclei.init_electrons(input_parameters)
         system.do_log(True)
 
     # Reset beta; Set desired propagator
@@ -91,7 +96,6 @@ def propagate(system, input_parameters):
             raise
     name_file = sys_parameters.get('picklefile', 'pickle.dat')
     path_file = os.path.join(name_folder, name_file)
-    
 
     while(system.nuclei.time < time_end):
         system.step(timestep_output, True)

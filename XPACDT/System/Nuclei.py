@@ -378,8 +378,8 @@ class Nuclei(object):
                     "nm_transform", "matrix")
 
         prop_method = prop_parameters.get('method')
-        __import__("XPACDT.Dynamics." + prop_method)
-        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
+        __import__("XPACDT.Dynamics." + prop_method + "Propagator")
+        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method + "Propagator"],
                                     prop_method)(self.electrons, self.masses,
                                                  self.n_beads, self.beta,
                                                  **prop_parameters)
@@ -417,7 +417,7 @@ class Nuclei(object):
                                 **{'step_index': 'before_nuclei'})
             self.positions, self.momenta = \
                 self.__propagator.propagate(self.positions, self.momenta,
-                                            timestep)
+                                            timestep, self.time + i*timestep)
             self.electrons.step(self.positions, self.momenta, timestep,
                                 **{'step_index': 'after_nuclei'})
 

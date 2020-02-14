@@ -85,7 +85,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
         # Read model parameters from file
         param_file = os.path.join(os.path.dirname(itemplate.__file__),
-                                  "model_parameters/morse_diabatic_potential.param")
+                                  "model_parameters/morse_diabatic_potential.dat")
         all_params = infile.Inputfile(param_file)
         if (self.model_type not in all_params.keys()):
             raise ValueError("\nXPACDT: Wrong Morse diabatic model requested."

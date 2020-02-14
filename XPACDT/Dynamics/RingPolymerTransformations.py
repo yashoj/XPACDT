@@ -59,7 +59,8 @@ class RingPolymerTransformations(object):
     -----------
     n_beads
     transform_type
-    C_matrices, C_inv_matrices : 
+    C_matrices
+    C_inv_matrices
     """
 
     def __init__(self, n_beads, transform_type='matrix'):

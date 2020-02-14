@@ -62,6 +62,14 @@ class MassiveAndersenTest(unittest.TestCase):
         np.testing.assert_allclose(x, x_ref, rtol=1e-7)
         np.testing.assert_allclose(p, p_ref, rtol=1e-7)
 
+        thermostat.apply(x, p, 1, 0.5)
+        np.testing.assert_allclose(x, x_ref, rtol=1e-7)
+        np.testing.assert_allclose(p, p_ref, rtol=1e-7)
+
+        thermostat.apply(x, p, 0, 0.5)
+        np.testing.assert_allclose(x, x_ref, rtol=1e-7)
+        np.testing.assert_allclose(p, p_ref, rtol=1e-7)
+
         # Apply with change
         x_ref = np.array([[1.0]])
         p_ref = np.array([[1.76405235]])
@@ -224,7 +232,7 @@ class MassiveAndersenTest(unittest.TestCase):
 
     def test_generation(self):
         # test temperature consistency check
-        input_params = {'thermostat': {'temperature': '315775.130734'},
+        input_params = {'thermostat': {'temperature': '315775.130734', 'time': '1.0 au'},
                         'sampling': {'temperature': '1.0', 'time': '1.0 au'}}
         mass = np.array([1.])
         with self.assertRaises(RuntimeError):

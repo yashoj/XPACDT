@@ -72,7 +72,7 @@ class Operations(object):
             # match the different operations here.
             # TODO: Do we really need an 'identity' operation since
             #       'op' is A(t) already and 'op0' is optional.
-            # !!!! This way there cannot be two of the same operation: maybe number then?
+            # !!!! This way there cannot be two of the same operation: Better way than having this unique index???
             if ops[0] == 'pos' or ops[0] == 'position':
                 self.__operation_list['position' + key_index] = self._arguments_position(ops[1:])
 
@@ -113,7 +113,7 @@ class Operations(object):
         """
         value = 1.0
 
-        for op, options in self.operation_list:
+        for op, options in self.operation_list.items():
             # Remove the trailing unque index number which are the last 5 characters.
             operation = '_' + op[:-5]
 

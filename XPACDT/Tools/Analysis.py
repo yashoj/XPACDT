@@ -100,10 +100,6 @@ def do_analysis(parameters, systems=None):
             steps_to_use = _get_step_list(command, system)
 
             if n_systems == 0:
-                # Create a dictionary with all operations parsed
-                command['all_operations'] = {k: v for k, v in command.items()
-                                             if 'op' in k}
-
                 # Consistency check for operations and print warning if more
                 # than one value is returned.
                 check_command(command, system)
@@ -195,7 +191,7 @@ def do_analysis(parameters, systems=None):
         # Generate header
         header = "## Generated for the following command: \n"
         for k, v in command.items():
-            if k != 'results' and k != 'times':
+            if k not in ['results', 'times', 'all_operations']:
                 header += "# " + str(k) + " = " + str(v) + " \n"
 
         # Output data:
@@ -357,10 +353,10 @@ def check_command(command, system):
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
     if 'op0' in command:
-        value_0 = apply_operation(command['op0'], system.log[0])
+        value_0 = command['all_operations']['op0'].apply_operation(system.log[0])
 
     try:
-        if len(value_0 * apply_operation(command['op'], system.log[0])) > 1:
+        if len(value_0 * command['all_operations']['op'].apply_operation(system.log[0])) > 1:
             warnings.warn("\nXPACDT: The operation in analysis command '"
                           + command.get('name') + "' returns"
                           "more than one value. Please check if this"
@@ -398,11 +394,11 @@ def apply_command(command, system, steps_to_use):
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
     if 'op0' in command:
-        value_0 = apply_operation(command['op0'], system.log[0])
+        value_0 = command['all_operations']['op0'].apply_operation(system.log[0])
 
     try:
         # Iterate over all times and calculate the full command.
-        command['results'].extend([value_0 * apply_operation(command['op'], log_nuclei)
+        command['results'].extend([value_0 * command['all_operations']['op'].apply_operation(log_nuclei)
                                    for i, log_nuclei in enumerate(system.log)
                                    if _use_time(i, steps_to_use)])
     except ValueError as e:
@@ -416,11 +412,11 @@ def apply_command(command, system, steps_to_use):
     if '2op' in command:
         value_0 = 1.0
         if '2op0' in command:
-            value_0 = apply_operation(command['2op0'], system.log[0])
+            value_0 = command['all_operations']['2op0'].apply_operation(system.log[0])
 
         try:
             # Iterate over all times and calculate the full command.
-            command['results'].extend([value_0 * apply_operation(command['2op'], log_nuclei)
+            command['results'].extend([value_0 * command['all_operations']['2op'].apply_operation(log_nuclei)
                                        for i, log_nuclei in enumerate(system.log)
                                        if _use_time(i, steps_to_use)])
         except ValueError as e:
@@ -497,54 +493,55 @@ def _use_time(i, steps_to_use):
     else:
         return (i in steps_to_use)
 
+# TODO: remove this once tests are fine.
 
-def apply_operation(operation, log_nuclei):
-    """ Apply a given sequence of operations to a given XPACDT.Nuclei object
-    from the system log.
-
-    Parameters
-    ----------
-    operation : string
-        The string defining the sequence of operations. Each operation starts
-        with a '+' and an identifyer (e.g., +position, +velocity, ...).
-        Arguments specifying the operation are given after that.
-    log_nuclei : XPACDT.System.Nuclei object
-        Nuclei object from the log to perform operations on.
-
-    Returns
-    -------
-    value : (n_values) ndarray of floats
-        The value resulting from the operations. The length 'n_values' depends
-        on the operation performed.
-    """
-
-    if '+' not in operation:
-        raise RuntimeError("XPACDT: No operation given, instead: " + operation)
-
-    value = 1.0
-    # The split has '' as a first results on something like '+pos'.split('+'),
-    # and we need to ignore that one.
-    for op_string in operation.split('+')[1:]:
-        ops = op_string.split()
-
-        # match the different operations here.
-        if ops[0] == 'id' or ops[0] == 'identity':
-            pass
-        elif ops[0] == 'pos' or ops[0] == 'position':
-            value *= op.position(ops[1:], log_nuclei)
-        elif ops[0] == 'mom' or ops[0] == 'momentum':
-            value *= op.momentum(ops[1:], log_nuclei)
-        elif ops[0] == 'vel' or ops[0] == 'velocity':
-            value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
-        elif ops[0] == 'state':
-            value *= op.electronic_state(ops[1:], log_nuclei)
-        elif ops[0] == 'energy':
-            value *= op.energy(ops[1:], log_nuclei)
-        else:
-            raise RuntimeError("\nXPACDT: The given operation is not"
-                               "implemented. " + " ".join(ops))
-
-    return np.array(value).flatten()
+#def apply_operation(operation, log_nuclei):
+#    """ Apply a given sequence of operations to a given XPACDT.Nuclei object
+#    from the system log.
+#
+#    Parameters
+#    ----------
+#    operation : string
+#        The string defining the sequence of operations. Each operation starts
+#        with a '+' and an identifyer (e.g., +position, +velocity, ...).
+#        Arguments specifying the operation are given after that.
+#    log_nuclei : XPACDT.System.Nuclei object
+#        Nuclei object from the log to perform operations on.
+#
+#    Returns
+#    -------
+#    value : (n_values) ndarray of floats
+#        The value resulting from the operations. The length 'n_values' depends
+#        on the operation performed.
+#    """
+#
+#    if '+' not in operation:
+#        raise RuntimeError("XPACDT: No operation given, instead: " + operation)
+#
+#    value = 1.0
+#    # The split has '' as a first results on something like '+pos'.split('+'),
+#    # and we need to ignore that one.
+#    for op_string in operation.split('+')[1:]:
+#        ops = op_string.split()
+#
+#        # match the different operations here.
+#        if ops[0] == 'id' or ops[0] == 'identity':
+#            pass
+#        elif ops[0] == 'pos' or ops[0] == 'position':
+#            value *= op.position(ops[1:], log_nuclei)
+#        elif ops[0] == 'mom' or ops[0] == 'momentum':
+#            value *= op.momentum(ops[1:], log_nuclei)
+#        elif ops[0] == 'vel' or ops[0] == 'velocity':
+#            value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
+#        elif ops[0] == 'state':
+#            value *= op.electronic_state(ops[1:], log_nuclei)
+#        elif ops[0] == 'energy':
+#            value *= op.energy(ops[1:], log_nuclei)
+#        else:
+#            raise RuntimeError("\nXPACDT: The given operation is not"
+#                               "implemented. " + " ".join(ops))
+#
+#    return np.array(value).flatten()
 
 
 def get_directory_list(folder='./', file_name=None):

@@ -276,7 +276,7 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
                        fmt='% .' + str(PREC) + 'e', header=header)
 
             setup = "set xlabel 'time / au'\nset ylabel 'TODO'\n"
-            command = "using 1:2 w l ls 1 title 'First Value', '' using 1:2:3 w yerrorbars ls 1 title ''"
+            command = "using 1:2:3 w yerrorlines ls 1 title 'First Value'"
             gnuplot.write_gnuplot_file(dirname, basename, setup, command, False)
 
     # Output format: One line per value/error pair (e.g. per bin in histogram)
@@ -296,10 +296,10 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
 
         # Gnuplot command for all times
         i = 2
-        command = "using 1:{:d} w l ls {:d} title 't={:.2f}', '' using 1:{:d}:{:d} w yerrorbars ls {:d} title ''".format(i,i//2,times[0],i,i+1,i//2)
+        command = "using 1:{:d}:{:d} w yerrorlines ls {:d} title 't={:.2f}'".format(i, i+1, i//2, times[0])
         for t in times[1:]:
             i += 2
-            command += ", '' using 1:{:d} w l ls {:d} title 't={:.2f}', '' using 1:{:d}:{:d} w yerrorbars ls {:d} title ''".format(i,i//2,t,i,i+1,i//2)
+            command += ", '' using 1:{:d}:{:d} w yerrorlines ls {:d} title 't={:.2f}'".format(i, i+1, i//2, t)
         setup = "set xlabel 'TODO'\nset ylabel 'TODO'\n"
         gnuplot.write_gnuplot_file(dirname, basename, setup, command, False)
 

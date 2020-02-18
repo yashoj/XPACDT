@@ -1,0 +1,83 @@
+$system
+dof = 1
+job = full
+electrons = SurfaceHoppingElectrons
+Interface = TullyModel 
+picklefile = pickle.dat
+folder = VAR_FOLDER
+$end
+
+$sampling
+method = Fixed
+samples = 2000
+overwrite
+$end
+
+$coordinates
+type = mass-value
+2000.0 -15.0
+$end
+
+$momenta
+VAR_MOMENTA
+$end
+
+
+$SurfaceHoppingElectrons
+basis = adiabatic      
+initial_state = 0     
+n_steps = 1
+rescaling_type = nac
+evolution_picture = schroedinger
+ode_solver = scipy
+$end
+
+$TullyModel 
+model_type = VAR_MODEL
+$end
+
+$nuclei_propagator
+method = VelocityVerlet 
+timestep = 10.0 au      
+$end
+
+$propagation	    
+time_output = 100.0 au
+time_end = 6000.0 au 
+$end
+
+
+# Analysis commands, only look into last timestep
+
+$commandState0_transm_adiab
+op = +state -b adiabatic -p 0   +pos --x1 0 -p >,0.0
+value = mean
+format = time
+filename = state_0_transm_adiab.dat
+step = last
+$end
+
+$commandState1_transm_adiab
+op = +state -b adiabatic -p 1   +pos --x1 0 -p >,0.0
+value = mean
+format = time
+filename = state_1_transm_adiab.dat
+step = last
+$end
+
+$commandState0_refl_adiab
+op = +state -b adiabatic -p 0  +pos --x1 0 -p <,0.0
+value = mean
+format = time
+filename = state_0_refl_adiab.dat
+step = last
+$end
+
+$commandState1_refl_adiab
+op = +state -b adiabatic -p 1  +pos --x1 0 -p <,0.0
+value = mean
+format = time
+filename = state_1_refl_adiab.dat
+step = last
+$end
+

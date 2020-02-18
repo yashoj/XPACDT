@@ -1,0 +1,23 @@
+Example on how to run Tully's fewest switches surface hopping (FSSH) for 
+Tully model potentials.
+
+This also serves as an integrated test for the surface hopping part of 
+the code to reproduce the results from Tully's original FSSH paper, 
+J. Chem. Phys. 93, 1061 (1990).
+
+All three of the models (A, B and C) can be tested at once using the script
+'launch_all.sh' which in turn runs 'run_tully_model.sh' with appropriate
+command line arguments such as the model type, and initial momentum p (start, 
+step and stop values). This will generate a folder 'results_model_#' where 
+# can be A, B or C, and within it the corresponding results for all p in
+files named 'all_p_*.dat' where * is the quantity of interest which are
+reflection in state 0 (named 'state_0_refl_adiab'), 
+reflection in state 1 ('state_1_refl_adiab'),
+transmission in state 0 ('state_0_transm_adiab') and
+transmission in state 1 ('state_1_transm_adiab').
+
+Please note that each run with one p value can take about 30-45 mins,
+so running one model can take several hours depending upon the step size.
+The step size and selection of a particular model can all be changed in
+'launch_all.sh'.
+

@@ -64,7 +64,7 @@ class compile_xpacdtTest(unittest.TestCase):
         reference = ['Interfaces/third.py', 'Interfaces/second.py']
         ret = cx.get_named_files("test/Interfaces", "test",
                                  exclusion=['first.py'])
-        self.assertListEqual(reference, ret)
+        self.assertSetEqual(set(reference), set(ret))
         reference = ['Interfaces/third.py', 'Interfaces/first.py']
         ret = cx.get_named_files("test/Interfaces", "test", contains='ir')
         self.assertEqual(len(reference), len(ret))

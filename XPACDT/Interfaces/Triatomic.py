@@ -74,26 +74,26 @@ class Triatomic(itemplate.PotentialInterface):
     available_pes
     """
     def __init__(self, n_dof=9, **parameters):
-        self.__data_path = os.path.dirname(pot.__file__) + "/"
-        pot.pes_init()
         if n_dof != 3 and n_dof != 9:
             raise XPACDTInputError(
                 f"Inferred number of degree of freedom is {n_dof}, but "
                 "should be either 3 or 9 for CW.",
-                section="CW")
+                section="Triatomic")
 
-        super().__init__("CW",
+        super().__init__("Triatomic",
                          n_dof=9, n_states=1, primary_basis='adiabatic',
                          **parameters)
-        # For proper Hessian derivatives! Numerically tested for stability!
-        self._DERIVATIVE_STEPSIZE = 7e-3
 
         pes_parameters = parameters.get(self.name)
         self.__pes_name = pes_parameters.get('name')
 
         if self.pes_name not in self.available_pes:
-            raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + self.pes_name
-                               + " Available: " + str(self.available_pes.keys()))
+            raise XPACDTInputError(
+                "The requested triatomic pes is not implemented. Available: "
+                + str(self.available_pes.keys()),
+                section="Triatomic",
+                key="name",
+                given=self.pes_name)
 
         try:
             self.__pot = importlib.import_module("XPACDT.Interfaces."+ self.pes_name + "_module.pot")

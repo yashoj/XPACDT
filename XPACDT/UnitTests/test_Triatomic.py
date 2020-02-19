@@ -41,20 +41,20 @@ import XPACDT.Input.Inputfile as infile
 
 def setUpModule():
     try:
-        triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
+        triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
     except ModuleNotFoundError as e:
         print("BKMP2 PES could not be imported. Is it compiled properly? Will skip all related tests.")
-        
-    try:            
-        triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
+
+    try:
+        triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
     except ModuleNotFoundError as e:
         print("CW PES could not be imported. Is it compiled properly? Will skip all related tests.")
-        
+
     try:
-        triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+        triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
     except ModuleNotFoundError as e:
         print("LWAL PES could not be imported. Is it compiled properly? Will skip all related tests.")
-        
+
     return
 
 
@@ -62,22 +62,22 @@ class TriatomicTest(unittest.TestCase):
 
     def setUp(self):
         try:
-            self.pes_bkmp2 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
-            self.pes_bkmp2_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2_4.in"))
+            self.pes_bkmp2 = triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2.in"))
+            self.pes_bkmp2_4 = triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_bkmp2_4.in"))
         except ModuleNotFoundError as e:
             self.pes_bkmp2 = None
             self.pes_bkmp2_4 = None
-            
+
         try:            
-            self.pes_cw = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
-            self.pes_cw_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_cw_4.in"))
+            self.pes_cw = triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_cw.in"))
+            self.pes_cw_4 = triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_cw_4.in"))
         except ModuleNotFoundError as e:
             self.pes_cw = None
             self.pes_cw_4 = None
 
         try:
-            self.pes_lwal = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
-            self.pes_lwal_4 = triatomic.Triatomic(infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal_4.in"))
+            self.pes_lwal = triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal.in"))
+            self.pes_lwal_4 = triatomic.Triatomic(**infile.Inputfile("FilesForTesting/InterfaceTests/input_lwal_4.in"))
         except ModuleNotFoundError as e:
             self.pes_lwal = None
             self.pes_lwal_4 = None

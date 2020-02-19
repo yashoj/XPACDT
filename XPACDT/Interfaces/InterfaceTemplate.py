@@ -201,8 +201,9 @@ class PotentialInterface:
             The (ring-polymer) positions `R` representing the
             system in au. The first index represents the degrees of freedom and
             the second one the beads.
-        S : integer, default None
-            The current state of the system.
+        S : integer or None, default None
+            The current state of the system. If None is given, the values for all
+            states are calculated.
 
         Note
         ----
@@ -245,7 +246,7 @@ class PotentialInterface:
             The (ring-polymer) positions `R` representing the
             system in au. The first index represents the degrees of freedom and
             the second one the beads.
-        S : integer, default: None
+        S : integer or None, default: None
             The current state of the system. Please note that currently no
             check for the state is implemented. However, at some point it might
             make sense to calculate certain quantities (like the gradient) for
@@ -284,8 +285,9 @@ class PotentialInterface:
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        S : integer, default: None
-            The current state of the system.
+        S : integer or None, default None
+            The current state of the system. If None is given, the values for all
+            states are calculated.
         """
         if self._changed(R, S):
             self._calculate_adiabatic_all(R, S)
@@ -300,15 +302,15 @@ class PotentialInterface:
 
         return
 
-    def adiabatic_energy(self, R, S=None, centroid=False, return_matrix=False):
+    def adiabatic_energy(self, R, S=0, centroid=False, return_matrix=False):
         """Obtain adiabatic energy of the system in the current state.
 
         Parameters
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        S : integer, default: None
-            The current state of the system.
+        S : integer, default: 0
+            The current state of the system. 
         centroid : bool, default: False
             If the energy of the centroid should be returned.
         return_matrix: bool, default: False
@@ -334,14 +336,14 @@ class PotentialInterface:
             if return_matrix:
                 return self._adiabatic_energy_centroid
             else:
-                return self._adiabatic_energy_centroid[0 if S is None else S]
+                return self._adiabatic_energy_centroid[S]
         else:
             if return_matrix:
                 return self._adiabatic_energy
             else:
-                return self._adiabatic_energy[0 if S is None else S]
+                return self._adiabatic_energy[S]
 
-    def adiabatic_gradient(self, R, S=None, centroid=False,
+    def adiabatic_gradient(self, R, S=0, centroid=False,
                            return_matrix=False):
         """Obtain adiabatic gradient of the system in the current state.
 
@@ -349,8 +351,8 @@ class PotentialInterface:
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        S : integer, default: None
-            The current state of the system.
+        S : integer, default: 0
+            The current state of the system. 
         centroid : bool, default: False
             If the gradient of the centroid should be returned.
         return_matrix: bool, default: False
@@ -376,14 +378,14 @@ class PotentialInterface:
             if return_matrix:
                 return self._adiabatic_gradient_centroid
             else:
-                return self._adiabatic_gradient_centroid[0 if S is None else S]
+                return self._adiabatic_gradient_centroid[S]
         else:
             if return_matrix:
                 return self._adiabatic_gradient
             else:
-                return self._adiabatic_gradient[0 if S is None else S]
+                return self._adiabatic_gradient[S]
 
-    def nac(self, R, SI=None, SJ=None, centroid=False, return_matrix=False):
+    def nac(self, R, SI=None, SJ=None, centroid=False, return_matrix=True):
         """Obtain non-adiabatic coupling (NAC) vector of the system, labelled
         by :math:'\\overrightarrow{d}_{ij}' between electronic adiabatic states
         i and j. It is given mathematically by
@@ -397,11 +399,12 @@ class PotentialInterface:
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        SI, SJ : integer, default: None
-            First `SI` and second `SJ` electronic state index.
+        SI, SJ : integer or None, default: None
+            First `SI` and second `SJ` electronic state index. If 'return_matrix'
+            is False, these cannot be None.
         centroid : bool, default: False
             If NAC of centroid should be returned.
-        return_matrix: bool, default: False
+        return_matrix: bool, default: True
             If entire NAC matrix for all states should be returned.
 
         Returns
@@ -442,20 +445,19 @@ class PotentialInterface:
                 return self._nac[SI, SJ]
 
     def diabatic_energy(self, R, SI=None, SJ=None, centroid=False,
-                        return_matrix=False):
+                        return_matrix=True):
         """Obtain diabatic matrix or specific elements of it.
 
         Parameters
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        SI : integer, default: None
-            First electronic state index.
-        SJ : integer, default: None
-            Second electronic state index.
+        SI, SJ : integer or None, default: None
+            First `SI` and second `SJ` electronic state index. If 'return_matrix'
+            is False, these cannot be None.
         centroid : bool, default False
             If the energy of the centroid should be returned.
-        return_matrix: bool, default: False
+        return_matrix: bool, default: True
             If entire diabatic energy matrix for all states should be returned.
 
         Returns
@@ -498,20 +500,19 @@ class PotentialInterface:
                 return self._diabatic_energy[SI, SJ]
 
     def diabatic_gradient(self, R, SI=None, SJ=None, centroid=False,
-                          return_matrix=False):
+                          return_matrix=True):
         """Obtain diabatic gradient matrix or specific elements of it.
 
         Parameters
         ----------
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
-        SI : integer, default: None
-            First electronic state index.
-        SJ : integer, default: None
-            Second electronic state index.
+        SI, SJ : integer or None, default: None
+            First `SI` and second `SJ` electronic state index. If 'return_matrix'
+            is False, these cannot be None.
         centroid : bool, default False
             If the gradient of the centroid should be returned.
-        return_matrix: bool, default: False
+        return_matrix: bool, default: True
             If entire diabatic gradient matrix for all states should be
             returned.
 
@@ -589,8 +590,10 @@ class PotentialInterface:
         ----------
         R : (n_dof) ndarray of floats
             The positions representing the system in au.
-        S : integer, default 0
-            The current state of the system.
+        S : integer /or/ tuple of two integers, optional, default 0
+            The current state of the system
+            /or/ if tuple is given the current off-diagonal element of the
+            diabatic matrix
         centroid : bool, default True
             If the energy of the centroid should be returned.
         internal : bool, optional, default False
@@ -607,6 +610,8 @@ class PotentialInterface:
         """
 
         if picture == 'adiabatic':
+            assert(type(S) == int), f"XPACDT: State given to _energy_wrapper"\
+                            " not an integer: {S}."
             if internal:
                 return self.adiabatic_energy(self._from_internal(R)[:, None],
                                              S, centroid)
@@ -614,10 +619,17 @@ class PotentialInterface:
                 return self.adiabatic_energy(R[:, None], S, centroid)
         else:
             if internal:
-                return self.diabatic_energy(self._from_internal(R)[:, None],
-                                            S, S, centroid)
+                if type(S) == tuple:
+                    return self.diabatic_energy(self._from_internal(R)[:, None],
+                                                S[0], S[1], centroid)
+                else:
+                    return self.diabatic_energy(self._from_internal(R)[:, None],
+                                                S, S, centroid)
             else:
-                return self.diabatic_energy(R[:, None], S, S, centroid)
+                if type(S) == tuple:
+                    return self.diabatic_energy(R[:, None], S[0], S[1], centroid)
+                else:
+                    return self.diabatic_energy(R[:, None], S, S, centroid)
 
     def _gradient_wrapper(self, R, S=0, centroid=True, internal=False, picture='adiabatic'):
         """Wrapper function to call gradient with a one-dimensional array.
@@ -628,8 +640,10 @@ class PotentialInterface:
         ----------
         R : (n_dof) ndarray of floats
             The positions representing the system in au.
-        S : integer, default 0
-            The current state of the system.
+        S : integer, default 0 /or/ tuple of two integers
+            The current state of the system
+            /or/ if tuple is given the current off-diagonal element of the
+            diabatic matrix
         centroid : bool, default True
             If the gradient of the centroid should be returned.
         internal : bool, optional, default False
@@ -644,11 +658,27 @@ class PotentialInterface:
         The gradient at the given geometry in hartree/au.
         """
 
-        if internal:
-            return self.adiabatic_gradient(self._from_internal(R)[:, None],
-                                           S, centroid)
+        if picture == 'adiabatic':
+            assert(type(S) == int), f"XPACDT: State given to"\
+                            "  _gradient_wrapper not an integer: {S}."
+            if internal:
+                return self.adiabatic_gradient(self._from_internal(R)[:, None],
+                                               S, centroid)
+            else:
+                return self.adiabatic_gradient(R[:, None], S, centroid)
         else:
-            return self.adiabatic_gradient(R[:, None], S, centroid)
+            if internal:
+                if type(S) == tuple:
+                    return self.diabatic_gradient(self._from_internal(R)[:, None],
+                                                  S[0], S[1], centroid)
+                else:
+                    return self.diabatic_gradient(self._from_internal(R)[:, None],
+                                                  S, S, centroid)
+            else:
+                if type(S) == tuple:
+                    return self.diabatic_gradient(R[:, None], S[0], S[1], centroid)
+                else:
+                    return self.diabatic_gradient(R[:, None], S, S, centroid)
 
     def _get_diabatic_energy_matrix(self, R):
         """
@@ -665,8 +695,10 @@ class PotentialInterface:
 
         Returns:
         ----------
-        (n_states, n_states) ndarrays of floats if shape of R is (n_dof)
-        /or/ (n_states, n_states, n_beads) ndarrays of floats if shape of R is (n_dof, n_beads)
+        (n_states, n_states) ndarrays of floats
+                        if shape of R is (n_dof)
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
+                        if shape of R is (n_dof, n_beads)
 
             Diabatic energy matrix.
 
@@ -822,8 +854,10 @@ class PotentialInterface:
         internal : bool, optional, Default: False
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
-        S : integer, optional, Default: 0
-            The state to be plotted.
+        S : integer, default 0 /or/ tuple of two integers
+            The state to be plotted,
+            /or/ if tuple is given the off-diagonal element of the
+            diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
             Whether adiabatic or diabatic PES should be plotted.
 
@@ -941,8 +975,10 @@ class PotentialInterface:
         internal : bool, optional, Default: False
             Whether R is in internal coordinates and internal coordinates
             should be used throughout the plotting.
-        S : integer, optional, Default: 0
-            The state to be plotted.
+        S : integer, default 0 /or/ tuple of two integers
+            The state to be plotted,
+            /or/ if tuple is given the off-diagonal element of the
+            diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
             Whether adiabatic or diabatic PES should be plotted. 
 

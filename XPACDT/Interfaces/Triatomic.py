@@ -28,41 +28,58 @@
 #
 #  **************************************************************************
 
-""" This module connects to the CW Cl+H2 PES.
+""" This module connects to any triatomic fitted PES.
+
+Implemented are:
+
+H3 - BKMP2:
+A. I. Boothroyd, W. J. Keogh, P. G. Martin, and M. R. Peterson,
+J. Chem. Phys. 104, 7139 (1996).
+
+ClH2 - CW:
 G. Capecchi and H. J. Werner, Phys. Chem. Chem. Phys. 6, 4975 (2004).
+
+FH2 - LWAL:
+G. Li, H.-J. Werner, F. Lique, and M. H. Alexander, J. Chem. Phys. 127, 174302 (2007).
 """
 
+import importlib
 import numpy as np
 import os
-import XPACDT.Interfaces.CW_module.pot as pot
 
 import XPACDT.Interfaces.InterfaceTemplate as itemplate
 import XPACDT.Tools.Geometry as geom
+import XPACDT.Tools.Units as units
 
 from XPACDT.Input.Error import XPACDTInputError
 
 
-class CW(itemplate.PotentialInterface):
+class Triatomic(itemplate.PotentialInterface):
     """
-    CW PES. No additional parameters required. 
-
-    The ordering of the atoms is as follows:
-    Cl, H, H
-
-    G. Capecchi and H. J. Werner, Phys. Chem. Chem. Phys. 6, 4975 (2004).
+    Triatomic PES.
 
     Parameters
     ----------
     parameters : XPACDT.Input.Inputfile
         Dictonary-like presentation of the input file.
+
+    Other Parameters (as given in the input file)
+    ----------------
+    name : string
+        The name of the PES requested.
+
+    Attributes
+    ----------
+    pes_name
+    available_pes
     """
     def __init__(self, n_dof=9, **parameters):
         self.__data_path = os.path.dirname(pot.__file__) + "/"
         pot.pes_init()
-        if n_dof != 9:
+        if n_dof != 3 and n_dof != 9:
             raise XPACDTInputError(
                 f"Inferred number of degree of freedom is {n_dof}, but "
-                "should be 9 for CW.",
+                "should be either 3 or 9 for CW.",
                 section="CW")
 
         super().__init__("CW",
@@ -71,7 +88,47 @@ class CW(itemplate.PotentialInterface):
         # For proper Hessian derivatives! Numerically tested for stability!
         self._DERIVATIVE_STEPSIZE = 7e-3
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+        pes_parameters = parameters.get(self.name)
+        self.__pes_name = pes_parameters.get('name')
+
+        if self.pes_name not in self.available_pes:
+            raise RuntimeError("\nXPACDT: The requested triatomic pes is not implemented: " + self.pes_name
+                               + " Available: " + str(self.available_pes.keys()))
+
+        try:
+            self.__pot = importlib.import_module("XPACDT.Interfaces."+ self.pes_name + "_module.pot")
+        except ModuleNotFoundError as e:
+            raise type(e)(str(e) + "\nXPACDT: One of the compiled triatomic PES ("
+                          + self.pes_name + ") could not be imported. Please make sure"
+                          " that it was properly compiled.")
+
+        self.__pot.pes_init()
+
+        self.__data_path = os.path.dirname(self.__pot.__file__) + "/"
+        self.__masses = self.available_pes.get(self.pes_name).get('masses')
+
+        if self.pes_name == 'CW':
+            # For proper Hessian derivatives! Numerically tested for stability!
+            self._DERIVATIVE_STEPSIZE = 7e-3
+
+    @property
+    def pes_name(self):
+        """ str : Name of the instantiated triatomic PES."""
+        return self.__pes_name
+
+    @property
+    def available_pes(self):
+        """ Dictonary of the implemented PES routines. The keys are the names 
+        of the implemented PES. Each value will be a dictonary, that holds
+        the masses of the associated atoms in au as a list."""
+        return {'BKMP2': { 'masses': [units.atom_mass('H'), units.atom_mass('H'), units.atom_mass('H')]},
+                 'LWAL': { 'masses': [units.atom_mass('F'), units.atom_mass('H'), units.atom_mass('H')]},
+                 'CW': { 'masses': [units.atom_mass('Cl'), units.atom_mass('H'), units.atom_mass('H')]}
+               }
+
+
+
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
@@ -80,20 +137,11 @@ class CW(itemplate.PotentialInterface):
         R : (n_dof, n_beads) ndarray of floats
             The positions of all beads in the system. The first axis is the
             degrees of freedom and the second axis the beads.
-            Please note that Cartesian coordinates of the atoms are used and 
-            have to be ordered in the following way: Cl, H, H
-        P : (n_dof, n_beads) ndarray of floats, optional
-            The momenta of all beads in the system. The first axis is the
-            degrees of freedom and the second axis the beads. This is not
-            used in this potential and thus defaults to None.
+            Please note that Cartesian coordinates of the atoms are used here.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.
         """
-
-        assert (isinstance(R, np.ndarray)), "R not a numpy array!"
-        assert (R.ndim == 2), "Position array not two-dimensional!"
-        assert (R.dtype == 'float64'), "Position array not real!"
 
         self._adiabatic_energy = np.zeros((1, R.shape[1]))
         self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
@@ -104,10 +152,10 @@ class CW(itemplate.PotentialInterface):
         # centroid part if more than 1 bead
         if R.shape[1] > 1:
             centroid = np.mean(R, axis=1)
-            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = pot.pot(centroid, self.__data_path)
+            self._adiabatic_energy_centroid[0], self._adiabatic_gradient_centroid[0] = self.__pot.pot(centroid, self.__data_path)
 
         for i, r in enumerate(R.T):
-            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = pot.pot(r, self.__data_path)
+            self._adiabatic_energy[0, i], self._adiabatic_gradient[0, :, i] = self.__pot.pot(r, self.__data_path)
 
         if R.shape[1] == 1:
             self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
@@ -117,11 +165,10 @@ class CW(itemplate.PotentialInterface):
 
     def _from_cartesian_to_internal(self, R):
         """Transform from full cartesian coordinates to internal Jacobi
-        coordinates. The order of the atoms has to be Cl, H, H. 
-        The Jacobi coordinates are defined as follows:
-            r = internal[0] = Distance between the first and second H in au.
-            R = internal[1] = Distance between the F and the center of
-                              the two H's in au.
+        coordinates. The Jacobi coordinates are defined as follows:
+            r = internal[0] = Distance between the second and third atom in au.
+            R = internal[1] = Distance between the first atom and the center of
+                              mass of the last two atoms in au.
             phi = internal[2] = angle between the two vectors that define
                                 r and R.
 
@@ -138,12 +185,12 @@ class CW(itemplate.PotentialInterface):
         """
         internal = np.zeros(3)
 
-        # r
+        # r (Always the last two atoms).
         r_vec = R[3:6]-R[6:9]
         internal[0] = np.linalg.norm(r_vec)
-
-        # R
-        R_vec = 0.5 * (R[3:6]+R[6:9]) - R[0:3]
+        
+        # R 
+        R_vec = (1.0/(self.__masses[1]+self.__masses[2])) * (self.__masses[1]*R[3:6] + self.__masses[2]*R[6:9]) - R[0:3]
         internal[1] = np.linalg.norm(R_vec)
 
         # phi
@@ -160,15 +207,15 @@ class CW(itemplate.PotentialInterface):
     def _from_internal_to_cartesian(self, internal):
         """Transform from Jacobi coordinates to full cartesian coordinates. The
         Jacobi coordinates are defined as follows:
-            r = internal[0] = Distance between the first and second H in au.
-            R = internal[1] = Distance between the F and the center of
-                              the two H's in au.
+            r = internal[0] = Distance between the second and third atom in au.
+            R = internal[1] = Distance between the first atom and the center of
+                              mass of the last two atoms in au.
             phi = internal[2] = angle between the two vectors that define
                                 r and R.
         The output cartesian coordinates are in the xy plane. The center of
-        mass of H2 is fixed to the origin. The two H are displaced along the
-        x-axis in negative and positive direction, respectively. The Cl is then
-        placed in the xy-plane according to 'R' and 'phi'.
+        mass of the last two atoms is fixed to the origin. The last two atoms are 
+        displaced along the x-axis in negative and positive direction, respectively. 
+        The first atom is then placed in the xy-plane according to 'R' and 'phi'.
 
         Parameters
         ----------
@@ -185,49 +232,11 @@ class CW(itemplate.PotentialInterface):
         R = np.zeros(9)
 
         # from r, fixed to x-axis
-        R[3] = -0.5 * internal[0]
-        R[6] = 0.5 * internal[0]
+        R[3] = -self.__masses[1]*internal[0] / (self.__masses[1] + self.__masses[2])
+        R[6] = self.__masses[2]*internal[0] / (self.__masses[1] + self.__masses[2])
 
         # from R and phi, fixed to x-y-plane
         R[0] = (internal[1]) * np.cos(internal[2])
         R[1] = (internal[1]) * np.sin(internal[2])
 
         return R
-
-
-#if __name__ == "__main__":
-#    pes = CW()
-#    print(pes.name)
-#    x=np.zeros(9)
-#    for i in range(1000):
-#        phi = np.random.rand(1)*2.0*np.pi
-#        x[0] = 3.0*np.cos(phi)
-#        x[1] = 3.0*np.sin(phi)
-#        x[2] = 0.0 
-#        x[3] = -1.0
-#        x[4] = 0.0
-#        x[5] = 0.0
-#        x[6] = 1.0
-#        x[7] = 0.0
-#        x[8] = 0.0
-#        
-#        
-#        if phi > -11.0:
-#            inte = pes._from_cartesian_to_internal(x)
-##            print(phi, inte[2], 2*np.pi-inte[2], inte[2]+phi, inte[2]-phi)
-#            y = pes._from_internal_to_cartesian(inte)
-##            print(x, y)
-#   
-#            print((abs(x-y) < 1e-8).all())
-##            print()
-#    
-#    pes._calculate_all(x[:, None])
-#    print(pes._adiabatic_energy, pes._gradient)
-#    print(pes.adiabatic_energy(x[:, None]))
-#    internal = np.array([2.0, 5.0, 0.0])
-#    pes.plot_1D(internal, 1, 4.0, 9.0, 0.1, relax=False, internal=True)
-##    pes.plot_1D(internal, 0, 2.0, 10.0, 0.1, relax=True)
-#    
-#    pes.plot_2D(internal, 0, 1, (1.0, 2.0), (3.0, 9.0), (0.2, 0.2), relax=False, internal=True)
-##    pes.plot_2D(internal, 0, 1, (0.5, 2.0), (3.5, 7.0), (0.2, 0.2), relax=True, internal=True)
-##    pes.plot_2D(internal, 2, 0.0, 2*np.pi, 0.1, relax=True, internal=True)

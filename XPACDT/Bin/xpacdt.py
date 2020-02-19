@@ -202,7 +202,7 @@ def start():
                            " given in input.")
         __import__("XPACDT.Interfaces." + pes_name)
         pes = getattr(sys.modules["XPACDT.Interfaces." + pes_name],
-                      pes_name)(**input_parameters.get(pes_name))
+                      pes_name)(input_parameters)
 
         plot_params = input_parameters.get("plot")
         # Parse grid parameters
@@ -227,8 +227,17 @@ def start():
                              + str(len(dof)) + " != " + str(len(start)))
 
         # Parse electronic parameters
-        state = int(plot_params.get("state", "0"))
         picture = 'diabatic' if 'diabatic' in plot_params else 'adiabatic'
+        state_split = plot_params.get("state", "0").split()
+        if len(state_split) == 1:
+            state = int(state_split[0])
+        elif len(state_split) == 2:
+            state = (int(state_split[0]), int(state_split[1]))
+            if picture == 'adiabatic':
+                raise RuntimeError("\nXPACDT: Cannot plot offdiagonal elements if"
+                                   "picture is adiabatic.")
+        else:
+            raise ValueError("\nXPACDT: Too many state variables given for plotting.")
 
         if len(dof) == 1:
             pes.plot_1D(input_parameters.coordinates[:, 0], dof[0],
@@ -259,8 +268,10 @@ def start():
         system = pickle.load(open(path_file, 'rb'))
         # Updating input parameters appropriately
         system.parameters = input_parameters
+        initiated = False
     else:
         system = xSystem.System(input_parameters)
+        initiated = True
 
     # Run job
     if job == "full" or args.PropagationInputFile is not None:
@@ -325,7 +336,7 @@ def start():
 
     elif job == "propagate":
         print("Running Real time propagation...", end='', flush=True)
-        rt.propagate(system, input_parameters)
+        rt.propagate(system, input_parameters, initiated)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     else:

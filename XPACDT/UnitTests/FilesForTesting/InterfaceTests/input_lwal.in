@@ -1,9 +1,10 @@
 $system  ## inline comment
 dof = 9
-Interface = LWAL
+Interface = Triatomic
 $end 
 
-$LWAL
+$Triatomic
+name = LWAL
 $end
 
 

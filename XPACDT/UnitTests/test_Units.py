@@ -60,6 +60,14 @@ class UnitsTest(unittest.TestCase):
         np.testing.assert_allclose(0.529177210903*units.angstrom_to_bohr, 1.0)
         np.testing.assert_allclose(1.0/units.angstrom_to_bohr, 0.529177210903)
 
+    def test_atom_symbol(self):
+        amu_to_au = 1.0 / 5.48579909065e-4
+        self.assertEqual(units.atom_symbol(1.0078250322 * amu_to_au), 'H')
+        self.assertEqual(units.atom_symbol(2.0141017781 * amu_to_au), 'H')
+        self.assertEqual(units.atom_symbol(18.998403163 * amu_to_au), 'F')
+        self.assertEqual(units.atom_symbol(15.994914619 * amu_to_au), 'O')
+        self.assertEqual(units.atom_symbol(17.999159613 * amu_to_au), 'O')
+
     def test_parse_time(self):
         time_string = "1 au"
         time_ref = 1.0

@@ -256,6 +256,14 @@ class Nuclei(object):
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
+    def make_sparse(self):
+        """ Decrease size of the object for sparse logging.
+        Right now this removes the propagator object.
+        """
+
+        self.__propagator = None
+        
+
     def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system. This
         creates a XPACDT.System.Electrons object.
@@ -370,8 +378,8 @@ class Nuclei(object):
                     "nm_transform", "matrix")
 
         prop_method = prop_parameters.get('method')
-        __import__("XPACDT.Dynamics." + prop_method)
-        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
+        __import__("XPACDT.Dynamics." + prop_method + "Propagator")
+        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method + "Propagator"],
                                     prop_method)(self.electrons, self.masses,
                                                  self.n_beads, self.beta,
                                                  **prop_parameters)
@@ -409,7 +417,7 @@ class Nuclei(object):
                                 **{'step_index': 'before_nuclei'})
             self.positions, self.momenta = \
                 self.__propagator.propagate(self.positions, self.momenta,
-                                            timestep)
+                                            timestep, self.time + i*timestep)
             self.electrons.step(self.positions, self.momenta, timestep,
                                 **{'step_index': 'after_nuclei'})
 

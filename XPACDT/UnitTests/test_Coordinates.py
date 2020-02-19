@@ -68,7 +68,7 @@ class CoordinatesTest(unittest.TestCase):
         self.assertTrue(np.all(atoms[:3] == "H"))
         self.assertTrue(np.all(atoms[3:] == "F"))
 
-        np.testing.assert_allclose(np.array(coordinates[0], coordinates[4]),
+        np.testing.assert_allclose(np.array([coordinates[0], coordinates[4]]),
                                    np.ones(2), rtol=1e-7)
 
         atoms, masses, coordinates = parse_xyz(input_string=input_string,

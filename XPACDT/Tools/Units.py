@@ -46,7 +46,7 @@ nm_to_cm = centi/physical_constants['Bohr radius'][0] \
 # Conversion of Hartree energy to eV and vice versa
 hartree_to_eV = physical_constants['Hartree energy in eV'][0]
 eV_to_hartree = 1.0 / hartree_to_eV
-angstrom_to_bohr = physical_constants["atomic unit of length"][0] / angstrom
+angstrom_to_bohr = angstrom / physical_constants["atomic unit of length"][0]
 
 
 def parse_time(time_string):

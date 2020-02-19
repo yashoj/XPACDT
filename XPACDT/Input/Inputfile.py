@@ -37,12 +37,13 @@ after a '=' character. Blank lines are ignored. Comments can be given and
 start with a '#' character."""
 
 import collections
-from errno import ENOENT
-from io import StringIO
 import numpy as np
 import os
 import re
-import yaml
+
+from errno import ENOENT
+from io import StringIO
+from pprint import pformat as pretty_format
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
@@ -92,8 +93,8 @@ class Inputfile(collections.MutableMapping):
         with open(self._filename, 'r') as infile:
             self._intext = infile.read()
 
-        self._coordinates_string = None
-        self._raw_momenta = None
+        self.__coordinates_string = None
+        self.__raw_momenta = None
 
         self._parse_file()
 
@@ -149,7 +150,7 @@ class Inputfile(collections.MutableMapping):
             # 'beta' should not be used anywhere, so setting it to NaN.
             self["beta"] = np.nan
 
-        if self._coordinates_string is not None:
+        if self.__coordinates_string is not None:
             self.__parse_coordinates_string()
 
         self["commands"] = {k: self[k] for k in self.keys() if 'command' in k}
@@ -249,13 +250,12 @@ class Inputfile(collections.MutableMapping):
         return Inputfile(self._filename)
 
     def __str__(self):
-        d = {**self.store}
-        for key, val in d.items():
-            if type(val) == np.ndarray:
-                # Transform every numpy array to a list of lists as they are
-                # not directly serializable by YAML
-                d[key] = val.tolist()
-        return yaml.dump(d)
+        """
+        Function called when using `print` on an `Inputfile` object.
+
+        Return a readable version of the `Inputfile.store` dict.
+        """
+        return pretty_format(self.store, indent=2, width=50)
 
     def _parse_file(self):
         """
@@ -279,7 +279,7 @@ class Inputfile(collections.MutableMapping):
                     self._c_type = match.group(2)
                     # We defer the parsing of the coordinates to later, for
                     # when the number of beads is known.
-                    self._coordinates_string = match.group(3)
+                    self.__coordinates_string = match.group(3)
                 except AttributeError:
                     raise XPACDTInputError(section="coordinates", key="type")
 
@@ -292,7 +292,7 @@ class Inputfile(collections.MutableMapping):
 
             elif section[0:8] == "$momenta":
                 d = StringIO(section[8:])
-                self._raw_momenta = np.loadtxt(d, ndmin=2)
+                self.__raw_momenta = np.loadtxt(d, ndmin=2)
             elif section[0:14] == "$positionShift":
                 d = StringIO(section[14:])
                 self["positionShift"] = np.loadtxt(d).flatten()
@@ -353,17 +353,17 @@ class Inputfile(collections.MutableMapping):
         momenta are present we also reformat those. """
 
         if self._c_type == 'mass-value':
-            self["masses"], coord = parse_mass_value(self._coordinates_string)
+            self["masses"], coord = parse_mass_value(self.__coordinates_string)
 
         if self._c_type == 'xyz':
             self["atom_sybols"], self["masses"], coord = \
-                parse_xyz(input_string=self._coordinates_string,
+                parse_xyz(input_string=self.__coordinates_string,
                           n_beads=self["n_beads"],
                           n_dof=self["n_dof"])
 
-        if self._raw_momenta is not None:
+        if self.__raw_momenta is not None:
             try:
-                self._raw_momenta = self._raw_momenta.reshape(coord.shape)
+                self.__raw_momenta = self.__raw_momenta.reshape(coord.shape)
             except ValueError as e:
                 raise XPACDTInputError(
                     "Number of momenta and coordinates does not match",
@@ -385,21 +385,21 @@ class Inputfile(collections.MutableMapping):
                 rp_coord[i] = RPtransform.sample_free_rp_coord(
                     self.n_beads[i], self.masses[i], self.beta,
                     coord[i, 0])
-                if self._raw_momenta is not None:
+                if self.__raw_momenta is not None:
                     rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                         self.n_beads[i], self.masses[i], self.beta,
-                        self._raw_momenta[i, 0])
+                        self.__raw_momenta[i, 0])
 
             self["coordinates"] = rp_coord.copy()
 
-            if self._raw_momenta is not None:
+            if self.__raw_momenta is not None:
                 self["momenta"] = rp_momenta.copy()
 
         elif beads_given == self["max_n_beads"]:
             self["coordinates"] = coord
 
-            if self._raw_momenta is not None:
-                self["momenta"] = self._raw_momenta
+            if self.__raw_momenta is not None:
+                self["momenta"] = self.__raw_momenta
         else:
             raise XPACDTInputError(
                 f"Number of bead coordinates ({beads_given}) given "

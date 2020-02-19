@@ -54,6 +54,23 @@ class CoordinatesTest(unittest.TestCase):
         self.assertTrue(np.all(atoms[:3] == "H"))
         self.assertTrue(np.all(atoms[3:] == "F"))
 
+        atoms, masses, coordinates = parse_xyz(
+            filename="FilesForTesting/CoordinatesTest/HF.xyz")
+        np.testing.assert_allclose(coordinates, coordinate_ref.flatten(),
+                                   rtol=1e-7)
+        np.testing.assert_allclose(masses, mass_ref, rtol=1e-4)
+        self.assertTrue(np.all(atoms[:3] == "H"))
+        self.assertTrue(np.all(atoms[3:] == "F"))
+
+        atoms, masses, coordinates = parse_xyz(
+            filename="FilesForTesting/CoordinatesTest/HF_angstrom.xyz")
+        np.testing.assert_allclose(masses, mass_ref, rtol=1e-4)
+        self.assertTrue(np.all(atoms[:3] == "H"))
+        self.assertTrue(np.all(atoms[3:] == "F"))
+
+        np.testing.assert_allclose(np.array(coordinates[0], coordinates[4]),
+                                   np.ones(2), rtol=1e-7)
+
         atoms, masses, coordinates = parse_xyz(input_string=input_string,
                                                n_beads=[1, 1], n_dof=6)
         np.testing.assert_allclose(coordinates, coordinate_ref, rtol=1e-7)

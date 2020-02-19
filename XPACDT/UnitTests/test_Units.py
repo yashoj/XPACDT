@@ -55,6 +55,10 @@ class UnitsTest(unittest.TestCase):
         np.testing.assert_allclose(units.atom_mass('2H'), mass_d_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('D'), mass_d_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('O18'), mass_o18_ref, rtol=1e-3)
+    
+    def test_conversion(self):
+        np.testing.assert_allclose(0.529177210903*units.angstrom_to_bohr, 1.0)
+        np.testing.assert_allclose(1.0/units.angstrom_to_bohr, 0.529177210903)
 
     def test_parse_time(self):
         time_string = "1 au"

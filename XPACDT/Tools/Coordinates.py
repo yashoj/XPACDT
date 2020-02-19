@@ -76,29 +76,36 @@ def parse_mass_value(input_string):
     return masses, coordinates
 
 
-def format_xyz(atoms, r, full=True):
+def format_xyz(atomic_symbols, r, header=True):
     """
     Transform the given nuclear degrees of freedom `r` in a string in
     XYZ format.
 
+    See `parse_xyz` for details on the XYZ format.
+
     Parameters
     ----------
-    atoms : (n_atoms,) list of str
-        Atom names
+    atomic_symbols : (n_atoms,) list of str
+        Atom symbols
 
     r : (n_dof,) ndarray of floats
-        Nuclei positions
+        Nuclear positions
 
-    full : bool, optional, default: True
-        Whether to return full file content or to exclude 2 first lines
+    header : bool, optional, default: True
+        Whether to include 2 header line to the output.
+
+    Return
+    ------
+    formatted_coordinates : str
+        The coordinates formatted according to the XYZ format
     """
-    n_atoms = len(atoms)
+    n_atoms = len(atomic_symbols)
     positions = r.reshape(n_atoms, 3)
     lines = [" ".join([atom, *map(str, pos)])
-             for atom, pos in zip(atoms, positions)]
+             for atom, pos in zip(atomic_symbols, positions)]
     core = "\n".join(lines)
 
-    if not full:
+    if not header:
         return core
 
     return f"{n_atoms}\nbohr\n{core}"
@@ -107,17 +114,26 @@ def format_xyz(atoms, r, full=True):
 def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
     """
     Parse a XYZ formatted string (passed with the `input_string` keyword), or
-    file (which name or path is given by the `filename` keyword).
+    file (whose name or path is given by the `filename` keyword).
 
-    Strings are expected to only exactly contain the coordinates, and to use
-    bohr (a.u.) as unit.
+    XYZ file format (used when parsing from a file using the `filename`
+    keyword) has the following structure
+        - 2 header lines: the first one containing the number of atoms
+            and the second one is a comment line being ignored.
+        - 1 line of 4 columns per atom: the first column must be the atom
+            symbol, while the 3 following lines are the X, Y, and Z coordinate
+            respectively, in Anstrom.
 
-    Files are expected to have 2 special lines at the start. The first
-    containing the number of atoms (this line is ignored here) and the second
-    being a comment line. If the second line contains the words "bohr" or
-    "a.u." this is used as unit, otherwise the unit used is Angstrom. In any
-    case the output is in bohr. This follows the Molcas convention for XYZ
-    files.
+    In addition, if the comment line contains the word "bohr" or "a.u.", a.u.
+    are used as unit of distance instead of the default Angstrom, following
+    Molcas convention.
+
+    Also note that the number of atoms is always inferred, and thus the first
+    line is always ignored.
+
+    If the XYZ is parsed from an `input_string`, the two header line must
+    not be present and the distance unit must be bohr. The format is otherwise
+    identical.
 
     If `n_beads` is given, the input is interpreting as having multiple beads,
     the atoms being repeated for as many times as there are beads associated to
@@ -128,32 +144,32 @@ def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
     Parameters
     ----------
     input_string : str, optional. Default: None
-        A string containing coordinates in the XYZ format (in bohr)
+        A string containing coordinates in the XYZ format (in a.u.)
 
     filename : path-like, optional. Default: None
-        Path to a file containing coordinates in the XYZ format
+        Path to a file containing coordinates in the XYZ file format
 
     n_beads : list of int or None, optional. Default: None
-        If not None, return an array of shape (n_dof, max(n_beads)) for the
-        coordinates. Currently only constant number of beads is supported.
-        If n_beads is None, the shape of the coordinates returned is (n_dof,).
-        In all cases, the shape of the atom list and masses is (n_dof,). Can
-        only be None if n_dof is too.
+        If `None` then `coord` is returned with shape `(n_dof,)`. If a list of
+        `int` is given, then `coord` is returned with shape
+        `(n_dof, max(n_beads))` Currently only constant number of beads is
+        supported. In all cases, the shape of the atom list and masses is
+        `(n_dof,)`. Can only be `None` if `n_dof` is `None` too.
 
     n_dof : int or None, optional. Default: None
-        If not None, specify the expected number of degree of freedom. Can only
-        be None if n_beads is too.
+        Number of nuclear degrees of freedom. Can only be `None` if n_beads is
+        `None` too.
 
     Return
     ------
-    atom_symbols : (n_dof,) ndarray of strings
+    atomic_symbols : (n_dof,) ndarray of strings
         Names of the atoms
 
     masses : (n_dof,) ndarray of floats
         Masses of the atoms for each degree of freedom.
 
     coord : (n_dof,) or (n_dof, max(n_beads)) ndarray of floats
-        Coordinates of the atoms in bohr
+        Coordinates of the atoms in a.u.
     """
 
     conversion_factor = 1.0
@@ -166,8 +182,7 @@ def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
         if "bohr" not in input_string.lower() and "a.u." not in input_string.lower():
             conversion_factor = angstrom_to_bohr
     else:
-        raise ValueError("Either intput_string or filename should not be "
-                         "None.")
+        raise ValueError("Either intput_string or filename should be given.")
 
     if (n_beads is None) != (n_dof is None):
         raise ValueError("n_beads and n_dof should either both be None or "
@@ -176,9 +191,9 @@ def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
     # The atom symbols are in the first column
     # NOTE: A new StringIO object must be created at np.loadtxt run as it is
     # consumed when read.
-    atom_symbols = np.loadtxt(StringIO(input_string), skiprows=skip, usecols=0,
+    atomic_symbols = np.loadtxt(StringIO(input_string), skiprows=skip, usecols=0,
                               dtype=str)
-    masses = np.array(list(map(atom_mass, atom_symbols)))
+    masses = np.array(list(map(atom_mass, atomic_symbols)))
 
     try:
         # Columns 1 to 3 contains the coordinates
@@ -200,7 +215,7 @@ def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
             b = coord[k::max_n_beads, :]
             beads[:, k] = np.hstack(b)
 
-        atom_symbols = atom_symbols[::max_n_beads]
+        atomic_symbols = atomic_symbols[::max_n_beads]
         masses = masses[::max_n_beads]
         coord = beads
     else:
@@ -217,7 +232,7 @@ def parse_xyz(input_string=None, filename=None, n_beads=None, n_dof=None):
 
     # Masses and symbols are expected to be given for each dof so we have to
     # repeat each of them 3 times
-    atom_symbols = np.hstack([(a, a, a) for a in atom_symbols])
+    atomic_symbols = np.hstack([(a, a, a) for a in atomic_symbols])
     masses = np.hstack([(m, m, m) for m in masses])
 
-    return atom_symbols, masses, conversion_factor*coord
+    return atomic_symbols, masses, conversion_factor*coord

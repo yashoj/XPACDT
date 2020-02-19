@@ -116,6 +116,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 "Ring polymer surface hopping (RPSH) type must be 'bead', "
                 "'centroid' or 'density_matrix'.",
                 section="SurfaceHoppingElectrons",
+                given=self.rpsh_type,
                 key="rpsh_type")
         if self.rpsh_rescaling not in ['bead', 'centroid']:
             raise XPACDTInputError(

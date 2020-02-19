@@ -115,9 +115,9 @@ class InputfileTest(unittest.TestCase):
 
         mass_ref = np.array([1, 3])
         centroid_ref = np.array([1.0, 2.0])
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-7)
-        self.assertTrue(parameters.coordinates.shape == (2, 4))
-        np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
+        np.testing.assert_allclose(parameters["masses"], mass_ref, rtol=1e-7)
+        self.assertTrue(parameters["coordinates"].shape == (2, 4))
+        np.testing.assert_allclose(np.mean(parameters["coordinates"], axis=1),
                                    centroid_ref, rtol=1e-7)
         self.assertTrue("momenta" not in parameters)
 
@@ -131,11 +131,11 @@ class InputfileTest(unittest.TestCase):
         mass_ref = np.array([1837.152646, 1837.152646, 1837.152646,
                              34631.970366, 34631.970366, 34631.970366])
         centroid_ref = np.array([1.0, 2.0, 3.0, 2.0, 1.0, 4.0])
-        self.assertTrue(parameters.coordinates.shape == (6, 4))
-        np.testing.assert_allclose(np.mean(parameters.coordinates, axis=1),
+        self.assertTrue(parameters["coordinates"].shape == (6, 4))
+        np.testing.assert_allclose(np.mean(parameters["coordinates"], axis=1),
                                    centroid_ref, rtol=1e-7)
         self.assertTrue("momenta" not in parameters)
-        np.testing.assert_allclose(parameters.masses, mass_ref, rtol=1e-4)
+        np.testing.assert_allclose(parameters["masses"], mass_ref, rtol=1e-4)
 
     @unittest.skip("Implicitly tested in parse modules.")
     def test_parse_coordinates_string(self):

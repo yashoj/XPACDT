@@ -59,17 +59,17 @@ class NucleiTest(unittest.TestCase):
         self.nuclei_classical.propagate(1.0)
 
         np.testing.assert_array_equal(self.nuclei_classical.positions,
-                                      self.parameters_classical.coordinates*2.0)
+                                      self.parameters_classical["coordinates"]*2.0)
         np.testing.assert_array_equal(self.nuclei_classical.momenta,
-                                      self.parameters_classical.momenta*2.0)
+                                      self.parameters_classical["momenta"]*2.0)
 
         # Reset nuclei
         self.nuclei_classical = Nuclei.Nuclei(self.parameters_classical,
                                               0.0)
         self.nuclei_classical.propagator = DummyProp(1.0)
         self.nuclei_classical.propagate(5.0)
-        coordinates_ref = np.copy(self.parameters_classical.coordinates)
-        momenta_ref = np.copy(self.parameters_classical.momenta)
+        coordinates_ref = np.copy(self.parameters_classical["coordinates"])
+        momenta_ref = np.copy(self.parameters_classical["momenta"])
 
         for i in range(5):
             coordinates_ref *= 2.0
@@ -88,16 +88,16 @@ class NucleiTest(unittest.TestCase):
         self.nuclei_rpmd.propagate(1.0)
 
         np.testing.assert_array_equal(self.nuclei_rpmd.positions,
-                                      self.parameters_rpmd.coordinates*2.0)
+                                      self.parameters_rpmd["coordinates"]*2.0)
         np.testing.assert_array_equal(self.nuclei_rpmd.momenta,
-                                      self.parameters_rpmd.momenta*2.0)
+                                      self.parameters_rpmd["momenta"]*2.0)
 
         # Reset nuclei
         self.nuclei_rpmd = Nuclei.Nuclei(self.parameters_rpmd, 0.0)
         self.nuclei_rpmd.propagator = DummyProp(1.0)
         self.nuclei_rpmd.propagate(5.0)
-        coordinates_ref = np.copy(self.parameters_rpmd.coordinates)
-        momenta_ref = np.copy(self.parameters_rpmd.momenta)
+        coordinates_ref = np.copy(self.parameters_rpmd["coordinates"])
+        momenta_ref = np.copy(self.parameters_rpmd["momenta"])
 
         for i in range(5):
             coordinates_ref *= 2.0

@@ -121,7 +121,7 @@ class Inputfile(collections.MutableMapping):
                 "of degrees of freedom",
                 section="positionShift")
 
-        if self.n_dof < 1:
+        if self["n_dof"] < 1:
             raise XPACDTInputError("The number of degree of freedom must be "
                                    "greater or equal to 1.",
                                    section="system",
@@ -154,9 +154,9 @@ class Inputfile(collections.MutableMapping):
             self.__parse_coordinates_string()
 
         self["commands"] = {k: self[k] for k in self.keys() if 'command' in k}
-        for key in self.commands:
-            self.commands[key]['name'] = key
-            self.commands[key]['results'] = []
+        for key in self["commands"]:
+            self["commands"][key]['name'] = key
+            self["commands"][key]['results'] = []
 
     def _parse_beads(self, n_string):
         """Set the number of beads from a string given in the input file and
@@ -175,7 +175,7 @@ class Inputfile(collections.MutableMapping):
                                    key="beads",
                                    caused_by=e)
 
-        if len(n) != 1 and len(n) != self.n_dof:
+        if len(n) != 1 and len(n) != self["n_dof"]:
             raise XPACDTInputError(
                 "Wrong length for number of beads given. Either a single "
                 "integer or one integer per dof should be given.",
@@ -202,11 +202,11 @@ class Inputfile(collections.MutableMapping):
         if len(n) == 1:
             # Clone the number of beads for each degree of freedom
             # NOTE works because n is a list
-            self["n_beads"] = n * self.n_dof
+            self["n_beads"] = n * self["n_dof"]
         else:
             self["n_beads"] = n
 
-        self["max_n_beads"] = max(self.n_beads)
+        self["max_n_beads"] = max(self["n_beads"])
 
     def __getitem__(self, key):
         return self.store[self.__keytransform__(key)]
@@ -236,15 +236,6 @@ class Inputfile(collections.MutableMapping):
 
     def __keytransform__(self, key):
         return key
-
-    def __getattr__(self, attribute):
-        # Checking if the attribute is "store" avoid infinite recurstion when
-        # loading from pickle file.
-        if attribute != "store" and attribute in self.store:
-            return self[attribute]
-
-        raise AttributeError(
-            f"Object of type Inputfile has no attribute named {attribute}.")
 
     def __deepcopy__(self, memo):
         return Inputfile(self._filename)
@@ -375,19 +366,19 @@ class Inputfile(collections.MutableMapping):
         # Check if only centroid value is given for more than one beads,
         # if yes, sample free ring polymer distribution
         if (beads_given == 1 and self["max_n_beads"] > 1):
-            rp_coord = np.zeros((self.n_dof, self["max_n_beads"]))
-            rp_momenta = np.zeros((self.n_dof, self["max_n_beads"]))
+            rp_coord = np.zeros((self["n_dof"], self["max_n_beads"]))
+            rp_momenta = np.zeros((self["n_dof"], self["max_n_beads"]))
             NMtransform_type = self['rpmd'].get("nm_transform", "matrix")
             RPtransform = RPtrafo.RingPolymerTransformations(
-                            self.n_beads, NMtransform_type)
+                            self["n_beads"], NMtransform_type)
 
-            for i in range(self.n_dof):
+            for i in range(self["n_dof"]):
                 rp_coord[i] = RPtransform.sample_free_rp_coord(
-                    self.n_beads[i], self.masses[i], self.beta,
+                    self["n_beads"][i], self["masses"][i], self["beta"],
                     coord[i, 0])
                 if self.__raw_momenta is not None:
                     rp_momenta[i] = RPtransform.sample_free_rp_momenta(
-                        self.n_beads[i], self.masses[i], self.beta,
+                        self["n_beads"][i], self["masses"][i], self["beta"],
                         self.__raw_momenta[i, 0])
 
             self["coordinates"] = rp_coord.copy()
@@ -404,7 +395,7 @@ class Inputfile(collections.MutableMapping):
             raise XPACDTInputError(
                 f"Number of bead coordinates ({beads_given}) given "
                 "does not match the given number of beads "
-                f"({self.max_n_beads}).",
+                f"({self['max_n_beads']}).",
                 section="rpmd",
                 key="n_beads")
 

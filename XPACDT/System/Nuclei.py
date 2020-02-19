@@ -73,13 +73,13 @@ class Nuclei(object):
 
     def __init__(self, input_parameters, time):
         # coordinates, masses from input
-        self.__masses = input_parameters.masses
-        self.__n_beads = input_parameters.n_beads
-        self.__n_dof = input_parameters.n_dof
-        self.__beta = input_parameters.beta
+        self.__masses = input_parameters["masses"]
+        self.__n_beads = input_parameters["n_beads"]
+        self.__n_dof = input_parameters["n_dof"]
+        self.__beta = input_parameters["beta"]
 
-        self.positions = input_parameters.coordinates
-        self.momenta = input_parameters.momenta
+        self.positions = input_parameters["coordinates"]
+        self.momenta = input_parameters["momenta"]
 
         # Set up electrons
         self.init_electrons(input_parameters)

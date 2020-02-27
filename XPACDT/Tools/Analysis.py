@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,14 +28,6 @@
 #
 #  **************************************************************************
 
-import os
-import pickle
-import numpy as np
-import warnings
-
-import XPACDT.Tools.Bootstrap as bs
-import XPACDT.Tools.Operations as op
-
 """Module to perform analysis on a set of XPACDT.Systems. The most general
 cases that can be calculated are:
     Expectation values <A(t)>
@@ -52,7 +45,8 @@ for each system. Then the function f(x) is evaluated, i.e., the mean of the
 quantity is obtained or a histogram of the quantity is obtained. The standard
 error of the obtain results is evaluated employing bootstrapping.
 
-Results are printed to file for easy plotting with gnuplot.
+Results are printed to file for easy plotting with gnuplot. A gnuplot template
+file is also generated to help with plotting the data file.
 
 Please note that for each quantity one wishes to obtain, an individual
 'command'-block has to be defined in the input file. If n operation, i.e. A(t),
@@ -62,27 +56,21 @@ This might be desired behavior for obtaining mean positions of the beads or
 obtaining a density plot of the ring polymer, but for most scenarios, this is
 not desired. Thus, whenever a command returns more than one value, a
 RuntimeWarning is printed for the first system and timestep.
-
-Some basic plotting commands for 2D plots in gnuplot: (TODO: where to actually
-put this, etc. Maybe generate a basic gnuplot script along the way?)
-
-#2d plotting:
-unset ztics
-unset key
-unset title
-set contour base
-set view map
-unset surface
-
-do for [a=0:100] {
-splot 'command3.dat' index a using 1:2:3 w l lw 3.2
-pause 1
-}
 """
+
+import os
+import pickle
+import numpy as np
+import warnings
+
+import XPACDT.Tools.Bootstrap as bs
+import XPACDT.Tools.Gnuplot as gnuplot
+import XPACDT.Tools.Operations as op
 
 
 def do_analysis(parameters, systems=None):
-    """Run a full analysis. TODO: details here
+    """Run a full analysis. See module description and the xpacdt.py -h for
+    more details.
 
     Parameters
     ----------
@@ -107,12 +95,20 @@ def do_analysis(parameters, systems=None):
     for system in get_systems(dirs, file_name, systems):
         # do different stuff for each command
         for key, command in parameters.commands.items():
+            # For now, 'steps_to_use' is generated for each system. This is in
+            # the case that different systems have different times.
+            steps_to_use = _get_step_list(command, system)
+
             if n_systems == 0:
                 # Consistency check for operations and print warning if more
-                # than one value is returned
+                # than one value is returned.
                 check_command(command, system)
 
-            apply_command(command, system)
+                # This assumes same time array for all systems
+                command['times'] = [log.time for i, log in enumerate(system.log)
+                                    if _use_time(i, steps_to_use)]
+
+            apply_command(command, system, steps_to_use)
 
         n_systems += 1
 
@@ -134,7 +130,6 @@ def do_analysis(parameters, systems=None):
                 func = (lambda x: np.nanpercentile(x, pe))
 
             elif '2dhistogram' in command['value']:
-                # TODO other setup possibilities
                 values = command['value'].split()
 
                 bins = []
@@ -151,7 +146,6 @@ def do_analysis(parameters, systems=None):
                                                  density=True)[0])
 
             elif 'histogram' in command['value']:
-                # TODO other setup possibilities
                 values = command['value'].split()
 
                 bins = []
@@ -162,8 +156,12 @@ def do_analysis(parameters, systems=None):
                 func = (lambda x: np.histogram(x, bins=edges, density=True)[0])
 
             else:
-                raise RuntimeError("XPACDT: No function for 'value'"
-                                   " defined in the analysis part")
+                raise RuntimeError("XPACDT: No function for 'value' defined "
+                                   "in the analysis command '"
+                                   + command.get('name') + "'.")
+
+        # Check for 2d histograms
+        is_2d = '2op' in command
 
         # The resuts array is reshaped to look like (n_times, n_values).
         #
@@ -181,11 +179,13 @@ def do_analysis(parameters, systems=None):
         # system are given.
         n_times = len(command['times'])
         reshaped_results = np.swapaxes(np.array(command['results']).
-                                       reshape(n_systems, (2 if '2d' in command else 1), n_times, -1),
+                                       reshape(n_systems, (2 if is_2d else 1),
+                                               n_times, -1),
                                        0, 2).reshape(n_times, -1)
         # bootstrap; final_data: [n_times] with tuples(value, error)
         #                                  where value, error 1d arrays
-        final_data = [bs.bootstrap(data, func, is_2D=('2d' in command))
+        n_bootstrap = int(command.get('n_bootstrap', 1000))
+        final_data = [bs.bootstrap(data, func, n_bootstrap, is_2D=is_2d)
                       for data in reshaped_results]
 
         # Generate header
@@ -197,7 +197,7 @@ def do_analysis(parameters, systems=None):
         # Output data:
         file_output = os.path.join(folder, command.get('filename', key + '.dat'))
         output_data(header, file_output, command['format'], command['times'],
-                    bins, final_data, two_d=('2d' in command))
+                    bins, final_data, two_d=is_2d)
 
 
 def output_data(header, file_output, form, times, bins, results, two_d=False):
@@ -236,6 +236,10 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             Whether a 2d histogram was produced.
     """
 
+    # For the gnuplot output!
+    dirname = os.path.dirname(file_output)
+    basename = os.path.basename(file_output).replace(".dat", "")
+
     # Formatting style
     PREC = 8
 
@@ -253,30 +257,33 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
             dd = np.c_[times, np.array(results)[:, 0, :]]
             for data in dd:
                 outfile.write("# time = {: .{prec}e} \n".format(data[0], prec=PREC))
-#                outfile.write("# time = " + str(data[0]) + " \n")
                 for i, b1 in enumerate(bins[0]):
                     for j, b2 in enumerate(bins[1]):
-#                        outfile.write(str(b1) + " " + str(b2) + " " +
-#                                      str(data[1+i*len(bins[1])+j]) + " \n")
                         outfile.write("{: .{prec}e} {: .{prec}e} {: .{prec}e} \n".format(b1, b2, data[1+i*len(bins[1])+j], prec=PREC))
-                        
-                        
+
                     outfile.write("\n")
                 outfile.write("\n \n")
+
+            setup = "set xlabel 'TODO'\nset ylabel 'TODO'\n"
+            command = "using 1:2:3 w l"
+            gnuplot.write_gnuplot_file(dirname, basename, setup, command, True, nLoop=len(times)-1)
 
         # Regular output, just one line per timestep
         else:
             number_times = len(times)
             np.savetxt(file_output,
                        np.c_[times, np.array(results).reshape((number_times, -1))],
-                        fmt='% .' + str(PREC) + 'e', header=header)
+                       fmt='% .' + str(PREC) + 'e', header=header)
+
+            setup = "set xlabel 'time / au'\nset ylabel 'TODO'\n"
+            command = "using 1:2 w l ls 1 title 'First Value', '' using 1:2:3 w yerrorbars ls 1 title ''"
+            gnuplot.write_gnuplot_file(dirname, basename, setup, command, False)
 
     # Output format: One line per value/error pair (e.g. per bin in histogram)
     # each 2 columns represents one timestep
     elif form == 'value':
         # add time values in header for later reference
         for t in times:
-#            header += str(t) + "\t" + str(t) + "\t"
             header += "{: .{prec}e} \t {: .{prec}e} \t".format(t, t, prec=PREC)
         header += " \n"
 
@@ -287,6 +294,15 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
                    np.c_[bins[0], np.array(results).reshape((-1, number_values)).T],
                    fmt='% .' + str(PREC) + 'e', header=header)
 
+        # Gnuplot command for all times
+        i = 2
+        command = "using 1:{:d} w l ls {:d} title 't={:.2f}', '' using 1:{:d}:{:d} w yerrorbars ls {:d} title ''".format(i,i//2,times[0],i,i+1,i//2)
+        for t in times[1:]:
+            i += 2
+            command += ", '' using 1:{:d} w l ls {:d} title 't={:.2f}', '' using 1:{:d}:{:d} w yerrorbars ls {:d} title ''".format(i,i//2,t,i,i+1,i//2)
+        setup = "set xlabel 'TODO'\nset ylabel 'TODO'\n"
+        gnuplot.write_gnuplot_file(dirname, basename, setup, command, False)
+
     # Output format: For 2D plots of histograms vs. time
     elif form == '2d':
         outfile = open(file_output, 'w')
@@ -296,13 +312,16 @@ def output_data(header, file_output, form, times, bins, results, two_d=False):
         dd = np.c_[times, np.array(results).reshape((number_times, -1))]
         for data in dd:
             for i, b in enumerate(bins[0]):
-#                outfile.write(str(data[0]) + " " + str(b) + " " +
-#                              str(data[1+i]) + " \n")
                 outfile.write("{: .{prec}e} {: .{prec}e} {: .{prec}e} \n".format(data[0], b, data[1+i], prec=PREC))
             outfile.write("\n")
 
+        setup = "set xlabel 'TODO'\nset ylabel 'time / au'\n"
+        command = "using 2:1:3 w l"
+        gnuplot.write_gnuplot_file(dirname, basename, setup, command, True)
+
     else:
-        raise RuntimeError("XPACDT: No or incorrect output format given: " + form)
+        raise RuntimeError("\nXPACDT: No or incorrect output format given: "
+                           + form)
 
 
 def check_command(command, system):
@@ -319,15 +338,17 @@ def check_command(command, system):
     system : XPACDT.System
         The read in system containing its own log.
     """
-    if ('2d' in command and command['format'] != 'time'):
-        warnings.warn("XPACDT: For a 2dhistogram is requested, 'form' has to"
-                      "have the value 'time'. This is now automatically set.")
+    if ('2op' in command and command['format'] != 'time'):
+        warnings.warn("XPACDT: For a 2dhistogram is requested, 'form' has to "
+                      "have the value 'time'. This is now automatically set "
+                      "in analysis command '" + command.get('name') + "'.")
         command['format'] = 'time'
     if (command['format'] == '2d' and command['value'][:9] != 'histogram'):
-        raise RuntimeError("XPACDT: If form is '2d', 'value' has to be"
+        raise RuntimeError("\nXPACDT: If form is '2d', 'value' has to be"
                            "'histogram' - i.e., a 1d histogram which will be"
-                           "plotted over time in a 2d gnuplot bloacked"
-                           "format.")
+                           "plotted over time in a 2d gnuplot bloacked "
+                           "format. This is not the case in analysis command '"
+                           + command.get('name') + "'.")
 
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
@@ -336,7 +357,8 @@ def check_command(command, system):
 
     try:
         if len(value_0 * apply_operation(command['op'], system.log[0])) > 1:
-            warnings.warn("XPACDT: The operation in analysis returns"
+            warnings.warn("\nXPACDT: The operation in analysis command '"
+                          + command.get('name') + "' returns"
                           "more than one value. Please check if this"
                           "is the intended behavior. Please note that"
                           "all returned values will be used in the"
@@ -346,16 +368,16 @@ def check_command(command, system):
                           "bootstrapping. op0:" + command['op0'] +
                           "; op:" + command['op'], RuntimeWarning)
     except ValueError as e:
-        raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
+        raise type(e)(str(e) + "\nXPACDT: If operands could not be broadcast"
                                " together it probably is due to incompatible"
                                " array sizes returned by the 'op0' and 'op'"
-                               " operationsgiven. Please check!")
+                               " operations given. Please check in analysis"
+                               "command '" + command.get('name') + "'!")
 
 
-def apply_command(command, system):
+def apply_command(command, system, steps_to_use):
     """ Apply a given command to a given system. The results are stored in
-    command['results'] and the times for which the system is evaluated
-    are stored in command['times'].
+    command['results'].
 
     Parameters
     ----------
@@ -364,9 +386,10 @@ def apply_command(command, system):
         file.
     system : XPACDT.System
         The read in system containing its own log.
+    steps_to_use : list of integers
+        Indices for the timesteps to be used. If empty list, all timesteps
+        will be used.
     """
-
-    steps_used = [int(x) for x in command.get('step', '').split()]
 
     # Time zero operation for correlation functions, etc.
     value_0 = 1.0
@@ -377,15 +400,16 @@ def apply_command(command, system):
         # Iterate over all times and calculate the full command.
         command['results'].extend([value_0 * apply_operation(command['op'], log_nuclei)
                                    for i, log_nuclei in enumerate(system.log)
-                                   if _use_time(i, steps_used)])
+                                   if _use_time(i, steps_to_use)])
     except ValueError as e:
-        raise type(e)(str(e) + "\nXPACDT: If 'operands could not be broadcast"
+        raise type(e)(str(e) + "\nXPACDT: If operands could not be broadcast"
                                " together it probably is due to incompatible"
                                " array sizes returned by the 'op0' and 'op'"
-                               " operationsgiven. Please check!")
+                               " operations given. Please check in analysis"
+                               " command '" + command.get('name') + "'!")
 
     # For a 2d histogram another 'obeservable' needs to be computed
-    if '2d' in command:
+    if '2op' in command:
         value_0 = 1.0
         if '2op0' in command:
             value_0 = apply_operation(command['2op0'], system.log[0])
@@ -394,21 +418,58 @@ def apply_command(command, system):
             # Iterate over all times and calculate the full command.
             command['results'].extend([value_0 * apply_operation(command['2op'], log_nuclei)
                                        for i, log_nuclei in enumerate(system.log)
-                                       if _use_time(i, steps_used)])
+                                       if _use_time(i, steps_to_use)])
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: If 'operands could not be"
+            raise type(e)(str(e) + "\nXPACDT: If operands could not be"
                                    " broadcast together it probably is due to"
                                    " incompatible array sizes returned by the"
-                                   " '2op0' and '2op' operationsgiven. Please"
-                                   " check!")
-
-    command['times'] = [log.time for i, log in enumerate(system.log)
-                        if _use_time(i, steps_used)]
+                                   " '2op0' and '2op' operations given. Please"
+                                   " check in analysis command '"
+                                   + command.get('name') + "'!")
 
     return
 
 
-def _use_time(i, steps_used):
+def _get_step_list(command, system=None):
+    """ Get list of time step indices to be used for analysis.
+
+    Parameters
+    ----------
+    command : dict
+        The definition of the command to be evaluated as given in the input
+        file.
+    system : XPACDT.System
+        The read in system containing its own log.
+
+    Returns
+    -------
+    steps_to_use : list of integers
+        Indices for the timesteps to be used. If empty list, all timesteps
+        will be used.
+    """
+
+    step_command_list = command.get('step', '').split()
+
+    if (step_command_list == []):
+        # This uses all time steps.
+        steps_to_use = []
+
+    elif (step_command_list[0] == 'index'):
+        steps_to_use = [int(x) for x in step_command_list[1:]]
+
+    elif (step_command_list[0] == 'last'):
+        # Get the last step index
+        steps_to_use = [len(system.log) - 1]
+    else:
+        raise ValueError("Steps to be used in analysis command '"
+                         + command.get('name') + "' not given properly. It"
+                         " should be either empty/not given (to use all"
+                         " timesteps)," + " 'index <step_index_numbers>' or"
+                         " 'last'. Given is: " + command.get('step'))
+    return steps_to_use
+
+
+def _use_time(i, steps_to_use):
     """ Wrapper to check if a certain command is supposed to be evaluated for a
     given timestep.
 
@@ -416,25 +477,26 @@ def _use_time(i, steps_used):
     ----------
     i : integer
         Index of the timestep in question.
-    steps_used : list of integer
-        Empty list if all timesteps should be used. Else a list of integers
-        identifying the timesteps to be used.
+    steps_to_use : list of integers
+        Indices for the timesteps to be used. If empty list, all timesteps
+        will be used.
 
     Returns
     -------
     bool :
-        True is steps_used is empty or if i is present in steps_used. Else
+        True if steps_used is empty /or/ if i is present in steps_used. Else
         False is returned.
     """
 
-    if steps_used == []:
+    if steps_to_use == []:
         return True
     else:
-        return (i in steps_used)
+        return (i in steps_to_use)
 
 
 def apply_operation(operation, log_nuclei):
-    """ Apply a given sequence of operation to a given log_nuclei log given.
+    """ Apply a given sequence of operations to a given XPACDT.Nuclei object
+    from the system log.
 
     Parameters
     ----------
@@ -442,8 +504,8 @@ def apply_operation(operation, log_nuclei):
         The string defining the sequence of operations. Each operation starts
         with a '+' and an identifyer (e.g., +position, +velocity, ...).
         Arguments specifying the operation are given after that.
-    log_nuclei : XPACDT.System.Nuclei object from the log to perform
-                 operations on.
+    log_nuclei : XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
 
     Returns
     -------
@@ -452,7 +514,7 @@ def apply_operation(operation, log_nuclei):
     """
 
     if '+' not in operation:
-            raise RuntimeError("XPACDT: No operation given, instead: " + operation)
+        raise RuntimeError("XPACDT: No operation given, instead: " + operation)
 
     value = 1.0
     # The split has '' as a first results on something like '+pos'.split('+'),
@@ -461,7 +523,6 @@ def apply_operation(operation, log_nuclei):
         ops = op_string.split()
 
         # match the different operations here.
-        # TODO: more automatic
         if ops[0] == 'id' or ops[0] == 'identity':
             pass
         elif ops[0] == 'pos' or ops[0] == 'position':
@@ -470,8 +531,10 @@ def apply_operation(operation, log_nuclei):
             value *= op.momentum(ops[1:], log_nuclei)
         elif ops[0] == 'vel' or ops[0] == 'velocity':
             value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
+        elif ops[0] == 'state':
+            value *= op.electronic_state(ops[1:], log_nuclei)
         else:
-            raise RuntimeError("XPACDT: The given operation is not"
+            raise RuntimeError("\nXPACDT: The given operation is not"
                                "implemented. " + " ".join(ops))
 
     return value
@@ -510,7 +573,7 @@ def get_directory_list(folder='./', file_name=None):
 
 def get_systems(dirs, file_name, systems):
     """Obtain a generator over all systems to sweep through them in the
-    analysis. 
+    analysis.
     The systems are either given as a list of systems or read from pickle
     files in the given list of folders.
 

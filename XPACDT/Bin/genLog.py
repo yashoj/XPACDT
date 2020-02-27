@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -30,8 +31,14 @@
 #  **************************************************************************
 
 """ This module is for generating human readable text files for some of the
-quantities calculated in XPACDT. Currently only position and momenta of
-the centroid and the ring polymer are outputted. More needs to be added.
+quantities calculated in XPACDT. Implemented are the following:
+
+Generated always:
+- Centroid and ring polymer positions
+- Centroid and ring polymer momenta
+
+Optional (through command line arguments):
+- Current electronic state (if available)
 """
 
 import argparse
@@ -41,8 +48,7 @@ import sys
 
 def start():
     """
-    Generate a human readable logfile. Currently only position and momenta of
-    the centroid and the ring polymer are outputted. More needs to be added.
+    Generate a human readable logfile.
     """
 
     # Parse command line arguments
@@ -61,7 +67,7 @@ def start():
     parser.add_argument("-p", "--precision", type=int, dest="prec",
                         required=False, help=p_help, default=8)
 
-    s_help = "Generate electronic state logfile. Default: False."
+    s_help = "Generate current electronic state logfile. Default: False."
     parser.add_argument("-s", "--state", action="store_true", dest="state",
                         required=False, help=s_help, default=False)
 
@@ -74,8 +80,7 @@ def start():
     # Get input file
     system = pickle.load(open(args.PickleFile, 'rb'))
 
-    # Currently just position and momenta output.
-    # Add more functions for each value
+    # Generate appropriate output files
     outfiles = setup_outfiles(args)
 
     # iterate over log
@@ -91,6 +96,17 @@ def start():
 
 
 def write_R(log_nuclei, outfile, width, prec):
+    """ Write centroid position to outfile with given precision.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
     outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
     for x in log_nuclei.x_centroid:
@@ -101,6 +117,17 @@ def write_R(log_nuclei, outfile, width, prec):
 
 
 def write_P(log_nuclei, outfile, width, prec):
+    """ Write centroid momentum to outfile with given precision.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
     outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
     for p in log_nuclei.p_centroid:
@@ -111,6 +138,17 @@ def write_P(log_nuclei, outfile, width, prec):
 
 
 def write_Rrp(log_nuclei, outfile, width, prec):
+    """ Write ring polymer bead positions to outfile with given precision.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
     outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
     for bead_position in log_nuclei.positions:
@@ -122,6 +160,17 @@ def write_Rrp(log_nuclei, outfile, width, prec):
 
 
 def write_Prp(log_nuclei, outfile, width, prec):
+    """ Write ring polymer bead momenta to outfile with given precision.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
     outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
     for bead_momenta in log_nuclei.momenta:
@@ -133,21 +182,42 @@ def write_Prp(log_nuclei, outfile, width, prec):
 
 
 def write_electronic_state(log_nuclei, outfile, width, prec):
+    """ Write current electronic state information to outfile with
+    given precision.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
     outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                   width=width, prec=prec))
-    outfile.write("{: {width}d} ".format(log_nuclei.electrons.current_state, width=width))
+    outfile.write("{: {width}d} ".format(log_nuclei.electrons.current_state,
+                  width=width))
     outfile.write(" \n")
     return
 
 
 def setup_outfiles(args):
+    """Open output files based on command line arguments.
+
+    Parameters
+    ----------
+    args : ArgumentParser object
+        Command line arguments from argpars.parse_args().
+    """
     outfiles = {}
 
-    # TODO parse cmd line here to create more files
     outfiles['R'] = open('R.log', 'w')
     outfiles['P'] = open('P.log', 'w')
     outfiles['Rrp'] = open('R_rp.log', 'w')
     outfiles['Prp'] = open('P_rp.log', 'w')
+
+    # Check command line arguments for additional requests
     if (args.state):
         outfiles['electronic_state'] = open('state.log', 'w')
 

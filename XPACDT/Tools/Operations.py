@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,16 +28,17 @@
 #
 #  **************************************************************************
 
-""" Module to perform operations on a system log to obtain some observales
-and perform analysis. """
+""" Module to perform operations on a XPACDT.System.Nuclei object, e.g.,
+obtained from the system log, to obtain some observables and perform
+analysis. """
 
 import numpy as np
 import argparse
 
 
 def position(arguments, log_nuclei):
-    """Does perform operations related to positions. If no options given it
-    will return None.
+    """Performs operations related to positions. If no options given it
+    will raise an error.
 
     Valid options are as follows:
 
@@ -61,13 +63,13 @@ def position(arguments, log_nuclei):
     log_nuclei: XPACDT.System.Nuclei object from the log to perform
                 operations on.
 
-    Output:
-        (n_values) ndarray of floats
-            values obtained from the position operation. The length depends on
-            the operation to be performed. If, e.g., all bead positions of a
-            single degree of freedom is requested, n_values will be n_beads of
-            that degree of freedom. If no arguments are given the function
-            returns None.
+    Returns
+    -------
+    (n_values) ndarray of floats
+        Values obtained from the position operation. The length depends on
+        the operation to be performed. If, e.g., all bead positions of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom.
     """
 
     # Parse arguments
@@ -113,9 +115,9 @@ def position(arguments, log_nuclei):
         return None
 
     # get coordinate values under consideration here!
-    current_value = log_nuclei.parse_dof(opts.x1, 'x', opts.rpmd)
+    current_value = log_nuclei.get_selected_quantities(opts.x1, 'x', opts.rpmd)
     if opts.x2 is not None:
-        coordinate_2 = log_nuclei.parse_dof(opts.x2, 'x', opts.rpmd)
+        coordinate_2 = log_nuclei.get_selected_quantities(opts.x2, 'x', opts.rpmd)
         # Also calculated per beads
         try:
             current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
@@ -130,8 +132,8 @@ def position(arguments, log_nuclei):
 
 
 def momentum(arguments, log_nuclei):
-    """Does perform operations related to momenta. If no options given it
-    will return None.
+    """Performs operations related to momenta. If no options given it
+    will raise an error.
 
     Valid options are as follows:
 
@@ -157,13 +159,13 @@ def momentum(arguments, log_nuclei):
     log_nuclei: XPACDT.System.Nuclei object from the log to perform
                 operations on.
 
-    Output:
-        (n_values) ndarray of floats
-            Values obtained from the momentum operation. The length depends on
-            the operation to be performed. If, e.g., all bead momenta of a
-            single degree of freedom is requested, n_values will be n_beads of
-            that degree of freedom. If no arguments are given the function
-            returns None.
+    Returns
+    -------
+    (n_values) ndarray of floats
+        Values obtained from the momentum operation. The length depends on
+        the operation to be performed. If, e.g., all bead momenta of a
+        single degree of freedom is requested, n_values will be n_beads of
+        that degree of freedom.
     """
 
     # Parse arguments
@@ -217,7 +219,7 @@ def momentum(arguments, log_nuclei):
     quantity = 'v' if opts.vel else 'p'
 
     # get coordinate values under consideration here!
-    current_value = log_nuclei.parse_dof(opts.x1, quantity, opts.rpmd)
+    current_value = log_nuclei.get_selected_quantities(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
         raise NotImplementedError("Implement relative momentum calculations, etc.")
 #        coordinate_2 = log_nuclei.parse_coordinate(opts.x2, quantity, opts.rpmd)
@@ -245,6 +247,7 @@ def _projection(options, values):
             - above a value: >,A
     values : float or ndarray of floats
         The values to be checked.
+
     Returns
     -------
     values.shape ndarray of floats
@@ -280,3 +283,68 @@ def _projection(options, values):
         values = values.astype(float)
 
     return values
+
+
+def electronic_state(arguments, log_nuclei):
+    """Performs operations related to electronic state. If no options are
+    given, then it will raise an error.
+
+    Valid options are as follows:
+
+    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
+                      "diabatic". Default: "adiabatic".
+    -p <a> given: State to be projected onto in the basis given by 'basis'.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the state command. See above.
+    log_nuclei: XPACDT.System.Nuclei object from the log to perform
+                operations on.
+
+    Returns
+    -------
+    (1) ndarray of float
+        Value obtained from state operation.
+    """
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(usage="Options for +state", add_help=False)
+
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
+
+    parser.add_argument('-b', '--basis',
+                        dest='basis',
+                        type=str,
+                        default='adiabatic',
+                        choices=['adiabatic', 'diabatic'],
+                        required=False,
+                        help='Basis to be used. Possible "adiabatic" or "diabatic". Default: "adiabatic".')
+
+    parser.add_argument('-p', '--project',
+                        dest='proj',
+                        type=int,
+                        default=None,
+                        help='State to be projected onto.')
+
+    if len(arguments) == 0:
+        raise RuntimeError("XPACDT: No arguments given to position operation.")
+
+    opts = parser.parse_args(arguments)
+
+    if opts.help is True:
+        parser.print_help()
+        return None
+
+    if (opts.proj >= log_nuclei.electrons.pes.n_states):
+        raise ValueError("\nXPACDT: State to be projected onto is greater than"
+                         " the number of states. Note: State count starts from"
+                         " 0. Given state to project is: " + str(opts.proj))
+
+    current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
+
+    return np.array(current_value)

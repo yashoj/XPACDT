@@ -1,0 +1,55 @@
+$system                     # general parameters
+
+seed = 0                    # Seed for random number generator
+dof = 1                     # the number of degrees of freedom
+electrons = SurfaceHoppingElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
+Interface = TullyModel  # the interface to the potential to be used (possible: OneDPolynomial)
+
+$end
+
+##############################################################################
+
+$SurfaceHoppingElectrons
+
+basis = adiabatic
+initial_state = 0
+n_steps = 100
+rpsh_type = bead
+rpsh_rescaling = bead
+rescaling_type = nac
+evolution_picture = schroedinger
+ode_solver = runga_kutta
+$end
+
+##############################################################################
+
+$TullyModel
+
+model_type = model_C
+$end
+
+##############################################################################
+
+$nuclei_propagator             # nuclei propagator input
+
+method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
+timestep = 1.0 au      # timestep in fs or au
+
+$end
+
+##############################################################################
+
+$coordinates	           # coordinates given here
+
+type = mass-value
+2.0 2.5
+$end
+
+##############################################################################
+
+$momenta               # momenta, must be the same ordering as coordinates
+
+0.001
+$end
+
+##############################################################################

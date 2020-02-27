@@ -2,7 +2,7 @@ $system                     # general parameters
 
 seed = 0                    # Seed for random number generator
 dof = 4                     # the number of degrees of freedom
-job = sample	            # The job type (possible: sample, propagate, analyze)
+job = propagate	            # The job type (possible: sample, propagate, analyze)
 Interface = OneDPolynomial  # the interface to the potential to be used (possible: OneDPolynomial)
 folder = test               # the folder for the trajectories
 
@@ -18,10 +18,10 @@ $end
 
 ##############################################################################
 
-$sampling               # sampling input
+$nuclei_propagator             # nuclei propagator input
 
-method = Fixed          # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed)
-samples = 1000          # number of samples to be collected
+method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
+timestep = 1.0 au      # timestep in fs or au
 
 $end
 

@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -38,10 +39,6 @@ def do_Quasiclassical_sampling(system, parameters, n_sample):
     Perform quasiclassical sampling, i.e., sample the normal modes with a
     random phase and a fixed energy.
     The basic idea is presented in: Chem. Phys. Lett. 74, 284 (1980)
-    TODO: Are there other, better references?
-
-    The following things are assumed to be set in parameters:
-    TODO
 
     Parameters
     ----------
@@ -62,8 +59,11 @@ def do_Quasiclassical_sampling(system, parameters, n_sample):
     x0 = system.nuclei.positions[:, 0]
     omega, nm_masses, nm_cartesian = nm.get_sampling_modes(system, parameters)
 
-    assert((omega > 0.0).all()), "Negative frequency given for sampling. " \
-                                 + "omega = " + str(omega)
+    if (omega <= 0).any():
+        raise RuntimeError("\nXPACDT: Negative frequency given for sampling. "
+                           + "omega = " + str(omega)
+                           + " Please make sure that the input geometry"
+                           " is optimized.")
 
     # Get the quantum numbers or set to 0
     if 'quantum_numbers' in parameters.get("sampling"):

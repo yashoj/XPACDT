@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -28,7 +29,7 @@
 #  **************************************************************************
 
 """ This module defines transformations of ring polymer coordinates or
-momenta to and from normal modes.
+momenta to and from ring polymer normal modes.
 """
 
 import itertools
@@ -58,23 +59,24 @@ class RingPolymerTransformations(object):
     -----------
     n_beads
     transform_type
-    C_matrices, C_inv_matrices : dictionary or None
-        Normal mode transformation matrices `C_matrices` and their inverses
-        `C_inv_matrices` for all different number of beads present in
-        `n_beads`; the keys are the number of beads (optional depending upon
-        if transform_type=='matrix'; else if transform_type=='fft', it is None)
+    C_matrices, C_inv_matrices : 
     """
 
     def __init__(self, n_beads, transform_type='matrix'):
 
-        self.n_beads = n_beads
-        self.transform_type = transform_type
+        self.__n_beads = n_beads
+        self.__classical = np.all([n == 1 for n in self.n_beads])
+
+        if (transform_type not in ['matrix', 'fft']):
+            raise ValueError("\nXPACDT: Incorrect ring polymer transformation"
+                             " type requested. " + transform_type)
+        self.__transform_type = transform_type
 
         if (self.transform_type == 'matrix'):
-            self.C_matrices, self.C_inv_matrices = self.get_normal_mode_matrix()
+            self.__C_matrices, self.__C_inv_matrices = self.get_normal_mode_matrix()
         else:
-            self.C_matrices = None
-            self.C_inv_matrices = None
+            self.__C_matrices = None
+            self.__C_inv_matrices = None
         return
 
     @property
@@ -82,21 +84,27 @@ class RingPolymerTransformations(object):
         """list of ints : Number of beads for each degrees of freedom."""
         return self.__n_beads
 
-    @n_beads.setter
-    def n_beads(self, n):
-        self.__n_beads = n
-
     @property
     def transform_type(self):
         """{'matrix', 'fft'} : String defining type of ring polymer normal mode
         transformation. Default: 'matrix'."""
         return self.__transform_type
 
-    @transform_type.setter
-    def transform_type(self, t):
-        assert (t == 'matrix' or t == 'fft'), \
-               ("Type of ring polymer transformation not found.")
-        self.__transform_type = t
+    @property
+    def C_matrices(self):
+        """dictionary or None
+        Normal mode transformation matrices `C_matrices` for all different
+        number of beads present in `n_beads`; the keys are the number of beads
+        (optional depending upon if transform_type=='matrix';
+        else if transform_type=='fft', it is None)"""
+        return self.__C_matrices
+
+    @property
+    def C_inv_matrices(self):
+        """dictionary or None
+        Inverse normal mode transformation matrices. See C_matrices.
+        else if transform_type=='fft', it is None)"""
+        return self.__C_inv_matrices
 
     def to_RingPolymer_normalModes(self, X, i=None):
         """
@@ -123,10 +131,10 @@ class RingPolymerTransformations(object):
         assert (X.ndim == 2), "X rray not two-dimensional!"
         assert (X.dtype == 'float64'), "X array not real!"
 
-        NM = X.copy()
-        if np.all([n == 1 for n in self.n_beads]):
-            return NM
+        if self.__classical:
+            return X
 
+        NM = X.copy()
         if i is not None:
             if self.transform_type == 'matrix':
                 NM[i] = self._1d_to_nm_using_matrix(X[i], self.n_beads[i])
@@ -167,10 +175,10 @@ class RingPolymerTransformations(object):
         assert (NM.ndim == 2), "NM rray not two-dimensional!"
         assert (NM.dtype == 'float64'), "NM array not real!"
 
-        X = NM.copy()
-        if np.all([n == 1 for n in self.n_beads]):
-            return X
+        if self.__classical:
+            return NM
 
+        X = NM.copy()
         if i is not None:
             if self.transform_type == 'matrix':
                 X[i] = self._1d_from_nm_using_matrix(NM[i], self.n_beads[i])

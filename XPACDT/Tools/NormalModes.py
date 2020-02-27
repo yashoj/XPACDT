@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -37,8 +38,6 @@ def get_normal_modes(Hessian, mass):
     """
     Obtain the normal mode frequencies and mass weighted normal modes of a
     given Hessian. c.f., https://gaussian.com/vib/.
-
-    TODO: Implement option to project out rotation, translation.
 
     Parameters
     ----------
@@ -111,9 +110,6 @@ def get_sampling_modes(system, parameters):
     normal modes are obtained. Only information on the normal modes that should
     be sampled as specified in the input file are returned.
 
-    TODO: Option to read Hessian from file!
-    TODO: Option to optimize geometry before Hessian calculation.
-
     The input file can give the modes to be sampled by specifying the 'modes'
     keyword in the 'sampling' section. If
         'linear' is given, the first 5 modes are not sampled.
@@ -124,7 +120,7 @@ def get_sampling_modes(system, parameters):
     Parameters
     ----------
     system : XPACDT.Dynamics.System
-        System that defines the initial geometry and the potential.
+        System that holds the initial geometry and the potential.
     parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
 
@@ -148,11 +144,11 @@ def get_sampling_modes(system, parameters):
     # For details see the method documentaion.
     modes = parameters.get("sampling").get("modes")
     if modes is None or modes == '':
-        modelist = range(system.n_dof)
+        modelist = range(system.nuclei.n_dof)
     elif modes == 'linear':
-        modelist = range(5, system.n_dof)
+        modelist = range(5, system.nuclei.n_dof)
     elif modes == 'nonlinear':
-        modelist = range(6, system.n_dof)
+        modelist = range(6, system.nuclei.n_dof)
     else:
         modelist = [int(i) for i in modes.split()]
 

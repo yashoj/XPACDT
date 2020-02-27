@@ -29,7 +29,6 @@
 #
 #  **************************************************************************
 
-import numpy as np
 import copy
 import unittest
 
@@ -92,7 +91,7 @@ class SystemTest(unittest.TestCase):
 
     def test_step(self):
         # Step equal to single nuclear timestep
-        
+
         # Set up dummy propagator
         self.system.nuclei.propagator = DummyProp(1.0)
         self.system.step(1.0)
@@ -130,21 +129,13 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(self.system.nuclei, self.nuclei_ref)
 
         ###############
-        # Step not multiple of nuclear timesteps
+        # Step not multiple of nuclear timestep; should give error
 
-        # reset system; propagation should results in 4 smaller steps
+        # reset system
         self.system = xSystem.System(self.parameters)
         self.system.nuclei.propagator = DummyProp(0.3)
-        self.system.step(1.0)
-
-        # check correct advance
-        self.nuclei_ref = copy.deepcopy(self.nuclei)
-        for i in range(4):
-            self.nuclei_ref.positions *= 2.0
-            self.nuclei_ref.momenta *= 2.0
-        self.assertAlmostEqual(self.system.nuclei.time, 1.0)
-        self.assertEqual(len(self.system.log), 2)
-        self.assertEqual(self.system.nuclei, self.nuclei_ref)
+        with self.assertRaises(RuntimeError):
+            self.system.step(1.0)
 
         return
 
@@ -154,7 +145,7 @@ class DummyProp(object):
         self.timestep = float(timestep)
         pass
 
-    def propagate(self, R, P, time_propagation):
+    def propagate(self, R, P, time_propagation, time):
         return (2.0 * R), (2.0 * P)
 
 

@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -53,6 +54,7 @@ class ThermostattedSamplingTest(unittest.TestCase):
     def test_do_Thermostatted_sampling(self):
         samples = thermo.do_Thermostatted_sampling(self.system, self.parameters,
                                                    int(self.parameters.get("sampling").get('samples')))
+
         energies = [s.nuclei.energy for s in samples]
         statistics = scipy.stats.bayes_mvs(energies, alpha=0.9)
         mean_min, mean_max = statistics[0][1]
@@ -61,7 +63,7 @@ class ThermostattedSamplingTest(unittest.TestCase):
 
         self.assertTrue(mean_min < mean_reference < mean_max)
         self.assertTrue(dev_min < mean_reference < dev_max)
-        self.assertEqual(len(samples), 1000)
+        self.assertEqual(len(samples), 2000)
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
 

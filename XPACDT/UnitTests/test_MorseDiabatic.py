@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -33,32 +34,25 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.MorseDiabatic as morsedia
+import XPACDT.Input.Inputfile as infile
 
 
 class MorseDiabaticTest(unittest.TestCase):
 
     def setUp(self):
-        self.pes_model1_1_nb = morsedia.MorseDiabatic(1, **{'n_states': '3',
-                                                            'model_type': 'model_1'})
-        self.pes_model1_2_nb = morsedia.MorseDiabatic(2, **{'n_states': '3',
-                                                            'model_type': 'model_1'})
+        self.pes_model1_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_1.in"))
+        self.pes_model1_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse1_2.in"))
 
-        self.pes_model2_1_nb = morsedia.MorseDiabatic(1, **{'n_states': '3',
-                                                            'model_type': 'model_2'})
-        self.pes_model2_2_nb = morsedia.MorseDiabatic(2, **{'n_states': '3',
-                                                            'model_type': 'model_2'})
+        self.pes_model2_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_1.in"))
+        self.pes_model2_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse2_2.in"))
 
-        self.pes_model3_1_nb = morsedia.MorseDiabatic(1, **{'n_states': '3',
-                                                            'model_type': 'model_3'})
-        self.pes_model3_2_nb = morsedia.MorseDiabatic(2, **{'n_states': '3',
-                                                            'model_type': 'model_3'})
+        self.pes_model3_1_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_1.in"))
+        self.pes_model3_2_nb = morsedia.MorseDiabatic(infile.Inputfile("FilesForTesting/InterfaceTests/input_Morse3_2.in"))
+
 
         return
 
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = morsedia.MorseDiabatic(1)
-
         self.assertEqual(self.pes_model1_1_nb.name, 'MorseDiabatic')
         self.assertEqual(self.pes_model1_1_nb.model_type, 'model_1')
 
@@ -180,6 +174,31 @@ class MorseDiabaticTest(unittest.TestCase):
                                    [[[ 1.05984926e-03], [-6.85614332e-10], [ 6.85614332e-10]],
                                     [[-6.85614332e-10], [-7.25000490e-03], [ 0.0]],
                                     [[ 6.85614332e-10], [ 0.0], [-2.85951767e-02]]], rtol=1e-7)
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_diag_V(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_off_diag_V(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_diag_grad(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_off_diag_grad(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_diabatic_energy_matrix(self):
+        raise NotImplementedError("Please implement a test here while"
+                                  " implmenting the function!!")
 
 
 if __name__ == "__main__":

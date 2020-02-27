@@ -44,8 +44,9 @@ class genLogTest(unittest.TestCase):
         self.parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
         self.parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
 
-        self.nuclei_classical = nuclei.Nuclei(4, self.parameters_classical, None)
-        self.nuclei_rpmd = nuclei.Nuclei(4, self.parameters_rpmd, None)
+        self.nuclei_classical = nuclei.Nuclei(self.parameters_classical,
+                                              None)
+        self.nuclei_rpmd = nuclei.Nuclei(self.parameters_rpmd, None)
 
     def test_write_R(self):
         time_reference = np.random.rand()
@@ -133,7 +134,8 @@ class genLogTest(unittest.TestCase):
 
         written_data = np.genfromtxt("Rrp.log")
         np.testing.assert_allclose(time_reference, written_data[0], atol=1e-7)
-        np.testing.assert_allclose(r_reference.flatten(), written_data[1:], atol=1e-7)
+        np.testing.assert_allclose(r_reference.flatten(), written_data[1:],
+                                   atol=1e-7)
 
         r_reference = np.random.rand(4, 3)
 
@@ -191,9 +193,12 @@ class genLogTest(unittest.TestCase):
         time_reference = np.random.rand()
         state_reference = 1
 
-        self.nuclei_classical.electrons.current_state = state_reference
-        self.nuclei_classical.time = time_reference
-        log = self.nuclei_classical
+        # Test for surface hopping electrons
+        param_sh_classical = infile.Inputfile("FilesForTesting/SystemTests/input_SH_classical.in")
+        param_sh_classical["SurfaceHoppingElectrons"]["initial_state"] = state_reference
+
+        nuclei_sh_classical = nuclei.Nuclei(param_sh_classical, time_reference)
+        log = nuclei_sh_classical
 
         outfile = open("state.log", 'w')
         genLog.write_electronic_state(log, outfile, 16, 8)
@@ -206,6 +211,10 @@ class genLogTest(unittest.TestCase):
         os.remove("state.log")
 
         return
+
+    @unittest.skip("Please implement a test here.")
+    def test_setup_outfiles(self):
+        raise NotImplementedError("Please implement a test here.")
 
 
 if __name__ == "__main__":

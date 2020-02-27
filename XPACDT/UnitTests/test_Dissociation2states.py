@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -33,22 +34,20 @@ import numpy as np
 import unittest
 
 import XPACDT.Interfaces.Dissociation2states as diss2S
+import XPACDT.Input.Inputfile as infile
 
 
 class Dissociation2statesTest(unittest.TestCase):
-    
+
     def setUp(self):
-        self.pes_strong_1_nb = diss2S.Dissociation2states(1, **{'model_type': 'strong_coupling'})
-        self.pes_strong_2_nb = diss2S.Dissociation2states(2, **{'model_type': 'strong_coupling'})
-        self.pes_weak_1_nb = diss2S.Dissociation2states(1, **{'model_type': 'weak_coupling'})
-        self.pes_weak_2_nb = diss2S.Dissociation2states(2, **{'model_type': 'weak_coupling'})
+        self.pes_strong_1_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_1.in"))
+        self.pes_strong_2_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_strongC_2.in"))
+        self.pes_weak_1_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_1.in"))
+        self.pes_weak_2_nb = diss2S.Dissociation2states(infile.Inputfile("FilesForTesting/InterfaceTests/input_weakC_2.in"))
 
         return
 
     def test_creation(self):
-        with self.assertRaises(AssertionError):
-            pes = diss2S.Dissociation2states(1)
-
         self.assertEqual(self.pes_strong_1_nb.name, 'Dissociation2states')
         self.assertEqual(self.pes_strong_1_nb.model_type, 'strong_coupling')
 
@@ -101,7 +100,7 @@ class Dissociation2statesTest(unittest.TestCase):
         np.testing.assert_allclose(
                 self.pes_strong_2_nb._diabatic_gradient_centroid, [[[0.00689168], [6.27486975e-06]],
                                                                    [[6.27486975e-06], [-0.02064746]]], rtol=1e-6)
-        
+
         # Weak coupling model: 2 beads
         self.pes_weak_2_nb._calculate_diabatic_all(np.array([[2.0, 4.3]]))
         np.testing.assert_allclose(
@@ -116,6 +115,14 @@ class Dissociation2statesTest(unittest.TestCase):
         np.testing.assert_allclose(
                 self.pes_weak_2_nb._diabatic_gradient_centroid, [[[0.00410023], [1.63312314e-04]],
                                                                  [[1.63312314e-04], [-0.01239246]]], rtol=1e-6)
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_diag_V_grad(self):
+        raise NotImplementedError("Please implement a test here.")
+
+    @unittest.skip("Please implement a test here.")
+    def test_get_off_diag_V_grad(self):
+        raise NotImplementedError("Please implement a test here.")
 
 
 if __name__ == "__main__":

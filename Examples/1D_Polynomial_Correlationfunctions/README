@@ -3,19 +3,19 @@ autocorrelation functions for one-dimensional polynomial potentials
 (e.g. harmonic and quartic osillators). This should reproduce the results
 published in the first RPMD paper, JCP 121, 3368 (2004).
 
-There are examples for different potentials, beta values and bead numbers,
-each in its own folder.
+There are examples for different potentials, beta values and bead numbers.
+All Input files are labeled with the potential (A, HO, Q), the beta value (1, 8)
+and the number of beads (1, 4, 32). 
 
------ Top level -----
+The potentials are named as follows.
 A - anharmonic potential (0.5x^2 + 0.1x^3 + 0.01x^4)
 HO - harmonic potential (0.5x^2)
 Q - quartic potential (0.25x^4)
------ Second level -----
-Beta values of 1 and 8
------ Third level -----
-Number of beads; 1 and 4 or 32, depending on beta.
 
-Each example can be run using the 'doit.sh' shell script. This runs 
-a sampling step first and then propagates each sample in real time. 
-After that, the results are used to generate the correlation function 
-stored in cxx.dat
+The examples can be run using the 'do_all.sh' shell script. For each case
+a folder is generated with the same naming conventions as the input file.
+The resulting correlation function is stored in the file 'commandCXX.dat' 
+in the respective folder and can be plotted using 'gnuplot 'commandCXX.plt',
+which will create an eps file named 'commandCXX.eps'.
+
+Reference correlation functions are given in the folder 'reference'.

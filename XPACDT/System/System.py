@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,11 +28,9 @@
 #
 #  **************************************************************************
 
-""" Module that defines the physical system treated in XPACDT. This is the
-core of XPACDT."""
+""" Module that defines the physical system treated in XPACDT."""
 
 import copy
-import numpy as np
 
 import XPACDT.System.Nuclei as nuclei
 import XPACDT.Tools.Units as units
@@ -39,28 +38,31 @@ import XPACDT.Tools.Units as units
 
 class System(object):
     """This class is the main class representing the system state. It stores
-    the nuclei and takes care of logging.
+    the nuclei object and takes care of logging.
 
     Parameters
     ----------
     input_parameters : XPACDT.Inputfile
         Represents all the input parameters for the simulation given in the
         input file.
+
+    Attributes:
+    -----------
+    log
+    parameters
+    nuclei
     """
 
     def __init__(self, input_parameters):
 
         self.__parameters = input_parameters
-
-        assert('dof' in self.parameters.get("system")), "Number of " \
-            "degrees of freedom not specified!"
-
-        self.n_dof = self.parameters.get("system").get("dof")
-        time = units.parse_time(self.parameters.get("system").get("time", "0 fs"))
+        time = units.parse_time(self.parameters.get("system").
+                                get("time", "0 fs"))
 
         # Set up nuclei
-        self.__nuclei = nuclei.Nuclei(self.n_dof, self.parameters, time)
+        self.__nuclei = nuclei.Nuclei(self.parameters, time)
 
+        # Set up log
         self.do_log(init=True)
 
     @property
@@ -71,26 +73,21 @@ class System(object):
         return self.__log
 
     @property
-    def n_dof(self):
-        """int : The number of degrees of freedom in this system."""
-        return self.__n_dof
-
-    @n_dof.setter
-    def n_dof(self, i):
-        assert (int(i) > 0), "Number of degrees of freedom less than 1!"
-        self.__n_dof = int(i)
-
-    @property
     def parameters(self):
         """XPACDT.Input.Inputfile : The parameters from the input file."""
         return self.__parameters
+
+    @parameters.setter
+    def parameters(self, new_parameters):
+        # TODO: See Ticket XPACDT-65
+        pass
 
     @property
     def nuclei(self):
         """XPACDT.Dynamics.Nuclei : The nuclei in this system."""
         return self.__nuclei
 
-    def step(self, time_propagate):
+    def step(self, time_propagate, sparse=False):
         """ Step the whole system forward in time. Also keep a log of the
         system state at these times.
 
@@ -98,34 +95,11 @@ class System(object):
         ----------
         time_propagate : float
             Time to advance the system in au.
+        sparse : bool, optional, default: False
+            Whether to keep a sparse (less memory consuming) log or not
         """
-        # TODO: Is this a good way to handle 'time' not multiple of timestep?
-        #       If yes, then also do this in velocity verlet.
-        #       Also check using unittest.
-        timestep_nuclei = self.__nuclei.propagator.timestep
-        # 1e-8 is added because of floating point representation issue needed
-        # for proper floor division or modulo operation. This value is chosen
-        # since it is greater than machine error and less than typical
-        # propagation timesteps.
-        time_plus = time_propagate + 1e-8
-        n_steps = int(time_plus // timestep_nuclei)
-
-        for i in range(n_steps):
-            self.__nuclei.propagate(timestep_nuclei)
-
-        # TODO : For now assert that there is no remainder between output_step
-        # and nuclear step; needed for surface hopping
-        assert(np.isclose((time_plus % timestep_nuclei), 0.)), \
-              ("Output time is not multiple of nuclear timestep.")
-
-        # Propagate for remaining time
-        if (np.isclose((time_plus % timestep_nuclei), 0.)):
-            pass
-        else:
-            timestep_remaining = time_propagate - float(n_steps) * timestep_nuclei
-            self.__nuclei.propagate(timestep_remaining)
-
-        self.do_log()
+        self.__nuclei.propagate(time_propagate)
+        self.do_log(sparse=sparse)
 
     def reset(self, time=None):
         """ Reset the system state to its original values and clear everything
@@ -136,7 +110,7 @@ class System(object):
         time : float, optional, default None
             System time to be set, if given.
         """
-        # TODO: after updating new parameters, initialize e- and propagator for 1st log
+
         self.__nuclei = copy.deepcopy(self.__log[0])
         if time is not None:
             self.__nuclei.time = time
@@ -149,19 +123,24 @@ class System(object):
         self.__nuclei = copy.deepcopy(self.__log[-1])
         self.do_log(True)
 
-    def do_log(self, init=False):
+    def do_log(self, init=False, sparse=False):
         """ Log the system state to a list called __log. Each entry is a
-        dictonary containing the logged quantities. Currently this logs
-        the system time and the nuclei object.
+        XPACDT.System.Nuclei object, which contains all important quantities
+        like time, position, momenta, energies, etc.
 
         Parameters
         ----------
         init : bool, optional
             If the log has to be initialized or not. Default False.
+        sparse : bool, optional, default: False
+            Whether to keep a sparse (less memory consuming) log or not
         """
 
         if init:
             self.__log = []
 
         self.__log.append(copy.deepcopy(self.nuclei))
-        # TODO: remove certain parts to not consume too much memory
+
+        # Use a sprase log by removing the propagator object
+        if sparse:
+            self.__log[-1].make_sparse()

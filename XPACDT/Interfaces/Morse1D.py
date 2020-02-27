@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -43,10 +44,10 @@ class Morse1D(itemplate.PotentialInterface):
 
     Parameters
     ----------
-    max_n_beads : int, optional
-        Maximum number of beads from the (n_dof) list of n_beads. Default: 1.
+    parameters : XPACDT.Input.Inputfile
+        Dictonary-like presentation of the input file.
 
-    Other Parameters
+    Other Parameters (as given in the input file)
     ----------------
     De : float or string of float
         Defines the well depth of the potential.
@@ -58,34 +59,37 @@ class Morse1D(itemplate.PotentialInterface):
         Overall vertical shift to the potential.
     """
 
-    def __init__(self, max_n_beads=1, **kwargs):
+    def __init__(self, parameters):
 
         itemplate.PotentialInterface.__init__(self, "Morse1D", 1, 1,
-                                              max_n_beads, 'adiabatic')
+                                              max(parameters.n_beads),
+                                              'adiabatic')
+
+        pes_parameters = parameters.get(self.name)
 
         try:
-            self.__De = float(kwargs.get('De'))
+            self.__De = float(pes_parameters.get('De'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 'De' for morse potential not given or "
                   "not convertible to float.\n")
             raise
 
         try:
-            self.__a = float(kwargs.get('a'))
+            self.__a = float(pes_parameters.get('a'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 'a' for morse potential not given or "
                   "not convertible to float.\n")
             raise
 
         try:
-            self.__re = float(kwargs.get('re'))
+            self.__re = float(pes_parameters.get('re'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 're' for morse potential not given or "
                   "not convertible to float.\n")
             raise
 
         try:
-            self.__b = float(kwargs.get('b'))
+            self.__b = float(pes_parameters.get('b'))
         except (TypeError, ValueError):
             print("\nXPACDT: Parameter 'b' for morse potential not given or "
                   "not convertible to float.\n")
@@ -111,17 +115,16 @@ class Morse1D(itemplate.PotentialInterface):
         """float : Overall vertical shift to the potential. """
         return self.__b
 
-    def _calculate_adiabatic_all(self, R, P=None, S=None):
+    def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
 
         Parameters:
         ----------
-        R, P : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions `R` and momenta `P` representing the
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the
             system in au. The first axis represents the degrees of freedom and
-            the second axis is the beads. `P` is not used in this potential
-            and thus defaults to None.
+            the second axis is the beads.
         S : int, optional
             The current electronic state. This is not used in this potential
             and thus defaults to None.
@@ -166,45 +169,45 @@ class Morse1D(itemplate.PotentialInterface):
         return V, dV
 
 
-if __name__ == '__main__':
-
-    # Plotting script to visualize the potential.
-    # Runs only if this file is executed on its own by doing: python Morse1D.py
-    import matplotlib.pyplot as plt
-
-    # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
-    nb = 1
-    De = 0.04556
-    a = 1.94  # 0.97
-    re = 2.50  # 1.70
-    b = 0.04556
-    pot = Morse1D(nb, **{'De': De, 'a': a, 're': re, 'b': b})
-
-    # len(linspace) array of positions
-    X = np.linspace(2., 5., num=100)
-
-    V_ad = []
-    dV_ad = []
-
-    for i in X:
-        pot._calculate_adiabatic_all(np.array([[i]]))
-
-        V_ad.append(pot._adiabatic_energy[0, 0])
-        dV_ad.append(pot._adiabatic_gradient[0, 0, 0])
-
-    # Plot all
-    fig, ax = plt.subplots(2)
-    fig.suptitle('Morse potential: ', fontsize=20)
-
-    ax[0].plot(X, V_ad, 'r-', label="V")
-    ax[0].set_xlabel('x')
-    ax[0].set_ylabel('Adiabatic Potential')
-    ax[0].legend(loc='best')
-    # ax[0].set_ylim((-0.001, 0.05))
-
-    ax[1].plot(X, dV_ad, 'r-', label="dV/dx")
-    ax[1].set_xlabel('x')
-    ax[1].set_ylabel('Derivative of Adiabatic Potential')
-    ax[1].legend(loc='best')
-
-    plt.show()
+#if __name__ == '__main__':
+#
+#    # Plotting script to visualize the potential.
+#    # Runs only if this file is executed on its own by doing: python Morse1D.py
+#    import matplotlib.pyplot as plt
+#
+#    # Input parameters, taken from: J. Chem. Phys. 150, 114105 (2019)
+#    nb = 1
+#    De = 0.04556
+#    a = 1.94  # 0.97
+#    re = 2.50  # 1.70
+#    b = 0.04556
+#    pot = Morse1D(nb, **{'De': De, 'a': a, 're': re, 'b': b})
+#
+#    # len(linspace) array of positions
+#    X = np.linspace(2., 5., num=100)
+#
+#    V_ad = []
+#    dV_ad = []
+#
+#    for i in X:
+#        pot._calculate_adiabatic_all(np.array([[i]]))
+#
+#        V_ad.append(pot._adiabatic_energy[0, 0])
+#        dV_ad.append(pot._adiabatic_gradient[0, 0, 0])
+#
+#    # Plot all
+#    fig, ax = plt.subplots(2)
+#    fig.suptitle('Morse potential: ', fontsize=20)
+#
+#    ax[0].plot(X, V_ad, 'r-', label="V")
+#    ax[0].set_xlabel('x')
+#    ax[0].set_ylabel('Adiabatic Potential')
+#    ax[0].legend(loc='best')
+#    # ax[0].set_ylim((-0.001, 0.05))
+#
+#    ax[1].plot(X, dV_ad, 'r-', label="dV/dx")
+#    ax[1].set_xlabel('x')
+#    ax[1].set_ylabel('Derivative of Adiabatic Potential')
+#    ax[1].legend(loc='best')
+#
+#    plt.show()

@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -35,12 +36,13 @@ import os
 import pickle
 import shutil
 import sys
+import warnings
 
 
-def sample(system, parameters):
+def sample(system, parameters, do_return=False):
     """
     Basic sampling method. This function creates the folder given in the input
-    to put the sampled data to. If the folder already exists, either override
+    to put the sampled data to. If the folder already exists, either overwrite
     or add has to be given for removing all old trajectories or adding to the
     existing trajectories, respectively. If none of the two is given, a
     RuntimeError is raised.
@@ -48,25 +50,30 @@ def sample(system, parameters):
     which it then employs pickle to write to folders named 'traj_XXX',
     with XXX numbering the trajectories.
 
-    TODO: Basic analysis if required.
-
     Parameters
     ----------
     system : XPACDT.Dynamics.System
         System that defines the initial geometry and the potential.
     parameters : XPACDT.Input.Inputfile
         XPACDT representation of the given input file.
+    do_return: Bool, optional, default:False
+        If True then the list of samples systems is returned instead of written
+        to pickle files.
+
+    Return
+    ------
+    If `do_return` is True, the list of samples systems is returned.
     """
 
     sampling_parameters = parameters.get('sampling')
     system_parameters = parameters.get('system')
 
-    assert('folder' in system_parameters), "No folder for " \
-        "trajectories given."
-    assert('method' in sampling_parameters), "No sampling " \
-        "method specified."
-    assert('samples' in sampling_parameters), "Number of " \
-        "samples required not given."
+    if 'folder' not in system_parameters:
+        raise KeyError("\nXPACDT: No folder for trajectories given.")
+    if 'method' not in sampling_parameters:
+        raise KeyError("\nXPACDT: No sampling method specified.")
+    if 'samples' not in sampling_parameters:
+        raise KeyError("\nXPACDT: Number of samples required not given.")
 
     # Create or handle trajectory folder.
     n_samples = int(sampling_parameters.get('samples'))
@@ -76,32 +83,48 @@ def sample(system, parameters):
     if not os.path.isdir(name_folder):
         try:
             os.mkdir(name_folder)
-        except OSError:
-            sys.stderr.write("Creation of trajectory folder failed!")
-            raise
+        except OSError as e:
+            raise type(e)(str(e) + "\nXPACDT: Creation of trajectory folder"
+                          " failed!")
     else:
         trj_folder_list = glob.glob(os.path.join(name_folder, 'trj_*'))
         trj_folder_list.sort()
 
-        if 'override' in system_parameters:
+        if 'overwrite' in sampling_parameters:
             if trj_folder_list is not None:
                 for folder in trj_folder_list:
                     shutil.rmtree(folder)
 
-        elif 'add' in system_parameters:
+        elif 'add' in sampling_parameters:
             n_samples_required -= len(trj_folder_list)
+            warnings.warn("\nXPACDT: Please make sure to use different"
+                          " seeds in the input file when adding"
+                          " trajectories.")
         else:
             raise RuntimeError("The trajectory folder already exists and no "
-                               "directive for overriding old data or adding "
+                               "directive for overwriting old data or adding "
                                "trajectories is given.")
 
     # Run sampling method
     method = sampling_parameters.get('method')
     __import__("XPACDT.Sampling." + method + "Sampling")
     sampled_systems = getattr(sys.modules["XPACDT.Sampling." + method + "Sampling"],
-                              "do_" + method + "_sampling")(system, parameters, n_samples_required)
+                              "do_" + method + "_sampling")(system, parameters,
+                                                            n_samples_required)
 
-    # TODO: Add linear shifts in position or momentum!
+    # Shift centroid position and/or momenta if requested
+    if parameters.positionShift is not None:
+        for system in sampled_systems:
+            system.nuclei.positions += parameters.positionShift[:, None]
+            system.do_log(init=True)
+
+    if parameters.momentumShift is not None:
+        for system in sampled_systems:
+            system.nuclei.momenta += parameters.momentumShift[:, None]
+            system.do_log(init=True)
+
+    if do_return is True:
+        return sampled_systems
 
     # Save stuff to pickle files. Iterate over all possible folders
     shift = 0
@@ -113,14 +136,11 @@ def sample(system, parameters):
         if not os.path.isdir(trj_folder):
             try:
                 os.mkdir(trj_folder)
-            except OSError:
-                sys.stderr.write("Creation of trajectory folder "
-                                 + trj_folder + " failed!")
-                raise
+            except OSError as e:
+                raise type(e)(str(e) + "\nXPACDT: Creation of trajectory"
+                              " folder " + trj_folder + " failed!")
 
             file_name = system_parameters.get('picklefile', 'pickle.dat')
             pickle.dump(sampled_systems[shift],
                         open(os.path.join(trj_folder, file_name), 'wb'), -1)
             shift += 1
-
-# TODO: maybe do some anaylis here!!

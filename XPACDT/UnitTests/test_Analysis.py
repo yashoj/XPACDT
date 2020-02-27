@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -53,6 +54,7 @@ class AnalysisTest(unittest.TestCase):
         random.seed(seed)
         np.random.seed(seed)
         self.systems = []
+        # Add 4 systems containing only log of current state to the empty list
         for i in range(4):
             shape = self.system.nuclei.positions.shape
             self.systems.append(copy.deepcopy(self.system))
@@ -60,27 +62,28 @@ class AnalysisTest(unittest.TestCase):
             self.systems[-1].nuclei.momenta = np.random.randn(*shape)
             self.systems[-1].do_log(init=True)
 
+        # Add another nuclei to the log of the last system.
         self.systems[-1].nuclei.time = 2.0
         self.systems[-1].nuclei.positions = np.random.randn(*shape)
         self.systems[-1].nuclei.momenta = np.random.randn(*shape)
         self.systems[-1].do_log()
 
-#    def test_do_analysis(self):
-#        # TODO: Implement a more integrated test here!
-#        raise NotImplementedError("Please implement a test here!!")
-#        pass
-#
+    @unittest.skip("Please implement as an integrated test.")
+    def test_do_analysis(self):
+        raise NotImplementedError("Please implement a test here.")
 
     def test_check_command(self):
         with self.assertRaises(ValueError):
-            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'format': 'time', 'results': []}
+            command = {'name': 'test', 'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2',
+                       'step': '', 'format': 'time', 'results': []}
             analysis.check_command(command, self.systems[3])
 
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")
             # Generate warning
-            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1', 'step': '', 'format': 'time', 'results': []}
+            command = {'name': 'test', 'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1',
+                       'step': '', 'format': 'time', 'results': []}
             analysis.check_command(command, self.systems[3])
             # Verify some things
             assert len(w) == 1
@@ -88,45 +91,36 @@ class AnalysisTest(unittest.TestCase):
 
     def test_apply_command(self):
         with self.assertRaises(ValueError):
-            command = {'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2', 'step': '', 'format': 'time', 'results': []}
-            analysis.apply_command(command, self.systems[3])
+            command = {'name': 'test', 'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2',
+                       'step': '', 'format': 'time', 'results': []}
+            analysis.apply_command(command, self.systems[3], [])
 
         command = {'op': '+pos -1 0 +mom -1 0', 'step': '', 'results': []}
-        analysis.apply_command(command, self.systems[0])
+        analysis.apply_command(command, self.systems[0], [])
         results_ref = np.array([[0.49671415 * -0.23415337]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
-        times_ref = np.array([0.0])
-        np.testing.assert_array_almost_equal(command['times'], times_ref)
 
         command = {'op': '+pos -1 0 +mom -1 0', 'step': '1', 'results': []}
-        analysis.apply_command(command, self.systems[0])
+        analysis.apply_command(command, self.systems[0], [1])
         results_ref = np.array([])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
-        times_ref = np.array([])
-        np.testing.assert_array_almost_equal(command['times'], times_ref)
 
         command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '', 'results': []}
-        analysis.apply_command(command, self.systems[3])
+        analysis.apply_command(command, self.systems[3], [])
         results_ref = np.array([[-0.54438272*-0.60063869], [-0.54438272*0.2088636]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
-        times_ref = np.array([0.0, 2.0])
-        np.testing.assert_array_almost_equal(command['times'], times_ref)
 
         command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '1', 'results': []}
-        analysis.apply_command(command, self.systems[3])
+        analysis.apply_command(command, self.systems[3], [1])
         results_ref = np.array([[-0.54438272*0.2088636]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
-        times_ref = np.array([2.0])
-        np.testing.assert_array_almost_equal(command['times'], times_ref)
 
         command2d = {'op': '+pos -1 0', 'step': '', '2d': None, '2op': '+mom -1 0', 'results': []}
-        analysis.apply_command(command2d, self.systems[3])
+        analysis.apply_command(command2d, self.systems[3], [])
         results_ref = np.array([[-0.54438272], [-0.01349722], [-0.60063869], [0.2088636]])
         np.testing.assert_array_almost_equal(command2d['results'], results_ref)
-        times_ref = np.array([0.0, 2.0])
-        np.testing.assert_array_almost_equal(command2d['times'], times_ref)
 
-        pass
+        return
 
     def test_apply_operation(self):
         with self.assertRaises(RuntimeError):
@@ -219,6 +213,7 @@ class AnalysisTest(unittest.TestCase):
                 text += line
 
         os.remove("test.dat")
+        os.remove("test.plt")
         self.assertEqual(text, compare_text)
 
         header = "# This is a stupid header\n# For my super test!\n"
@@ -249,7 +244,32 @@ class AnalysisTest(unittest.TestCase):
                 text += line
 
         os.remove("test.dat")
+        os.remove("test.plt")
         self.assertEqual(text, compare_text)
+
+    def test_get_step_list(self):
+        command = {}
+        steps = analysis._get_step_list(command)
+        self.assertEqual(steps, [])
+
+        command = {'step': 'index 1 2 3'}
+        steps = analysis._get_step_list(command)
+        self.assertEqual(steps, [1, 2, 3])
+
+        # Checking if 'last' option works; self.systems[0] should have only one
+        # log nuclei and self.systems[3] should have two.
+        command = {'step': 'last'}
+        steps = analysis._get_step_list(command, self.systems[0])
+        self.assertEqual(steps, [0])
+
+        steps = analysis._get_step_list(command, self.systems[3])
+        self.assertEqual(steps, [1])
+
+        command = {'name': 'test', 'step': 'random'}
+        with self.assertRaises(ValueError):
+            steps = analysis._get_step_list(command)
+
+        return
 
     def test_use_time(self):
         for i in range(0, 100):
@@ -275,7 +295,6 @@ class AnalysisTest(unittest.TestCase):
         dir_list = analysis.get_directory_list(file_name='pickle.dat')
         self.assertSequenceEqual(dir_list, dir_list_ref2)
 
-# TODO: make sure these are always removed!
         for d in dir_list_ref:
             shutil.rmtree(d)
 
@@ -283,7 +302,6 @@ class AnalysisTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             analysis.get_systems(None, None, None)
 
-        # TODO generate a list of systems and store them to be read by pickle etc.
         dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
         dir_list_ref2 = ["./trj_0", "./trj_2"]
         for d in dir_list_ref:
@@ -295,9 +313,14 @@ class AnalysisTest(unittest.TestCase):
         sys = analysis.get_systems(dir_list_ref, 'pickle.dat', None)
         self.assertTrue(isinstance(sys, collections.Iterable))
 
-# TODO: make sure these are always removed!
         for d in dir_list_ref:
             shutil.rmtree(d)
+
+    def tearDown(self):
+        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
+        for d in dir_list_ref:
+            if os.path.isdir(d):
+                shutil.rmtree(d)
 
 
 if __name__ == "__main__":

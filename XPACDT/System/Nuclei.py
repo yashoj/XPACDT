@@ -7,8 +7,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -27,21 +28,23 @@
 #
 #  **************************************************************************
 
-import numpy as np
-import sys
-# import scipy as sp
+"""This module defines the state of the nuclei treated in XPACDT."""
 
-# TODO: add more quantities calculated for the nuclei!
+import math
+import numpy as np
+import warnings
+import sys
+
+import XPACDT.Tools.Memory as mem
 
 
 class Nuclei(object):
     """
-    This class represents the nuclar degrees of freedom.
+    This class represents the nuclei. It also holds the XPACDT.System.Electrons
+    object for the current physical system.
 
     Parameters:
     -----------
-    degrees_of_freedom : int
-        The number of nuclear degrees of freedom present.
     input_parameters : XPACDT.Input.Inputfile
         Representation of the input file.
     time : float
@@ -51,23 +54,32 @@ class Nuclei(object):
     -----------
     n_dof
     n_beads
+    beta
     time
     positions
+    x_centroid
     momenta
+    p_centroid
     electrons
+    propagator
+    energy
+    energy_centroid
+    kinetic_energy
+    spring_energy
+    potential_energy
+    kinetic_energy_centroid
+    potential_energy_centroid
     """
 
-    def __init__(self, degrees_of_freedom, input_parameters, time):
-
-        self.n_dof = degrees_of_freedom
-        self.time = time
-
+    def __init__(self, input_parameters, time):
         # coordinates, masses from input
-        self.masses = input_parameters.masses
+        self.__masses = input_parameters.masses
+        self.__n_beads = input_parameters.n_beads
+        self.__n_dof = input_parameters.n_dof
+        self.__beta = input_parameters.beta
+
         self.positions = input_parameters.coordinates
         self.momenta = input_parameters.momenta
-
-        self.n_beads = input_parameters.n_beads
 
         # Set up electrons
         self.init_electrons(input_parameters)
@@ -75,6 +87,8 @@ class Nuclei(object):
         # set up propagator and attach
         if 'nuclei_propagator' in input_parameters:
             self.attach_nuclei_propagator(input_parameters)
+
+        self.time = time
 
         return
 
@@ -91,6 +105,12 @@ class Nuclei(object):
 
     @propagator.setter
     def propagator(self, p):
+        warnings.warn("\nXPACDT: Setting the propagator with the setter"
+                      " should only be used in the"
+                      " UnitTests. If you are currently not running a"
+                      " UnitTest, something has gone WRONG!",
+                      category=RuntimeWarning)
+
         self.__propagator = p
 
     @property
@@ -107,29 +127,28 @@ class Nuclei(object):
         """int : The number of degrees of freedom in this system."""
         return self.__n_dof
 
-    @n_dof.setter
-    def n_dof(self, i):
-        assert (i > 0), "Number of degrees of freedom less than 1!"
-        self.__n_dof = i
-
     @property
     def n_beads(self):
-        """(n_dof) list of int : The number of beads for each degree of freedom."""
+        """(n_dof) list of int : The number of beads for each degree of
+        freedom."""
         return self.__n_beads
 
-    @n_beads.setter
-    def n_beads(self, l):
-        self.__n_beads = l
+    @property
+    def beta(self):
+        """ float or np.nan: Inverse temperature for ring polymer springs in
+        a.u. It is NaN if not given in the case of 1 bead for each degree of
+        freedom."""
+        return self.__beta
+
+    @beta.setter
+    def beta(self, f):
+        self.__beta = f
 
     @property
     def masses(self):
         """(n_dof) ndarray of floats : The masses of each degree of
            freedom in au."""
         return self.__masses
-
-    @masses.setter
-    def masses(self, a):
-        self.__masses = a.copy()
 
     @property
     def positions(self):
@@ -165,34 +184,58 @@ class Nuclei(object):
 
     @property
     def energy(self):
-        """ float : Total energy of the nuclei including the spring term.
+        """ float : Total energy of the nuclei of the ring polymer including
+        the spring term in au.
         i.e. :math:`\\frac{1}{n}(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + SPINGS + V)`.
         TODO: write out properly."""
         return self.kinetic_energy + self.spring_energy + self.potential_energy
 
     @property
+    def energy_centroid(self):
+        """ float : Total energy of the nuclei of the centroid in au.
+        i.e. :math:`(\\sum_i \\sum_j (p^2_{ij})(2m_j)) + V)`.
+        TODO: write out properly."""
+        return self.kinetic_energy_centroid + self.potential_energy_centroid
+
+    @property
     def kinetic_energy(self):
-        """ float TODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return 0.5*np.sum(self.momenta * self.momenta)
+        """ float : 'Kinetic energy' of the ring polymer in au.
+        i.e. :math:`(\\sum_\\alpha \\sum_A (p^2_{A}^{(\\alpha))})(2m_A)))`."""
+        return (0.5 * np.sum(np.sum((self.momenta * self.momenta), axis=1)
+                             / self.masses))
 
     @property
     def spring_energy(self):
-        """ floatTODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return 0.0
+        """ float : Energy due to spring terms in the ring polymer in au.
+        TODO : write equation properly"""
+        if np.all([i == 1 for i in self.n_beads]):
+            return 0.0
+        else:
+            prefactor = 0.5 * (float(max(self.n_beads)) / self.beta)**2
+            return (prefactor * np.sum(self.masses
+                                       * np.sum((self.positions
+                                                 - np.roll(self.positions, -1, axis=1))**2, axis=1)))
 
     @property
     def potential_energy(self):
-        """ floatTODO, incorrect currently! Need to be changed when
-        refactoring."""
-        return self.electrons.energy(self.positions)
+        """ float : Potential energy of the ring polymer in au."""
+        return np.sum(self.electrons.energy(self.positions))
+
+    @property
+    def kinetic_energy_centroid(self):
+        """ float : Kinetic energy of the centroid in au."""
+        return (0.5 * np.dot(self.p_centroid, (self.p_centroid / self.masses)))
+
+    @property
+    def potential_energy_centroid(self):
+        """ float : Potential energy of the centroid in au."""
+        return self.electrons.energy(self.positions, centroid=True)
 
     def __eq__(self, other):
         """Test if an object is equal to the current nuclei object. A nuclei
         object is assumed to be equal to another nuclei object if they have
         the same number of degrees of freedom, the same number of beads,
-        the same positions, momenta and masses.
+        the same beta, the same positions, momenta and masses.
 
         Parameters:
         -----------
@@ -208,12 +251,22 @@ class Nuclei(object):
         """
         return (self.n_dof == other.n_dof
                 and self.n_beads == other.n_beads
+                and self.beta is other.beta
                 and (self.positions == other.positions).all()
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
+    def make_sparse(self):
+        """ Decrease size of the object for sparse logging.
+        Right now this removes the propagator object.
+        """
+
+        self.__propagator = None
+        
+
     def init_electrons(self, parameters):
-        """ Initialize the representation of the electrons in the system.
+        """ Initialize the representation of the electrons in the system. This
+        creates a XPACDT.System.Electrons object.
 
         Parameters
         ----------
@@ -225,12 +278,15 @@ class Nuclei(object):
                                                          'AdiabaticElectrons')
         __import__("XPACDT.System." + electronic_method)
         if (electronic_method != "AdiabaticElectrons"):
-            assert(electronic_method in parameters), \
-                  ("No input parameters for chosen electronic method.")
+            if electronic_method not in parameters:
+                raise KeyError("\nXPACDT: No input parameters for chosen"
+                               "electronic method.")
 
         self.__electrons = getattr(sys.modules["XPACDT.System." + electronic_method],
-                                   electronic_method)(parameters, self.n_beads,
-                                                      self.masses, self.positions, self.momenta)
+                                   electronic_method)(parameters,
+                                                      self.masses,
+                                                      self.positions,
+                                                      self.momenta)
 
     def getCOM(self, dofs, quantity='x'):
         """ Get the center of mass position, momentum or velocity for a list
@@ -252,7 +308,7 @@ class Nuclei(object):
         """
         raise NotImplementedError("GetCOM called but not implemented!")
 
-    def parse_dof(self, dof_string, quantity='x', beads=False):
+    def get_selected_quantities(self, dof_string, quantity='x', beads=False):
         """ Obtain positions, momenta or velocities for a list of degrees of
         freedom.
 
@@ -301,7 +357,7 @@ class Nuclei(object):
                     else:
                         values.append(self.p_centroid[dof] / self.masses[dof])
                 else:
-                    raise RuntimeError("XPACDT: Requested quantity not"
+                    raise RuntimeError("\nXPACDT: Requested quantity not"
                                        " implemented: " + quantity)
 
         return np.array(values)
@@ -318,17 +374,15 @@ class Nuclei(object):
 
         prop_parameters = parameters.get('nuclei_propagator')
         if 'rpmd' in parameters:
-            assert('beta' in parameters.get("rpmd")), "No beta " \
-                   "given for RPMD."
-            prop_parameters['beta'] = parameters.get("rpmd").get('beta')
             prop_parameters['rp_transform_type'] = parameters.get('rpmd').get(
                     "nm_transform", "matrix")
 
         prop_method = prop_parameters.get('method')
-        __import__("XPACDT.Dynamics." + prop_method)
-        self.propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method],
-                                  prop_method)(self.electrons, self.masses,
-                                               self.n_beads, **prop_parameters)
+        __import__("XPACDT.Dynamics." + prop_method + "Propagator")
+        self.__propagator = getattr(sys.modules["XPACDT.Dynamics." + prop_method + "Propagator"],
+                                    prop_method)(self.electrons, self.masses,
+                                                 self.n_beads, self.beta,
+                                                 **prop_parameters)
 
         if 'thermostat' in parameters:
             self.propagator.attach_thermostat(parameters, self.masses)
@@ -343,16 +397,46 @@ class Nuclei(object):
         time_propagate : float
             The time to advance the nuclei and electrons in au.
         """
-        # TODO : choose a better name than 'step_index'. Also do we need to
-        #        pass both R and P for all electronic methods?
-        self.electrons.step(self.positions, self.momenta, time_propagate, **{'step_index': 'first'})
+        # 1e-8 is added because of floating point representation issue needed
+        # for proper floor division or modulo operation. This value is chosen
+        # since it is greater than machine error and less than typical
+        # propagation timesteps.
+        time_plus = time_propagate + 1e-8
+        timestep = self.propagator.timestep
+        n_steps = int(time_plus // timestep)
 
-        self.positions, self.momenta = \
-            self.__propagator.propagate(self.positions, self.momenta,
-                                        time_propagate)
+        # This is needed since nuclear propagator has this fixed timestep.
+        # 'time_propagate' can be output time in propagation or sampling time
+        # in thermostated sampling.
+        if not math.isclose(n_steps*timestep, time_propagate, abs_tol=1e-6):
+            raise RuntimeError("\nXPACDT: Propagation time is not multiple of"
+                               " nuclear timestep.")
 
-        self.electrons.step(self.positions, self.momenta, time_propagate, **{'step_index': 'last'})
+        for i in range(n_steps):
+            self.electrons.step(self.positions, self.momenta, timestep,
+                                **{'step_index': 'before_nuclei'})
+            self.positions, self.momenta = \
+                self.__propagator.propagate(self.positions, self.momenta,
+                                            timestep, self.time + i*timestep)
+            self.electrons.step(self.positions, self.momenta, timestep,
+                                **{'step_index': 'after_nuclei'})
 
         self.time += time_propagate
 
         return
+
+    def print_size(self):
+        """ Print the size of the nuclei object and some of its members.
+        """
+
+        print("Nuclei is {: .2f} KB".format(mem.getsize(self) / 1024))
+        print("\t Consisting of:")
+        print("\t n_dof {: .2f} KB".format(mem.getsize(self.n_dof) / 1024))
+        print("\t time {: .2f} KB".format(mem.getsize(self.time) / 1024))
+        print("\t beta {: .2f} KB".format(mem.getsize(self.beta) / 1024))
+        print("\t n_beads {: .2f} KB".format(mem.getsize(self.n_beads) / 1024))
+        print("\t masses {: .2f} KB".format(mem.getsize(self.masses) / 1024))
+        print("\t positions {: .2f} KB".format(mem.getsize(self.positions) / 1024))
+        print("\t momenta {: .2f} KB".format(mem.getsize(self.momenta) / 1024))
+        print("\t propagator {: .2f} KB".format(mem.getsize(self.propagator) / 1024))
+        print("\t electrons {: .2f} KB".format(mem.getsize(self.electrons) / 1024))

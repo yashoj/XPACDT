@@ -1,11 +1,10 @@
-$system                     # general parameters
+$system                    
 
-seed = 0                    # Seed for random number generator
-dof = 1                     # the number of degrees of freedom
-job = propagate	                # The job type (possible: sample, propagate, analyze, plot)
-electrons = NRPMDElectrons  # Electronic method to be used (possible: SurfaceHoppingElectrons, NRPMDElectrons)
-#Interface = MorseDiabatic  # the interface to the potential to be used (possible: OneDPolynomial)
-Interface = TullyModel  # the interface to the potential to be used (possible: OneDPolynomial)
+seed = 0                    
+dof = 1                   
+job = propagate	              
+electrons = NRPMDElectrons  
+Interface = TullyModel  
 
 $end
 
@@ -13,21 +12,12 @@ $end
 
 $NRPMDElectrons
 
-basis = diabatic         # Electronic state basis representation (possible: adiabatic, diabatic; default: adiabatic)
+basis = diabatic        
 initial_states = 1
 timestep = 1.0 au 
 
 $end
 
-##############################################################################
-#
-#$MorseDiabatic  # must match the interface specified; specific to each interface
-#
-#model_type = model_3         # Model number to be used (possible: model_1, model_2, model_3)
-#n_states = 2                 # Number of morse diabatic states (possible: 2, 3)
-
-#$end
-#
 ##############################################################################
 
 $TullyModel
@@ -38,27 +28,27 @@ $end
 
 ##############################################################################
 
-$rpmd                       # RPMD input
+$rpmd                      
 
-beads = 2                   # Number of beads used; 1 or even numbers; TODO: different numbers
-beta = 1052.0                  # Beta used for the springs
-
-$end
-
-##############################################################################
-
-$nuclei_propagator             # nuclei propagator input
-
-method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
-timestep = 1.0 au      # timestep in fs or au
+beads = 2                   
+beta = 1052.0               
 
 $end
 
 ##############################################################################
 
-$propagation	    # propagation input
+$nuclei_propagator            
 
-time_end = 10.0 au # end time for propagation
+method = VelocityVerlet
+timestep = 1.0 au     
+
+$end
+
+##############################################################################
+
+$propagation	    
+
+time_end = 10.0 au 
 
 # optional:
 time_output = 1.0 au 
@@ -66,16 +56,16 @@ $end
 
 ##############################################################################
 
-$coordinates	           # coordinates given here
+$coordinates	          
 
-type = mass-value      # coordinate format (possible: mass-value, xyz); TODO: description here
+type = mass-value      
 1.0 2.5 2.6
 
 $end
 
 ##############################################################################
 
-$momenta               # momenta, must be the same ordering as coordinates
+$momenta              
 
 0.001 0.024
 

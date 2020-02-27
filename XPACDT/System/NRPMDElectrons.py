@@ -97,11 +97,20 @@ class NRPMDElectrons(electrons.Electrons):
     def step(self, R, time_propagate, **kwargs):
 
         """
-        Calculate the stepwise propagation of position and momentum of the
+        Calculate the stepwise propagation of positions and momenta of the
         system electrons as defined by the systems PES.
         
         Here the exact step is implemented in a matrixcalculus format following
-        the work of J. richardson und M. Thoss in reference [2]
+        the work of J. richardson und M. Thoss in reference [2]:
+            
+        :math: ´\cvect{\text{\textbf{q}}_{i,\alpha}+\frac{1}{2}
+        \dot{\text{\textbf{q}}}_{i,\alpha}\delta t}{\text{\textbf{p}}_{i,\alpha}
+        +\frac{1}{2}\dot{\text{\textbf{p}}}_{i,\alpha}\delta t} = 
+        \begin{MATRIX}\cos\left(\frac{V(q_{i})\delta t}{2\hbar}\right) & 
+        \sin\left(\frac{V(q_{i})\delta t}{2\hbar}\right) \\ 
+        -\sin\left(\frac{V(q_{i})\delta t}{2\hbar}\right) & 
+        \cos\left(\frac{V(q_{i})\delta t}{2\hbar}\right) \end{MATRIX} 
+        \cvect{\text{\textbf{q}}_{i,\alpha}}{\text{\textbf{p}}_{i,\alpha}}`
 
         Parameters
         ----------
@@ -109,16 +118,11 @@ class NRPMDElectrons(electrons.Electrons):
             The (ring-polymer) positions representing the system in au. The
             first index represents the degrees of freedom, the second one the
             beads.
-        centroid : bool, default False
-            If the energy of the centroid should be returned.
-
-        Returns
-        -------
-        (n_states, n_beads) ndarrays of float /or/ float
-        The position and momenta of the systems electrons of the systems PES at
-        each bead position or at the centroid in hartree.
+        time_propagate:
+            Number in atomic time units for the propagation of the electronic
+            coordinates and momenta. 
         """
-
+        
         #the exact step from reference [2]
         potential = self.pes.diabatic_energy(R, return_matrix=True).transpose(2, 0, 1)
         q_mat = np.zeros_like(self.q)
@@ -126,14 +130,14 @@ class NRPMDElectrons(electrons.Electrons):
         for i in range(self.pes.max_n_beads):
             Potential = potential[i]
 
-            q_mat[:, i] = (np.matmul((cosm(Potential*time_propagate)),
+            q_mat[:, i] = (np.matmul((cosm(Potential*0.5*time_propagate)),
                                      np.expand_dims(self.q[:, i], axis=-1)) +
-                           np.matmul((sinm(Potential*time_propagate)),
+                           np.matmul((sinm(Potential*0.5*time_propagate)),
                                      np.expand_dims(self.p[:, i], axis=-1)))\
                            .reshape(-1)
-            p_mat[:, i] = (np.matmul((cosm(Potential*time_propagate)),
+            p_mat[:, i] = (np.matmul((cosm(Potential*0.5*time_propagate)),
                                      np.expand_dims(self.p[:, i], axis=-1)) -
-                           np.matmul((sinm(Potential*time_propagate)),
+                           np.matmul((sinm(Potential*0.5*time_propagate)),
                                      np.expand_dims(self.q[:, i], axis=-1)))\
                            .reshape(-1)
 
@@ -150,8 +154,10 @@ class NRPMDElectrons(electrons.Electrons):
         The electronic energie part of the whole hamiltonian as in reference 
         [1] is calcualted acording to:
             
-        \frac{1}{2\hbar}\Sum{nm}{}{V_{nm}(R_{\alpha})\times([q_{\alpha}]_{n}
-        [q_{\alpha}]_{m}+[p_{\alpha}]_{n}[p_{\alpha}]_{m}-\delta_{nm}\hbar)}    
+        :math:´\hat{H}_{el}=\frac{1}{2\hbar}\Sum{\alpha=1}{N}{\Sum{nm}{}{V_{nm}
+        (\text{\textbf{R}}_{\alpha})\times([\text{\textbf{q}}_{\alpha}]_{n}
+        [\text{\textbf{q}}_{\alpha}]_{m}+[\text{\textbf{p}}_{\alpha}]_{n}
+        [\text{\textbf{p}}_{\alpha}]_{m}-\delta_{nm}\hbar)}}´   
 
         where alpha is the bead-index and is running to N=self.pes.max_n_beads
         and V is the diabatic potential energie matrix for n_states electronic 
@@ -170,8 +176,9 @@ class NRPMDElectrons(electrons.Electrons):
         -------
         (n_beads) ndarray of float /or/ float
         The energy of the systems PES at each bead position or at the centroid
-        in hartree.
+        in hartree. 
         """
+        # comment on centroid is not implementet yet 
 
         #shape (ns,ns,nb) => (nb,ns,ns)
         Potential = self.pes.diabatic_energy(R, return_matrix=True).transpose(2, 0, 1)
@@ -198,16 +205,19 @@ class NRPMDElectrons(electrons.Electrons):
         """Calculate the gradient of the electronic energy at the current
         geometry as defined by the systems PES.
         
-        The electronic energie part of the whole hamiltonian as in reference 
-        [1] is calcualted acording to:
+        The electronic part of the gradient for the nuclear motion is calculated 
+        as in reference [1]:
             
-        \frac{1}{2\hbar}\Sum{nm}{}{\nabla_{R_{\alpha}}V_{nm}(R_{\alpha})
-        \times([q_{\alpha}]_{n}[q_{\alpha}]_{m}+[p_{\alpha}]_{n}[p_{\alpha}]_{m}
-        -\delta_{nm}\hbar)}    
+        :math:´\dot{\text{\textbf{P}}}_{\alpha}^{el}=\frac{1}{2\hbar}
+        \Sum{\alpha=1}{N}{\Sum{nm}{}{\nabla_{\text{\textbf{R}}_{\alpha}}
+        V_{nm}(\text{\textbf{R}}_{\alpha})\times([\text{\textbf{q}}_{\alpha}]_{n}
+        [\text{\textbf{q}}_{\alpha}]_{m}+[\text{\textbf{p}}_{\alpha}]_{n}
+        [\text{\textbf{p}}_{\alpha}]_{m}-\delta_{nm}\hbar)}}´
 
         where alpha is the bead-index and is running to N=self.pes.max_n_beads
-        and nabla(R)*V is the diabatic potential energie gradient matrix
-        for n_states electronic states.
+        and :math:´\nabla_{\text{\textbf{R}}_{\alpha}}
+        V_{nm}(\text{\textbf{R}}_{\alpha})´ is the diabatic potential energie
+        gradient matrix for n_states electronic states.
 
         Parameters
         ----------
@@ -241,35 +251,43 @@ class NRPMDElectrons(electrons.Electrons):
                                     np.trace(Gradient, axis1=2, axis2=3)
                                     .reshape(-1, self.pes.max_n_beads))
 
-        #reshape the matrix to dof times max_n_beads only
-        Elek_mat_gradient = Elek_mat_gradient.reshape(-1)
-
         return Elek_mat_gradient
 
     def get_population(self, proj, basis_requested):
 
-        """Calculate the population estimator of the electronic mapping states
-        at the current geometry as defined by the systems PES.
+        """ Get electronic population for a certain adiabatic or diabatic
+        state. Diabatic populations can only be obtained for potentials that
+        are based on a diabatic model.
+
+        The Population of the electronic state j is calculated within the
+        framework of the reference [1]:
+        
+        :math:´\bar{\mathcal{P}}_{j}=\frac{1}{N}\Sum{\alpha}{}{\mathcal{P}_{j}
+        (\alpha)}=\frac{1}{N} \Sum{\alpha=1}{N}{\frac{1}{2}([\text{\textbf{q}}
+        _{\alpha}]_{j}^{2}+[\text{\textbf{p}}_{\alpha}]_{j}^{2}-1})´
 
         Parameters
         ----------
-        R : (n_dof, n_beads) ndarray of floats
-            The (ring-polymer) positions representing the system in au. The
-            first index represents the degrees of freedom, the second one the
-            beads.
-        centroid : bool, default False
-            If the energy of the centroid should be returned.
+        proj : int
+            State to be projected onto in the basis given by `basis_requested`.
+        basis_requested : str
+            Electronic basis to be used. Can be "adiabatic" or "diabatic".
 
         Returns
         -------
-        (n_states) ndarray of floats
+        population : float
+            Electronic population value.
         """
+        if basis_requested == "diabatic":
 
-        population = np.zeros(self.pes.n_states)
-        for i in range(self.pes.n_states):
-            for j in range(self.pes.max_n_beads):
-                population[i] += (1 / (2 * self.pes.max_n_beads)) * \
-                (self.q[i, j]*self.q[i, j] + self.p[i, j]*self.p[i, j] - 1.0)
+            population = np.zeros(self.pes.n_states)
+            for i in range(self.pes.n_states):
+                for j in range(self.pes.max_n_beads):
+                    population[i] += (1 / (2 * self.pes.max_n_beads)) * \
+                    (self.q[i, j]*self.q[i, j] + self.p[i, j]*self.p[i, j] - 1.0)
+
+        else:
+            raise NotImplementedError
 
         return population[proj]
 

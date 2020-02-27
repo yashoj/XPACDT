@@ -119,17 +119,27 @@ class NRPMDElectronsTest(unittest.TestCase):
 
         R = np.array([[0.0]])
         proj = 1
-        basis_requested = "diabatic"
         pop_ref = 1.0
         pop = self.electron.get_population(proj, "diabatic")
         np.testing.assert_allclose(pop, pop_ref, rtol=1e-5)
 
         R = np.array([[1.0e5, -1.0e5]])
         proj = 1
-        basis_requested = "diabatic"
         pop_ref_mb = 1.0
         pop_mb = self.electron_mb.get_population(proj, "diabatic")
         np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)
+
+        R = np.array([[0.0]])
+        proj = 0
+        pop_ref = 0.0
+        pop = self.electron.get_population(proj, "diabatic")
+        np.testing.assert_allclose(pop, pop_ref, rtol=1e-5)
+
+        R = np.array([[1.0e5, -1.0e5]])
+        proj = 0
+        pop_ref_mb = 0.0
+        pop_mb = self.electron_mb.get_population(proj, "diabatic")
+        np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)        
         return
 
 

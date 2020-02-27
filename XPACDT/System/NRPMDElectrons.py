@@ -271,7 +271,8 @@ class NRPMDElectrons(electrons.Electrons):
         proj : int
             State to be projected onto in the basis given by `basis_requested`.
         basis_requested : str
-            Electronic basis to be used. Can be "adiabatic" or "diabatic".
+            Electronic basis to be used. Can be "diabatic".
+            "adiabatic" will raise a "NotImplementedError"
 
         Returns
         -------

@@ -21,3 +21,7 @@ so running one model can take several hours depending upon the step size.
 The step size and selection of a particular model can all be changed in
 'launch_all.sh'.
 
+Finally once the result files are generated, they can be plotted using
+'gnuplot plot_tully_model_results.plt' which outputs the plots onto eps files
+with name 'result_tully_model_*.eps' where * can be A, B or C.
+

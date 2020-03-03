@@ -323,7 +323,7 @@ def start():
             input_parameters['system']['folder'] = name_folder
 
         # Perform actual analysis only if commands are present
-        if len(input_parameters.commands) > 0:
+        if len(input_parameters["commands"}) > 0:
             analysis.do_analysis(input_parameters, systems)
             print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
         else:

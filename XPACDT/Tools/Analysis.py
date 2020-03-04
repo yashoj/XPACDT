@@ -94,7 +94,7 @@ def do_analysis(parameters, systems=None):
     # Calculate 'observables' for each system
     for system in get_systems(dirs, file_name, systems):
         # do different stuff for each command
-        for key, command in parameters["commands"}.items():
+        for key, command in parameters["commands"].items():
             # For now, 'steps_to_use' is generated for each system. This is in
             # the case that different systems have different times.
             steps_to_use = _get_step_list(command, system)
@@ -113,7 +113,7 @@ def do_analysis(parameters, systems=None):
         n_systems += 1
 
     # Apply function for each 'observable'
-    for key, command in parameters["commands"}.items():
+    for key, command in parameters["commands"].items():
         # Set up function to combine data...
         func = np.mean
         bins = None

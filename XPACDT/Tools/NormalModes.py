@@ -134,8 +134,8 @@ def get_sampling_modes(system, parameters):
         Transformation matrix from the normal modes that should be sampled to
         the full cartesian coordinates.
     """
-
-    hessian = system.nuclei.electrons.pes.get_Hessian(system.nuclei.positions[:, 0])
+    # TODO: is it okay to use centroid instead of positions[:,0]
+    hessian = system.nuclei.electrons.pes.get_Hessian(system.nuclei.x_centroid)
 
     omega, nm_masses, normal_modes, nm_cartesian = \
         get_normal_modes(hessian, system.nuclei.masses)

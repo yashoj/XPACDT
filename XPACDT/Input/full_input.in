@@ -177,7 +177,7 @@ $end
 
 $sampling               # sampling input
 
-method = Wigner         # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed, Thermostatted)
+method = Wigner         # method to be used for sampling (possible: Wigner, Quasiclassical, Fixed, Thermostatted, RingPolymer)
 samples = 1000          # number of samples to be collected
 
 # optional:
@@ -186,6 +186,9 @@ quantum_numbers = 0 0 2 # the quantum number used in 'Quasiclassical' sampling f
 temperature = 300       # in Kelvin; option for 'Wigner', if given and thermostatt is used, both temperatures have to match
 time = 10 fs            # time between samples in fs or au; required option for 'Thermostatted';
                         # needs to be multiple of 'timestep' in 'nuclei_propagator'
+add_harmonic			# option for 'RingPolymer' sampling; if this is present, a harmonic potential frequency is added in the sampling.
+w_o 					# option for 'RingPolymer' sampling; harmonic potential frequency to be added, if not given and 'add_harmonic' is used,
+						# then approximate harmonic frequency is obtained from PES.
 overwrite               # optional: For sampling with existing folder: overwrite old files; either add or overwrite can be given
 add                     # optional: For sampling with existing folder: add samples up to required number; either add or overwrite can be given
 $end

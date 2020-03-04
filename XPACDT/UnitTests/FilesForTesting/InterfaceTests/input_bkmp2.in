@@ -1,9 +1,12 @@
 $system  ## inline comment
 dof = 9
-Interface = BKMP2
+Interface = Triatomic
 $end 
 
-$BKMP2
+$Triatomic
+name = BKMP2
 $end
+
+
 
 

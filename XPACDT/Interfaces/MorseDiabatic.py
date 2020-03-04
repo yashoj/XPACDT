@@ -56,7 +56,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
     ----------------
     model_type : {'model_1', 'model_2', 'model_3'}
         String denoting model number to be used.
-    n_states : int or string of int
+    n_states : string of int
         Number of morse diabatic states (possible: 2, 3).
     """
 
@@ -65,7 +65,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
         pes_parameters = parameters.get("MorseDiabatic")
 
         try:
-            n_states = int(pes_parameters.get('n_states', 3))
+            n_states = int(pes_parameters.get('n_states'))
         except ValueError as e:
             raise type(e)(str(e) + "\nXPACDT: Parameter 'n_states' for morse "
                                    "diabatic not convertable to int. "
@@ -85,7 +85,7 @@ class MorseDiabatic(itemplate.PotentialInterface):
 
         # Read model parameters from file
         param_file = os.path.join(os.path.dirname(itemplate.__file__),
-                                  "model_parameters/morse_diabatic_potential.param")
+                                  "model_parameters/morse_diabatic_potential.dat")
         all_params = infile.Inputfile(param_file)
         if (self.model_type not in all_params.keys()):
             raise ValueError("\nXPACDT: Wrong Morse diabatic model requested."

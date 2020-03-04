@@ -136,4 +136,4 @@ class System(object):
 
         # Use a sprase log by removing the propagator object
         if sparse:
-            self.__log[-1].propagator = None
+            self.__log[-1].make_sparse()

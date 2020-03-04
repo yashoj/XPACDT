@@ -56,6 +56,14 @@ class UnitsTest(unittest.TestCase):
         np.testing.assert_allclose(units.atom_mass('D'), mass_d_ref, rtol=1e-3)
         np.testing.assert_allclose(units.atom_mass('O18'), mass_o18_ref, rtol=1e-3)
 
+    def test_atom_symbol(self):
+        amu_to_au = 1.0 / 5.48579909065e-4
+        self.assertEqual(units.atom_symbol(1.0078250322 * amu_to_au), 'H')
+        self.assertEqual(units.atom_symbol(2.0141017781 * amu_to_au), 'H')
+        self.assertEqual(units.atom_symbol(18.998403163 * amu_to_au), 'F')
+        self.assertEqual(units.atom_symbol(15.994914619 * amu_to_au), 'O')
+        self.assertEqual(units.atom_symbol(17.999159613 * amu_to_au), 'O')
+
     def test_parse_time(self):
         time_string = "1 au"
         time_ref = 1.0

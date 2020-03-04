@@ -348,7 +348,7 @@ class DummyProp(object):
         self.timestep = float(timestep)
         pass
 
-    def propagate(self, R, P, time_propagation):
+    def propagate(self, R, P, time_propagation, time):
         return (2.0 * R), (2.0 * P)
 
 

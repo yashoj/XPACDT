@@ -1,24 +1,21 @@
-$system
+$system                    
 
-seed = 0
-dof = 1
-electrons = SurfaceHoppingElectrons
-Interface = TullyModel
+seed = 0                    
+dof = 1                   
+job = propagate	              
+electrons = NRPMDElectrons  
+Interface = TullyModel  
 
 $end
 
 ##############################################################################
 
-$SurfaceHoppingElectrons
+$NRPMDElectrons
 
-basis = adiabatic
-initial_state = 0
-n_steps = 100
-rpsh_type = bead
-rpsh_rescaling = bead
-rescaling_type = nac
-evolution_picture = schroedinger
-ode_solver = runga_kutta
+basis = diabatic        
+initial_states = 1
+timestep = 1.0 au 
+
 $end
 
 ##############################################################################
@@ -26,44 +23,52 @@ $end
 $TullyModel
 
 model_type = model_C
-$end
-##############################################################################
 
-$TullyModel
-
-model_type = model_C
-§end
-
-##############################################################################
-
-$rpmd
-
-beads = 2
-beta = 1052.0
 $end
 
 ##############################################################################
 
-$nuclei_propagator
+$rpmd                      
+
+beads = 2                   
+beta = 1052.0               
+
+$end
+
+##############################################################################
+
+$nuclei_propagator            
 
 method = VelocityVerlet
-timestep = 1.0 au
+timestep = 1.0 au     
 
 $end
 
 ##############################################################################
 
-$coordinates
+$propagation	    
 
-type = mass-value
-2.0 2.5 2.6
+time_end = 10.0 au 
+
+# optional:
+time_output = 1.0 au 
 $end
 
 ##############################################################################
 
-$momenta
+$coordinates	          
 
-0.001 0.002
+type = mass-value      
+1.0 2.5 2.6
+
+$end
+
+##############################################################################
+
+$momenta              
+
+0.001 0.024
+
 $end
 
 ##############################################################################

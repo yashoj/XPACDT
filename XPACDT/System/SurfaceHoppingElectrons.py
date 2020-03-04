@@ -240,11 +240,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         """
         if (self.basis == 'adiabatic'):
             return self.pes.adiabatic_energy(R, self.current_state,
-                                             centroid=centroid)
+                                             centroid=centroid,
+                                             return_matrix=False)
         else:
             return self.pes.diabatic_energy(R, self.current_state,
                                             self.current_state,
-                                            centroid=centroid)
+                                            centroid=centroid,
+                                            return_matrix=False)
 
     def gradient(self, R, centroid=False):
         """Calculate the gradient of the electronic energy at the current
@@ -266,11 +268,13 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         """
         if (self.basis == 'adiabatic'):
             return self.pes.adiabatic_gradient(R, self.current_state,
-                                               centroid=centroid)
+                                               centroid=centroid,
+                                               return_matrix=False)
         else:
             return self.pes.diabatic_gradient(R, self.current_state,
                                               self.current_state,
-                                              centroid=centroid)
+                                              centroid=centroid,
+                                              return_matrix=False)
 
     def get_population(self, proj, basis_requested):
         """ Get electronic population for a certain adiabatic or diabatic
@@ -1023,25 +1027,25 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # Obtain change in potential for each bead or centroid to give
         # (nbeads) ndarray of floats or a float value
         if (self.basis == 'adiabatic'):
-            diff_V = self.pes.adiabatic_energy(R, self.current_state, centroid=centroid) \
-                    - self.pes.adiabatic_energy(R, new_state, centroid=centroid)
+            diff_V = self.pes.adiabatic_energy(R, self.current_state, centroid=centroid, return_matrix=False) \
+                    - self.pes.adiabatic_energy(R, new_state, centroid=centroid, return_matrix=False)
         else:
-            diff_V = self.pes.diabatic_energy(R, self.current_state, self.current_state, centroid=centroid) \
-                    - self.pes.diabatic_energy(R, new_state, new_state, centroid=centroid)
+            diff_V = self.pes.diabatic_energy(R, self.current_state, self.current_state, centroid=centroid, return_matrix=False) \
+                    - self.pes.diabatic_energy(R, new_state, new_state, centroid=centroid, return_matrix=False)
 
         # Obtain projection vector for each dof and beads or centroid, which
         # gives (ndof, nbeads) or (ndof) array
         if (self.rescaling_type == 'nac'):
             proj_vec = self.pes.nac(R, self.current_state, new_state,
-                                    centroid=centroid)
+                                    centroid=centroid, return_matrix=False)
         elif (self.rescaling_type == 'gradient'):
             # Get gradient differences
             if (self.basis == 'adiabatic'):
-                proj_vec = self.pes.adiabatic_gradient(R, self.current_state, centroid=centroid) \
-                          - self.pes.adiabatic_gradient(R, new_state, centroid=centroid)
+                proj_vec = self.pes.adiabatic_gradient(R, self.current_state, centroid=centroid, return_matrix=False) \
+                          - self.pes.adiabatic_gradient(R, new_state, centroid=centroid, return_matrix=False)
             else:
-                proj_vec = self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid) \
-                          - self.pes.diabatic_gradient(R, new_state, new_state, centroid=centroid)
+                proj_vec = self.pes.diabatic_gradient(R, self.current_state, self.current_state, centroid=centroid, return_matrix=False) \
+                          - self.pes.diabatic_gradient(R, new_state, new_state, centroid=centroid, return_matrix=False)
 
         if (self.rpsh_rescaling == 'centroid'):
             # Conserve H_centroid

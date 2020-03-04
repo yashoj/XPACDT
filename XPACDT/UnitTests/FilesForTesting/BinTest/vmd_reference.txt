@@ -1,0 +1,40 @@
+## Read in centroids:
+mol new {./centroids.xyz} type {xyz} first 0 last -1 step 1 waitfor -1
+
+## Set styles for centroid - Big balls + Dynamic bonds
+mol modstyle 0 0 CPK 1.000000 0.000000 12.000000 12.000000
+mol addrep 0
+mol modstyle 1 0 DynamicBonds 2.000000 0.100000 12.000000
+
+## Read in beads:
+mol new {./beads.xyz} type {xyz} first 0 last -1 step 1 waitfor -1
+
+## Set styles for beads - small balls, transparent
+mol modstyle 0 1 CPK 0.500000 0.000000 12.000000 12.000000
+mol modmaterial 0 1 Transparent
+## Go to the beginning
+animate goto 0
+display resetview
+
+## Get number of frames
+set n [molinfo top get numframes]
+
+## Reset views etc.
+color Display Background white
+color Name H silver
+axes location Off
+display projection orthographic
+display depthcue off
+
+## Iterate over frames
+for { set i 0 } { $i < $n } { incr i } {
+
+  ## Go to current frame
+  animate goto $i
+
+  ## Output
+  set name [format "%05d" $i]
+  render TachyonInternal $name.tga convert %s %s.png
+}
+
+quit

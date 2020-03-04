@@ -29,6 +29,7 @@
 #
 #  **************************************************************************
 
+
 import numpy as np
 import random
 import unittest
@@ -44,19 +45,101 @@ class NRPMDElectronsTest(unittest.TestCase):
         random.seed(seed)
         np.random.seed(seed)
 
-        self.parameters = infile.Inputfile("FilesForTesting/SystemTest/input_NRPMD_classical.in")
-        # self.system = xSystem.System(self.parameters0)
+        parameters_c = infile.Inputfile("FilesForTesting/SystemTests/input_NRPMD_classical.in")
+        parameters_mb = infile.Inputfile("FilesForTesting/SystemTests/input_NRPMD_multibeads.in")
+#        print(parameters.n_beads)
+#        self.system = xSystem.System(self.parameters0)
+        self.electron = nrpmd.NRPMDElectrons(parameters_c, parameters_c.n_beads)  
+        self.electron_mb = nrpmd.NRPMDElectrons(parameters_mb, parameters_mb.n_beads)
+#       self.pes = tullym.TullyModel(1, **{'model_type': 'model_C'})
+#       self.pes.diabatic_energy(np.array([[[0.0006], [0.1]],[[0.1], [-0.0006]]]))
 
-    @unittest.skip("Please implement a test here.")
+#       Position and momenta for the one bead case of seed 0
+#       [[-0.30191837][-1.69078578]]
+#       [[-0.95333378][-0.37582371]]
+
+#       Position and momenta for the two beads case of seed 0
+#       [[-0.60174275 -0.27828619][ 0.7993503  -1.37453086]]
+#       [[-0.79868996 -0.9604982 ][-1.53656731 -1.05388088]]
+
     def test_step(self):
+
+        R = np.array([[0.0]])
+        time_propagate=2.0
+        step_q_ref = np.array([[-0.33850079], [-1.77728803]])
+        step_p_ref = np.array([[-0.77959315], [-0.34481733]])
+        self.electron.step(R, time_propagate)
+        step_p = self.electron.p
+        step_q = self.electron.q
+        np.testing.assert_allclose(step_q, step_q_ref, rtol=1e-7)
+        np.testing.assert_allclose(step_p, step_p_ref, rtol=1e-7)
+
+        R = np.array([[1.0e5, -1.0e5]])
+        time_propagate=2.0
+        step_q_ref_mb = np.array([[-0.89549266, -0.27886244],
+                                 [0.62565698, -1.37389828]])
+        step_p_ref_mb = np.array([[-0.94121693, -0.96033106],
+                                 [-1.38591375, -1.05470541]])
+        self.electron_mb.step(R, time_propagate)
+        step_q_mb = self.electron_mb.q
+        step_p_mb = self.electron_mb.p
+        np.testing.assert_allclose(step_q_mb, step_q_ref_mb, rtol=1e-7)
+        np.testing.assert_allclose(step_p_mb, step_p_ref_mb, rtol=1e-7)
+
         return
 
-    @unittest.skip("Please implement a test here.")
     def test_energy(self):
+
+        R = np.array([[0.0]])
+        energy_ref_classical = np.array([0.0862764724734855])
+        energy = self.electron.energy(R, centroid=False)
+        np.testing.assert_allclose(energy, energy_ref_classical, rtol=1e-7)
+
+        R = np.array([[1.0e5, -1.0e5]])
+        energy_ref_multibeads = np.array([0.1486475271, -0.0006])
+        energy = self.electron_mb.energy(R, centroid=False)
+        np.testing.assert_allclose(energy, energy_ref_multibeads, rtol=1e-7)
+
         return
 
-    @unittest.skip("Please implement a test here.")
     def test_gradient(self):
+
+        R = np.array([[0.0]])
+        gradient_ref = np.array([[-0.078188825]])
+        gradient = self.electron.gradient(R, centroid=False)
+        np.testing.assert_allclose(gradient, gradient_ref, rtol=1e-7)
+
+        R = np.array([[1.0e5, -1.0e5]])
+        gradient_ref_multibeads = np.array([[0.000000, 0.00000000]])
+        gradient = self.electron_mb.gradient(R, centroid=False)
+        np.testing.assert_allclose(gradient, gradient_ref_multibeads, rtol=1e-7)
+        return
+
+    def test_get_population(self):
+
+        R = np.array([[0.0]])
+        proj = 1
+        pop_ref = 1.0
+        pop = self.electron.get_population(proj, "diabatic")
+        np.testing.assert_allclose(pop, pop_ref, rtol=1e-5)
+
+        R = np.array([[1.0e5, -1.0e5]])
+        proj = 1
+        pop_ref_mb = 1.0
+        pop_mb = self.electron_mb.get_population(proj, "diabatic")
+        np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)
+
+        R = np.array([[0.0]])
+        proj = 0
+        pop_ref = 0.0
+        pop = self.electron.get_population(proj, "diabatic")
+        np.testing.assert_allclose(pop, pop_ref, rtol=1e-5)
+
+        R = np.array([[1.0e5, -1.0e5]])
+        proj = 0
+        pop_ref_mb = 0.0
+        pop_mb = self.electron_mb.get_population(proj, "diabatic")
+        np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)        
         return
 
 

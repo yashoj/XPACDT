@@ -102,10 +102,6 @@ def start():
             branch_name = input_file.readline().split()[1]
             hexsha = input_file.readline().split()[1]
 
-    version_file = open('.version', 'w')
-    version_file.write("Branch: " + branch_name + " \n")
-    version_file.write("Commit: " + hexsha + " \n")
-    version_file.close()
     print("Branch: " + branch_name)
     print("Commit: " + hexsha)
     now = datetime.datetime.now()
@@ -174,12 +170,18 @@ def start():
             print("Incorect keyword given to -h :" + args.help)
         return
 
+    # Store the git version and branch in file '.version'
+    version_file = open('.version', 'w')
+    version_file.write("Branch: " + branch_name + " \n")
+    version_file.write("Commit: " + hexsha + " \n")
+    version_file.close()
+
     # Get input file
     if args.InputFile is None:
         print("Input file required!")
         return
-    print("The inputfile '" + args.InputFile + "' is read! \n")
     input_parameters = infile.Inputfile(args.InputFile)
+    print("The inputfile '" + args.InputFile + "' is read! \n")
 
     # Initialize random number generators
     seed = int(input_parameters.get('system').get('seed', time.time()))
@@ -265,7 +267,17 @@ def start():
         system = xSystem.System(input_parameters)
 
     # Run job
-    if job == "full" or args.PropagationInputFile is not None:
+    if job == "sample":
+        print("Running Sampling...", end='', flush=True)
+        sampling.sample(system, input_parameters)
+        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+    elif job == "propagate":
+        print("Running Real time propagation...", end='', flush=True)
+        rt.propagate(system, input_parameters)
+        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+    elif job == "full" or args.PropagationInputFile is not None:
         # run sampling first
         print("Running Sampling...", end='', flush=True)
         systems = sampling.sample(system, input_parameters, do_return=True)
@@ -319,16 +331,6 @@ def start():
             print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
         else:
             print("...no analysis requested!")
-
-    elif job == "sample":
-        print("Running Sampling...", end='', flush=True)
-        sampling.sample(system, input_parameters)
-        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
-
-    elif job == "propagate":
-        print("Running Real time propagation...", end='', flush=True)
-        rt.propagate(system, input_parameters)
-        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     else:
         raise NotImplementedError("\nXPACDT: Requested job type not"

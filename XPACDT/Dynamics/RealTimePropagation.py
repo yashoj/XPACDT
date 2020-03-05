@@ -74,7 +74,7 @@ def propagate(system, input_parameters, initiated=False):
         system.do_log(True)
 
     # Reset beta; Set desired propagator
-    system.nuclei.beta = input_parameters.beta
+    system.nuclei.beta = input_parameters["beta"]
     system.nuclei.attach_nuclei_propagator(input_parameters)
 
     # Obtain times for propagation and output

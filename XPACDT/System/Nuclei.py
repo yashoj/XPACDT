@@ -239,8 +239,8 @@ class Nuclei(object):
 
         Parameters:
         -----------
-        other : any object
-            Object to compare to.
+        other : XPACDT.System.Nuclei object
+            Nuclei object to compare to.
 
         Returns:
         -------
@@ -265,7 +265,6 @@ class Nuclei(object):
         """
 
         self.__propagator = None
-        
 
     def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system. This

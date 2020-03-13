@@ -49,17 +49,31 @@ class Operations(object):
         The string defining the sequence of operations. Each operation starts
         with a '+' and an identifyer (e.g., +position, +velocity, ...).
         Arguments specifying the operation are given after that.
+    print_help : bool, default False
+        Whether to just print help for each possible operation.
 
     Attributes:
     -----------
-
+    operation_list
     """
 
-    def __init__(self, operation_string):
+    def __init__(self, operation_string, print_help=False):
+
+        # Printing help for each operation. Any new operation added to this
+        # class should be added here too.
+        if print_help:
+            all_operations = ["position", "momentum", "electronic_state",
+                              "energy"]
+
+            for op in all_operations:
+                getattr(self, "_arguments_" + op)(["-h"])
+                print("\n")
+            return
+
         # Dictionary of operations to be performed.
         self.__operation_list = {}
 
-        if '+' not in operation_string:
+        if ('+' not in operation_string) and (not print_help):
             raise RuntimeError("XPACDT: No operation given, instead: " + operation_string)
 
         # The split has '' as a first results on something like
@@ -531,7 +545,6 @@ class Operations(object):
             return None
 
         return opts
-
 
     def _energy(self, opts, log_nuclei):
         """Performs operations related to energy. If no options are

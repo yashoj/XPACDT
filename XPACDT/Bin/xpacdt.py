@@ -117,22 +117,26 @@ def start():
                         ' analysis, plot, sampling, propagation.')
 
     i_help = "Name of the main XPACDT input file. The input file is required" \
-             " for any calculation. Please refer to the general " \
-             "documentation for instructions on how this has to be structured."
+             " for any calculation and can contain any job such as sample,"\
+             " propagate, analyze, plot or full. Please refer to the general" \
+             " documentation for instructions on how this has to be structured."
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
                         required=False, help=i_help)
 
-    i_help = "Name of an additional XPACDT input file used for real time " \
-             " propagation. Please refer to the general " \
-             "documentation for instructions on how this has to be structured."
+    i_help = "Name of an additional XPACDT input file used for real time" \
+             " propagation. This input file should only be given if sampling"\
+             " job is given in the -i inputfile (i.e. job = sample) and"\
+             " propagation is desired directly after sampling."\
+             " Please refer to the general documentation for instructions " \
+             " on how this has to be structured."
     parser.add_argument("-p", "--propagation_input", type=str,
                         dest="PropagationInputFile",
                         required=False, help=i_help)
 
-    i_help = "Name of an additional XPACDT input file used for analysis. " \
-             "This input file is only used if job = full in the -i inputfile" \
-             "or if -p is given. " \
-             "Please refer to the general documentation for instructions " \
+    i_help = "Name of an additional XPACDT input file used for analysis." \
+             " This input file is only used if job = full in the -i inputfile" \
+             " or if -p is given." \
+             " Please refer to the general documentation for instructions " \
              " on how this has to be structured."
     parser.add_argument("-a", "--analysis_input", type=str,
                         dest="AnalysisInputFile",
@@ -143,27 +147,18 @@ def start():
     if args.help is not None:
         parser.print_help()
 
-        if args.help.lower() == 'analysis':
-            print()
-            print()
-            print("Printing additional help for " + args.help + ":")
-            print()
-            print_helpfile("analysis.txt")
-            operations.position(["-h"], None)
-            print()
-            operations.momentum(["-h"], None)
-            print()
-            operations.electronic_state(["-h"], None)
-            print()
-            operations.energy(["-h"], None)
-        elif (args.help.lower() == 'plot'
-              or args.help.lower() == 'sampling'
-              or args.help.lower() == 'propagation'):
+        if (args.help.lower() == 'analysis'
+            or args.help.lower() == 'plot'
+            or args.help.lower() == 'sampling'
+            or args.help.lower() == 'propagation'):
             print()
             print()
             print("Printing additional help for " + args.help + ":")
             print()
             print_helpfile(args.help.lower() + ".txt")
+            if args.help.lower() == 'analysis':
+                operations.Operations("", print_help=True)
+
         elif args.help == 'nothing':
             pass
         else:
@@ -278,30 +273,20 @@ def start():
         initiated = True
 
     # Run job
-    if job == "sample":
-        print("Running Sampling...", end='', flush=True)
-        sampling.sample(system, input_parameters)
-        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
-
-    elif job == "propagate":
-        print("Running Real time propagation...", end='', flush=True)
-        rt.propagate(system, input_parameters, initiated)
-        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
-
-    elif job == "full" or args.PropagationInputFile is not None:
+    if job == "full" or args.PropagationInputFile is not None:
         # run sampling first
         print("Running Sampling...", end='', flush=True)
         systems = sampling.sample(system, input_parameters, do_return=True)
         print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
-        # loop and propagate
+        # loop over samples and propagate them
         print("Running Real time propagation...", end='', flush=True)
         start_time = time.time()
         # Read new input file if given
         if args.PropagationInputFile is not None:
+            input_parameters = infile.Inputfile(args.PropagationInputFile)
             print("The inputfile '" + args.PropagationInputFile +
                   "' is read! \n")
-            input_parameters = infile.Inputfile(args.PropagationInputFile)
         else:
             # Remove thermostat if exists
             input_parameters.pop('thermostat', None)
@@ -331,8 +316,8 @@ def start():
         print("Running analysis...", end='', flush=True)
         start_time = time.time()
         if args.AnalysisInputFile is not None:
-            print("The inputfile '" + args.AnalysisInputFile + "' is read! \n")
             input_parameters = infile.Inputfile(args.AnalysisInputFile)
+            print("The inputfile '" + args.AnalysisInputFile + "' is read! \n")
         else:
             input_parameters['system']['folder'] = name_folder
 
@@ -342,6 +327,16 @@ def start():
             print("...analysis done in {: .2f} s.".format(time.time() - start_time), flush=True)
         else:
             print("...no analysis requested!")
+
+    elif job == "sample":
+        print("Running Sampling...", end='', flush=True)
+        sampling.sample(system, input_parameters)
+        print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
+
+    elif job == "propagate":
+        print("Running Real time propagation...", end='', flush=True)
+        rt.propagate(system, input_parameters, initiated)
+        print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
     else:
         raise NotImplementedError("\nXPACDT: Requested job type not"

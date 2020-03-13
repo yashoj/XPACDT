@@ -9,14 +9,14 @@ $system                     # general parameters
 dof = 4                     # integer: the number of degrees of freedom
 job = sample	                # (sample, propagate, analyze, plot, full): The job type.
 
-Interface = OneDPolynomial  # (OneDPolynomial, Triatomic, EckartBarrier, Morse1D, MorseDiabatic, Dissociation2states, TullyModel)
-            	                # The interface to the potential to be used.
-
-folder = test               # string (except for job = plot): Folder for the trajectories. 
+folder = test               # string (except for job = plot): Folder for the trajectories.
                             # For job = full, sample, analyze, this is the base folder containing the trj_* folders
                             # For job = propagate, this is the specific trj_* folder of the trajectory.
 
 # Optional parameters
+
+Interface = OneDPolynomial  # (OneDPolynomial, Triatomic, EckartBarrier, Morse1D, MorseDiabatic, Dissociation2states, TullyModel)
+                            # The interface to the potential to be used; required option for job = 'sample', 'propagate', 'plot' and 'full'
 
 electrons = SurfaceHoppingElectrons  # (AdiabaticElectrons (default), SurfaceHoppingElectrons, NRPMDElectrons)
                                      # string: Method to treat non-adiabatic dynamics
@@ -37,16 +37,16 @@ initial_state = 0         # integer, required: Initial state of the system (Coun
 
 # Optional parameters
 basis = adiabatic         # (adiabatic (default), diabatic), string:
-                          # Electronic basis employed 
+                          # Electronic basis employed
 
 n_steps = 100             # integer, default: 1
                           # Number of electronic time steps to be performed for each nuclear steps
 
 rpsh_type = bead          # (centroid (default), bead, density_matrix), string:
-                          # Type of ring polymer surface hopping (RPSH) 
+                          # Type of ring polymer surface hopping (RPSH)
 
 rpsh_rescaling = bead     # (bead (default), centroid), string:
-                          # Type of momentum rescaling in RPSH; 
+                          # Type of momentum rescaling in RPSH;
                           # This will either conserve the full ring polymer Hamiltonian or the centroid energy
 
 rescaling_type = nac      # (nac (default), gradient), string:
@@ -121,7 +121,7 @@ $MorseDiabatic  # must match the interface specified; specific to each interface
 
 # Required parameters
 model_type = model_1         # (model_1, model_2, model_3), string: Model number to be used
-n_states = 3                 # (2, 3), int: Number of morse diabatic states 
+n_states = 3                 # (2, 3), int: Number of morse diabatic states
 $end
 
 ##############################################################################
@@ -197,7 +197,7 @@ quantum_numbers = 0 0 2 # list of integers: the quantum numbers used in 'Quasicl
 
 temperature = 300       # float, Temperature in Kelvin; option for 'Wigner',
                         #        If this option is given and a thermostatt is used, both temperatures have to match.
-                        
+
 time = 10 fs            # float, time between samples in fs or au; required option for 'Thermostatted';
                         #        Needs to be multiple of 'timestep' in 'nuclei_propagator'
 add_harmonic            # If given, a harmonic potential frequency given by 'w_o' is added in 'RingPolymer' sampling
@@ -210,7 +210,7 @@ $end
 
 ##############################################################################
 
-$nuclei_propagator             # nuclei propagator input
+$nuclei_propagator          # nuclei propagator input
 
 # Required parameters
 method = VelocityVerlet     # (VelocityVerlet), string: Method to be used for propagating.
@@ -240,9 +240,10 @@ $end
 
 $coordinates	           # coordinates given here
 
-type = mass-value      # (mass-value, xyz), string: coordinate format.
-                       #                    mass-value: mass (in au) followed by all bead positions (in au) for a dof per line
-                       #	                    xyz: A atom name and x-, y-, and z-coordinate (in au) per line for each bead, and repeated for each dof
+type = mass-value      # (mass-value, xyz), string: coordinate format. If only centroid value is given and more than 1 bead is requested,
+                       #                            then bead values are obtained by sampling free ring polymer distribution.
+                       #                    mass-value: mass (in au) followed by positions (in au) of either all beads or just the centroid for each dof per line
+                       #	                    xyz: A atom name and x-, y-, and z-coordinate (in au) either per line for each bead or one line for centroid, and repeated for each dof
 1.0    2.0  3.0  2.5  2.7
 2.0    1.0  4.0  4.1  2.1
 
@@ -251,9 +252,10 @@ $end
 
 $coordinates	           # coordinates given here
 
-type = xyz             # (mass-value, xyz), string: coordinate format.
-                       #                    mass-value: mass (in au) followed by all bead positions (in au) for a dof per line
-                       #	                    xyz: A atom name and x-, y-, and z-coordinate (in au) per line for each bead, and repeated for each dof
+type = xyz             # (mass-value, xyz), string: coordinate format. If only centroid value is given and more than 1 bead is requested,
+                       #                            then bead values are obtained by sampling free ring polymer distribution.
+                       #                    mass-value: mass (in au) followed by positions (in au) of either all beads or just the centroid for each dof per line
+                       #	                    xyz: A atom name and x-, y-, and z-coordinate (in au) either per line for each bead or one line for centroid, and repeated for each dof
 H   1.2  0.0  0.0
 H  -1.2  0.0  0.0
 O   0.0  0.0  0.0

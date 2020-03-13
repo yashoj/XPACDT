@@ -9,7 +9,7 @@
 model=$1
 input_file=full_tully_model.in
 
-# Start, step and stpp for momentum in the model.
+# Start, step and step for momentum in the model.
 p_start=$2
 p_step=$3
 p_stop=$4

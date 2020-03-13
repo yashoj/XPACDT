@@ -14,6 +14,7 @@ $end
 $thermostat
 method = MassiveAndersen
 temperature = 39471.830216988295
+time = 2.0 fs
 $end
 
 $sampling

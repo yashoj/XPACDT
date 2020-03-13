@@ -19,3 +19,8 @@ in the respective folder and can be plotted using 'gnuplot 'commandCXX.plt',
 which will create an eps file named 'commandCXX.eps'.
 
 Reference correlation functions are given in the folder 'reference'.
+
+Please note that running each file can take about 2 hours. This depends upon
+upon the number of samples requested which can be changed in the full input
+files. Increasing the number of samples will lead to more accurate results.
+

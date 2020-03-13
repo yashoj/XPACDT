@@ -42,6 +42,7 @@ import warnings
 import XPACDT.Tools.Analysis as analysis
 import XPACDT.System.System as xSystem
 import XPACDT.Input.Inputfile as infile
+import XPACDT.Tools.Operations as op
 
 
 class AnalysisTest(unittest.TestCase):
@@ -75,7 +76,9 @@ class AnalysisTest(unittest.TestCase):
     def test_check_command(self):
         with self.assertRaises(ValueError):
             command = {'name': 'test', 'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2',
-                       'step': '', 'format': 'time', 'results': []}
+                       'step': '', 'format': 'time', 'results': [],
+                       'all_operations': {'op0': op.Operations('+pos -1 0,1'),
+                                          'op': op.Operations('+mom -1 0,1,2')}}
             analysis.check_command(command, self.systems[3])
 
         with warnings.catch_warnings(record=True) as w:
@@ -83,7 +86,9 @@ class AnalysisTest(unittest.TestCase):
             warnings.simplefilter("always")
             # Generate warning
             command = {'name': 'test', 'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1',
-                       'step': '', 'format': 'time', 'results': []}
+                       'step': '', 'format': 'time', 'results': [],
+                       'all_operations': {'op0': op.Operations('+pos -1 0,1'),
+                                          'op': op.Operations('+mom -1 0,1')}}
             analysis.check_command(command, self.systems[3])
             # Verify some things
             assert len(w) == 1
@@ -92,84 +97,45 @@ class AnalysisTest(unittest.TestCase):
     def test_apply_command(self):
         with self.assertRaises(ValueError):
             command = {'name': 'test', 'op0': '+pos -1 0,1 ', 'op': '+mom -1 0,1,2',
-                       'step': '', 'format': 'time', 'results': []}
+                       'step': '', 'format': 'time', 'results': [],
+                       'all_operations': {'op0': op.Operations('+pos -1 0,1'),
+                                          'op': op.Operations('+mom -1 0,1,2')}}
             analysis.apply_command(command, self.systems[3], [])
 
-        command = {'op': '+pos -1 0 +mom -1 0', 'step': '', 'results': []}
+        command = {'op': '+pos -1 0 +mom -1 0', 'step': '', 'results': [],
+                   'all_operations': {'op': op.Operations('+pos -1 0 +mom -1 0')}}
         analysis.apply_command(command, self.systems[0], [])
         results_ref = np.array([[0.49671415 * -0.23415337]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
 
-        command = {'op': '+pos -1 0 +mom -1 0', 'step': '1', 'results': []}
+        command = {'op': '+pos -1 0 +mom -1 0', 'step': '1', 'results': [],
+                   'all_operations': {'op': op.Operations('+pos -1 0 +mom -1 0')}}
         analysis.apply_command(command, self.systems[0], [1])
         results_ref = np.array([])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
 
-        command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '', 'results': []}
+        command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '', 'results': [],
+                   'all_operations': {'op0': op.Operations('+pos -1 0'),
+                                      'op': op.Operations('+mom -1 0')}}
         analysis.apply_command(command, self.systems[3], [])
         results_ref = np.array([[-0.54438272*-0.60063869], [-0.54438272*0.2088636]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
 
-        command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '1', 'results': []}
+        command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '1', 'results': [],
+                   'all_operations': {'op0': op.Operations('+pos -1 0'),
+                                      'op': op.Operations('+mom -1 0')}}
         analysis.apply_command(command, self.systems[3], [1])
         results_ref = np.array([[-0.54438272*0.2088636]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
 
-        command2d = {'op': '+pos -1 0', 'step': '', '2d': None, '2op': '+mom -1 0', 'results': []}
+        command2d = {'op': '+pos -1 0', 'step': '', '2d': None, '2op': '+mom -1 0', 'results': [],
+                     'all_operations': {'op': op.Operations('+pos -1 0'),
+                                        '2op': op.Operations('+mom -1 0')}}
         analysis.apply_command(command2d, self.systems[3], [])
         results_ref = np.array([[-0.54438272], [-0.01349722], [-0.60063869], [0.2088636]])
         np.testing.assert_array_almost_equal(command2d['results'], results_ref)
 
         return
-
-    def test_apply_operation(self):
-        with self.assertRaises(RuntimeError):
-            operation = "+notImplemented"
-            value = analysis.apply_operation(operation, self.systems[0].nuclei)
-
-        with self.assertRaises(RuntimeError):
-            operation = "No Operation given here!"
-            value = analysis.apply_operation(operation, self.systems[0].nuclei)
-
-        operation = "+id"
-        value_ref = 1.0
-        value = analysis.apply_operation(operation, self.systems[0].nuclei)
-        np.testing.assert_equal(value, value_ref)
-
-        operation = "+identity"
-        value_ref = 1.0
-        value = analysis.apply_operation(operation, self.systems[0].nuclei)
-        np.testing.assert_equal(value, value_ref)
-
-        operation = "+pos -1 1,2"
-        value_ref = np.array([-0.1382643, 0.64768854])
-        value = analysis.apply_operation(operation, self.systems[0].nuclei)
-        np.testing.assert_array_almost_equal(value, value_ref)
-
-        operation = "+position -1 0"
-        value_ref = np.array([0.49671415])
-        value = analysis.apply_operation(operation, self.systems[0].nuclei)
-        np.testing.assert_array_almost_equal(value, value_ref)
-
-        operation = "+mom -1 1,2"
-        value_ref = np.array([-1.91328024, -1.72491783])
-        value = analysis.apply_operation(operation, self.systems[1].nuclei)
-        np.testing.assert_array_almost_equal(value, value_ref)
-
-        operation = "+momentum -1 0"
-        value_ref = np.array([0.24196227])
-        value = analysis.apply_operation(operation, self.systems[1].nuclei)
-        np.testing.assert_array_almost_equal(value, value_ref)
-
-        operation = "+vel -1 1,2"
-        value_ref = np.array([-0.2257763 / 2.0, 0.0675282 / 12.0])
-        value = analysis.apply_operation(operation, self.systems[2].nuclei)
-        np.testing.assert_array_almost_equal(value, value_ref)
-
-        operation = "+velocity -1 0"
-        value_ref = np.array([1.46564877])
-        value = analysis.apply_operation(operation, self.systems[2].nuclei)
-        np.testing.assert_array_almost_equal(value, value_ref)
 
     def test_output_data(self):
         header = "This is a stupid header\nFor my super test!"

@@ -172,7 +172,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         # Now checking if the adiabatic properties have been changed due to
         # trying to access the adiabatic energy
         V_ad = pes.adiabatic_energy(R, 0, centroid=False, return_matrix=True)
-        
+
         np.testing.assert_allclose(V_ad, [[-math.sqrt(0.01 + 3.6e-07)],
                                           [math.sqrt(0.01 + 3.6e-07)]], rtol=1e-7)
         np.testing.assert_allclose(
@@ -230,8 +230,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             pes._get_adiabatic_from_diabatic(R)
 
-        raise NotImplementedError("Please implement a test here while"
-                                  " implmenting the function!!")
+        raise NotImplementedError("Please implement a test here.")
         # TODO: add more tests with more beads and 3 state test using morse diabatic
 
     @unittest.skip("Please implement a test here.")

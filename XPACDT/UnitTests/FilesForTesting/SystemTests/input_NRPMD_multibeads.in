@@ -1,10 +1,10 @@
-$system                    
+$system
 
-seed = 0                    
-dof = 1                   
-job = propagate	              
-electrons = NRPMDElectrons  
-Interface = TullyModel  
+seed = 0
+dof = 1
+job = propagate
+electrons = NRPMDElectrons
+Interface = TullyModel
 
 $end
 
@@ -12,9 +12,9 @@ $end
 
 $NRPMDElectrons
 
-basis = diabatic        
-initial_states = 1
-timestep = 1.0 au 
+basis = diabatic
+initial_state = 1
+timestep = 1.0 au
 
 $end
 
@@ -28,44 +28,44 @@ $end
 
 ##############################################################################
 
-$rpmd                      
+$rpmd
 
-beads = 2                   
-beta = 1052.0               
+beads = 2
+beta = 1052.0
 
 $end
 
 ##############################################################################
 
-$nuclei_propagator            
+$nuclei_propagator
 
 method = VelocityVerlet
-timestep = 1.0 au     
+timestep = 1.0 au
 
 $end
 
 ##############################################################################
 
-$propagation	    
+$propagation
 
-time_end = 10.0 au 
+time_end = 10.0 au
 
 # optional:
-time_output = 1.0 au 
+time_output = 1.0 au
 $end
 
 ##############################################################################
 
-$coordinates	          
+$coordinates
 
-type = mass-value      
+type = mass-value
 1.0 2.5 2.6
 
 $end
 
 ##############################################################################
 
-$momenta              
+$momenta
 
 0.001 0.024
 

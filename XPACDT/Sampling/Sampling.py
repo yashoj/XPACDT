@@ -123,6 +123,7 @@ def sample(system, parameters, do_return=False):
             system.nuclei.momenta += parameters.momentumShift[:, None]
             system.do_log(init=True)
 
+    # if add, then need to open those files for returning as well!!!
     if do_return is True:
         return sampled_systems
 

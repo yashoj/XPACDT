@@ -144,15 +144,13 @@ class Inputfile(collections.MutableMapping):
             self.__format_coordinates()
 
         self.__commands = {k: self[k] for k in self.keys() if 'command' in k}
-        # for key in self.commands:
-            # self.commands[key]['name'] = key
-            # self.commands[key]['results'] = []
 
+        # Iterate through all analysis commands.
         for key, command in self.commands.items():
             command['name'] = key
             command['results'] = []
             # Create a dictionary with all operations ('op', 'op0', '2op' and
-            #'2op0') parsed and returned as an operations class object.
+            #'2op0') as keys and its corresponding operations class object as value.
             command['all_operations'] = {k: op.Operations(v) for k, v in command.items()
                                          if 'op' in k}
 

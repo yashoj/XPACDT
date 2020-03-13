@@ -212,6 +212,10 @@ class genLogTest(unittest.TestCase):
 
         return
 
+    def test_write_energy(self):
+        raise NotImplementedError("Please implement a test here.")
+        return
+
     @unittest.skip("Please implement a test here.")
     def test_setup_outfiles(self):
         raise NotImplementedError("Please implement a test here.")

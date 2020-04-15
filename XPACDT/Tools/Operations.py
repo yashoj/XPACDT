@@ -46,7 +46,7 @@ class Operations(object):
 
     Parameters:
     -----------
-    operation : string
+    operation_string : string
         The string defining the sequence of operations. Each operation starts
         with a '+' and an identifyer (e.g., +position, +velocity, ...).
         Arguments specifying the operation are given after that.
@@ -55,7 +55,7 @@ class Operations(object):
 
     Attributes:
     -----------
-    operation_list
+    operations_dict
     """
 
     def __init__(self, operation_string, print_help=False):
@@ -72,7 +72,7 @@ class Operations(object):
             return
 
         # Dictionary of operations to be performed.
-        self.__operation_list = {}
+        self.__operations_dict = {}
 
         if ('+' not in operation_string) and (not print_help):
             raise RuntimeError("XPACDT: No operation given, instead: " + operation_string)
@@ -89,28 +89,28 @@ class Operations(object):
             #       'op' is A(t) already and 'op0' is optional.
             # !!!! This way there cannot be two of the same operation: Better way than having this unique index???
             if ops[0] == 'pos' or ops[0] == 'position':
-                self.__operation_list['position' + key_index] = _arguments_position(ops[1:])
+                self.__operations_dict['position' + key_index] = _arguments_position(ops[1:])
 
             elif ops[0] == 'mom' or ops[0] == 'momentum':
-                self.__operation_list['momentum' + key_index] = _arguments_momentum(ops[1:])
+                self.__operations_dict['momentum' + key_index] = _arguments_momentum(ops[1:])
 
             elif ops[0] == 'vel' or ops[0] == 'velocity':
-                self.__operation_list['momentum' + key_index] = _arguments_position(ops[1:] + ['-v'])
+                self.__operations_dict['momentum' + key_index] = _arguments_momentum(ops[1:] + ['-v'])
 
             elif ops[0] == 'state':
-                self.__operation_list['electronic_state' + key_index] = _arguments_electronic_state(ops[1:])
+                self.__operations_dict['electronic_state' + key_index] = _arguments_electronic_state(ops[1:])
 
             elif ops[0] == 'energy':
-                self.__operation_list['energy' + key_index] = _arguments_energy(ops[1:])
+                self.__operations_dict['energy' + key_index] = _arguments_energy(ops[1:])
             else:
                 raise RuntimeError("\nXPACDT: The given operation is not"
                                    "implemented. " + " ".join(ops))
 
     @property
-    def operation_list(self):
-        """ dict: Contains all operation to be performed.
+    def operations_dict(self):
+        """ dict: Contains all operations to be performed.
         """
-        return self.__operation_list
+        return self.__operations_dict
 
     def apply_operation(self, log_nuclei):
         """ Get the value after operation.
@@ -128,7 +128,7 @@ class Operations(object):
         """
         value = 1.0
 
-        for op, options in self.operation_list.items():
+        for op, options in self.operations_dict.items():
             # Remove the trailing unque index number which are the last 5 characters.
             operation = '_' + op[:-5]
 
@@ -538,9 +538,6 @@ def _arguments_energy(arguments):
                         default=False,
                         help='Use bead energy instead of centroid energy.')
 
-    if len(arguments) == 0:
-        raise RuntimeError("XPACDT: No arguments given to energy operation.")
-
     opts = parser.parse_args(arguments)
 
     if opts.help is True:
@@ -584,7 +581,7 @@ def _energy(opts, log_nuclei):
         energy_attribute += "_centroid"
 
     if not (opts.type == "total"):
-        energy_attribute = opts.type + energy_attribute
+        energy_attribute = opts.type + "_" + energy_attribute
 
     current_value = getattr(log_nuclei, energy_attribute)
 

@@ -483,7 +483,7 @@ def _use_time(i, steps_to_use):
 
     Returns
     -------
-    bool :
+    bool
         True if steps_used is empty /or/ if i is present in steps_used. Else
         False is returned.
     """
@@ -492,56 +492,6 @@ def _use_time(i, steps_to_use):
         return True
     else:
         return (i in steps_to_use)
-
-# TODO: remove this once tests are fine.
-
-#def apply_operation(operation, log_nuclei):
-#    """ Apply a given sequence of operations to a given XPACDT.Nuclei object
-#    from the system log.
-#
-#    Parameters
-#    ----------
-#    operation : string
-#        The string defining the sequence of operations. Each operation starts
-#        with a '+' and an identifyer (e.g., +position, +velocity, ...).
-#        Arguments specifying the operation are given after that.
-#    log_nuclei : XPACDT.System.Nuclei object
-#        Nuclei object from the log to perform operations on.
-#
-#    Returns
-#    -------
-#    value : (n_values) ndarray of floats
-#        The value resulting from the operations. The length 'n_values' depends
-#        on the operation performed.
-#    """
-#
-#    if '+' not in operation:
-#        raise RuntimeError("XPACDT: No operation given, instead: " + operation)
-#
-#    value = 1.0
-#    # The split has '' as a first results on something like '+pos'.split('+'),
-#    # and we need to ignore that one.
-#    for op_string in operation.split('+')[1:]:
-#        ops = op_string.split()
-#
-#        # match the different operations here.
-#        if ops[0] == 'id' or ops[0] == 'identity':
-#            pass
-#        elif ops[0] == 'pos' or ops[0] == 'position':
-#            value *= op.position(ops[1:], log_nuclei)
-#        elif ops[0] == 'mom' or ops[0] == 'momentum':
-#            value *= op.momentum(ops[1:], log_nuclei)
-#        elif ops[0] == 'vel' or ops[0] == 'velocity':
-#            value *= op.momentum(ops[1:] + ['-v'], log_nuclei)
-#        elif ops[0] == 'state':
-#            value *= op.electronic_state(ops[1:], log_nuclei)
-#        elif ops[0] == 'energy':
-#            value *= op.energy(ops[1:], log_nuclei)
-#        else:
-#            raise RuntimeError("\nXPACDT: The given operation is not"
-#                               "implemented. " + " ".join(ops))
-#
-#    return np.array(value).flatten()
 
 
 def get_directory_list(folder='./', file_name=None):

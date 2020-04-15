@@ -48,7 +48,7 @@ import XPACDT.Tools.Operations as op
 class AnalysisTest(unittest.TestCase):
 
     def setUp(self):
-        self.parameters = infile.Inputfile("FilesForTesting/SamplingTest/input_fixed.in")
+        self.parameters = infile.Inputfile("FilesForTesting/OperationsTest/input_classicalNuclei.in")
         self.system = xSystem.System(self.parameters)
 
         seed = 42

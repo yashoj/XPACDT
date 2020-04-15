@@ -1,0 +1,54 @@
+$system
+dof = 9
+Interface = XMolecule
+job = full
+picklefile = pickle.dat
+folder = water
+seed = 0
+time = 0 fs
+electrons = AdiabaticElectrons
+$end
+
+$XMolecule
+HF=yes
+gto=6-31G
+$end 
+
+$AdiabaticElectrons
+initial_state = 0 
+basis = adiabatic 
+$end
+
+$sampling
+method = Wigner
+samples = 1
+modes = 6 7 8
+$end
+
+$nuclei_propagator
+method = VelocityVerlet
+timestep = 0.5 fs
+$end
+
+$propagation
+time_output = 0.5 fs 
+time_start = 0.0 fs
+time_end = 10.00 fs
+$end
+
+$coordinates
+type = xyz
+H   1.74777  0.0  0.0
+H  -1.74777  0.0  0.0
+O   0.0      0.0  0.0
+$end
+
+$momenta
+  0.0  0.0  0.0
+  0.0  0.0  0.0
+  0.0  0.0  0.0
+$end
+
+
+
+### more comments!!

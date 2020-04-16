@@ -30,7 +30,14 @@
 
 """ Module to perform operations on a XPACDT.System.Nuclei object, e.g.,
 obtained from the system log, to obtain some observables and perform
-analysis. All the functions in this module should return a one dimensional
+analysis. This is done through the class 'Operations' defined here, which
+stores the operations to be performed and calls appropriate operation
+functions, also defined in this module, to perform it on the
+XPACDT.System.Nuclei object.
+
+Help on the options for these operation functions can be obtained through the
+general help of xpacdt.py with additional key word 'analysis'.
+All operation functions in this module should return a one dimensional
 numpy array with independent values, the length of which depends upon the
 operation performed."""
 
@@ -41,8 +48,10 @@ import sys
 
 class Operations(object):
     """
-    This class represents an operations to be applied on XPACDT.System.Nuclei
-    object.
+    This class represents an operation to be applied on XPACDT.System.Nuclei
+    object. This operation can be combination of different possible
+    sub-operations, which gives the final result as a product of these
+    sub-operations.
 
     Parameters:
     -----------
@@ -75,7 +84,8 @@ class Operations(object):
         self.__operations_dict = {}
 
         if ('+' not in operation_string) and (not print_help):
-            raise RuntimeError("XPACDT: No operation given, instead: " + operation_string)
+            raise RuntimeError("XPACDT: No operation given, instead: "
+                               + operation_string)
 
         # The split has '' as a first results on something like
         # '+pos'.split('+'), and we need to ignore that one.
@@ -84,10 +94,9 @@ class Operations(object):
             key_index = "_{:04d}".format(i)
             ops = op_string.split()
 
-            # match the different operations here.
-            # TODO: Do we really need an 'identity' operation since
-            #       'op' is A(t) already and 'op0' is optional.
-            # !!!! This way there cannot be two of the same operation: Better way than having this unique index???
+            # Match the different operations here and store the argument parsed
+            # object in 'operations_dict'.
+            # TODO: Better way than having this unique index?
             if ops[0] == 'pos' or ops[0] == 'position':
                 self.__operations_dict['position' + key_index] = _arguments_position(ops[1:])
 
@@ -108,12 +117,16 @@ class Operations(object):
 
     @property
     def operations_dict(self):
-        """ dict: Contains all operations to be performed.
+        """ dict: Contains all operations to be performed. The keys are the
+        operation functions (without the initial '_' but with a unique four
+        digit number attached at the end tp make it unique) and the values are
+        their respective argparse.Namespace objects needed for the functions.
         """
         return self.__operations_dict
 
     def apply_operation(self, log_nuclei):
-        """ Get the value after operation.
+        """ Apply requested operations in sequence and get the final value as
+        a product of these individual operation results.
 
         Parameters
         ----------
@@ -139,7 +152,24 @@ class Operations(object):
 
 
 def _arguments_position(arguments):
-    """
+    """ Parses the options for position command. If no options given it will
+    raise an error.
+
+    Valid options are as follows:
+
+    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
+                  gives the first position, or -1 0,3,7 gives the first,
+                  fourth and seventh position. Alternatively, also the
+                  center of mass position can be obtained by giving m and a
+                  comma separated list of degrees of freedom.
+    -2 <b> given: Like 1. If both given, then the distance between them is
+                  used.
+    -p <a> given: if a single value is calculated (i.e. a distance or single
+                  position) this option projects it onto a certain range.
+                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
+                  or above a value (>,A). If within the given value the
+                  function returns 1.0, else the given pValue.
+    -r given: Use ring-polymer bead positions.
 
     Parameters
     ----------
@@ -151,7 +181,6 @@ def _arguments_position(arguments):
     opts: argparse.Namespace object
         Options for position operation.
     """
-    # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +pos", add_help=False)
 
     parser.add_argument('-h', '--help',
@@ -164,19 +193,27 @@ def _arguments_position(arguments):
                         dest='x1',
                         type=str,
                         default=None,
-                        help='Obtain the position of a list of degrees of freedom (given as comma-separated list) or a center of mass position; given as m followed by the list of degrees of freedom included. Please note that the numbering starts a 0.')
+                        help='Obtain the position of a list of degrees of'
+                             ' freedom (given as comma-separated list) or a'
+                             ' center of mass position; given as m followed by'
+                             ' the list of degrees of freedom included. Please'
+                             ' note that the numbering starts a 0.')
 
     parser.add_argument('-2', '--x2',
                         dest='x2',
                         type=str,
                         default=None,
-                        help='If given, the distance between the two given (x1 and x2) sites should be calculated.')
+                        help='If given, the distance between the two given'
+                             ' (x1 and x2) sites should be calculated.')
 
     parser.add_argument('-p', '--project',
                         dest='proj',
                         type=str,
                         default=None,
-                        help='Take the distance or coordinate value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
+                        help='Take the distance or coordinate value given and'
+                             ' project onto a certain range. Valid are fully'
+                             ' bound ranges (A,<,B), or below a value (<,A) or'
+                             ' above a value (>,A).')
 
     parser.add_argument('-r', '--rpmd',
                         dest='rpmd',
@@ -197,31 +234,15 @@ def _arguments_position(arguments):
 
 
 def _position(opts, log_nuclei):
-    """Performs operations related to positions. If no options given it
-    will raise an error.
-
-    Valid options are as follows:
-
-    -1 <a> given: Position value of a given degree of freedom, e.g., -1 0,
-                   gives the first position, or -1 0,3,7 gives the first,
-                   fourth and seventh position. Alternatively, also the
-                   center of mass position can be obtained by giving m and a
-                   comma separated list of degrees of freedom.
-    -2 <b> given:  Like 1. If both given, then the distance between them is
-                   used.
-    -p <a> given: if a single value is calculated (i.e. a distance or single
-                  position) this option projects it onto a certain range.
-                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
-                  or above a value (>,A). If within the given value the
-                  function returns 1.0, else the given pValue.
-    -r given: Use ring-polymer bead positions.
+    """ Performs operations related to positions on `log_nuclei` using input
+    options from `opts`.
 
     Parameters
     ----------
     opts: argparse.Namespace object
         Options for position operation.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
+    log_nuclei: XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
 
     Returns
     -------
@@ -250,7 +271,26 @@ def _position(opts, log_nuclei):
 
 
 def _arguments_momentum(arguments):
-    """
+    """ Parses the options for momentum command. If no options given it will
+    raise an error.
+
+    Valid options are as follows:
+
+    -v given: Use velocities instead of momenta.
+    -1 <a> given: momentum value of a given degree of freedom, e.g., -1 0,
+                  gives the first momentum, or -1 0,3,7 gives the first,
+                  fourth and seventh momentum. Alternatively, also the
+                  center of mass momentum can be obtained by giving m and a
+                  comma separated list of degrees of freedom.
+    -2 <b> given: Like 1. If both given, then the relative momentum between
+                  them is used.
+    -p <a> given: if a single value is calculated (i.e. a relative or single
+                  momentum) this option projects it onto a certain range.
+                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
+                  or above a value (>,A). If within the given value the
+                  function returns 1.0, else the given pValue.
+    -r given: Use ring-polymer bead momenta.
+
 
     Parameters
     ----------
@@ -262,7 +302,6 @@ def _arguments_momentum(arguments):
     opts: argparse.Namespace object
         Options for momentum operation.
     """
-    # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +mom", add_help=False)
 
     parser.add_argument('-h', '--help',
@@ -281,19 +320,27 @@ def _arguments_momentum(arguments):
                         dest='x1',
                         type=str,
                         default=None,
-                        help='Obtain the momentum of a list of degrees of freedom (given as comma-separated list) or a center of mass; given as m followed by the list of degrees of freedom included. Please note that the numbering starts a 0.')
+                        help='Obtain the momentum of a list of degrees of'
+                             ' freedom (given as comma-separated list) or a'
+                             ' center of mass; given as m followed by the list'
+                             ' of degrees of freedom included. Please note'
+                             ' that the numbering starts a 0.')
 
     parser.add_argument('-2', '--x2',
                         dest='x2',
                         type=str,
                         default=None,
-                        help='If given, the relative momentum between the two given (x1 and x2) sites should be calculated.')
+                        help='If given, the relative momentum between the two'
+                             ' given (x1 and x2) sites should be calculated.')
 
     parser.add_argument('-p', '--project',
                         dest='proj',
                         type=str,
                         default=None,
-                        help='Take the momentum value given and project onto a certain range. Valid are fully bound ranges (A,<,B), or below a value (<,A) or above a value (>,A).')
+                        help='Take the momentum value given and project onto a'
+                             ' certain range. Valid are fully bound'
+                             ' ranges (A,<,B), or below a value (<,A) or'
+                             ' above a value (>,A).')
 
     parser.add_argument('-r', '--rpmd',
                         dest='rpmd',
@@ -314,32 +361,15 @@ def _arguments_momentum(arguments):
 
 
 def _momentum(opts, log_nuclei):
-    """Performs operations related to momenta. If no options given it
-    will raise an error.
-
-    Valid options are as follows:
-
-    -v given: Use velocities instead of momenta.
-    -1 <a> given: momentum value of a given degree of freedom, e.g., -1 0,
-                   gives the first momentum, or -1 0,3,7 gives the first,
-                   fourth and seventh momentum. Alternatively, also the
-                   center of mass momentum can be obtained by giving m and a
-                   comma separated list of degrees of freedom.
-    -2 <b> given: Like 1. If both given, then the relative momentum between
-                   them is used.
-    -p <a> given: if a single value is calculated (i.e. a relative or single
-                  momentum) this option projects it onto a certain range.
-                  Valid are fully bound ranges (A,<,B), or below a value (<,A)
-                  or above a value (>,A). If within the given value the
-                  function returns 1.0, else the given pValue.
-    -r given: Use ring-polymer bead momenta.
+    """Performs operations related to momenta on `log_nuclei` using input
+    options from `opts`.
 
     Parameters
     ----------
     opts: argparse.Namespace object
         Options for momentum operation.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
+    log_nuclei: XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
 
     Returns
     -------
@@ -420,7 +450,14 @@ def _projection(options, values):
 
 
 def _arguments_electronic_state(arguments):
-    """
+    """ Parses the options for electronic state command. If no options given
+    it will raise an error.
+
+    Valid options are as follows:
+
+    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
+                      "diabatic". Default: "adiabatic".
+    -p <a> given: State to be projected onto in the basis given by 'basis'.
 
     Parameters
     ----------
@@ -432,8 +469,6 @@ def _arguments_electronic_state(arguments):
     opts: argparse.Namespace object
         Options for state operation.
     """
-
-    # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +state", add_help=False)
 
     parser.add_argument('-h', '--help',
@@ -448,7 +483,8 @@ def _arguments_electronic_state(arguments):
                         default='adiabatic',
                         choices=['adiabatic', 'diabatic'],
                         required=False,
-                        help='Basis to be used. Possible "adiabatic" or "diabatic". Default: "adiabatic".')
+                        help='Basis to be used. Possible "adiabatic" or'
+                             ' "diabatic". Default: "adiabatic".')
 
     parser.add_argument('-p', '--project',
                         dest='proj',
@@ -469,21 +505,15 @@ def _arguments_electronic_state(arguments):
 
 
 def _electronic_state(opts, log_nuclei):
-    """Performs operations related to electronic state. If no options are
-    given, then it will raise an error.
-
-    Valid options are as follows:
-
-    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
-                      "diabatic". Default: "adiabatic".
-    -p <a> given: State to be projected onto in the basis given by 'basis'.
+    """Performs operations related to electronic state on `log_nuclei` using
+    input options from `opts`.
 
     Parameters
     ----------
     opts: argparse.Namespace object
         Options for state operation.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
+    log_nuclei: XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
 
     Returns
     -------
@@ -502,7 +532,15 @@ def _electronic_state(opts, log_nuclei):
 
 
 def _arguments_energy(arguments):
-    """
+    """ Parses the options for energy command. If no options given it will
+    return parser object to get total centroid energy.
+
+     Valid options are as follows:
+
+    -t <type> given: Type of energy to be used. This can be "total", "kinetic",
+                     "potential" or "spring". Default: "total". Note: energy
+                     of spring term is not valid for centroid.
+    -r given: Get ring-polymer bead energy instead of centroid energy.
 
     Parameters
     ----------
@@ -514,7 +552,6 @@ def _arguments_energy(arguments):
     opts: argparse.Namespace object
         Options for energy operation.
     """
-    # Parse arguments
     parser = argparse.ArgumentParser(usage="Options for +energy", add_help=False)
 
     parser.add_argument('-h', '--help',
@@ -530,7 +567,8 @@ def _arguments_energy(arguments):
                         choices=['total', 'kinetic', 'potential', 'spring'],
                         required=False,
                         help='Type of energy to be used. Possible "total",'
-                             ' "kinetic", "potential" or "spring". Default: "total".')
+                             ' "kinetic", "potential" or "spring".'
+                             ' Default: "total".')
 
     parser.add_argument('-r', '--rpmd',
                         dest='rpmd',
@@ -548,22 +586,15 @@ def _arguments_energy(arguments):
 
 
 def _energy(opts, log_nuclei):
-    """Performs operations related to energy. If no options are
-    given, then it will raise an error.
-
-    Valid options are as follows:
-
-    -t <type> given: Type of energy to be used. This can be "total", "kinetic",
-                     "potential" or "spring". Default: "total". Note: energy
-                     of spring term is not valid for centroid.
-    -r given: Get ring-polymer bead energy instead of centroid energy.
+    """ Performs operations related to energy on `log_nuclei` using input
+    options from `opts`.
 
     Parameters
     ----------
     opts: argparse.Namespace object
         Options for energy operation.
-    log_nuclei: XPACDT.System.Nuclei object from the log to perform
-                operations on.
+    log_nuclei: XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
 
     Returns
     -------

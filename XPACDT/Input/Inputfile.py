@@ -157,8 +157,11 @@ class Inputfile(collections.MutableMapping):
     @property
     def commands(self):
         """dict : Contains all input sections for 'commands' used in
-        the analysis.
-        !!!!TODO: Describe more here."""
+        the analysis. Each command key contains a further dictionary with keys
+        the command input options, 'name' (the command key name),
+        'results' (result of the command to be added here) and
+        'all_operations' (dictionary with all operations requested such as
+        'op', 'op0', '2op' and '2op0')."""
         return self.__commands
 
     @property

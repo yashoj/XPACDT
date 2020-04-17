@@ -310,7 +310,7 @@ class PotentialInterface:
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
         S : integer, default: 0
-            The current state of the system. 
+            The current state of the system.
         centroid : bool, default: False
             If the energy of the centroid should be returned.
         return_matrix: bool, default: False
@@ -352,7 +352,7 @@ class PotentialInterface:
         R : (n_dof, n_beads) ndarray of floats
             The (ring-polymer) positions representing the system in au.
         S : integer, default: 0
-            The current state of the system. 
+            The current state of the system.
         centroid : bool, default: False
             If the gradient of the centroid should be returned.
         return_matrix: bool, default: False
@@ -410,7 +410,7 @@ class PotentialInterface:
         Returns
         -------
         (n_dof, n_beads) ndarray of floats if `centroid` is False
-                                           and `return_matrix` is False 
+                                           and `return_matrix` is False
         /or/ (n_dof) ndarray of floats if `centroid` is True
                                        and `return_matrix` is False
         /or/ (n_states, n_states, n_dof, n_beads) ndarrays of floats if `centroid` is False
@@ -463,7 +463,7 @@ class PotentialInterface:
         Returns
         -------
         (n_beads) ndarray of floats if `centroid` is False
-                                    and `return_matrix` is False 
+                                    and `return_matrix` is False
         /or/ float if `centroid` is True
                    and `return_matrix` is False
         /or/ (n_states, n_states, n_beads) ndarrays of floats if `centroid` is False
@@ -538,7 +538,7 @@ class PotentialInterface:
         if self._changed(R, None):
             self._calculate_diabatic_all(R)
             self._is_adiabatic_calculated = False
-            
+
         if centroid:
             if return_matrix:
                 return self._diabatic_gradient_centroid
@@ -980,7 +980,7 @@ class PotentialInterface:
             /or/ if tuple is given the off-diagonal element of the
             diabatic matrix to be plotted.
         picture : string, optional, ('adiabatic', 'diabatic')
-            Whether adiabatic or diabatic PES should be plotted. 
+            Whether adiabatic or diabatic PES should be plotted.
 
         Returns
         -------

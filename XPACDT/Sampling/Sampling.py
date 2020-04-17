@@ -38,6 +38,8 @@ import shutil
 import sys
 import warnings
 
+import XPACDT.Tools.Analysis as analysis
+
 
 def sample(system, parameters, do_return=False):
     """
@@ -80,6 +82,7 @@ def sample(system, parameters, do_return=False):
     n_samples_required = n_samples
 
     name_folder = system_parameters.get('folder')
+    file_name = system_parameters.get('picklefile', 'pickle.dat')
     if not os.path.isdir(name_folder):
         try:
             os.mkdir(name_folder)
@@ -123,8 +126,15 @@ def sample(system, parameters, do_return=False):
             system.nuclei.momenta += parameters.momentumShift[:, None]
             system.do_log(init=True)
 
-    # if add, then need to open those files for returning as well!!!
     if do_return is True:
+        # Add the existing samples if they exists.
+        if 'add' in sampling_parameters:
+            # TODO: move these functions from analysis.py to a more
+            #       general XPACDT tools module.
+            dirs = analysis.get_directory_list(name_folder, file_name)
+            for system in analysis.get_systems(dirs, file_name, None):
+                sampled_systems.append(system)
+
         return sampled_systems
 
     # Save stuff to pickle files. Iterate over all possible folders
@@ -141,7 +151,8 @@ def sample(system, parameters, do_return=False):
                 raise type(e)(str(e) + "\nXPACDT: Creation of trajectory"
                               " folder " + trj_folder + " failed!")
 
-            file_name = system_parameters.get('picklefile', 'pickle.dat')
             pickle.dump(sampled_systems[shift],
                         open(os.path.join(trj_folder, file_name), 'wb'), -1)
             shift += 1
+
+    return

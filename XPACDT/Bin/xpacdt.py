@@ -43,6 +43,7 @@ import pickle
 import random
 import time
 import sys
+import shutil
 
 import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Sampling.Sampling as sampling
@@ -279,6 +280,9 @@ def start():
         systems = sampling.sample(system, input_parameters, do_return=True)
         print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
+        # Copy sampling or full input file to sampling folder.
+        shutil.copy(args.InputFile, name_folder)
+
         # loop over samples and propagate them
         print("Running Real time propagation...", end='', flush=True)
         start_time = time.time()
@@ -333,10 +337,16 @@ def start():
         sampling.sample(system, input_parameters)
         print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
+        # Copy sampling input file to sampling folder.
+        # TODO: use copy or copy2? copy2 preserves metadata like creation and modification times.
+        shutil.copy(args.InputFile, name_folder)
+
     elif job == "propagate":
         print("Running Real time propagation...", end='', flush=True)
         rt.propagate(system, input_parameters, initiated)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
+        # TODO: where to copy input file? In each trj directory is a bit too
+        # excessive. Maybe make it possible to generate through genLog.
 
     else:
         raise NotImplementedError("\nXPACDT: Requested job type not"

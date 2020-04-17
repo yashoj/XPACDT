@@ -65,7 +65,6 @@ import warnings
 
 import XPACDT.Tools.Bootstrap as bs
 import XPACDT.Tools.Gnuplot as gnuplot
-import XPACDT.Tools.Operations as op
 
 
 def do_analysis(parameters, systems=None):
@@ -189,7 +188,8 @@ def do_analysis(parameters, systems=None):
                       for data in reshaped_results]
 
         # Generate header
-        header = "## Generated for the following command: \n"
+        header = "## Generated for the following command using " \
+                 + str(n_systems) + " samples: \n"
         for k, v in command.items():
             if k not in ['results', 'times', 'all_operations']:
                 header += "# " + str(k) + " = " + str(v) + " \n"

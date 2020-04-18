@@ -36,6 +36,7 @@ import os
 import warnings
 import XPACDT.Tools.Units as units
 from XPACDT.Interfaces.InterfaceTemplate import PotentialInterface
+import functools
 
 try:
     import python_xmolecule_interface as XM
@@ -63,6 +64,11 @@ class XMolecule(PotentialInterface):
     """
 
     def __getstate__(self):
+        """
+        get dictionary of all class elements.
+        instead of xmol return xmol_state.
+        xmol will be initialized from xmol_state at a later point.
+        """
         state = {}
         for k, v in self.__dict__.items():
             if k == "xmol":
@@ -72,11 +78,32 @@ class XMolecule(PotentialInterface):
         return state
 
     def __setstate__(self, state):
+        """ 
+        set all class elements.
+        """
         for k, v in state.items():
-            if k == "xmol_state":
-                self.__dict__["xmol_state"] = state["xmol_state"]
-            else:
-                self.__dict__[k] = state[k]
+            self.__dict__[k] = state[k]
+
+    def __check_xmol(func):
+        """
+        This decorate makes sure that xmol object is properly set up.
+        If the Xmolecule class is copied, copying of self.xmol is prohibited.
+        Instead a 'pickled' version of self.xmol is copied (self.xmol_state).
+        See implementation of __setstate__ / __getstate__.
+        In case a proper initialisation of xmol object is required
+        this decorator takes care of it by calling
+        xmol.__set_state__(self.xmol_state)
+        """
+        @functools.wraps(func)
+        def wrapper_decorator(*args, **kwargs):
+            self = args[0]
+            if not hasattr(self, "xmol"):
+                print("setting up xmolecule")
+                self.xmol = XM.xmol()
+                self.xmol.__setstate__(self.xmol_state)
+            value = func(*args, **kwargs)
+            return value
+        return wrapper_decorator
 
     def __init__(self, parameters, **kwargs):
         super().__init__('XMolecule',
@@ -88,11 +115,11 @@ class XMolecule(PotentialInterface):
         pos = parameters.coordinates
         n_atom = parameters.n_dof // 3
 
-        # Write an appropriate XMolecule input file from all set parameters
         ifile = open('input.in', 'w')
         for i in range(n_atom):
             ifile.write(
                 f'{atom_symbols[i*3]}    {pos[i*3,0]:+.10f}    {pos[i*3+1,0]:+.10f}    {pos[i*3+2,0]:+.10f}\n')
+
         if "n_dof" in parameters['XMolecule'].keys():
             parameters['XMolecule'].pop('n_dof')
         # Iterate over entries and set in XMolecule input file.
@@ -103,6 +130,7 @@ class XMolecule(PotentialInterface):
         self.xmol = XM.xmol()
         self.xmol.init()
 
+    @__check_xmol
     def _calculate_adiabatic_all(self, R, S=None):
         """
         Calculate the value of the potential and the gradient at positions R.
@@ -117,10 +145,6 @@ class XMolecule(PotentialInterface):
             The current electronic state. This is not used in this potential
             and thus defaults to None.
         """
-
-        if not hasattr(self, "xmol"):
-            self.xmol = XM.xmol()
-            self.xmol.__setstate__(self.xmol_state)
 
         self._adiabatic_energy = np.zeros((1, R.shape[1]))
         self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
@@ -137,22 +161,96 @@ class XMolecule(PotentialInterface):
 
         return
 
+    @__check_xmol
+    def getPartialCharges(self, chargetype='mulliken'):
+        """
+        Returns current partial charges of the molecule accoring to given method.
+        """
+        if chargetype == 'mulliken':
+            return self.xmol.mullikencharge()
+        else:
+            print("Charge type not implemented in XMolecule Interface")
+            exit(-1)
 
-############ FROM CDTK
+    @__check_xmol
+    def getPopulation(self):
+        """
+        Returns current Population Analysis data.
+        """
+        return self.xmol.population()
+
+    @__check_xmol
+    def getOrbitalEnergies(self):
+        """
+        Returns current Orbital Energies.
+        """
+        return self.xmol.orbital_energies()
+
+    @__check_xmol
+    def getBondOrders(self, botype='Meyer'):
+        """
+        Returns current BondOrder Matrix of the molecule accoring to given method.
+        """
+        if botype == 'Meyer':
+            return self.xmol.bondorder()
+        else:
+            print("Charge type not implemented in XMolecule Interface")
+            exit(-1)
+
+    @__check_xmol
+    def getAbsorptionCrossSections(self):
+        """
+        Returns absorption cross sections between current molecular orbitals
+
+        aCS[i,j] = absorption cross section from MO i to j
+
+        Spin orbital factor included.
+
+        The corresponding energy for the absorption can be obtained from the MO energy difference.
+        """
+
+        return self.xmol.absorptioncs()
+
+    @__check_xmol
+    def getFluorescenceRates(self):
+        """
+        Returns fluorescence rates between current molecular orbitals
+
+        fluoRate[i,j] = fluorescence rate from MO i to j
+
+        Spin orbital factor included.
+
+        The corresponding energy for the fluorescence photon can be obtained from the MO energy difference.
+        """
+
+        return self.xmol.fluorescencerates()
+
+    @__check_xmol
+    def getRates(self):
+        """
+        Obtain rates and cross sections at current position.
+        """
+
+        return self.xmol.process()
+
+
+# FROM CDTK
+# things below need to be implemented
 
 
     def hole_efields(self, X, x0):
         """
-        Energy and electric field for single-hole Koopmans' theorem calculations.
-        
+        Energy and electric field for single-hole Koopmans' theorem calculations.        instead of xmol return xmol_state.
+
+
         Input:
         X      -- 3N array of atomic positions, in Bohr (au)
         x0     -- array of dimension 3 of electronic position, in Bohr (au)
-        
+
         Output:
         e      -- Array of energies for all single-hole states in Hartree (au)
         efield -- Electric field at the electron position
-        
+
         """
         self.xmolecule.set_geom(X.tolist())
         l = self.xmolecule.hole_efields(x0.tolist())
@@ -161,7 +259,7 @@ class XMolecule(PotentialInterface):
 
         occ = []
         e = np.zeros(nstates)
-        efield = np.zeros((nstates,ncoords))
+        efield = np.zeros((nstates, ncoords))
 
         for i, li in enumerate(l):
             occi = li[0]
@@ -189,62 +287,13 @@ class XMolecule(PotentialInterface):
 
         return self.xmolecule.get_occ()
 
-    def set_geom(self, X):
-        """
-        Set geometry to X
-
-        X   -- 3N array of atomic positions, in Bohr (au)
-        """
-
-        # pass on geometry in Bohr
-
-
-
-
-
-    def energy_HF(self, X, Time=0.0, **opts):
-        """
-        Hartree-Fock energy calculation. 
-
-        Input:
-        X   -- 3N array of atomic positions, in Bohr (au)
-
-        Output:
-        e   -- SCF energy in atomic units
-        """
-
-        # pass on geometry in Bohr
-        self.xmolecule.set_geom(X.tolist())
-        e = self.xmolecule.energy
-
-        return e
-
-    def energy_gradient_HF(self, X, Time=0.0, **opts):
-        """
-        Hartree-Fock energy and gradient calculation.
-
-        Input:
-        X   -- 3N array of atomic positions, in Bohr (au)
-        
-        Output:
-        e   -- SCF energy in atomic units
-        g   -- 3N SCF gradient in atomic units
-        """
-
-        # pass on geometry in Bohr
-        self.xmolecule.set_geom(X.tolist())
-        e = self.xmolecule.energy
-        g = np.array(self.xmolecule.gradient())
-
-        return e, g
-
     def hole_properties(self, X, Time=0.0, **opts):
         """
         Energy, gradient, non-adiabatic coupling for single-hole Koopmans' theorem calculations.
 
         Input:
         X   -- 3N array of atomic positions, in Bohr (au)
-        
+
         Output:
         e   -- Array of energies for all single-hole states in atomic units (hartree)
         g   -- Array of 3N gradient for all single-hole states in atomic units
@@ -254,7 +303,7 @@ class XMolecule(PotentialInterface):
         # pass on geometry in Bohr
         self.xmolecule.set_geom(X.tolist())
         l = self.xmolecule.hole_properties()
-        
+
         nstates = len(l)
         ncoords = len(X.tolist())
 

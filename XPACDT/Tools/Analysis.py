@@ -59,12 +59,12 @@ RuntimeWarning is printed for the first system and timestep.
 """
 
 import os
-import pickle
 import numpy as np
 import warnings
 
 import XPACDT.Tools.Bootstrap as bs
 import XPACDT.Tools.Gnuplot as gnuplot
+import XPACDT.Tools.Xtools as xtools
 
 
 def do_analysis(parameters, systems=None):
@@ -84,14 +84,14 @@ def do_analysis(parameters, systems=None):
     folder = parameters.get('system').get('folder')
     if systems is None:
         file_name = parameters.get('system').get('picklefile', 'pickle.dat')
-        dirs = get_directory_list(folder, file_name)
+        dirs = xtools.get_directory_list(folder, file_name)
     else:
         dirs = None
         file_name = None
 
     n_systems = 0
     # Calculate 'observables' for each system
-    for system in get_systems(dirs, file_name, systems):
+    for system in xtools.get_systems(dirs, file_name, systems):
         # do different stuff for each command
         for key, command in parameters.commands.items():
             # For now, 'steps_to_use' is generated for each system. This is in
@@ -492,64 +492,3 @@ def _use_time(i, steps_to_use):
         return True
     else:
         return (i in steps_to_use)
-
-
-def get_directory_list(folder='./', file_name=None):
-    """ Get trj_ subfolders in a given folder. If a file name is given, only
-    trj_ subfolders are returned that contain a file with that name. The
-    returned list is sorted.
-
-    Parameters
-    ----------
-    folder : string, optional, default: './'
-        Folder to search for trj_ subfolders.
-    file_name : string, optional, default: None
-        If given, only trj_ subfolders are returned that contain a file with
-        that name.
-
-    Returns
-    -------
-    dirs : list of string
-        Sorted list of trj_ subfolders.
-    """
-
-    allEntries = os.listdir(folder)
-    dirs = []
-    for entry in allEntries:
-        path = os.path.join(folder, entry)
-        if entry[0:4] == 'trj_' and os.path.isdir(path):
-            if file_name is None or os.path.isfile(os.path.join(path,
-                                                                file_name)):
-                dirs.append(path)
-    dirs.sort()
-    return dirs
-
-
-def get_systems(dirs, file_name, systems):
-    """Obtain a generator over all systems to sweep through them in the
-    analysis.
-    The systems are either given as a list of systems or read from pickle
-    files in the given list of folders.
-
-    Parameters
-    ----------
-    dirs : list of strings
-        Directories to read the pickle files from.
-    file_name : String
-        Name of the pickle files to be read.
-    systems: list of XPACDT.System
-        A list of systems to perform the analysis on. If not given, then the
-        systems are read from file.
-
-    Returns
-    -------
-    Generator over all sytems.
-    """
-
-    if dirs is not None:
-        return (pickle.load(open(os.path.join(folder_name, file_name), 'rb'))
-                for folder_name in dirs)
-    elif systems is not None:
-        return (system for system in systems)
-    else:
-        raise RuntimeError("Neither dirs nor systems given!")

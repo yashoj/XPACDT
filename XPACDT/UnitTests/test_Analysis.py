@@ -31,7 +31,6 @@
 #  **************************************************************************
 
 import copy
-import collections
 import numpy as np
 import random
 import os
@@ -118,7 +117,8 @@ class AnalysisTest(unittest.TestCase):
                    'all_operations': {'op0': op.Operations('+pos -1 0'),
                                       'op': op.Operations('+mom -1 0')}}
         analysis.apply_command(command, self.systems[3], [])
-        results_ref = np.array([[-0.54438272*-0.60063869], [-0.54438272*0.2088636]])
+        results_ref = np.array([[-0.54438272*-0.60063869],
+                                [-0.54438272*0.2088636]])
         np.testing.assert_array_almost_equal(command['results'], results_ref)
 
         command = {'op0': '+pos -1 0 ', 'op': '+mom -1 0', 'step': '1', 'results': [],
@@ -132,7 +132,8 @@ class AnalysisTest(unittest.TestCase):
                      'all_operations': {'op': op.Operations('+pos -1 0'),
                                         '2op': op.Operations('+mom -1 0')}}
         analysis.apply_command(command2d, self.systems[3], [])
-        results_ref = np.array([[-0.54438272], [-0.01349722], [-0.60063869], [0.2088636]])
+        results_ref = np.array([[-0.54438272], [-0.01349722],
+                                [-0.60063869], [0.2088636]])
         np.testing.assert_array_almost_equal(command2d['results'], results_ref)
 
         return
@@ -161,16 +162,17 @@ class AnalysisTest(unittest.TestCase):
         form = 'value'
         times = np.array([0.0, 2.0])
         bins = [np.array([-2.0, -1.0, 0.0, 1.0, 2.0])]
-        results = [np.array([[-5.0, 2.0, 3.0, 2.0, 1.5], [5.0, -2.0, -3.0, -2.0, -1.5]])]
+        results = [np.array([[-5.0, 2.0, 3.0, 2.0, 1.5],
+                             [5.0, -2.0, -3.0, -2.0, -1.5]])]
 
         compare_text = "# This is a stupid header\n" + \
-        "# For my super test!\n" + \
-        "#  0.00000000e+00 \t  0.00000000e+00 \t 2.00000000e+00 \t  2.00000000e+00 \t \n" + \
-        "# \n-2.00000000e+00 -5.00000000e+00  5.00000000e+00\n" + \
-        "-1.00000000e+00  2.00000000e+00 -2.00000000e+00\n" + \
-        " 0.00000000e+00  3.00000000e+00 -3.00000000e+00\n" + \
-        " 1.00000000e+00  2.00000000e+00 -2.00000000e+00\n" + \
-        " 2.00000000e+00  1.50000000e+00 -1.50000000e+00\n"
+            "# For my super test!\n" + \
+            "#  0.00000000e+00 \t  0.00000000e+00 \t 2.00000000e+00 \t  2.00000000e+00 \t \n" + \
+            "# \n-2.00000000e+00 -5.00000000e+00  5.00000000e+00\n" + \
+            "-1.00000000e+00  2.00000000e+00 -2.00000000e+00\n" + \
+            " 0.00000000e+00  3.00000000e+00 -3.00000000e+00\n" + \
+            " 1.00000000e+00  2.00000000e+00 -2.00000000e+00\n" + \
+            " 2.00000000e+00  1.50000000e+00 -1.50000000e+00\n"
 
         analysis.output_data(header, output_file, form, times, bins, results)
         text = ''
@@ -187,21 +189,22 @@ class AnalysisTest(unittest.TestCase):
         form = '2d'
         times = np.array([0.0, 2.0])
         bins = [np.array([-2.0, -1.0, 0.0, 1.0, 2.0])]
-        results = [np.array([[-5.0, 2.0, 3.0, 2.0, 1.5], [5.0, -2.0, -3.0, -2.0, -1.5]])]
+        results = [np.array([[-5.0, 2.0, 3.0, 2.0, 1.5],
+                             [5.0, -2.0, -3.0, -2.0, -1.5]])]
 
         compare_text = "# This is a stupid header\n" + \
-        "# For my super test!\n" + \
-        " 0.00000000e+00 -2.00000000e+00 -5.00000000e+00 \n" + \
-        " 0.00000000e+00 -1.00000000e+00  2.00000000e+00 \n" + \
-        " 0.00000000e+00  0.00000000e+00  3.00000000e+00 \n" + \
-        " 0.00000000e+00  1.00000000e+00  2.00000000e+00 \n" + \
-        " 0.00000000e+00  2.00000000e+00  1.50000000e+00 \n" + \
-        "\n" + \
-        " 2.00000000e+00 -2.00000000e+00  5.00000000e+00 \n" + \
-        " 2.00000000e+00 -1.00000000e+00 -2.00000000e+00 \n" + \
-        " 2.00000000e+00  0.00000000e+00 -3.00000000e+00 \n" + \
-        " 2.00000000e+00  1.00000000e+00 -2.00000000e+00 \n" + \
-        " 2.00000000e+00  2.00000000e+00 -1.50000000e+00 \n\n"
+            "# For my super test!\n" + \
+            " 0.00000000e+00 -2.00000000e+00 -5.00000000e+00 \n" + \
+            " 0.00000000e+00 -1.00000000e+00  2.00000000e+00 \n" + \
+            " 0.00000000e+00  0.00000000e+00  3.00000000e+00 \n" + \
+            " 0.00000000e+00  1.00000000e+00  2.00000000e+00 \n" + \
+            " 0.00000000e+00  2.00000000e+00  1.50000000e+00 \n" + \
+            "\n" + \
+            " 2.00000000e+00 -2.00000000e+00  5.00000000e+00 \n" + \
+            " 2.00000000e+00 -1.00000000e+00 -2.00000000e+00 \n" + \
+            " 2.00000000e+00  0.00000000e+00 -3.00000000e+00 \n" + \
+            " 2.00000000e+00  1.00000000e+00 -2.00000000e+00 \n" + \
+            " 2.00000000e+00  2.00000000e+00 -1.50000000e+00 \n\n"
 
         analysis.output_data(header, output_file, form, times, bins, results)
         text = ''
@@ -245,48 +248,6 @@ class AnalysisTest(unittest.TestCase):
                 self.assertTrue(analysis._use_time(i, [1, 5, 6, 10]))
             else:
                 self.assertFalse(analysis._use_time(i, [1, 5, 6, 10]))
-
-    def test_get_directory_list(self):
-        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
-        dir_list_ref2 = ["./trj_0", "./trj_2"]
-        for d in dir_list_ref:
-            os.mkdir(d)
-
-        for d in dir_list_ref2:
-            open(d + "/pickle.dat", 'a').close()
-
-        dir_list = analysis.get_directory_list()
-        self.assertSequenceEqual(dir_list, dir_list_ref)
-
-        dir_list = analysis.get_directory_list(file_name='pickle.dat')
-        self.assertSequenceEqual(dir_list, dir_list_ref2)
-
-        for d in dir_list_ref:
-            shutil.rmtree(d)
-
-    def test_get_systems(self):
-        with self.assertRaises(RuntimeError):
-            analysis.get_systems(None, None, None)
-
-        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
-        dir_list_ref2 = ["./trj_0", "./trj_2"]
-        for d in dir_list_ref:
-            os.mkdir(d)
-
-        for d in dir_list_ref2:
-            open(d + "/pickle.dat", 'a').close()
-
-        sys = analysis.get_systems(dir_list_ref, 'pickle.dat', None)
-        self.assertTrue(isinstance(sys, collections.Iterable))
-
-        for d in dir_list_ref:
-            shutil.rmtree(d)
-
-    def tearDown(self):
-        dir_list_ref = ["./trj_" + str(i) for i in range(len(self.systems))]
-        for d in dir_list_ref:
-            if os.path.isdir(d):
-                shutil.rmtree(d)
 
 
 if __name__ == "__main__":

@@ -38,7 +38,7 @@ import shutil
 import sys
 import warnings
 
-import XPACDT.Tools.Analysis as analysis
+import XPACDT.Tools.Xtools as xtools
 
 
 def sample(system, parameters, do_return=False):
@@ -129,10 +129,8 @@ def sample(system, parameters, do_return=False):
     if do_return is True:
         # Add the existing samples if they exists.
         if 'add' in sampling_parameters:
-            # TODO: move these functions from analysis.py to a more
-            #       general XPACDT tools module.
-            dirs = analysis.get_directory_list(name_folder, file_name)
-            for system in analysis.get_systems(dirs, file_name, None):
+            dirs = xtools.get_directory_list(name_folder, file_name)
+            for system in xtools.get_systems(dirs, file_name, None):
                 sampled_systems.append(system)
 
         return sampled_systems

@@ -159,25 +159,23 @@ class DiabaticToAdiabaticNstatesTest(unittest.TestCase):
         # TODO: Add 3 or more state test.
 
     def test_get_transformation_matrix(self):
+        # Note: These transformation matrices (or eigen vectors) are fixed upto
+        #       a phase factor (here +/- since they are chosen to be real).
+        #       This choice is a bit arbitrary and depends upon the function implementation.
+
         # 1 bead/centroid test
         V = np.array([[2., 0.], [0., 3.]])
-        # TODO: After fixing random pahse error in getting eigenvectors,
-        #       uncomment the first reference values.
-        # U_ref = np.array([[0., -1.], [1., 0.]])
         U_ref = np.array([[1., 0.], [0., 1.]])
         U = dia2ad.get_transformation_matrix(V)
         np.testing.assert_allclose(U, U_ref, atol=1e-8)
 
         V = np.array([[1./np.sqrt(3), 0.5], [0.5, 0.]])
-        # U_ref = np.array([[np.sqrt(3)/2, -0.5], [0.5, np.sqrt(3)/2]])
         U_ref = np.array([[0.5, -np.sqrt(3)/2], [-np.sqrt(3)/2, -0.5]])
         U = dia2ad.get_transformation_matrix(V)
         np.testing.assert_allclose(U, U_ref, rtol=1e-7)
 
         # 2 bead test
         V = np.array([[[2., 1./np.sqrt(3)], [0., 0.5]], [[0., 0.5], [3., 0.]]])
-        # U_ref = np.array([[[0., np.sqrt(3)/2], [-1., -0.5]],
-        #                  [[1., 0.5], [0., np.sqrt(3)/2]]])
         U_ref = np.array([[[1., 0.5], [0., -np.sqrt(3)/2]],
                           [[0., -np.sqrt(3)/2], [1., -0.5]]])
         U = dia2ad.get_transformation_matrix(V)

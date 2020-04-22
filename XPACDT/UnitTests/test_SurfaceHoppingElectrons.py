@@ -3010,8 +3010,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.coordinates,
                                                             param.momenta)
         # This is done just to reset all pes quantities to required position value.
-        # The transformation matrix here is U = [[0, -1], [1, 0]]
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        # The transformation matrix here is U = [[0, 1], [1, 0]] for R=1.0e5.
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "diabatic")
         self.assertAlmostEqual(pop, 0.0)
         pop = sh_electrons_classical.get_population(1, "diabatic")
@@ -3022,7 +3022,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "diabatic")
         self.assertAlmostEqual(pop, 1.0)
         pop = sh_electrons_classical.get_population(1, "diabatic")
@@ -3034,7 +3034,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "diabatic")
         self.assertAlmostEqual(pop, 0.0)
         pop = sh_electrons_classical.get_population(1, "diabatic")
@@ -3045,7 +3045,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "diabatic")
         self.assertAlmostEqual(pop, 1.0)
         pop = sh_electrons_classical.get_population(1, "diabatic")
@@ -3057,7 +3057,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "diabatic")
         self.assertAlmostEqual(pop, 0.0)
         pop = sh_electrons_classical.get_population(1, "diabatic")
@@ -3068,7 +3068,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "diabatic")
         self.assertAlmostEqual(pop, 1.0)
         pop = sh_electrons_classical.get_population(1, "diabatic")
@@ -3083,8 +3083,8 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.coordinates,
                                                             param.momenta)
         # This is done just to reset all pes quantities to required position value.
-        # The transformation matrix here is U = [[0, -1], [1, 0]]
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        # The transformation matrix here is U = [[0, 1], [1, 0]] for R=1.0e5.
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "adiabatic")
         self.assertAlmostEqual(pop, 0.0)
         pop = sh_electrons_classical.get_population(1, "adiabatic")
@@ -3095,7 +3095,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "adiabatic")
         self.assertAlmostEqual(pop, 1.0)
         pop = sh_electrons_classical.get_population(1, "adiabatic")
@@ -3107,7 +3107,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "adiabatic")
         self.assertAlmostEqual(pop, 0.0)
         pop = sh_electrons_classical.get_population(1, "adiabatic")
@@ -3118,7 +3118,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "adiabatic")
         self.assertAlmostEqual(pop, 1.0)
         pop = sh_electrons_classical.get_population(1, "adiabatic")
@@ -3130,7 +3130,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "adiabatic")
         self.assertAlmostEqual(pop, 0.0)
         pop = sh_electrons_classical.get_population(1, "adiabatic")
@@ -3141,7 +3141,7 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                             param.masses,
                                                             param.coordinates,
                                                             param.momenta)
-        sh_electrons_classical.energy(np.array([[-1.0e5]]))
+        sh_electrons_classical.energy(np.array([[1.0e5]]))
         pop = sh_electrons_classical.get_population(0, "adiabatic")
         self.assertAlmostEqual(pop, 1.0)
         pop = sh_electrons_classical.get_population(1, "adiabatic")
@@ -3186,13 +3186,13 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.coordinates,
                                                        param.momenta)
         # This is done just to reset all pes quantities to required position value.
-        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]]
+        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[-1, 1], [1, 1]],
+        # and at R=-1e5 it is U = [[1, 0], [0, 1]].
         sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "diabatic")
-        self.assertAlmostEqual(pop, 0.125)
+        self.assertAlmostEqual(pop, 0.125 *  (3 - 2 * math.sqrt(2)))
         pop = sh_electrons_rpmd.get_population(1, "diabatic")
-        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        self.assertAlmostEqual(pop, pop_ref)
+        self.assertAlmostEqual(pop, 0.125)
 
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
@@ -3201,10 +3201,9 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.momenta)
         sh_electrons_rpmd.energy(np.array([[-1.0e5,  0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "diabatic")
-        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        self.assertAlmostEqual(pop, pop_ref)
-        pop = sh_electrons_rpmd.get_population(1, "diabatic")
         self.assertAlmostEqual(pop, 0.125)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.125 * (3 + 2 * math.sqrt(2)))
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
@@ -3237,9 +3236,9 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.momenta)
         sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "diabatic")
-        self.assertAlmostEqual(pop, 0.25)
-        pop = sh_electrons_rpmd.get_population(1, "diabatic")
         self.assertAlmostEqual(pop, 0.75)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.25)
 
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
@@ -3248,9 +3247,9 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.momenta)
         sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "diabatic")
-        self.assertAlmostEqual(pop, 0.75)
-        pop = sh_electrons_rpmd.get_population(1, "diabatic")
         self.assertAlmostEqual(pop, 0.25)
+        pop = sh_electrons_rpmd.get_population(1, "diabatic")
+        self.assertAlmostEqual(pop, 0.75)
 
         # Then in diabatic basis.
         param["SurfaceHoppingElectrons"]["basis"] = "diabatic"
@@ -3261,13 +3260,13 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.coordinates,
                                                        param.momenta)
         # This is done just to reset all pes quantities to required position value.
-        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]]
+        # The transformation matrix for R=0 is U = 1/sqrt(2) * [[1, -1], [1, 1]],
+        # and at R=-1e5 it is U = [[1, 0], [0, 1]].
         sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "adiabatic")
-        self.assertAlmostEqual(pop, 0.125)
+        self.assertAlmostEqual(pop, 0.125 * (3 - 2 * math.sqrt(2)))
         pop = sh_electrons_rpmd.get_population(1, "adiabatic")
-        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        self.assertAlmostEqual(pop, pop_ref)
+        self.assertAlmostEqual(pop, 0.125)
 
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
@@ -3276,10 +3275,9 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.momenta)
         sh_electrons_rpmd.energy(np.array([[-1.0e5,  0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "adiabatic")
-        pop_ref = 0.125 * (3 + 2 * math.sqrt(2))
-        self.assertAlmostEqual(pop, pop_ref)
-        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
         self.assertAlmostEqual(pop, 0.125)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.125 * (3 + 2 * math.sqrt(2)))
 
         param["SurfaceHoppingElectrons"]["rpsh_type"] = "centroid"
         param["SurfaceHoppingElectrons"]["initial_state"] = 0
@@ -3312,9 +3310,9 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.momenta)
         sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "adiabatic")
-        self.assertAlmostEqual(pop, 0.25)
-        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
         self.assertAlmostEqual(pop, 0.75)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.25)
 
         param["SurfaceHoppingElectrons"]["initial_state"] = 1
         sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
@@ -3323,9 +3321,9 @@ class SurfaceHoppingTest(unittest.TestCase):
                                                        param.momenta)
         sh_electrons_rpmd.energy(np.array([[-1.0e5, 0.0]]))
         pop = sh_electrons_rpmd.get_population(0, "adiabatic")
-        self.assertAlmostEqual(pop, 0.75)
-        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
         self.assertAlmostEqual(pop, 0.25)
+        pop = sh_electrons_rpmd.get_population(1, "adiabatic")
+        self.assertAlmostEqual(pop, 0.75)
 
         # TODO: add more tests with 3 state test using morse diabatic after
         #       correcting phase factor issue in 3 state basis transformation.

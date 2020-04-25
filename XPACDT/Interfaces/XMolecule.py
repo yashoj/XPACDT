@@ -78,7 +78,7 @@ class XMolecule(PotentialInterface):
         return state
 
     def __setstate__(self, state):
-        """ 
+        """
         set all class elements.
         """
         for k, v in state.items():
@@ -105,6 +105,24 @@ class XMolecule(PotentialInterface):
             return value
         return wrapper_decorator
 
+    def __determineYesNo(val):
+        valU = val.upper()
+        if \
+                valU == "YES" \
+                or valU == "Y" \
+                or valU == "ON" \
+                or valU == "T" \
+                or valU == "TRUE":
+            return True
+        elif \
+                valU == "NO" \
+                or valU == "N" \
+                or valU == "OFF" \
+                or valU == "F" \
+                or valU == "FALSE":
+            return False
+        raise ValueError(f" Boolean option {val} unclear.")
+
     def __init__(self, parameters, **kwargs):
         super().__init__('XMolecule',
                          parameters.n_dof,
@@ -114,6 +132,13 @@ class XMolecule(PotentialInterface):
         atom_symbols = [units.atom_symbol(m) for m in parameters.masses]
         pos = parameters.coordinates
         n_atom = parameters.n_dof // 3
+        self.calcType = "singleState"
+        if "CIS" in parameters['XMolecule'].keys():
+            if __determineYesNo(parameters['XMolecule']["CIS"]):
+                self.calcType = "CIS"
+        if "gs_occ" in parameters['XMolecule'].keys():
+            if __determineYesNo(parameters['XMolecule']["gs_occ"]):
+                self.calcType = "KoopmanHole"
 
         ifile = open('input.in', 'w')
         for i in range(n_atom):
@@ -150,21 +175,80 @@ class XMolecule(PotentialInterface):
         self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
 
         for bead in range(R.shape[1]):
-
             self.xmol.set_geom(R[:, bead].tolist())
-            self._adiabatic_energy[0, bead] = self.xmol.energy
-            grad = np.array(self.xmol.gradient())
-            self._adiabatic_gradient[0, :, bead] = grad[:]
-
-        self._adiabatic_energy_centroid = self._adiabatic_energy[0, 0]
-        self._adiabatic_gradient_centroid = self._adiabatic_gradient[0, :, 0]
-
+            if self.calcType == "Koopmanhole":
+                holeProperties = self.xmolecule.hole_properties()
+                assert len(holeProperties) >= self.n_states, \
+                    f"Number of available holes in Koopmans space is smaller than requested number of states ( {len(holeProperties)} < {self.n_states})."
+                for i, (occi, ei, gi, naci) in enumerate(holeProperties):
+                    if i >= self.n_states:
+                        break
+                    self._adiabatic_energy[i, bead] = ei
+                    self._adiabatic_gradient[i, :, bead] = np.array(gi)
+                    for j, nacij in enumerate(naci):
+                        self._nac[i, j, :, bead] = nacij[:].copy()
+            elif self.calcType == "CIS":
+                # if option CIS was selected, we need to have a valid state argument
+                try:
+                    state = int(S)
+                except:
+                    raise ValueError(f"CIS state index {S} cannot be read")
+                en, gr, nacs = self.xmolecule.CIS_energy_gradient_nacs(state)
+                assert en.shape[0] >= self.n_states, \
+                    f"Number of available states in CIS space smaller than requested ( {en.shape[0]} < {self.n_states})."
+                self._adiabatic_energy[:, bead] = en[0:nstates].copy()
+                self._adiabatic_gradient[:, :,
+                                         bead] = grad[0:nstates, :].copy()
+                self._nac[:, :, :, bead] = nacs[:, :, :].copy()
+            elif self.calcType == "singleState":
+                self._adiabatic_energy[0, bead] = self.xmol.energy
+                grad = np.array(self.xmol.gradient())
+                self._adiabatic_gradient[0, :, bead] = grad[:]
+        # set centroid values to values of the first bead
+        self._adiabatic_energy_centroid = self._adiabatic_energy[:, 0]
+        self._adiabatic_gradient_centroid = self._adiabatic_gradient[:, :, 0]
+        if self.n_states > 1:
+            self._nac_centroid = self._nac[:, :, :, 0]
         return
+
+    @__check_xmol
+    def set_occ(self, occ):
+        """
+        Set occupation number to given configuration.
+
+        Input Parameter:
+        -------------------
+        occ: list of occupation numbers with values = 0,1,2
+        """
+        # make sure that occ has the same shape as what is returned from get_occ()
+        currentOcc = self.xmol.get_occ()
+        occ = (occ + len(currentOcc) * [0])[:len(currentOcc)]
+        for o in occ:
+            assert isinstance(o, int), f"configuration {occ} not valid."
+            assert 0 <= o, f"configuration {occ} not valid."
+            assert o <= 2, f"configuration {occ} not valid."
+
+        self.xmol.set_occ(occ)
+
+    @__check_xmol
+    def get_occ(self):
+        """
+        Returns occupation number.
+
+        Returns:
+        ----------
+        occ: list of occupation numbers with values = 0,1,2
+        """
+        return self.xmol.get_occ()
 
     @__check_xmol
     def getPartialCharges(self, chargetype='mulliken'):
         """
         Returns current partial charges of the molecule accoring to given method.
+        Returns:
+        ----------
+        partialcharges : list of floats len= number of atoms
+                         partial charge for each atom
         """
         if chargetype == 'mulliken':
             return self.xmol.mullikencharge()
@@ -176,6 +260,13 @@ class XMolecule(PotentialInterface):
     def getPopulation(self):
         """
         Returns current Population Analysis data.
+        Returns:
+        ----------
+        population : list of populations for each molecular orbital:
+                     [pop_orb] (len = n_orb),
+                     where pop_orb is a list of floats, len = n_atoms,
+                     where the floats are atomic populations for the
+                     respective orbital
         """
         return self.xmol.population()
 
@@ -183,6 +274,9 @@ class XMolecule(PotentialInterface):
     def getOrbitalEnergies(self):
         """
         Returns current Orbital Energies.
+        Returns:
+        ----------
+        orbital_energies : list of orbital energies. len = number of orbitals
         """
         return self.xmol.orbital_energies()
 
@@ -190,6 +284,10 @@ class XMolecule(PotentialInterface):
     def getBondOrders(self, botype='Meyer'):
         """
         Returns current BondOrder Matrix of the molecule accoring to given method.
+        Returns:
+        ---------
+        bondorder_values: 2-dimensional list, shape=(n_atom,n_atom)
+                          containing bondorder values between atoms
         """
         if botype == 'Meyer':
             return self.xmol.bondorder()
@@ -201,12 +299,12 @@ class XMolecule(PotentialInterface):
     def getAbsorptionCrossSections(self):
         """
         Returns absorption cross sections between current molecular orbitals
-
-        aCS[i,j] = absorption cross section from MO i to j
-
-        Spin orbital factor included.
-
-        The corresponding energy for the absorption can be obtained from the MO energy difference.
+        Returns:
+        ----------
+        aCS : 2-dimensional list (shape = n_orbitals,n_orbitals)
+              aCS[i][j] is the absorption cross section from MO i to j
+              Spin orbital factor included.
+              The corresponding energy for the absorption can be obtained from the MO energy difference.
         """
 
         return self.xmol.absorptioncs()
@@ -215,20 +313,26 @@ class XMolecule(PotentialInterface):
     def getFluorescenceRates(self):
         """
         Returns fluorescence rates between current molecular orbitals
-
-        fluoRate[i,j] = fluorescence rate from MO i to j
-
-        Spin orbital factor included.
-
-        The corresponding energy for the fluorescence photon can be obtained from the MO energy difference.
+        Returns:
+        ----------
+        fluoRate : 2-dimensional list (shape = n_orbitals,n_orbitals)
+              fluoRate[i][j] = fluorescence rate from MO i to j
+              Spin orbital factor included.
+              The corresponding energy for the absorption can be obtained from the MO energy difference.
         """
-
         return self.xmol.fluorescencerates()
 
     @__check_xmol
     def getRates(self):
         """
         Obtain rates and cross sections at current position.
+        Returns:
+        ----------
+        process_data: list of tuples (tag, final_occ, value, E_eV)
+                      tag (char) inidcates the process type ('P','A','F')
+                      final_occ (list of ints) are the final occupation numbers
+                      values (float) is the rate or cross section
+                      E_eV (int) is the transition energy in eV
         """
 
         return self.xmol.process()
@@ -237,10 +341,9 @@ class XMolecule(PotentialInterface):
 # FROM CDTK
 # things below need to be implemented
 
-
     def hole_efields(self, X, x0):
         """
-        Energy and electric field for single-hole Koopmans' theorem calculations.        instead of xmol return xmol_state.
+        Energy and electric field for single-hole Koopmans' theorem calculations.       
 
 
         Input:
@@ -273,187 +376,21 @@ class XMolecule(PotentialInterface):
 
         return occ, e, efield
 
-    def set_occ(self, state):
-        """
-        Set occupation number to given state.
-        """
-
-        self.xmolecule.set_occ(state)
-
-    def get_occ(self):
-        """
-        Get occupation number 
-        """
-
-        return self.xmolecule.get_occ()
-
-    def hole_properties(self, X, Time=0.0, **opts):
-        """
-        Energy, gradient, non-adiabatic coupling for single-hole Koopmans' theorem calculations.
-
-        Input:
-        X   -- 3N array of atomic positions, in Bohr (au)
-
-        Output:
-        e   -- Array of energies for all single-hole states in atomic units (hartree)
-        g   -- Array of 3N gradient for all single-hole states in atomic units
-        nac -- 2D array of 3N non-adiabatic coupling between all single-hole states in atomic units
-        """
-
-        # pass on geometry in Bohr
+    def CI_energy(self, X, Time=0.0, state=None, **opts):
         self.xmolecule.set_geom(X.tolist())
-        l = self.xmolecule.hole_properties()
-
-        nstates = len(l)
-        ncoords = len(X.tolist())
-
-        occ = []
-        e = np.zeros(nstates)
-        g = np.zeros((nstates, ncoords))
-        nac = {}
-
-        for i, li in enumerate(l):
-            occi = li[0]
-            ei = li[1]
-            gi = li[2]
-            naci = li[3]
-            occ.append(occi)
-            e[i] = ei
-            g[i] = np.array(gi)
-            for j, nacij in enumerate(naci):
-                nac[(i,j)] = np.array(nacij)
-#            nac[i] = np.array(naci)
-        return occ, e, g, nac
-
-    def CI_energy(self, X, Time=0.0,state=None, **opts):        
-        self.xmolecule.set_geom(X.tolist())
-        en=np.array(self.xmolecule.CI_energies())
+        en = np.array(self.xmolecule.CI_energies())
         if(state != None):
             return(en)
         else:
             return(en[state])
 
-    def CI_gradient(self, X, Time=0.0,state=None, **opts):        
-        if state==None:
-            state=0
+    def CI_gradient(self, X, Time=0.0, state=None, **opts):
+        if state == None:
+            state = 0
         # only along z-direction
-        g=nderiv.gradient(lambda x: self.CI_energy(x,state=state), X ,ms=np.array([[0,0,1,0,0,-1]]),step=0.005,fast=True)
-        G=np.zeros(len(X))
-        G[2]=0.5*g[0]
-        G[5]=-0.5*g[0]
-        return(G)                
-
-    def CIS_properties(self, X, Time=0.0,state=0, **opts):        
-        """
-        Energy, gradient, non-adiabatic coupling for CIS states.
-
-        Input:
-        X   -- 3N array of atomic positions, in Bohr (au)
-        state   -- state index
-        
-        Output:
-        e   -- Array of energies for all single-hole states in atomic units (hartree)
-        g   -- Array of 3N gradient for all single-hole states in atomic units
-        nac -- 2D array of 3N non-adiabatic coupling between all single-hole states in atomic units
-        """
-        # pass on geometry in Bohr
-        self.xmolecule.set_geom(X.tolist())
-        nstates = self.nstates
-        ncoords = len(X.tolist())
-
-        en,gr,nacs=self.xmolecule.CIS_energy_gradient_nacs(state)        
-        state_labels = []
-        nac = {}
-        e = en[0:nstates].copy()
-        g = gr[0:nstates,:].copy()
-        
-        for i in range(0,nstates):
-            state_labels.append(i)
-            for j in range(0,nstates):
-                nac[(i,j)] = nacs[i,j,:].copy()
-        del nacs
-        del en
-        del gr
-
-#        import gc
-#        gc.collect()
-
-############# test
-        # e = np.zeros(nstates)
-        # g = np.zeros((nstates, ncoords))
-        # nac = {}
-        # state_labels = []
-        # for i in range(0,nstates):
-        #     state_labels.append(i)
-        #     for j in range(0,nstates):
-        #         nac[(i,j)] = 0.0
-
-
-        return state_labels, e, g, nac
-
-    def getGamma(self):
-        """
-        Obtain rates and cross sections at current position.
-        """
-
-        return self.xmolecule.process()
-
-
-    def getPartialCharges(self,chargetype='mulliken'):
-        """
-        Returns current partial charges of the molecule accoring to given method.
-        """
-        
-        if chargetype == 'mulliken':
-            return self.xmolecule.mullikencharge()
-        else:
-            print("Charge type not implemented in XMolecule Interface")
-            exit(-1)
-
-    def getPopulation(self):
-        """
-        Returns current Population Analysis data.
-        """        
-        return self.xmolecule.population()
-
-    def getOrbitalEnergies(self):
-        """
-        Returns current Orbital Energies.
-        """        
-        return self.xmolecule.orbital_energies()
-
-    def getBondOrders(self,botype='Meyer'):
-        """
-        Returns current BondOrder Matrix of the molecule accoring to given method.
-        """        
-        if botype == 'Meyer':
-            return self.xmolecule.bondorder()
-        else:
-            print("Charge type not implemented in XMolecule Interface")
-            exit(-1)
-
-    def getAbsorptionCrossSections(self):
-        """
-        Returns absorption cross sections between current molecular orbitals
-
-        aCS[i,j] = absorption cross section from MO i to j
-
-        Spin orbital factor included.
-
-        The corresponding energy for the absorption can be obtained from the MO energy difference.
-        """
-
-        return self.xmolecule.absorptioncs()
-
-    def getFluorescenceRates(self):
-        """
-        Returns fluorescence rates between current molecular orbitals
-
-        fluoRate[i,j] = fluorescence rate from MO i to j
-
-        Spin orbital factor included.
-
-        The corresponding energy for the fluorescence photon can be obtained from the MO energy difference.
-        """
-
-        return self.xmolecule.fluorescencerates()
+        g = nderiv.gradient(lambda x: self.CI_energy(x, state=state), X, ms=np.array(
+            [[0, 0, 1, 0, 0, -1]]), step=0.005, fast=True)
+        G = np.zeros(len(X))
+        G[2] = 0.5*g[0]
+        G[5] = -0.5*g[0]
+        return(G)

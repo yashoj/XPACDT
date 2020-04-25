@@ -68,11 +68,62 @@ class XMoleculeTest(unittest.TestCase):
 
     def test_getPartialCharges(self):
         self.assertTrue(
-            np.allclose(
-                self.XMolecule.getPartialCharges(chargetype='mulliken'),
-                np.array(
-                    [0.5011398635072679, 0.46777795273720535, -0.968917816244451])
-            ))
+            len(self.XMolecule.getPartialCharges(chargetype='mulliken')) == 3
+        )
+
+    def test_getPopulation(self):
+        self.assertTrue(
+            np.array(self.XMolecule.getPopulation()).shape == (13, 3)
+        )
+
+    def test_getBondOrders(self):
+        self.assertTrue(
+            np.array(self.XMolecule.getBondOrders()).shape == (3, 3)
+        )
+
+    def test_getAbsorptionCrossSections(self):
+        self.assertTrue(
+            np.array(self.XMolecule.getAbsorptionCrossSections()
+                     ).shape == (13, 13)
+        )
+
+    def test_getFluorescenceRates(self):
+        self.assertTrue(
+            np.array(self.XMolecule.getFluorescenceRates()).shape == (13, 13)
+        )
+
+    def test_getRates(self):
+        process = self.XMolecule.getRates()
+        for p in process:
+            self.assertTrue(len(p) == 4)
+            self.assertTrue(p[0] == b'P' or p[0] == b'A' or p[0] == b'F')
+
+    def test_getocc(self):
+        occ = self.XMolecule.get_occ()
+        self.assertTrue(occ[0:7], [2, 2, 2, 2, 2, 0, 0])
+
+    def test_setocc(self):
+        with self.assertRaises(AssertionError):
+            self.XMolecule.set_occ([1, 2, 2, 2, -1])
+        with self.assertRaises(AssertionError):
+            self.XMolecule.set_occ([2, 2, 3, 2, 2])
+        with self.assertRaises(AssertionError):
+            self.XMolecule.set_occ([2, np.Inf, 2, 2, 2])
+        self.XMolecule.set_occ([1, 2, 2, 2, 2])
+        occ = self.XMolecule.get_occ()
+        self.assertTrue(occ[0:7], [1, 2, 2, 2, 2, 0, 0])
+        self.XMolecule.set_occ([2, 2, 2, 2, 2])
+        occ = self.XMolecule.get_occ()
+        R = self.parameters.coordinates
+        self.XMolecule._calculate_adiabatic_all(R)
+        energy = self.XMolecule._adiabatic_energy
+        occ[0] = occ[0] - 1
+        self.XMolecule.set_occ(occ)
+        occ[0] = occ[0] + 1
+        self.XMolecule.set_occ(occ)
+        self.assertTrue(
+            abs(self.XMolecule._adiabatic_energy
+                - energy) < 1e-10)
 
     def test_calculate_adiabatic_all(self):
         R = self.parameters.coordinates

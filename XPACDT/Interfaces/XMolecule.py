@@ -63,6 +63,24 @@ class XMolecule(PotentialInterface):
 
     """
 
+    def __determineYesNo(self, val):
+        valU = val.upper()
+        if \
+                valU == "YES" \
+                or valU == "Y" \
+                or valU == "ON" \
+                or valU == "T" \
+                or valU == "TRUE":
+            return True
+        elif \
+                valU == "NO" \
+                or valU == "N" \
+                or valU == "OFF" \
+                or valU == "F" \
+                or valU == "FALSE":
+            return False
+        raise ValueError(f" Boolean option {val} unclear.")
+
     def __getstate__(self):
         """
         get dictionary of all class elements.
@@ -105,55 +123,55 @@ class XMolecule(PotentialInterface):
             return value
         return wrapper_decorator
 
-    def __determineYesNo(val):
-        valU = val.upper()
-        if \
-                valU == "YES" \
-                or valU == "Y" \
-                or valU == "ON" \
-                or valU == "T" \
-                or valU == "TRUE":
-            return True
-        elif \
-                valU == "NO" \
-                or valU == "N" \
-                or valU == "OFF" \
-                or valU == "F" \
-                or valU == "FALSE":
-            return False
-        raise ValueError(f" Boolean option {val} unclear.")
-
     def __init__(self, parameters, **kwargs):
-        super().__init__('XMolecule',
-                         parameters.n_dof,
-                         # max_n_beads=max(parameters.n_beads),
-                         # primary_basis='adiabatic'
-                         )
         atom_symbols = [units.atom_symbol(m) for m in parameters.masses]
         pos = parameters.coordinates
         n_atom = parameters.n_dof // 3
         self.calcType = "singleState"
+        # todo: xmolecule does not distinguish between upper / lower case
+        # xpacdt does!
         if "CIS" in parameters['XMolecule'].keys():
-            if __determineYesNo(parameters['XMolecule']["CIS"]):
+            if self.__determineYesNo(parameters['XMolecule']["CIS"]):
                 self.calcType = "CIS"
         if "gs_occ" in parameters['XMolecule'].keys():
-            if __determineYesNo(parameters['XMolecule']["gs_occ"]):
+            if self.__determineYesNo(parameters['XMolecule']["gs_occ"]):
                 self.calcType = "KoopmanHole"
 
         ifile = open('input.in', 'w')
         for i in range(n_atom):
             ifile.write(
                 f'{atom_symbols[i*3]}    {pos[i*3,0]:+.10f}    {pos[i*3+1,0]:+.10f}    {pos[i*3+2,0]:+.10f}\n')
-
         if "n_dof" in parameters['XMolecule'].keys():
             parameters['XMolecule'].pop('n_dof')
+
         # Iterate over entries and set in XMolecule input file.
         for k in parameters["XMolecule"].keys():
             ifile.write(k + '=' + parameters["XMolecule"][k] + ' \n')
         ifile.close()
-
         self.xmol = XM.xmol()
         self.xmol.init()
+
+        # determine number of states
+        n_states = 0
+        if "nstates" in parameters['XMolecule'].keys():
+            n_states = int(parameters['XMolecule']["nstates"])
+        else:
+            if self.calcType == "CIS":
+                energies, grads, nacs = self.xmol.CIS_energy_gradient_nacs(
+                    state)
+                n_states = energies.shape
+            elif self.calcType == "Koopmanhole":
+                holeProperties = self.xmol.hole_properties()
+                n_states = len(holeProperties)
+            elif self.calcType == "singleState":
+                n_states = 1
+
+        super().__init__('XMolecule',
+                         parameters.n_dof,
+                         n_states=n_states,
+                         max_n_beads=max(parameters.n_beads),
+                         primary_basis='adiabatic'
+                         )
 
     @__check_xmol
     def _calculate_adiabatic_all(self, R, S=None):
@@ -171,13 +189,15 @@ class XMolecule(PotentialInterface):
             and thus defaults to None.
         """
 
-        self._adiabatic_energy = np.zeros((1, R.shape[1]))
-        self._adiabatic_gradient = np.zeros_like(R[np.newaxis, :])
+        self._adiabatic_energy = np.zeros((self.n_states, R.shape[1]))
+        self._adiabatic_gradient = np.zeros((self.n_states, self.n_dof,
+                                             self.max_n_beads))
 
+        print(f"state : {S}")
         for bead in range(R.shape[1]):
             self.xmol.set_geom(R[:, bead].tolist())
             if self.calcType == "Koopmanhole":
-                holeProperties = self.xmolecule.hole_properties()
+                holeProperties = self.xmol.hole_properties()
                 assert len(holeProperties) >= self.n_states, \
                     f"Number of available holes in Koopmans space is smaller than requested number of states ( {len(holeProperties)} < {self.n_states})."
                 for i, (occi, ei, gi, naci) in enumerate(holeProperties):
@@ -189,17 +209,23 @@ class XMolecule(PotentialInterface):
                         self._nac[i, j, :, bead] = nacij[:].copy()
             elif self.calcType == "CIS":
                 # if option CIS was selected, we need to have a valid state argument
-                try:
-                    state = int(S)
-                except:
-                    raise ValueError(f"CIS state index {S} cannot be read")
-                en, gr, nacs = self.xmolecule.CIS_energy_gradient_nacs(state)
-                assert en.shape[0] >= self.n_states, \
+                if S is None:
+                    state = 0
+                else:
+                    try:
+                        state = int(S)
+                    except:
+                        raise ValueError(f"CIS state index {S} cannot be read")
+                energies, grads, nacs = self.xmol.CIS_energy_gradient_nacs(
+                    state)
+                assert energies.shape[0] >= self.n_states, \
                     f"Number of available states in CIS space smaller than requested ( {en.shape[0]} < {self.n_states})."
-                self._adiabatic_energy[:, bead] = en[0:nstates].copy()
+                self._adiabatic_energy[:,
+                                       bead] = energies[0:self.n_states].copy()
                 self._adiabatic_gradient[:, :,
-                                         bead] = grad[0:nstates, :].copy()
-                self._nac[:, :, :, bead] = nacs[:, :, :].copy()
+                                         bead] = grads[0:self.n_states, :].copy()
+                self._nac[:, :, :, bead] = nacs[0:self.n_states,
+                                                0:self.n_states, :].copy()
             elif self.calcType == "singleState":
                 self._adiabatic_energy[0, bead] = self.xmol.energy
                 grad = np.array(self.xmol.gradient())

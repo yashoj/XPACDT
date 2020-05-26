@@ -75,6 +75,11 @@ def start():
     parser.add_argument("-e", "--energy", action="store_true", dest="energy",
                         required=False, help=e_help, default=False)
 
+    hop_help = "Generate logfile for successful and attempted surface hops."\
+               " This only applies for surface hopping electrons. Default: False."
+    parser.add_argument("--hops", action="store_true", dest="hops",
+                        required=False, help=hop_help, default=False)
+
     args = parser.parse_args()
 
     # Formatting style
@@ -261,6 +266,35 @@ def write_energy_rp(log_nuclei, outfile, width, prec):
     return
 
 
+def write_surface_hops(log_nuclei, outfile, width, prec):
+    """ Write successful and attempted hopping events to outfile with
+    given precision. This only applies to surface hopping electrons.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
+    # !!! Should this be generated here? This is very specific to SH?
+
+    assert (log_nuclei.Electrons.name == "SurfaceHoppingElectrons"), \
+           ("Generating hopping log only makes sense for surface hopping"
+            " electrons.")
+
+    hop_status = log_nuclei.electrons.hop_status
+
+    if hop_status != "No hop":
+        outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                      width=width, prec=prec))
+        outfile.write(log_nuclei.electrons.hop_status)
+        outfile.write(" \n")
+    return
+
+
 def setup_outfiles(args):
     """Open output files based on command line arguments.
 
@@ -282,6 +316,8 @@ def setup_outfiles(args):
     if (args.energy):
         outfiles['energy'] = open('energy.log', 'w')
         outfiles['energy_rp'] = open('energy_rp.log', 'w')
+    if (args.hop):
+        outfiles['surface_hops'] = open('hops.log', 'w')
 
     return outfiles
 

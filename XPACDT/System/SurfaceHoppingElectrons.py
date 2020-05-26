@@ -69,6 +69,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
     rescaling_type
     evolution_picture
     ode_solver
+    hop_status
 
     References
     ----------
@@ -140,6 +141,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                           + parameters.get("SurfaceHoppingElectrons").get("initial_state"))
 
         self.__current_state = initial_state
+        self.__hop_status = 'No hop'
 
         # The order chosen is transposed compared to that in interfaces with
         # n_beads as first axis. This is done for more efficient memory access
@@ -219,6 +221,19 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         """{'runga_kutta', 'unitary', 'scipy'} : String defining type of
         velocity rescaling to be used."""
         return self.__ode_solver
+
+    @property
+    def hop_status(self):
+        """string : Whether surface hopping took place or not during a
+        particular time step. This is set to 'No hop' before every step and
+        depending upon successful or unsuccessful hop, it is changed to
+        'Successful hop' or 'Attempted hop' respectively, followed by the
+        states involved. """
+        return self.__hop_status
+
+    @hop_status.setter
+    def hop_status(self, s):
+        self.__hop_status = s
 
     def energy(self, R, centroid=False):
         """Calculate the electronic energy at the current geometry and active
@@ -562,6 +577,9 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         # Only advance by full time step after the nuclear step.
         if (kwargs.get('step_index') != 'after_nuclei'):
             return
+
+        # Set no hop before each step
+        self.hop_status = 'No hop'
 
         self._D = self._get_kinetic_coupling_matrix(R, P)
         self._H_e_total = self._get_H_matrix(R, self._D)
@@ -988,7 +1006,12 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         if (new_state is not None):
             should_change = self._momentum_rescaling(R, P, new_state)
             if should_change:
+                self.hop_status = 'Successful hop from state {:d} to state {:d}'.format(self.current_state,
+                                                                                    new_state)
                 self.__current_state = new_state
+            else:
+                self.hop_status = 'Attempted hop from state {:d} to state {:d}'.format(self.current_state,
+                                                                                    new_state)
 
         return
 

@@ -31,6 +31,7 @@
 """ Module that implements free (without any external potential) or harmonic
 potential ring polymer sampling needed for RPMD initialization."""
 
+import copy
 import numpy as np
 
 import XPACDT.Tools.NormalModes as nm
@@ -75,19 +76,19 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
     if 'add_harmonic' in sampling_parameters:
         w_o = sampling_parameters.get('w_o', None)
 
-        # T
-        if w_o is not None:
-            w_o = [float(i) for i in w_o.split()]
+        # TODO : Check w_o is of length n_dof
+        # if w_o is not None:
+        #    w_o = [float(i) for i in w_o.split()]
 
-        else:
-            w_o = nm.get_sampling_modes(system, parameters)[0]
+        # else:
+        #    w_o = nm.get_sampling_modes(system, parameters)[0]
 
         # Need to assert that omega are not -ve!!! Should this be done only at minima.
-        if (w_o <= 0).any():
-            raise RuntimeError("\nXPACDT: Negative frequency given for sampling. "
-                               + "omega = " + str(w_o)
-                               + " Please make sure that the input geometry"
-                               " is optimized.")
+        #if (w_o <= 0).any():
+        #    raise RuntimeError("\nXPACDT: Negative frequency given for sampling. "
+        #                       + "omega = " + str(w_o)
+        #                       + " Please make sure that the input geometry"
+        #                       " is optimized.")
     else:
         w_o = None
 
@@ -100,7 +101,7 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
         rp_coord = np.zeros((system.nuclei.n_dof, max(system.nuclei.n_beads)))
         rp_momenta = np.zeros((system.nuclei.n_dof, max(system.nuclei.n_beads)))
 
-        for i in range(.n_dof):
+        for i in range(system.nuclei.n_dof):
             rp_coord[i] = RPtransform.sample_free_rp_coord(
                 system.nuclei.n_beads[i], system.nuclei.masses[i], system.nuclei.beta,
                 system.nuclei.x_centroid, w_o)

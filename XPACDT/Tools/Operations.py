@@ -64,7 +64,7 @@ class Operations(object):
 
     Attributes:
     -----------
-    operations_dict
+    operations_list
     """
 
     def __init__(self, operation_string, print_help=False):
@@ -80,8 +80,8 @@ class Operations(object):
                 print("\n")
             return
 
-        # Dictionary of operations to be performed.
-        self.__operations_dict = {}
+        # List of operations to be performed.
+        self.__operations_list = []
 
         if ('+' not in operation_string) and (not print_help):
             raise RuntimeError("XPACDT: No operation given, instead: "
@@ -90,39 +90,36 @@ class Operations(object):
         # The split has '' as a first results on something like
         # '+pos'.split('+'), and we need to ignore that one.
         for i, op_string in enumerate(operation_string.split('+')[1:]):
-            # Key index needed for unique key.
-            key_index = "_{:04d}".format(i)
             ops = op_string.split()
 
             # Match the different operations here and store the argument parsed
-            # object in 'operations_dict'.
-            # TODO: Better way than having this unique index?
+            # object in 'operations_list'.
             if ops[0] == 'pos' or ops[0] == 'position':
-                self.__operations_dict['position' + key_index] = _arguments_position(ops[1:])
-
+                self.__operations_list.append(('_position',
+                                               _arguments_position(ops[1:])))
             elif ops[0] == 'mom' or ops[0] == 'momentum':
-                self.__operations_dict['momentum' + key_index] = _arguments_momentum(ops[1:])
-
+                self.__operations_list.append(('_momentum',
+                                               _arguments_momentum(ops[1:])))
             elif ops[0] == 'vel' or ops[0] == 'velocity':
-                self.__operations_dict['momentum' + key_index] = _arguments_momentum(ops[1:] + ['-v'])
-
+                self.__operations_list.append(('_momentum',
+                                               _arguments_momentum(ops[1:] + ['-v'])))
             elif ops[0] == 'state':
-                self.__operations_dict['electronic_state' + key_index] = _arguments_electronic_state(ops[1:])
-
+                self.__operations_list.append(('_electronic_state',
+                                               _arguments_electronic_state(ops[1:])))
             elif ops[0] == 'energy':
-                self.__operations_dict['energy' + key_index] = _arguments_energy(ops[1:])
+                self.__operations_list.append(('_energy',
+                                               _arguments_energy(ops[1:])))
             else:
                 raise RuntimeError("\nXPACDT: The given operation is not"
                                    "implemented. " + " ".join(ops))
 
     @property
-    def operations_dict(self):
-        """ dict: Contains all operations to be performed. The keys are the
-        operation functions (without the initial '_' but with a unique four
-        digit number attached at the end tp make it unique) and the values are
-        their respective argparse.Namespace objects needed for the functions.
+    def operations_list(self):
+        """ list: Contains all operations to be performed. Each element is a
+        tuple with operation function name and their respective
+        argparse.Namespace objects.
         """
-        return self.__operations_dict
+        return self.__operations_list
 
     def apply_operation(self, log_nuclei):
         """ Apply requested operations in sequence and get the final value as
@@ -141,12 +138,8 @@ class Operations(object):
         """
         value = 1.0
 
-        for op, options in self.operations_dict.items():
-            # Remove the trailing unque index number which are the last 5 characters.
-            operation = '_' + op[:-5]
-
-            value *= getattr(sys.modules[__name__], operation)(options,
-                                                               log_nuclei)
+        for op in self.operations_list:
+            value *= getattr(sys.modules[__name__], op[0])(op[1], log_nuclei)
 
         return np.array(value).flatten()
 
@@ -261,7 +254,8 @@ def _position(opts, log_nuclei):
         try:
             current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
         except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Cannot calculate distance between given sites. Maybe different number of dofs per site.")
+            raise type(e)(str(e) + "\nXPACDT: Cannot calculate distance between"
+                          " given sites. Maybe different number of dofs per site.")
 
     # if we want to project the distance/position onto a certain interval
     if opts.proj is not None:
@@ -386,11 +380,12 @@ def _momentum(opts, log_nuclei):
     current_value = log_nuclei.get_selected_quantities(opts.x1, quantity, opts.rpmd)
     if opts.x2 is not None:
         raise NotImplementedError("Implement relative momentum calculations, etc.")
-#        coordinate_2 = log_nuclei.parse_coordinate(opts.x2, quantity, opts.rpmd)
-#        try:
-#            current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
-#        except ValueError as e:
-#            raise type(e)(str(e) + "\nXPACDT: Cannot calculate relative momentum between given sites. Maybe different number of dofs per site.")
+        # coordinate_2 = log_nuclei.parse_coordinate(opts.x2, quantity, opts.rpmd)
+        # try:
+        #     current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
+        # except ValueError as e:
+        #     raise type(e)(str(e) + "\nXPACDT: Cannot calculate relative momentum"
+        #                   " between given sites. Maybe different number of dofs per site.")
 
     # if we want to project the distance/position onto a certain interval
     if opts.proj is not None:

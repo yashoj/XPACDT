@@ -365,7 +365,7 @@ def check_command(command, system):
                           "subsequent operations (e.g., mean or"
                           "historgram) together and that they are"
                           "treated as independent in the"
-                          "bootstrapping. op0:" + command['op0'] +
+                          "bootstrapping. op0:" + str(command.get('op0', None)) +
                           "; op:" + command['op'], RuntimeWarning)
     except ValueError as e:
         raise type(e)(str(e) + "\nXPACDT: If operands could not be broadcast"

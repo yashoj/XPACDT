@@ -281,7 +281,7 @@ def write_surface_hops(log_nuclei, outfile, width, prec):
     """
     # !!! Should this be generated here? This is very specific to SH?
 
-    assert (log_nuclei.Electrons.name == "SurfaceHoppingElectrons"), \
+    assert (log_nuclei.electrons.name == "SurfaceHoppingElectrons"), \
            ("Generating hopping log only makes sense for surface hopping"
             " electrons.")
 
@@ -316,7 +316,7 @@ def setup_outfiles(args):
     if (args.energy):
         outfiles['energy'] = open('energy.log', 'w')
         outfiles['energy_rp'] = open('energy_rp.log', 'w')
-    if (args.hop):
+    if (args.hops):
         outfiles['surface_hops'] = open('hops.log', 'w')
 
     return outfiles

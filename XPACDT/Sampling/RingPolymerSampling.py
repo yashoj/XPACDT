@@ -74,7 +74,7 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
 
     # Should w_o be a list for each dof??? Then in that case modes should not be selected.
     if 'add_harmonic' in sampling_parameters:
-        w_o = sampling_parameters.get('w_o', None)
+        w_o = float(sampling_parameters.get('w_o', None))
 
         # TODO : Check w_o is of length n_dof
         # if w_o is not None:

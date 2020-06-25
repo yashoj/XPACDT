@@ -64,6 +64,7 @@ class SurfaceHoppingTest(unittest.TestCase):
         self.assertEqual(sh_electrons_classical.rescaling_type, 'nac')
         self.assertEqual(sh_electrons_classical.evolution_picture, 'schroedinger')
         self.assertEqual(sh_electrons_classical.ode_solver, 'runga_kutta')
+        self.assertEqual(sh_electrons_classical.hop_status, 'No hop')
         return
 
     def test_energy(self):
@@ -2350,18 +2351,16 @@ class SurfaceHoppingTest(unittest.TestCase):
     def test_surface_hopping(self):
         # Test with 3 states
         params = infile.Inputfile("FilesForTesting/SystemTests/input_SH_classical_3_states.in")
-        sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
-                                                           params.masses,
-                                                           params.coordinates,
-                                                           params.momenta)
-        t = [0., 1., 2.]
-        a_kk = 0.5
-        b_jk = [np.array([0., 0.025, 0.03]), np.array([0., 0.05, 0.1]),
-                np.array([0., 0.075, 0.07])]
+
         # R is chosen where coupling in morse diabatic potentials is maximum
         # and P is chosen to be large enough to have enough energy to hop.
         R = np.array([[3.4]])
         P = np.array([[10.]])
+
+        t = [0., 1., 2.]
+        a_kk = 0.5
+        b_jk = [np.array([0., 0.025, 0.03]), np.array([0., 0.05, 0.1]),
+                np.array([0., 0.075, 0.07])]
 
         ### Hop from 1st state to other states above it
         params["SurfaceHoppingElectrons"]["initial_state"] = 0
@@ -2374,12 +2373,16 @@ class SurfaceHoppingTest(unittest.TestCase):
         # and random number should be 0.844421851, so no hop
         sh_classical_3_states._surface_hopping(R, P, t, a_kk, b_jk)
         self.assertTrue(sh_classical_3_states.current_state == 0)
+        self.assertEqual(sh_classical_3_states.hop_status, 'No hop')
 
         random.seed(1)
         # Now random number should be 0.13436424; so there is a hop to 2nd
         # state using the same probabilities
         sh_classical_3_states._surface_hopping(R, P, t, a_kk, b_jk)
         self.assertTrue(sh_classical_3_states.current_state == 1)
+
+        hop_status_ref = "Successful hop from state 0 to state 1"
+        self.assertEqual(sh_classical_3_states.hop_status, hop_status_ref)
 
         random.seed(3)
         params["SurfaceHoppingElectrons"]["initial_state"] = 0
@@ -2391,6 +2394,9 @@ class SurfaceHoppingTest(unittest.TestCase):
         # state using the same probabilities
         sh_classical_3_states._surface_hopping(R, P, t, a_kk, b_jk)
         self.assertTrue(sh_classical_3_states.current_state == 2)
+
+        hop_status_ref = "Successful hop from state 0 to state 2"
+        self.assertEqual(sh_classical_3_states.hop_status, hop_status_ref)
 
         ### Hop from 3rd state to other states below
         params["SurfaceHoppingElectrons"]["initial_state"] = 2
@@ -2405,6 +2411,9 @@ class SurfaceHoppingTest(unittest.TestCase):
         sh_classical_3_states._surface_hopping(R, P, t, a_kk, b_jk)
         self.assertTrue(sh_classical_3_states.current_state == 0)
 
+        hop_status_ref = "Successful hop from state 2 to state 0"
+        self.assertEqual(sh_classical_3_states.hop_status, hop_status_ref)
+
         params["SurfaceHoppingElectrons"]["initial_state"] = 2
         sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
                                                            params.masses,
@@ -2416,6 +2425,45 @@ class SurfaceHoppingTest(unittest.TestCase):
         # and random number should be 0.36995517, so hop to 2nd state
         sh_classical_3_states._surface_hopping(R, P, t, a_kk, b_jk)
         self.assertTrue(sh_classical_3_states.current_state == 1)
+
+        hop_status_ref = "Successful hop from state 2 to state 1"
+        self.assertEqual(sh_classical_3_states.hop_status, hop_status_ref)
+
+        # Even with P=0, there should still be hops from higher state to lower.
+        params["SurfaceHoppingElectrons"]["initial_state"] = 2
+        sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
+                                                           params.masses,
+                                                           params.coordinates,
+                                                           params.momenta)
+        b_jk = [np.array([0.0, 0.03, 0.03]), np.array([0., 0.3, 0.1]),
+                np.array([-0.05, 0.07, 0.07])]
+        # Again the probability should be [0., 0.7, 0.]
+        # and random number should be 0.6039200, so hop to 2nd state
+        sh_classical_3_states._surface_hopping(R, np.array([[0.]]), t, a_kk,
+                                               b_jk)
+        self.assertTrue(sh_classical_3_states.current_state == 1)
+
+        hop_status_ref = "Successful hop from state 2 to state 1"
+        self.assertEqual(sh_classical_3_states.hop_status, hop_status_ref)
+
+        ### Attempted hop with P=0 from lower state to higher one.
+        params["SurfaceHoppingElectrons"]["initial_state"] = 0
+        sh_classical_3_states = sh.SurfaceHoppingElectrons(params,
+                                                           params.masses,
+                                                           params.coordinates,
+                                                           params.momenta)
+        random.seed(1)
+        b_jk = [np.array([0., 0.025, 0.03]), np.array([0., 0.05, 0.1]),
+                np.array([0., 0.075, 0.07])]
+        # Probabilities should be [0, 0.2, 0.3]
+        # And the random number should be 0.13436424; so there is an attempt to
+        # hop to 2nd state, but since P=0, it should not be successful.
+        sh_classical_3_states._surface_hopping(R, np.array([[0.]]), t, a_kk,
+                                               b_jk)
+        self.assertTrue(sh_classical_3_states.current_state == 0)
+
+        hop_status_ref = "Attempted hop from state 0 to state 1"
+        self.assertEqual(sh_classical_3_states.hop_status, hop_status_ref)
 
         return
 

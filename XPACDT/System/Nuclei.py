@@ -175,7 +175,10 @@ class Nuclei(object):
 
     @momenta.setter
     def momenta(self, a):
-        self.__momenta = a.copy()
+        if a is not None:
+            self.__momenta = a.copy()
+        else:
+            self.__momenta = None
 
     @property
     def p_centroid(self):

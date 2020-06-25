@@ -62,7 +62,7 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
     nuclei = system.nuclei
 
     # TODO: are centroid momenta and RPMD needed?
-    if system.nuclei.momenta is None:
+    if nuclei.momenta is None:
         raise RuntimeError("\nXPACDT: Momenta not provided in system or input"
                            " file, but required in fixed sampling.")
 
@@ -74,7 +74,7 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
 
     # Should w_o be a list for each dof??? Then in that case modes should not be selected.
     if 'add_harmonic' in sampling_parameters:
-        w_o = sampling_parameters.get('w_o', None)
+        w_o = float(sampling_parameters.get('w_o', None))
 
         # TODO : Check w_o is of length n_dof
         # if w_o is not None:
@@ -93,26 +93,26 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
         w_o = None
 
     NMtransform_type = parameters.get('rpmd').get("nm_transform", "matrix")
-    RPtransform = RPtrafo.RingPolymerTransformations(system.nuclei.n_beads,
+    RPtransform = RPtrafo.RingPolymerTransformations(nuclei.n_beads,
                                                      NMtransform_type)
 
     systems = []
     for _ in range(n_sample):
-        rp_coord = np.zeros((system.nuclei.n_dof, max(system.nuclei.n_beads)))
-        rp_momenta = np.zeros((system.nuclei.n_dof, max(system.nuclei.n_beads)))
+        rp_coord = np.zeros((nuclei.n_dof, max(nuclei.n_beads)))
+        rp_momenta = np.zeros((nuclei.n_dof, max(nuclei.n_beads)))
 
-        for i in range(system.nuclei.n_dof):
+        for i in range(nuclei.n_dof):
             rp_coord[i] = RPtransform.sample_free_rp_coord(
-                system.nuclei.n_beads[i], system.nuclei.masses[i], system.nuclei.beta,
-                system.nuclei.x_centroid, w_o)
+                nuclei.n_beads[i], nuclei.masses[i], nuclei.beta,
+                nuclei.x_centroid, w_o)
 
             rp_momenta[i] = RPtransform.sample_free_rp_momenta(
-                system.nuclei.n_beads[i], system.nuclei.masses[i], system.nuclei.beta,
-                system.nuclei.p_centroid)
-
-        system.nuclei.coordinates = rp_coord.copy()
-        system.nuclei.momenta = rp_momenta.copy()
+                nuclei.n_beads[i], nuclei.masses[i], nuclei.beta,
+                nuclei.p_centroid)
 
         systems.append(copy.deepcopy(system))
+        systems[-1].nuclei.positions = rp_coord.copy()
+        systems[-1].nuclei.momenta = rp_momenta.copy()
+        systems[-1].do_log(init=True)
 
     return systems

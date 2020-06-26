@@ -569,13 +569,18 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         assert ('step_index' in kwargs), ("Step index not provided for surface"
                                           " hopping propagtion.")
+        assert ('step_count' in kwargs), ("Step count not provided for surface"
+                                          " hopping propagtion.")
 
         # Only advance by full time step after the nuclear step.
         if (kwargs.get('step_index') != 'after_nuclei'):
             return
 
-        # Set no hop before each step
-        self.__hop_status = 'No hop'
+        # Set status to no hop before step only for the first nuclear step.
+        # TODO: is there a better way than this (i.e. having this step_count)
+        #       so that hop status still contains hop info even when output_step > nuclear_step?
+        if (kwargs.get('step_count') == 0):
+            self.__hop_status = 'No hop'
 
         self._D = self._get_kinetic_coupling_matrix(R, P)
         self._H_e_total = self._get_H_matrix(R, self._D)

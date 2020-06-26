@@ -280,8 +280,6 @@ def write_surface_hops(log_nuclei, outfile, width, prec):
         Width and precicion for formatting the output.
     """
     # !!! Should this be generated here? This is very specific to SH?
-    # !!! Also this only works if output step == nuclear step
-
     assert (log_nuclei.electrons.name == "SurfaceHoppingElectrons"), \
            ("Generating hopping log only makes sense for surface hopping"
             " electrons.")

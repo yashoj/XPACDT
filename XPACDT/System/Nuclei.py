@@ -419,12 +419,14 @@ class Nuclei(object):
 
         for i in range(n_steps):
             self.electrons.step(self.positions, self.momenta, timestep,
-                                **{'step_index': 'before_nuclei'})
+                                **{'step_index': 'before_nuclei',
+                                   'step_count': i})
             self.positions, self.momenta = \
                 self.__propagator.propagate(self.positions, self.momenta,
                                             timestep, self.time + i*timestep)
             self.electrons.step(self.positions, self.momenta, timestep,
-                                **{'step_index': 'after_nuclei'})
+                                **{'step_index': 'after_nuclei',
+                                   'step_count': i})
 
         self.time += time_propagate
 

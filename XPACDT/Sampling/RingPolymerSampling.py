@@ -58,6 +58,7 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
     systems : (n_sample) list of XPACDT.Dynamics.System
         A list of n_sample copies of the given system.
     """
+    # !!! Here centroid x and p seem to be fixed! How to solve this?
 
     nuclei = system.nuclei
 
@@ -104,11 +105,11 @@ def do_RingPolymer_sampling(system, parameters, n_sample):
         for i in range(nuclei.n_dof):
             rp_coord[i] = RPtransform.sample_free_rp_coord(
                 nuclei.n_beads[i], nuclei.masses[i], nuclei.beta,
-                nuclei.x_centroid, w_o)
+                nuclei.x_centroid[i], w_o)
 
             rp_momenta[i] = RPtransform.sample_free_rp_momenta(
                 nuclei.n_beads[i], nuclei.masses[i], nuclei.beta,
-                nuclei.p_centroid)
+                nuclei.p_centroid[i])
 
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.positions = rp_coord.copy()

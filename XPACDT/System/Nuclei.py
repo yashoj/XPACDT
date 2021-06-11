@@ -264,10 +264,11 @@ class Nuclei(object):
 
     def make_sparse(self):
         """ Decrease size of the object for sparse logging.
-        Right now this removes the propagator object.
+        Right now this removes the propagator and pes object.
         """
 
         self.__propagator = None
+        self.electrons.pes = None
 
     def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system. This

@@ -52,7 +52,7 @@ def propagate(system, input_parameters, initiated=False):
         XPACDT representation of the given input file.
     initiated : bool, optional, default: False
         True if the system has been recently initiated for the real time propagation
-        from an input file (in xpacdt.py) 
+        from an input file (in xpacdt.py)
         False if the system read from file/been sampled before.
     """
 
@@ -100,6 +100,7 @@ def propagate(system, input_parameters, initiated=False):
     path_file = os.path.join(name_folder, name_file)
 
     while(system.nuclei.time < time_end):
+        # TODO: making sparse should be an input option with default True.
         system.step(timestep_output, sparse=True)
 
         if 'intermediate_write' in prop_parameters:

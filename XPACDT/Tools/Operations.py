@@ -516,10 +516,12 @@ def _electronic_state(opts, log_nuclei):
         Value obtained from state operation.
     """
 
-    if (opts.proj >= log_nuclei.electrons.pes.n_states):
-        raise ValueError("\nXPACDT: State to be projected onto is greater than"
-                         " the number of states. Note: State count starts from"
-                         " 0. Given state to project is: " + str(opts.proj))
+    # TODO: add PES for analysis which was removed for storing purposes.
+    if log_nuclei.electrons.pes is not None:
+        if (opts.proj >= log_nuclei.electrons.pes.n_states):
+            raise ValueError("\nXPACDT: State to be projected onto is greater than"
+                             " the number of states. Note: State count starts from"
+                             " 0. Given state to project is: " + str(opts.proj))
 
     current_value = log_nuclei.electrons.get_population(opts.proj, opts.basis)
 

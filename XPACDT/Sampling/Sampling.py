@@ -31,6 +31,7 @@
 """ This module defines all required routines to generate an initial set of
 systems for real-time propagation."""
 
+import bz2
 import glob
 import os
 import pickle
@@ -80,9 +81,14 @@ def sample(system, parameters, do_return=False):
     # Create or handle trajectory folder.
     n_samples = int(sampling_parameters.get('samples'))
     n_samples_required = n_samples
+    compressed = 'compressed_pickle' in system_parameters
 
+    if compressed:
+        default_file_name = 'pickle.bz2'
+    else:
+        default_file_name = 'pickle.dat'
     name_folder = system_parameters.get('folder')
-    file_name = system_parameters.get('picklefile', 'pickle.dat')
+    file_name = system_parameters.get('picklefile', default_file_name)
     if not os.path.isdir(name_folder):
         try:
             os.mkdir(name_folder)
@@ -130,7 +136,8 @@ def sample(system, parameters, do_return=False):
         # Add the existing samples if they exists.
         if 'add' in sampling_parameters:
             dirs = xtools.get_directory_list(name_folder, file_name)
-            for system in xtools.get_systems(dirs, file_name, None):
+            for system in xtools.get_systems(dirs, file_name, None,
+                                             compressed):
                 sampled_systems.append(system)
 
         return sampled_systems
@@ -149,8 +156,16 @@ def sample(system, parameters, do_return=False):
                 raise type(e)(str(e) + "\nXPACDT: Creation of trajectory"
                               " folder " + trj_folder + " failed!")
 
-            pickle.dump(sampled_systems[shift],
-                        open(os.path.join(trj_folder, file_name), 'wb'), -1)
+            filename_w_path = os.path.join(trj_folder, file_name)
+
+            if compressed:
+                out_file = bz2.BZ2File(filename_w_path, 'wb')
+            else:
+                out_file = open(filename_w_path, 'wb')
+
+            pickle.dump(sampled_systems[shift], out_file, -1)
+            out_file.close()
+
             shift += 1
 
     return

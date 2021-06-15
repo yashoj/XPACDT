@@ -33,9 +33,10 @@
 """ This module implements all required routines to propagate a given system in
 real time."""
 
+import bz2
 import os
-import sys
 import pickle
+import sys
 
 import XPACDT.Tools.Units as units
 
@@ -96,7 +97,12 @@ def propagate(system, input_parameters, initiated=False):
         except OSError:
             sys.stderr.write("Creation of trajectory folder failed!")
             raise
-    name_file = sys_parameters.get('picklefile', 'pickle.dat')
+
+    if 'compressed_pickle' in sys_parameters:
+        default_file_name = 'pickle.bz2'
+    else:
+        default_file_name = 'pickle.dat'
+    name_file = sys_parameters.get('picklefile', default_file_name)
     path_file = os.path.join(name_folder, name_file)
 
     while(system.nuclei.time < time_end):
@@ -104,6 +110,15 @@ def propagate(system, input_parameters, initiated=False):
         system.step(timestep_output, sparse=True)
 
         if 'intermediate_write' in prop_parameters:
-            pickle.dump(system, open(path_file, 'wb'), -1)
+            if 'compressed_pickle' in sys_parameters:
+                with bz2.BZ2File(path_file, 'wb') as out_file:
+                    pickle.dump(system, out_file, -1)
+            else:
+                pickle.dump(system, open(path_file, 'wb'), -1)
 
-    pickle.dump(system, open(path_file, 'wb'), -1)
+    # TODO: make this into a single function!
+    if 'compressed_pickle' in sys_parameters:
+        with bz2.BZ2File(path_file, 'wb') as out_file:
+            pickle.dump(system, out_file, -1)
+    else:
+        pickle.dump(system, open(path_file, 'wb'), -1)

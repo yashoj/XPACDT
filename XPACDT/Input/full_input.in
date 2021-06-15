@@ -24,7 +24,8 @@ electrons = SurfaceHoppingElectrons  # (AdiabaticElectrons (default), SurfaceHop
                                      # The name of the section must match the name given here.
 
 seed = 0                    # integer: Seed for random number generator; else the current time is used.
-picklefile = NameHere.dat   # string: Name of pickle file - else: pickle.dat
+picklefile = NameHere.dat   # string: Name of pickle file - else: pickle.dat or pickle.bz2 (if 'compressed_pickle' option is used.)
+compressed_pickle           # if given, compressed pickle file is outputted using bzip2 algorithm.
 time = 0 fs                 # float: The current time of the system in either fs or au.
 $end
 

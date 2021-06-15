@@ -35,6 +35,7 @@ displaying.
 """
 
 import argparse
+import bz2
 import math
 import numpy as np
 import os
@@ -58,10 +59,19 @@ def start():
     parser.add_argument("-i", "--input", type=str, dest="PickleFile",
                         required=False, help=i_help, default='pickle.dat')
 
+    c_help = "If the input pickle file is in compressed '.bz2' format," \
+        " use this option."
+    parser.add_argument("-c", "--compressed", action="store_true", dest="compressed",
+                        required=False, help=c_help, default=False)
+
     args = parser.parse_args()
 
     # Get input file and folder
-    system = pickle.load(open(args.PickleFile, 'rb'))
+    if args.compressed:
+        system = pickle.load(bz2.BZ2File(args.PickleFile, 'rb'))
+    else:
+        system = pickle.load(open(args.PickleFile, 'rb'))
+
     folder = os.path.dirname(os.path.abspath(args.PickleFile))
 
     # Generate XYZ file

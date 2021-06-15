@@ -82,8 +82,15 @@ def do_analysis(parameters, systems=None):
 
     # Obtain an iterator over all systems
     folder = parameters.get('system').get('folder')
+    compressed = 'compressed_pickle' in parameters.get('system')
     if systems is None:
-        file_name = parameters.get('system').get('picklefile', 'pickle.dat')
+        if compressed:
+            default_file_name = 'pickle.bz2'
+        else:
+            default_file_name = 'pickle.dat'
+
+        file_name = parameters.get('system').get('picklefile',
+                                                 default_file_name)
         dirs = xtools.get_directory_list(folder, file_name)
     else:
         dirs = None
@@ -91,7 +98,7 @@ def do_analysis(parameters, systems=None):
 
     n_systems = 0
     # Calculate 'observables' for each system
-    for system in xtools.get_systems(dirs, file_name, systems):
+    for system in xtools.get_systems(dirs, file_name, systems, compressed):
         # do different stuff for each command
         for key, command in parameters.commands.items():
             # For now, 'steps_to_use' is generated for each system. This is in

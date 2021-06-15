@@ -30,6 +30,7 @@
 
 """ Module containing some functions customized to the need of XPACDT."""
 
+import bz2
 import os
 import pickle
 
@@ -65,7 +66,7 @@ def get_directory_list(folder='./', file_name=None):
     return dirs
 
 
-def get_systems(dirs, file_name, systems):
+def get_systems(dirs, file_name, systems, compressed=False):
     """ Obtain a generator over all XPACDT.System to sweep through them. This
     is needed for example in the analysis part.
     The systems are either given as a list of systems or read from pickle
@@ -77,9 +78,12 @@ def get_systems(dirs, file_name, systems):
         Directories to read the pickle files from.
     file_name : String
         Name of the pickle files to be read.
-    systems: list of XPACDT.System
+    systems : list of XPACDT.System
         A list of systems to perform the analysis on. If not given, then the
         systems are read from file.
+    compressed : bool, default False
+        Whether or not compressed pickle file (with '.bz2' format) is to be
+        used or not.
 
     Returns
     -------
@@ -87,7 +91,12 @@ def get_systems(dirs, file_name, systems):
     """
 
     if dirs is not None:
-        return (pickle.load(open(os.path.join(folder_name, file_name), 'rb'))
+        if compressed:
+            file_opening_func = bz2.BZ2File
+        else:
+            file_opening_func = open
+
+        return (pickle.load(file_opening_func(os.path.join(folder_name, file_name), 'rb'))
                 for folder_name in dirs)
     elif systems is not None:
         return (system for system in systems)

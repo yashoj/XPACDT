@@ -34,6 +34,7 @@
 """
 
 import argparse
+import bz2
 import datetime
 import git
 import inspect
@@ -260,12 +261,20 @@ def start():
         return
 
     # read from pickle file if exists
+    if 'compressed_pickle' in input_parameters.get('system'):
+        default_file_name = 'pickle.bz2'
+    else:
+        default_file_name = 'pickle.dat'
+
     name_folder = input_parameters.get('system').get('folder')
-    name_file = input_parameters.get('system').get('picklefile', 'pickle.dat')
+    name_file = input_parameters.get('system').get('picklefile', default_file_name)
     path_file = os.path.join(name_folder, name_file)
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
-        system = pickle.load(open(path_file, 'rb'))
+        if 'compressed_pickle' in input_parameters.get('system'):
+            system = pickle.load(bz2.BZ2File(path_file, 'rb'))
+        else:
+            system = pickle.load(open(path_file, 'rb'))
         # Updating input parameters appropriately
         system.parameters = input_parameters
         initiated = False

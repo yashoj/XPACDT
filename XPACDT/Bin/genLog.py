@@ -42,6 +42,7 @@ Optional (through command line arguments):
 """
 
 import argparse
+import bz2
 import pickle
 import sys
 
@@ -58,6 +59,11 @@ def start():
         " The default is 'pickle.dat'."
     parser.add_argument("-i", "--input", type=str, dest="PickleFile",
                         required=False, help=i_help, default='pickle.dat')
+
+    c_help = "If the input pickle file is in compressed '.bz2' format," \
+        " use this option."
+    parser.add_argument("-c", "--compressed", action="store_true", dest="compressed",
+                        required=False, help=c_help, default=False)
 
     w_help = "Width for number format in output. Default 16."
     parser.add_argument("-w", "--width", type=int, dest="width",
@@ -87,7 +93,10 @@ def start():
     PREC = args.prec
 
     # Get input file
-    system = pickle.load(open(args.PickleFile, 'rb'))
+    if args.compressed:
+        system = pickle.load(bz2.BZ2File(args.PickleFile, 'rb'))
+    else:
+        system = pickle.load(open(args.PickleFile, 'rb'))
 
     # Generate appropriate output files
     outfiles = setup_outfiles(args)

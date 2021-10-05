@@ -146,14 +146,12 @@ def get_transformation_matrix(V):
     .. math::
 
         U = \\begin{pmatrix}
-            \\cos\\theta & -\\sin\\theta \\
-            \\sin\\theta &  \\cos\\theta
+            -\\sin\\theta &  \\cos\\theta \\
+             \\cos\\theta &  \\sin\\theta
             \\end{pmatrix}
 
     where the rotation angle
     :math:'\\theta = \\frac{1}{2} \\arctan(\\frac{2V_{12}}{V_{11} - V_{22}})'
-
-    TODO: This gives reversed states, write about it more explicitly!
 
     Parameters:
     ----------
@@ -171,22 +169,25 @@ def get_transformation_matrix(V):
 
     # Note: np.arctan2 is used as it gives rotation angle between -pi and pi
     #       whereas np.arctan only gives angle between -pi/2 and pi/2
-    # theta = 0.5 * np.arctan2(2.0 * V[0, 1], (V[0, 0] - V[1, 1]))
-    # cos_t = np.cos(theta)
-    # sin_t = np.sin(theta)
+    theta = 0.5 * np.arctan2(2.0 * V[0, 1], (V[0, 0] - V[1, 1]))
+    cos_t = np.cos(theta)
+    sin_t = np.sin(theta)
 
-    # U = np.array([[cos_t, -sin_t], [sin_t, cos_t]])
+    # This choice of unitary matrix gives proper order of eigenvectors based on
+    # ascending order of eigenvalues.
+    U = np.array([[-sin_t, cos_t], [cos_t, sin_t]])
 
-    # return U
+    return U
 
-    # TODO: explain bit more why the above method gives swaped states.
-    if len(V.shape) == 3:
-        # Get shape (n_beads, 2, 2) for vectorized diagonalization.
-        V = V.transpose(2, 0, 1)
-
-    V_ad, U = np.linalg.eigh(V)
-
-    if len(V.shape) == 3:
-        return U.transpose(1, 2, 0)
-    else:
-        return U
+    # Note: this is an alternative way to get the matrix numercially. This has
+    # the advantage that the eigenvectors are properly ordered.
+#    if len(V.shape) == 3:
+#        # Get shape (n_beads, 2, 2) for vectorized diagonalization.
+#        V = V.transpose(2, 0, 1)
+#
+#    V_ad, U = np.linalg.eigh(V)
+#
+#    if len(V.shape) == 3:
+#        return U.transpose(1, 2, 0)
+#    else:
+#        return U

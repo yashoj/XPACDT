@@ -268,7 +268,7 @@ class Nuclei(object):
         """
 
         self.__propagator = None
-        self.electrons.pes = None
+        # self.electrons.pes = None
 
     def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system. This

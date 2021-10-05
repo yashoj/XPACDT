@@ -130,19 +130,19 @@ class DiabaticToAdiabatic2statesTest(unittest.TestCase):
 
         # 1 bead/centroid test
         V = np.array([[2., 0.], [0., 3.]])
-        U_ref = np.array([[1., 0.], [0., 1.]])
+        U_ref = np.array([[-1., 0.], [0., 1.]])
         U = dia2ad.get_transformation_matrix(V)
         np.testing.assert_allclose(U, U_ref, atol=1e-8)
 
         V = np.array([[1./np.sqrt(3), 0.5], [0.5, 0.]])
-        U_ref = np.array([[0.5, -np.sqrt(3)/2], [-np.sqrt(3)/2, -0.5]])
+        U_ref = np.array([[-0.5, np.sqrt(3)/2], [np.sqrt(3)/2, 0.5]])
         U = dia2ad.get_transformation_matrix(V)
         np.testing.assert_allclose(U, U_ref, rtol=1e-7)
 
         # 2 bead test
         V = np.array([[[2., 1./np.sqrt(3)], [0., 0.5]], [[0., 0.5], [3., 0.]]])
-        U_ref = np.array([[[1., 0.5], [0., -np.sqrt(3)/2]],
-                          [[0., -np.sqrt(3)/2], [1., -0.5]]])
+        U_ref = np.array([[[-1., -0.5], [0., np.sqrt(3)/2]],
+                          [[0., np.sqrt(3)/2], [1., 0.5]]])
         U = dia2ad.get_transformation_matrix(V)
         np.testing.assert_allclose(U, U_ref, atol=1e-8)
 

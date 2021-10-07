@@ -264,9 +264,24 @@ if __name__ == '__main__':
     import sys
     import matplotlib.pyplot as plt
 
+    import XPACDT.Input.Inputfile as infile
+
     nb = 1
-    model_type = sys.argv[1]  # 'model_A'
-    pot = TullyModel(nb, **{'model_type': model_type})
+    model_type = sys.argv[1]  # 'model_C'
+    # Get input file with 1 bead from tests.
+    in_file_dir = "../UnitTests/FilesForTesting/InterfaceTests/"
+
+    if (model_type == 'model_A'):
+        scaling_nac = 50.
+        in_file = in_file_dir + "input_TullyA_1.in"
+    elif (model_type == 'model_B'):
+        scaling_nac = 12.
+        in_file = in_file_dir + "input_TullyB_1.in"
+    elif (model_type == 'model_C'):
+        scaling_nac = 1.
+        in_file = in_file_dir + "input_TullyC_1.in"
+
+    pot = TullyModel(infile.Inputfile(in_file))
 
     # len(linspace) array of positions
     X = np.linspace(-10., 10., num=1000)
@@ -284,12 +299,6 @@ if __name__ == '__main__':
     dV2_ad = []
     nac1 = []
 
-    if (pot.model_type == 'model_A'):
-        scaling_nac = 50.
-    elif (pot.model_type == 'model_B'):
-        scaling_nac = 12.
-    elif (pot.model_type == 'model_C'):
-        scaling_nac = 1.
 
     for i in X:
         pot._calculate_adiabatic_all(np.array([[i]]))

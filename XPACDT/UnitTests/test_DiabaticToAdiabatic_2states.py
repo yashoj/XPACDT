@@ -146,6 +146,15 @@ class DiabaticToAdiabatic2statesTest(unittest.TestCase):
         U = dia2ad.get_transformation_matrix(V)
         np.testing.assert_allclose(U, U_ref, atol=1e-8)
 
+    @unittest.skip("Please implement a test here.")
+    def test_get_gradient_transformation_matrix(self):
+        # 2 bead, 1 dof test
+        V = np.array([[[2., 2.], [0., 1.]], [[0., 1.], [3., 3.]]])
+        dV = np.array([[[[0.2, 0.4]], [[0., 0.1]]], [[[0., 0.1]], [[0.3, 0.6]]]])
+        grad_U = dia2ad.get_gradient_transformation_matrix(V, dV)
+        print(grad_U.shape)
+        # np.testing.assert_allclose(nac, nac_ref, rtol=1e-7)
+
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(DiabaticToAdiabatic2statesTest)

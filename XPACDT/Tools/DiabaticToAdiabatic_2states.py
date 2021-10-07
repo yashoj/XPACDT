@@ -99,6 +99,39 @@ def get_adiabatic_gradient(V, dV):
     return dV_ad
 
 
+def get_gradient_theta(V, dV):
+    """
+    Get gradient of the rotation angle :math:'\\theta'.
+
+    Parameters:
+    ----------
+    V : (2, 2) ndarrays of floats /or/ (2, 2, n_beads) ndarrays of floats
+        Two state diabatic potential energy matrix.
+    dV : (2, 2, n_dof) ndarrays of floats
+         /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Two state diabatic potential gradient matrix.
+
+    Returns:
+    ----------
+    dtheta : (n_dof) ndarrays of floats
+          /or/ (n_dof, n_beads) ndarrays of floats
+        Gradient of rotational angle :math:'\\theta'.
+    """
+
+    assert ((V.shape[0] == 2) and (V.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+    assert ((dV.shape[0] == 2) and (dV.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+
+    diff_diag = V[1, 1] - V[0, 0]
+    square_of_root = diff_diag * diff_diag + 4 * V[0, 1] * V[0, 1]
+    grad_diff_diag = dV[1, 1] - dV[0, 0]
+
+    dtheta = -(dV[0, 1] * diff_diag - V[0, 1] * grad_diff_diag) / square_of_root
+
+    return dtheta
+
+
 def get_NAC(V, dV):
     """
     Get non-adiabatic coupling (NAC) vector from a given two level diabatic
@@ -127,13 +160,8 @@ def get_NAC(V, dV):
 
     nac = np.zeros_like(dV)
 
-    diff_diag = V[1, 1] - V[0, 0]
-    square_of_root = diff_diag * diff_diag + 4 * V[0, 1] * V[0, 1]
-    grad_diff_diag = dV[1, 1] - dV[0, 0]
-
-    nac[0, 1] = (dV[0, 1] * diff_diag - V[0, 1] * grad_diff_diag)\
-        / square_of_root
-    nac[1, 0] = -1. * nac[0, 1]
+    nac[0, 1] = -get_gradient_theta(V, dV)
+    nac[1, 0] = -nac[0, 1]
 
     return nac
 
@@ -191,3 +219,59 @@ def get_transformation_matrix(V):
 #        return U.transpose(1, 2, 0)
 #    else:
 #        return U
+
+
+def get_gradient_transformation_matrix(V, dV):
+    """
+    Get the gradient of the unitary transformation matrix U with respect to
+    positions.
+    This is analytically given by:
+    .. math::
+
+        dU/dR = -dtheta/dR *
+                \\begin{pmatrix}
+                \\cos\\theta &  \\sin\\theta \\
+                \\sin\\theta & -\\cos\\theta
+                \\end{pmatrix}
+
+    where the rotation angle
+    :math:'\\theta = \\frac{1}{2} \\arctan(\\frac{2V_{12}}{V_{11} - V_{22}})'
+
+    Parameters:
+    ----------
+    V : (2, 2) ndarrays of floats /or/ (2, 2, n_beads) ndarrays of floats
+        Two state diabatic potential energy matrix.
+    dV : (2, 2, n_dof) ndarrays of floats
+         /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Two state diabatic potential gradient matrix.
+
+    Returns:
+    ----------
+    d_U : (2, 2, n_dof) ndarrays of floats
+          /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Gradient of unitary transformation matrix.
+    """
+
+    assert ((V.shape[0] == 2) and (V.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+    assert ((dV.shape[0] == 2) and (dV.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+
+    d_U = np.zeros_like(dV)
+
+    # Note: np.arctan2 is used as it gives rotation angle between -pi and pi
+    #       whereas np.arctan only gives angle between -pi/2 and pi/2
+    theta = 0.5 * np.arctan2(2.0 * V[0, 1], (V[0, 0] - V[1, 1]))
+    # These are float or (n_beads) ndarray of floats.
+    cos_t = np.cos(theta)
+    sin_t = np.sin(theta)
+
+    # This is (n_dof) or (n_dof, n_beads) ndarray of floats
+    dtheta = get_gradient_theta(V, dV)
+
+    d_U[0, 0] = -dtheta * cos_t
+    d_U[0, 1] = -dtheta * sin_t
+    d_U[1, 0] = d_U[0, 1]
+    d_U[1, 1] = -d_U[0, 0]
+
+    return d_U

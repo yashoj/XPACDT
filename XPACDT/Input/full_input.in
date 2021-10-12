@@ -43,7 +43,7 @@ basis = adiabatic         # (adiabatic (default), diabatic), string:
 n_steps = 100             # integer, default: 1
                           # Number of electronic time steps to be performed for each nuclear steps
 
-rpsh_type = bead          # (centroid (default), bead, density_matrix), string:
+rpsh_type = bead          # (centroid (default), bead, density_matrix, dm_cb), string:
                           # Type of ring polymer surface hopping (RPSH)
 
 rpsh_rescaling = bead     # (bead (default), centroid), string:

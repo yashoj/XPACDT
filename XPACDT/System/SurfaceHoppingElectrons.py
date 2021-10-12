@@ -104,7 +104,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         self.__evolution_picture = electronic_parameters.get("evolution_picture", "schroedinger")
         self.__ode_solver = electronic_parameters.get("ode_solver", "scipy")
 
-        if self.rpsh_type not in ['bead', 'centroid', 'density_matrix']:
+        if self.rpsh_type not in ['bead', 'centroid', 'density_matrix', 'dm_cb']:
             raise ValueError("\nXPACDT: Ring polymer surface hopping (RPSH)"
                              " type not available.")
         if self.rpsh_rescaling not in ['bead', 'centroid']:
@@ -126,6 +126,17 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             raise RuntimeError("\nXPACDT: Number of states should be more than"
                                " or equal to 2 for surface hoping. Else it"
                                " doesn't make sense to use it.")
+
+        # Note: For now, RPSH-DM-Common basis(CB) only works for two states,
+        # and has to be in adiabatic basis.
+        if (self.rpsh_type == 'dm_cb') and (n_states != 2):
+            raise RuntimeError("\nXPACDT: Number of states should be 2 for"
+                               " RPSH-DM-CB.")
+        if (self.rpsh_type == 'dm_cb') and (basis != 'adiabatic'):
+            raise RuntimeError("\nXPACDT: Adiabatic basis should be used for"
+                               " RPSH-DM-CB. If you want to use diabatic"
+                               " basis, please use simply RPSH-DM as it is"
+                               " already in a common basis.")
 
         try:
             initial_state = int(parameters.get("SurfaceHoppingElectrons").get("initial_state"))
@@ -149,7 +160,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
         # The wavefunction coefficients are in interaction or Schroedinger
         # picture depending upon 'evolution_picture' selected.
-        if (self.rpsh_type == 'density_matrix'):
+        if (self.rpsh_type == 'density_matrix' or self.rpsh_type == 'dm_cb'):
             self._c_coeff = np.zeros((max_n_beads, n_states), dtype=complex)
             self._D = np.zeros((max_n_beads, n_states, n_states), dtype=float)
             self._H_e_total = np.zeros((max_n_beads, n_states, n_states), dtype=complex)
@@ -194,8 +205,8 @@ class SurfaceHoppingElectrons(electrons.Electrons):
 
     @property
     def rpsh_type(self):
-        """{'bead', 'centroid', 'density_matrix'} : String defining type of
-        ring polymer surface hopping (RPSH) to be used."""
+        """{'bead', 'centroid', 'density_matrix', 'dm_c'} : String defining
+        type of ring polymer surface hopping (RPSH) to be used."""
         return self.__rpsh_type
 
     @property
@@ -454,7 +465,8 @@ class SurfaceHoppingElectrons(electrons.Electrons):
                 # Transposes are done for faster memory accessing by making
                 # 'nbeads' first axis.
                 vel = self._get_velocity(P).T
-                nac = (self.pes.nac(R, centroid=False, return_matrix=True)).transpose(3, 0, 1, 2)
+                nac = (self.pes.nac(R, centroid=False,
+                                    return_matrix=True)).transpose(3, 0, 1, 2)
 
                 # D_list here is (n_beads) list of (n_states, n_states)
                 D_list = []
@@ -601,6 +613,11 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         if (self.rpsh_type == 'density_matrix'):
             # Mean is taken instead of sum to get normalizing factor of 1/n_beads
             a_kk_initial = np.mean(np.abs(self._c_coeff[:, self.current_state])**2)
+        elif (self.rpsh_type == 'dm_cb'):
+            #TODO: Here this is not the initial one, make note of that!!!
+            a_kk_initial = self._get_rho_dm_cb(self._c_coeff,
+                                               R)[self.current_state,
+                                                  self.current_state]
         else:
             a_kk_initial = abs(self._c_coeff[0, self.current_state])**2
 
@@ -645,7 +662,7 @@ class SurfaceHoppingElectrons(electrons.Electrons):
         Parameters
         ----------
         c_coeff : (n_beads, n_states) ndarray of complex
-                      if rpsh_type == 'density_matrix'
+                      if rpsh_type == 'density_matrix' or 'dm_cb'
                   /or/ (1, n_states) ndarray of complex
                       if rpsh_type == 'bead' or 'centroid'
             (Note: This shape here comes from rpsh_type within the module, but
@@ -671,6 +688,73 @@ class SurfaceHoppingElectrons(electrons.Electrons):
             a_kj = np.array([np.outer(c, np.conj(c)) for c in c_coeff])
 
         return a_kj
+
+    def _get_rho_dm_cb(self, c_coeff, R):
+        """ Get density matrix for RPSH-DM-Common basis (CB). For this each
+        bead coefficient is transformed to a common basis, here the centroid
+        adiabatic basis and then averaged.
+
+        Parameters
+        ----------
+        c_coeff : (n_beads, n_states) ndarray of complex
+            Electronic wavefuntion coefficients in Schroedinger picture.
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the system nuclei in
+            au.
+
+        Returns
+        -------
+        rho_cb : (n_states, n_states) ndarray of complex
+            Density matrix for RPSH-DM-CB.
+        """
+        import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
+
+        assert (self.rpsh_type == 'dm_cb'),\
+               ("This function only works for RPSH-DM-CB.")
+
+        a_kj = self._get_a_kj(c_coeff)
+
+        V_d = self.pes.diabatic_energy(R, centroid=False, return_matrix=True)
+        # Get U for each bead in shape (n_beads, n_states, n_states)
+        U = dia2ad.get_transformation_matrix(V_d).transpose(2, 0, 1)
+        U_dag = U.transpose(0, 2, 1)
+
+        # Transform first to diabatic basis and take average.
+        rho_diab = np.mean([np.matmul(U_dag[i], np.matmul(a_i, U[i]))
+                            for i, a_i in enumerate(a_kj)], axis=0)
+
+        # Then transform to common adiabtic basis of centroid.
+        V_d_centroid = self.pes.diabatic_energy(R, centroid=True,
+                                                return_matrix=True)
+        U_centroid = dia2ad.get_transformation_matrix(V_d_centroid)
+
+        rho_cb = np.matmul(U_centroid, np.matmul(rho_diab, U_centroid.T))
+
+        return rho_cb
+
+     def _get_drho_dt_dm_cb(self, c_coeff, R):
+        """ Get density matrix for RPSH-DM-Common basis (CB). For this each
+        bead coefficient is transformed to a common basis, here the centroid
+        adiabatic basis and then averaged.
+
+        Parameters
+        ----------
+        c_coeff : (n_beads, n_states) ndarray of complex
+            Electronic wavefuntion coefficients in Schroedinger picture.
+        R : (n_dof, n_beads) ndarray of floats
+            The (ring-polymer) positions `R` representing the system nuclei in
+            au.
+
+        Returns
+        -------
+        rho_cb : (n_states, n_states) ndarray of complex
+            Density matrix for RPSH-DM-CB.
+        """
+        import XPACDT.Tools.DiabaticToAdiabatic_2states as dia2ad
+
+        #TODO: Which R to use at different time steps???
+
+
 
     def _get_b_jk(self, time, time_propagate, c):
         """ Calculate b_jk  where k is the current state and j is any other

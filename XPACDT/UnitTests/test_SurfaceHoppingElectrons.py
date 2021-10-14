@@ -1490,6 +1490,50 @@ class SurfaceHoppingTest(unittest.TestCase):
         return
 
     @unittest.skip("Please implement a test here.")
+    def test_get_drho_dt_dm_cb(self):
+
+        # 2 c-coefficients
+        param = self.param_rpmd
+        param["SurfaceHoppingElectrons"]["rpsh_type"] = 'dm_cb'
+        param["SurfaceHoppingElectrons"]["evolution_picture"] = 'schroedinger'
+        param["SurfaceHoppingElectrons"]["n_steps"] = 1
+        sh_electrons_rpmd = sh.SurfaceHoppingElectrons(param,
+                                                       param.masses,
+                                                       param.coordinates,
+                                                       param.momenta)
+
+        #R = np.array([[-1.0e05, -1.0e05]])
+        R = np.array([[-7.5, -7.5]])
+        P = np.array([[10.0, 10.0]])
+        c = np.array([[1.+0.j, 0.+0.j],
+                      [(1. / math.sqrt(2))+0.j, 0.-(1.j / math.sqrt(2))]])
+
+        D = sh_electrons_rpmd._get_kinetic_coupling_matrix(R, P)
+        H = sh_electrons_rpmd._get_H_matrix(R, D)
+
+        #H = np.array([[[0.+0.j, 0.-0.1j], [0.+0.1j, 1.+0.j]],
+        #              [[0.+0.j, 0.-0.1j], [0.+0.1j, 1.+0.j]]])
+        sh_electrons_rpmd._H_e_total = H.copy()
+        sh_electrons_rpmd._c_coeff = c.copy()
+
+        # Propagate for a bit
+        for i in range(5):
+            sh_electrons_rpmd.step(R, P, 1, **{'step_index': 'after_nuclei',
+                                               'step_count': i})
+
+        rho = sh_electrons_rpmd._get_rho_dm_cb(sh_electrons_rpmd._c_coeff,
+                                               R)
+        print(rho.shape)
+        print(rho)
+
+        drho_dt = sh_electrons_rpmd._get_drho_dt_dm_cb(sh_electrons_rpmd._c_coeff,
+                                                       R, P)
+        print(drho_dt.shape)
+        print(drho_dt)
+
+        return
+
+    @unittest.skip("Please implement a test here.")
     def test_step(self):
         # TODO: this seems more like a integrated test, what exactly should be tested here?
         # Test all ode solvers give same result in all pictures after long propagation

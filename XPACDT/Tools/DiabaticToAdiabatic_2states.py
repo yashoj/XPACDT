@@ -275,3 +275,45 @@ def get_gradient_transformation_matrix(V, dV):
     d_U[1, 1] = -d_U[0, 0]
 
     return d_U
+
+
+def get_time_derivative_of_U(V, dV, vel):
+    """ Get time derivative of U, the transformation matrix from diabatic
+    to adiabatic basis. This is under the trajectory approximation where
+    R = R(t). Analytically using the chain rule:
+        dU/dt = dU/dR * dR/dt = dU/dR * v
+
+    Parameters:
+    ----------
+    V : (2, 2) ndarrays of floats
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
+        Two state diabatic potential energy matrix.
+    dV : (2, 2, n_dof) ndarrays of floats
+         /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Two state diabatic potential gradient matrix.
+    vel: (n_dof) ndarray of floats
+         /or/ (n_dof, n_beads) ndarray of floats
+        The velocities of the system for each bead position or centroid
+        in au.
+
+    Returns:
+    ----------
+    dU_dt : (2, 2) ndarrays of floats
+          /or/ (2, 2, n_beads) ndarrays of floats
+        Time derivative of unitary transformation matrix.
+    """
+
+    d_U = get_gradient_transformation_matrix(V, dV)
+
+    if len(vel.shape) == 1:
+        dU_dt = np.dot(d_U, vel)
+    else:
+        # Change shape to (n_beads, 2, 2, n_dof) ndarrays of floats.
+        d_U = d_U.transpose(3, 0, 1, 2)
+
+        # This gives shape (n_beads, 2, 2) so need to change to (2, 2, n_beads)
+        # by transposing.
+        dU_dt = np.array([np.dot(d_U[i], v_i) for i, v_i in enumerate(vel.T)])
+        dU_dt = dU_dt.transpose(1, 2, 0)
+
+    return dU_dt

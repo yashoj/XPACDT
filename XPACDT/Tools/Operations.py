@@ -73,7 +73,7 @@ class Operations(object):
         # class should be added here too.
         if print_help:
             all_operations = ["position", "momentum", "electronic_state",
-                              "energy"]
+                              "energy", "electronic_dm"]
 
             for op in all_operations:
                 getattr(sys.modules[__name__], "_arguments_" + op)(["-h"])
@@ -109,6 +109,9 @@ class Operations(object):
             elif ops[0] == 'energy':
                 self.__operations_list.append(('_energy',
                                                _arguments_energy(ops[1:])))
+            elif ops[0] == 'dm' or ops[0] == 'electronic_dm':
+                self.__operations_list.append(('_electronic_dm',
+                                               _arguments_electronic_dm(ops[1:])))
             else:
                 raise RuntimeError("\nXPACDT: The given operation is not"
                                    "implemented. " + " ".join(ops))
@@ -614,3 +617,98 @@ def _energy(opts, log_nuclei):
     current_value = getattr(log_nuclei, energy_attribute)
 
     return np.array(current_value).flatten()
+
+
+def _arguments_electronic_dm(arguments):
+    """ Parses the options for electronic density matrix command. If no
+    options given it will raise an error.
+
+    Valid options are as follows:
+
+    -b <basis> given: Electronic basis to be used. Can be "adiabatic" or
+                      "diabatic". Default: "adiabatic".
+    -1 <a> given: First electronic state index of the density matrix.
+    -2 <b> given: Second electronic state index of the density matrix.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the electronic density matrix
+        command. See above.
+
+    Returns
+    -------
+    opts: argparse.Namespace object
+        Options for electronic density matrix operation.
+    """
+    parser = argparse.ArgumentParser(usage="Options for +dm", add_help=False)
+
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
+
+    parser.add_argument('-b', '--basis',
+                        dest='basis',
+                        type=str,
+                        default='adiabatic',
+                        choices=['adiabatic', 'diabatic'],
+                        required=True,
+                        help='Basis to be used. Possible "adiabatic" or'
+                             ' "diabatic". Default: "adiabatic".')
+
+    parser.add_argument('-1', '--s1',
+                        dest='s1',
+                        type=int,
+                        default=None,
+                        help='First electronic state index of the density'
+                             ' matrix. Please note that the numbering starts at 0.')
+
+    parser.add_argument('-2', '--s2',
+                        dest='s2',
+                        type=int,
+                        default=None,
+                        help='Second electronic state index of the density'
+                             ' matrix. Please note that the numbering starts at 0.')
+
+    if len(arguments) == 0:
+        raise RuntimeError("XPACDT: No arguments given to electronic density"
+                            " matrix operation.")
+
+    opts = parser.parse_args(arguments)
+
+    if opts.help is True:
+        parser.print_help()
+        return None
+
+    return opts
+
+
+def _electronic_dm(opts, log_nuclei):
+    """Performs operations related to electronic density matrix on `log_nuclei`
+    using input options from `opts`.
+
+    Parameters
+    ----------
+    opts: argparse.Namespace object
+        Options for density matrix operation.
+    log_nuclei: XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
+
+    Returns
+    -------
+    (1) ndarray of float /or/ complex
+        Value obtained from electronic density matrix operation.
+    """
+    rho = log_nuclei.electrons.get_rho(opts.basis, log_nuclei.positions)
+
+    if opts.s1 == opts.s2:
+        # Get real value for populations
+        current_value = rho[opts.s1, opts.s2].real
+    else:
+        # TODO: Should this return complex coherence rho_12?
+        current_value = np.abs(rho[opts.s1, opts.s2])
+
+    return np.array(current_value).flatten()
+

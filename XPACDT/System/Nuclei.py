@@ -167,6 +167,15 @@ class Nuclei(object):
         return np.mean(self.positions, axis=1)
 
     @property
+    def radius_of_gyration(self):
+        """ float : The radius of gyration of the ring polymer.
+        i.e. :math:`\\sqrt( \\frac{1}{n} (\\sum_i |r_i - r_c|^2)`."""
+
+        pos_diff = self.positions.T - self.x_centroid
+        r_g = math.sqrt(np.mean([np.dot(pd, pd) for pd in pos_diff]))
+        return r_g
+
+    @property
     def momenta(self):
         """(n_dof, n_beads) ndarray of floats : The momenta of all beads in
             the system. The first axis is the degrees of freedom and the

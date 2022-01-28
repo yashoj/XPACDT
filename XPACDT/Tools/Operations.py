@@ -166,6 +166,7 @@ def _arguments_position(arguments):
                   or above a value (>,A). If within the given value the
                   function returns 1.0, else the given pValue.
     -r given: Use ring-polymer bead positions.
+    -g given: Get radius of gyration of ring polymer.
 
     Parameters
     ----------
@@ -217,6 +218,12 @@ def _arguments_position(arguments):
                         default=False,
                         help='Use beads instead of centroids.')
 
+    parser.add_argument('-g', '--gyration',
+                        dest='gyration',
+                        action='store_true',
+                        default=False,
+                        help='Get radius of gyration of ring polymer.')
+
     if len(arguments) == 0:
         raise RuntimeError("XPACDT: No arguments given to position operation.")
 
@@ -248,21 +255,27 @@ def _position(opts, log_nuclei):
         single degree of freedom is requested, n_values will be n_beads of
         that degree of freedom.
     """
+    if opts.gyration:
+        current_value = log_nuclei.radius_of_gyration
 
-    # get coordinate values under consideration here!
-    current_value = log_nuclei.get_selected_quantities(opts.x1, 'x', opts.rpmd)
-    if opts.x2 is not None:
-        coordinate_2 = log_nuclei.get_selected_quantities(opts.x2, 'x', opts.rpmd)
-        # Also calculated per beads
-        try:
-            current_value = np.linalg.norm(current_value - coordinate_2, axis=0)
-        except ValueError as e:
-            raise type(e)(str(e) + "\nXPACDT: Cannot calculate distance between"
-                          " given sites. Maybe different number of dofs per site.")
+    else:
+        # get coordinate values under consideration here!
+        current_value = log_nuclei.get_selected_quantities(opts.x1, 'x',
+                                                           opts.rpmd)
+        if opts.x2 is not None:
+            coordinate_2 = log_nuclei.get_selected_quantities(opts.x2, 'x',
+                                                              opts.rpmd)
+            # Also calculated per beads
+            try:
+                current_value = np.linalg.norm(current_value - coordinate_2,
+                                               axis=0)
+            except ValueError as e:
+                raise type(e)(str(e) + "\nXPACDT: Cannot calculate distance between"
+                              " given sites. Maybe different number of dofs per site.")
 
-    # if we want to project the distance/position onto a certain interval
-    if opts.proj is not None:
-        current_value = _projection(opts.proj, current_value)
+        # if we want to project the distance/position onto a certain interval
+        if opts.proj is not None:
+            current_value = _projection(opts.proj, current_value)
 
     return np.array(current_value).flatten()
 

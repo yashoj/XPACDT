@@ -667,7 +667,7 @@ def _arguments_electronic_dm(arguments):
                         type=str,
                         default='adiabatic',
                         choices=['adiabatic', 'diabatic'],
-                        required=True,
+                        required=False,
                         help='Basis to be used. Possible "adiabatic" or'
                              ' "diabatic". Default: "adiabatic".')
 
@@ -721,7 +721,8 @@ def _electronic_dm(opts, log_nuclei):
         current_value = rho[opts.s1, opts.s2].real
     else:
         # TODO: Should this return complex coherence rho_12?
-        current_value = np.abs(rho[opts.s1, opts.s2])
+        # current_value = np.abs(rho[opts.s1, opts.s2])
+        current_value = rho[opts.s1, opts.s2]
 
     return np.array(current_value).flatten()
 

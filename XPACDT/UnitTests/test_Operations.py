@@ -1297,6 +1297,13 @@ class OperationsTest(unittest.TestCase):
 
         return
 
+    @unittest.skip("Please implement a test here.")
+    def test_electronic_dm(self):
+        raise NotImplementedError("Please implement a test here!!")
+
+    @unittest.skip("Please implement a test here.")
+    def test_hops(self):
+        raise NotImplementedError("Please implement a test here!!")
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(OperationsTest)

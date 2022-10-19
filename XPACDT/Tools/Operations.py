@@ -73,7 +73,7 @@ class Operations(object):
         # class should be added here too.
         if print_help:
             all_operations = ["position", "momentum", "electronic_state",
-                              "energy", "electronic_dm"]
+                              "energy", "electronic_dm", "hops"]
 
             for op in all_operations:
                 getattr(sys.modules[__name__], "_arguments_" + op)(["-h"])
@@ -112,6 +112,9 @@ class Operations(object):
             elif ops[0] == 'dm' or ops[0] == 'electronic_dm':
                 self.__operations_list.append(('_electronic_dm',
                                                _arguments_electronic_dm(ops[1:])))
+            elif ops[0] == 'hops':
+                self.__operations_list.append(('_hops',
+                                               _arguments_hops(ops[1:])))
             else:
                 raise RuntimeError("\nXPACDT: The given operation is not"
                                    "implemented. " + " ".join(ops))
@@ -726,3 +729,65 @@ def _electronic_dm(opts, log_nuclei):
 
     return np.array(current_value).flatten()
 
+
+def _arguments_hops(arguments):
+    """ Parses the options for surface hops command. No options are needed for
+    now.
+
+    Parameters
+    ----------
+    arguments: list of strings
+        Command line type options given to the energy command. See above.
+
+    Returns
+    -------
+    opts: argparse.Namespace object
+        Options for energy operation.
+    """
+    parser = argparse.ArgumentParser(usage="Options for +hops", add_help=False)
+
+    parser.add_argument('-h', '--help',
+                        dest='help',
+                        action='store_true',
+                        default=False,
+                        help='Prints this help page.')
+
+    opts = parser.parse_args(arguments)
+
+    if opts.help is True:
+        parser.print_help()
+        return None
+
+    return opts
+
+
+def _hops(opts, log_nuclei):
+    """ Performs operations related to surface hops on `log_nuclei` using input
+    options from `opts`.
+    Note that this needs SurfaceHoppingElectrons, otherwise it does not make
+    sense.
+
+    Parameters
+    ----------
+    opts: argparse.Namespace object
+        Options for hops operation.
+    log_nuclei: XPACDT.System.Nuclei object
+        Nuclei object from the log to perform operations on.
+
+    Returns
+    -------
+    (1) ndarray of float
+        Value obtained from state hop operation. This is 1 if state hopping
+        occurs and 0 if not.
+    """
+
+    if (log_nuclei.electrons.name != "SurfaceHoppingElectrons"):
+        raise RuntimeError("\nXPACDT: Analysing surface hops only makes sense"
+                           " for surface hopping electrons.")
+
+    if "Successful hop" in log_nuclei.electrons.hop_status:
+        current_value = 1
+    else:
+        current_value = 0
+
+    return np.array(current_value).flatten()

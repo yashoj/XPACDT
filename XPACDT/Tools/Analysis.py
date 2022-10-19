@@ -131,6 +131,9 @@ def do_analysis(parameters, systems=None):
             elif command['value'] == 'std':
                 func = np.std
 
+            elif command['value'] == 'sum':
+                func = np.sum
+
             elif 'percentile' in command['value']:
                 pe = float(command['value'].split()[1])
                 func = (lambda x: np.nanpercentile(x, pe))
@@ -191,6 +194,10 @@ def do_analysis(parameters, systems=None):
         # bootstrap; final_data: [n_times] with tuples(value, error)
         #                                  where value, error 1d arrays
         n_bootstrap = int(command.get('n_bootstrap', 1000))
+        # No error needed for sum operations
+        if func == np.sum:
+            n_bootstrap = 1
+
         final_data = [bs.bootstrap(data, func, n_bootstrap, is_2D=is_2d)
                       for data in reshaped_results]
 

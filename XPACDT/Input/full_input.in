@@ -309,7 +309,7 @@ format = value                  # ('time', 'value', '2d'), string: format for fi
                                 #                          value - one line per value;
                                 #                          2d - Blocked data for 2d plotting of a histogram over time
 
-value = histogram -3.0 3.0 10   # (mean, std, percentile, histogram, 2dhistogram), string:
+value = histogram -3.0 3.0 10   # (mean, std, sum, percentile, histogram, 2dhistogram), string:
                                 #        way to analyze the data; Some additional arguments might be required:
                                 #        precentile <int: percentile rank>
                                 #        histogram <float: min_value> <float: max_value> <int: number_bins>

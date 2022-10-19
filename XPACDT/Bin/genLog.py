@@ -298,7 +298,7 @@ def write_surface_hops(log_nuclei, outfile, width, prec):
     if hop_status != "No hop":
         outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
                       width=width, prec=prec))
-        outfile.write(log_nuclei.electrons.hop_status)
+        outfile.write(hop_status)
         outfile.write(" \n")
     return
 

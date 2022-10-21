@@ -737,12 +737,12 @@ def _arguments_hops(arguments):
     Parameters
     ----------
     arguments: list of strings
-        Command line type options given to the energy command. See above.
+        Command line type options given to the hops command. See above.
 
     Returns
     -------
     opts: argparse.Namespace object
-        Options for energy operation.
+        Options for hops operation.
     """
     parser = argparse.ArgumentParser(usage="Options for +hops", add_help=False)
 

@@ -77,8 +77,9 @@ def do_Thermostatted_sampling(system, parameters, n_sample):
     for i in range(n_sample):
         system.step(sampling_time)
 
-        system.clear_log()
+        system.do_log(init=True)
         systems.append(copy.deepcopy(system))
         systems[-1].nuclei.time = 0.0
+        systems[-1].do_log(init=True)
 
     return systems

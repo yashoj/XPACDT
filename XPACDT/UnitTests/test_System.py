@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -54,22 +55,6 @@ class SystemTest(unittest.TestCase):
         self.assertEqual(len(self.system.log), 2)
         self.assertEqual(self.system.log[1].time, 0.0)
         self.assertEqual(self.system.log[1], self.nuclei)
-
-        return
-
-    def test_clear_log(self):
-        self.system.log.append(copy.deepcopy(self.system.log[0]))
-        self.system.log[-1].time = 1.0
-        self.system.log[-1].positions[0, 0] = 10.0
-
-        self.system.clear_log()
-        self.assertEqual(len(self.system.log), 1)
-        self.assertEqual(self.system.log[0].time, 1.0)
-
-        self.nuclei_ref = copy.deepcopy(self.nuclei)
-        self.nuclei_ref.positions[0, 0] = 10.0
-        self.assertNotEqual(self.system.nuclei, self.nuclei)
-        self.assertEqual(self.system.nuclei, self.nuclei_ref)
 
         return
 

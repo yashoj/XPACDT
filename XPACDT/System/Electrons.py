@@ -32,6 +32,7 @@
 electrons in the system. """
 
 import sys
+import warnings
 
 
 class Electrons:
@@ -87,6 +88,16 @@ class Electrons:
     def pes(self):
         """XPACDT.Interfaces.InterfaceTemplate : Representation of the PES."""
         return self.__pes
+
+    @pes.setter
+    def pes(self, p):
+        warnings.warn("\nXPACDT: Setting the PES with the setter"
+                      " should only be used in the UnitTests or to save memory"
+                      " while storing. If you are currently not running a"
+                      " UnitTest or storing data, something has gone WRONG!",
+                      category=RuntimeWarning)
+
+        self.__pes = p
 
     @property
     def basis(self):

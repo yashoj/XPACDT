@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -30,6 +31,7 @@
 #  **************************************************************************
 
 import unittest
+import math
 import numpy as np
 
 import XPACDT.System.Nuclei as Nuclei
@@ -133,6 +135,23 @@ class NucleiTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(self.nuclei_rpmd.p_centroid,
                                              rpmd_centroid)
         pass
+
+    def test_radius_of_gyration(self):
+        # 1 bead
+        self.assertEqual(self.nuclei_classical_1D.radius_of_gyration, 0)
+        self.assertEqual(self.nuclei_classical.radius_of_gyration, 0)
+
+        # 4 beads
+        self.nuclei_rpmd_1D.positions = np.array([[0., 2., 4., 6.]])
+        self.assertEqual(self.nuclei_rpmd_1D.radius_of_gyration, math.sqrt(5))
+
+        self.nuclei_rpmd.positions = np.array([[0., 1., 2., 3.],
+                                               [0., 2., 4., 6.],
+                                               [0., 0., 0., 0.],
+                                               [0., 0., 0., 0.]])
+        self.assertEqual(self.nuclei_rpmd.radius_of_gyration, math.sqrt(6.25))
+
+        return
 
     def test_get_selected_quantities(self):
         with self.assertRaises(NotImplementedError):
@@ -336,7 +355,7 @@ class NucleiTest(unittest.TestCase):
     def test_getCOM(self):
         raise NotImplementedError("Please implement a test here while"
                                   " implmenting the function!!")
-    
+
     @unittest.skip("Please implement a test here.")
     def test_print_size(self):
         # Not really clear how to test this. Here for completness sake.

@@ -111,7 +111,7 @@ class AdiabaticElectrons(electrons.Electrons):
         return self.pes.adiabatic_gradient(R, centroid=centroid)
 
     def get_population(self, proj, basis_requested):
-        """ Here we are always in the lowest state. Thus we will return 1 for
+        """ Always in the lowest state here. Thus this will return 1 for
         `proj` = 0 and 0 else.
 
         Parameters

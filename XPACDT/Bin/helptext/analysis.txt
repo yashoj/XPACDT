@@ -1,17 +1,17 @@
-Module to perform analysis on a set of XPACDT.Systems. The most general cases that can be calculated are: 
- 	 Expectation values <A(t)>, 
- 	 Correlation functions <B(0)A(t)>, 
- 	 One- and Two-dimensional histograms 
+Module to perform analysis on a set of XPACDT.Systems. The most general cases that can be calculated are:
+ 	 Expectation values <A(t)>,
+ 	 Correlation functions <B(0)A(t)>,
+ 	 One- and Two-dimensional histograms
 
-In the input file one defines: 
+In the input file one defines:
 	 A(t), B(0):  Quantities of interest, e.g., the position of a certain atom, a bond length, the charge, etc. The quantities can be obtained as multiplications of more basic quantities.
-	 f(x): A function to be calculated over the quantities obtained from all trajectories, i.e., the mean or standard devitaion, a histogram. 
+	 f(x): A function to be calculated over the quantities obtained from all trajectories, i.e., the mean or standard devitaion, a histogram.
 
-The analysis then iterates over all XPACDT.Systems and calculates A(t), B(0) for each system. Then the function f(x) is evaluated, i.e., the mean of the quantity is obtained or a histogram of the quantity is obtained. The standard error of the obtain results is evaluated employing bootstrapping. 
+The analysis then iterates over all XPACDT.Systems and calculates A(t), B(0) for each system. Then the function f(x) is evaluated, i.e., the mean of the quantity is obtained or a histogram of the quantity is obtained. The standard error of the obtain results is evaluated employing bootstrapping.
 
-Results are printed to file for easy plotting with gnuplot. 
+Results are printed to file for easy plotting with gnuplot.
 
-Please note that for each quantity one wishes to obtain, an individual 'command'-block has to be defined in the input file. If n operation, i.e. A(t), B(0), returns more than one value, they all together enter the function f(x) and are treated as independet in the bootstrapping. This might be desired behavior for obtaining mean positions of the beads or obtaining a density plot of the ring polymer, but for most scenarios, this is not desired. Thus, whenever a command returns more than one value, a RuntimeWarning is printed for the first system and timestep.
+Please note that for each quantity one wishes to obtain, an individual 'command'-block has to be defined in the input file. If n operation, i.e. A(t), B(0), returns more than one value, they all together enter the function f(x) and are treated as independent in the bootstrapping. This might be desired behavior for obtaining mean positions of the beads or obtaining a density plot of the ring polymer, but for most scenarios, this is not desired. Thus, whenever a command returns more than one value, a RuntimeWarning is printed for the first system and timestep.
 
 
 An Example input block for a position-position correlation function looks like:
@@ -21,7 +21,7 @@ op0 = +pos --x1 0
 op = +pos --x1 0
 format = time
 value = mean
-$end 
+$end
 
 
 An Example input block for a histogram of the positions of a one-d system looks like:
@@ -30,7 +30,7 @@ $commandPos
 op = +pos --x1 0
 value = histogram -3.0 3.0 10
 format = value
-$end 
+$end
 
 
 An Example input block for a histogram of the velocities for all positions greater than 0 of a one-d system looks like:
@@ -39,9 +39,9 @@ $commandVel
 op = +vel --x1 0 +pos --x1 0 -p<0
 value = histogram -3.0 3.0 10
 format = value
-$end 
+$end
 
 
 Please refer to the example input files for more options!
-Possible operations for A and B are: 
+Possible operations for A and B are:
 

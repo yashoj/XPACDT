@@ -59,7 +59,8 @@ class RingPolymerTransformations(object):
     -----------
     n_beads
     transform_type
-    C_matrices, C_inv_matrices : 
+    C_matrices
+    C_inv_matrices
     """
 
     def __init__(self, n_beads, transform_type='matrix'):
@@ -371,7 +372,7 @@ class RingPolymerTransformations(object):
 
         return p_arr
 
-    def sample_free_rp_coord(self, nb, mass, beta, centroid):
+    def sample_free_rp_coord(self, nb, mass, beta, centroid, w_o=None):
         """
         Sample coordinates from free ring polymer distribution
 
@@ -385,6 +386,8 @@ class RingPolymerTransformations(object):
             Inverse temperature in a.u.
         centroid : float
             Centroid coordinate of ring polymer in a.u.
+        w_o : float
+        	Frequency of harmonic potential to be added.
 
         Returns
         ----------
@@ -397,6 +400,10 @@ class RingPolymerTransformations(object):
         # Array with normal mode frequencies
         omega_nm_arr = np.array([(2 * omega_n * np.sin(i * np.pi / float(nb)))
                                  for i in range(0, nb)])
+
+        # Add harmonic potential frequency if present.
+        if w_o is not None:
+        	omega_nm_arr = np.sqrt(omega_nm_arr**2 + w_o**2)
 
         # Standard deviation for all normal modes except centroid
         stdev_x_nm = [np.sqrt(float(nb) / (beta * mass * omega_nm_arr[i]**2))

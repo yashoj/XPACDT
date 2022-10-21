@@ -75,9 +75,8 @@ class NRPMDElectrons(electrons.Electrons):
 
     def __init__(self, parameters, n_beads, R=None, P=None):
 
-        electrons.Electrons.__init__(self, "NRPMDElectrons", parameters, n_beads, 'diabatic')
-        initstate = int(parameters.get("NRPMDElectrons").get("initial_states"))
-        self.tstep = units.parse_time(parameters.get("NRPMDElectrons").get("timestep"))
+        electrons.Electrons.__init__(self, "NRPMDElectrons", parameters, 'diabatic')
+        initstate = int(parameters.get("NRPMDElectrons").get("initial_state"))
 
         self.q = np.zeros((self.pes.n_states, self.pes.max_n_beads))
         self.p = np.zeros((self.pes.n_states, self.pes.max_n_beads))
@@ -94,7 +93,7 @@ class NRPMDElectrons(electrons.Electrons):
         self.q[initstate, :] *= np.sqrt(3)
         self.p[initstate, :] *= np.sqrt(3)
 
-    def step(self, R, time_propagate, **kwargs):
+    def step(self, R, P, time_propagate, **kwargs):
 
         """
         Calculate the stepwise propagation of positions and momenta of the
@@ -238,18 +237,18 @@ class NRPMDElectrons(electrons.Electrons):
         #shape (ns,ns,nb,ndof) => (nb,ndof,ns,ns)
         Gradient = self.pes.diabatic_gradient(R, return_matrix=True).transpose(2, 3, 0, 1) 
         #calculate the gradient within matrixcalkulus
-        Elek_mat_gradient = -0.5 * (np.matmul(np.matmul(np.expand_dims(self.q, axis=-1)
+        Elek_mat_gradient = 0.5 * (np.matmul(np.matmul(np.expand_dims(self.q, axis=-1)
                                                         .transpose(1, 2, 0), Gradient),
                                                         np.expand_dims(self.q, axis=-1)
                                                         .transpose(1, 0, 2))
                                                         .reshape(-1, self.pes.max_n_beads) +
-                                    np.matmul(np.matmul(np.expand_dims(self.p, axis=-1)
+                                   np.matmul(np.matmul(np.expand_dims(self.p, axis=-1)
                                                         .transpose(1, 2, 0), Gradient),
                                                         np.expand_dims(self.p, axis=-1)
                                                         .transpose(1, 0, 2))
                                                         .reshape(-1, self.pes.max_n_beads) -
-                                    np.trace(Gradient, axis1=2, axis2=3)
-                                    .reshape(-1, self.pes.max_n_beads))
+                                   np.trace(Gradient, axis1=2, axis2=3)
+                                   .reshape(-1, self.pes.max_n_beads))
 
         return Elek_mat_gradient
 

@@ -99,6 +99,39 @@ def get_adiabatic_gradient(V, dV):
     return dV_ad
 
 
+def get_gradient_theta(V, dV):
+    """
+    Get gradient of the rotation angle :math:'\\theta'.
+
+    Parameters:
+    ----------
+    V : (2, 2) ndarrays of floats /or/ (2, 2, n_beads) ndarrays of floats
+        Two state diabatic potential energy matrix.
+    dV : (2, 2, n_dof) ndarrays of floats
+         /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Two state diabatic potential gradient matrix.
+
+    Returns:
+    ----------
+    dtheta : (n_dof) ndarrays of floats
+          /or/ (n_dof, n_beads) ndarrays of floats
+        Gradient of rotational angle :math:'\\theta'.
+    """
+
+    assert ((V.shape[0] == 2) and (V.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+    assert ((dV.shape[0] == 2) and (dV.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+
+    diff_diag = V[1, 1] - V[0, 0]
+    square_of_root = diff_diag * diff_diag + 4 * V[0, 1] * V[0, 1]
+    grad_diff_diag = dV[1, 1] - dV[0, 0]
+
+    dtheta = -(dV[0, 1] * diff_diag - V[0, 1] * grad_diff_diag) / square_of_root
+
+    return dtheta
+
+
 def get_NAC(V, dV):
     """
     Get non-adiabatic coupling (NAC) vector from a given two level diabatic
@@ -127,13 +160,8 @@ def get_NAC(V, dV):
 
     nac = np.zeros_like(dV)
 
-    diff_diag = V[1, 1] - V[0, 0]
-    square_of_root = diff_diag * diff_diag + 4 * V[0, 1] * V[0, 1]
-    grad_diff_diag = dV[1, 1] - dV[0, 0]
-
-    nac[0, 1] = (dV[0, 1] * diff_diag - V[0, 1] * grad_diff_diag)\
-        / square_of_root
-    nac[1, 0] = -1. * nac[0, 1]
+    nac[0, 1] = -get_gradient_theta(V, dV)
+    nac[1, 0] = -nac[0, 1]
 
     return nac
 
@@ -146,8 +174,8 @@ def get_transformation_matrix(V):
     .. math::
 
         U = \\begin{pmatrix}
-            \\cos\\theta & -\\sin\\theta \\
-            \\sin\\theta &  \\cos\\theta
+            -\\sin\\theta &  \\cos\\theta \\
+             \\cos\\theta &  \\sin\\theta
             \\end{pmatrix}
 
     where the rotation angle
@@ -173,6 +201,119 @@ def get_transformation_matrix(V):
     cos_t = np.cos(theta)
     sin_t = np.sin(theta)
 
-    U = np.array([[cos_t, -sin_t], [sin_t, cos_t]])
+    # This choice of unitary matrix gives proper order of eigenvectors based on
+    # ascending order of eigenvalues.
+    U = np.array([[-sin_t, cos_t], [cos_t, sin_t]])
 
     return U
+
+    # Note: this is an alternative way to get the matrix numercially. This has
+    # the advantage that the eigenvectors are properly ordered.
+#    if len(V.shape) == 3:
+#        # Get shape (n_beads, 2, 2) for vectorized diagonalization.
+#        V = V.transpose(2, 0, 1)
+#
+#    V_ad, U = np.linalg.eigh(V)
+#
+#    if len(V.shape) == 3:
+#        return U.transpose(1, 2, 0)
+#    else:
+#        return U
+
+
+def get_gradient_transformation_matrix(V, dV):
+    """
+    Get the gradient of the unitary transformation matrix U with respect to
+    positions.
+    This is analytically given by:
+    .. math::
+
+        dU/dR = -dtheta/dR *
+                \\begin{pmatrix}
+                \\cos\\theta &  \\sin\\theta \\
+                \\sin\\theta & -\\cos\\theta
+                \\end{pmatrix}
+
+    where the rotation angle
+    :math:'\\theta = \\frac{1}{2} \\arctan(\\frac{2V_{12}}{V_{11} - V_{22}})'
+
+    Parameters:
+    ----------
+    V : (2, 2) ndarrays of floats /or/ (2, 2, n_beads) ndarrays of floats
+        Two state diabatic potential energy matrix.
+    dV : (2, 2, n_dof) ndarrays of floats
+         /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Two state diabatic potential gradient matrix.
+
+    Returns:
+    ----------
+    d_U : (2, 2, n_dof) ndarrays of floats
+          /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Gradient of unitary transformation matrix.
+    """
+
+    assert ((V.shape[0] == 2) and (V.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+    assert ((dV.shape[0] == 2) and (dV.shape[1] == 2)),\
+           ("Diabatic energy matrix needs to have exactly 2 states")
+
+    d_U = np.zeros_like(dV)
+
+    # Note: np.arctan2 is used as it gives rotation angle between -pi and pi
+    #       whereas np.arctan only gives angle between -pi/2 and pi/2
+    theta = 0.5 * np.arctan2(2.0 * V[0, 1], (V[0, 0] - V[1, 1]))
+    # These are float or (n_beads) ndarray of floats.
+    cos_t = np.cos(theta)
+    sin_t = np.sin(theta)
+
+    # This is (n_dof) or (n_dof, n_beads) ndarray of floats
+    dtheta = get_gradient_theta(V, dV)
+
+    d_U[0, 0] = -dtheta * cos_t
+    d_U[0, 1] = -dtheta * sin_t
+    d_U[1, 0] = d_U[0, 1]
+    d_U[1, 1] = -d_U[0, 0]
+
+    return d_U
+
+
+def get_time_derivative_of_U(V, dV, vel):
+    """ Get time derivative of U, the transformation matrix from diabatic
+    to adiabatic basis. This is under the trajectory approximation where
+    R = R(t). Analytically using the chain rule:
+        dU/dt = dU/dR * dR/dt = dU/dR * v
+
+    Parameters:
+    ----------
+    V : (2, 2) ndarrays of floats
+        /or/ (n_states, n_states, n_beads) ndarrays of floats
+        Two state diabatic potential energy matrix.
+    dV : (2, 2, n_dof) ndarrays of floats
+         /or/ (2, 2, n_dof, n_beads) ndarrays of floats
+        Two state diabatic potential gradient matrix.
+    vel: (n_dof) ndarray of floats
+         /or/ (n_dof, n_beads) ndarray of floats
+        The velocities of the system for each bead position or centroid
+        in au.
+
+    Returns:
+    ----------
+    dU_dt : (2, 2) ndarrays of floats
+          /or/ (2, 2, n_beads) ndarrays of floats
+        Time derivative of unitary transformation matrix.
+    """
+
+    d_U = get_gradient_transformation_matrix(V, dV)
+
+    if len(vel.shape) == 1:
+        dU_dt = np.dot(d_U, vel)
+    else:
+        # Change shape to (n_beads, 2, 2, n_dof) ndarrays of floats.
+        d_U = d_U.transpose(3, 0, 1, 2)
+
+        # This gives shape (n_beads, 2, 2) so need to change to (2, 2, n_beads)
+        # by transposing.
+        dU_dt = np.array([np.dot(d_U[i], v_i) for i, v_i in enumerate(vel.T)])
+        dU_dt = dU_dt.transpose(1, 2, 0)
+
+    return dU_dt

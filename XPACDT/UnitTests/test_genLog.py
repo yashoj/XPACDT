@@ -9,8 +9,9 @@
 #  included employ different approaches, including fewest switches surface
 #  hopping.
 #
-#  Copyright (C) 2019
+#  Copyright (C) 2019, 2020
 #  Ralph Welsch, DESY, <ralph.welsch@desy.de>
+#  Yashoj Shakya, DESY, <yashoj.shakya@desy.de>
 #
 #  This file is part of XPACDT.
 #
@@ -41,12 +42,11 @@ import XPACDT.System.Nuclei as nuclei
 class genLogTest(unittest.TestCase):
 
     def setUp(self):
-        self.parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
-        self.parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
+        parameters_classical = infile.Inputfile("FilesForTesting/SystemTests/Classical.in")
+        parameters_rpmd = infile.Inputfile("FilesForTesting/SystemTests/RPMD.in")
 
-        self.nuclei_classical = nuclei.Nuclei(self.parameters_classical,
-                                              None)
-        self.nuclei_rpmd = nuclei.Nuclei(self.parameters_rpmd, None)
+        self.nuclei_classical = nuclei.Nuclei(parameters_classical, None)
+        self.nuclei_rpmd = nuclei.Nuclei(parameters_rpmd, None)
 
     def test_write_R(self):
         time_reference = np.random.rand()
@@ -210,6 +210,44 @@ class genLogTest(unittest.TestCase):
 
         os.remove("state.log")
 
+        return
+
+    def test_write_energy(self):
+        time_reference = np.random.rand()
+        energy_reference = np.array([1.125, 1.125, 2.25])
+
+        # Setting up proper 1D nuclei.
+        parameters_rpmd_1D = infile.Inputfile("FilesForTesting/SystemTests/RPMD_1D.in")
+        log_rpmd_1D = nuclei.Nuclei(parameters_rpmd_1D, time_reference)
+
+        outfile = open("energy.log", 'w')
+        genLog.write_energy(log_rpmd_1D, outfile, 16, 8)
+        outfile.close()
+
+        written_data = np.genfromtxt("energy.log")
+        np.testing.assert_allclose(time_reference, written_data[0], atol=1e-7)
+        np.testing.assert_allclose(energy_reference, written_data[1:], atol=1e-7)
+
+        os.remove("energy.log")
+        return
+
+    def test_write_energy_rp(self):
+        time_reference = np.random.rand()
+        energy_reference = np.array([7.0, 1.5, 7.0, 15.5])
+
+        # Setting up proper 1D nuclei.
+        parameters_rpmd_1D = infile.Inputfile("FilesForTesting/SystemTests/RPMD_1D.in")
+        log_rpmd_1D = nuclei.Nuclei(parameters_rpmd_1D, time_reference)
+
+        outfile = open("energy_rp.log", 'w')
+        genLog.write_energy_rp(log_rpmd_1D, outfile, 16, 8)
+        outfile.close()
+
+        written_data = np.genfromtxt("energy_rp.log")
+        np.testing.assert_allclose(time_reference, written_data[0], atol=1e-7)
+        np.testing.assert_allclose(energy_reference, written_data[1:], atol=1e-7)
+
+        os.remove("energy_rp.log")
         return
 
     @unittest.skip("Please implement a test here.")

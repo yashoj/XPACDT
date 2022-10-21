@@ -66,6 +66,16 @@ class ThermostattedSamplingTest(unittest.TestCase):
         self.assertEqual(len(samples), 2000)
         for s in samples:
             self.assertEqual(s.nuclei.n_dof, 1)
+            self.assertEqual(s.nuclei.time, 0.0)
+            # Check if there is only one log nuclei and that it is the same as
+            # its current nuclei.
+            self.assertEqual(len(s.log), 1)
+            self.assertEqual(s.log[0], s.nuclei)
+
+    @unittest.skip("Please implement a test here.")
+    def test_do_Thermostatted_sampling_rpmd(self):
+        # TODO: Need test with more than 1 beads too!!
+        raise NotImplementedError("Please implement a test here!!")
 
 
 if __name__ == "__main__":

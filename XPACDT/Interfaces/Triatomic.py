@@ -228,3 +228,4 @@ class Triatomic(itemplate.PotentialInterface):
         R[1] = (internal[1]) * np.sin(internal[2])
 
         return R
+

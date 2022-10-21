@@ -255,94 +255,103 @@ class TullyModel(itemplate.PotentialInterface):
         return V, dV
 
 
-#if __name__ == '__main__':
-#
-#    # Plotting script to visualize the potential.
-#    # Runs only if this file is executed on its own by doing:
-#    # "python TullyModel.py <model_type>" where <model_type> can be model_A,
-#    # model_B or model_C.
-#    import sys
-#    import matplotlib.pyplot as plt
-#
-#    nb = 1
-#    model_type = sys.argv[1]  # 'model_A'
-#    pot = TullyModel(nb, **{'model_type': model_type})
-#
-#    # len(linspace) array of positions
-#    X = np.linspace(-10., 10., num=1000)
-#
-#    v1 = []
-#    v2 = []
-#    k1 = []
-#    dv1 = []
-#    dv2 = []
-#    dk1 = []
-#
-#    V1_ad = []
-#    V2_ad = []
-#    dV1_ad = []
-#    dV2_ad = []
-#    nac1 = []
-#
-#    if (pot.model_type == 'model_A'):
-#        scaling_nac = 50.
-#    elif (pot.model_type == 'model_B'):
-#        scaling_nac = 12.
-#    elif (pot.model_type == 'model_C'):
-#        scaling_nac = 1.
-#
-#    for i in X:
-#        pot._calculate_adiabatic_all(np.array([[i]]))
-#
-#        v1.append(pot._diabatic_energy[0, 0, 0])
-#        v2.append(pot._diabatic_energy[1, 1, 0])
-#        k1.append(pot._diabatic_energy[0, 1, 0])
-#        dv1.append(pot._diabatic_gradient[0, 0, 0, 0])
-#        dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
-#        dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
-#
-#        V1_ad.append(pot._adiabatic_energy[0, 0])
-#        V2_ad.append(pot._adiabatic_energy[1, 0])
-#        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
-#        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
-#        nac1.append(pot._nac[0, 1, 0, 0])
-#
-#    # Plot all
-#    fig, ax = plt.subplots(2, 3, figsize=(18, 12))
-#    fig.suptitle('Tully ' + model_type, fontsize=20)
-#
-#    ax[0, 0].plot(X, v1, 'r-', label="V1")
-#    ax[0, 0].plot(X, v2, 'k-', label="V2")
-#    ax[0, 0].plot(X, k1, 'b--', label="K1")
-#    ax[0, 0].set_xlabel('x')
-#    ax[0, 0].set_ylabel('Diabatic Potential')
-#    ax[0, 0].legend(loc='best')
-#    # ax[0, 0].set_ylim((-0.001, 0.05))
-#
-#    ax[0, 1].plot(X, dv1, 'r-', label="dV1/dx")
-#    ax[0, 1].plot(X, dv2, 'k-', label="dV2/dx")
-#    ax[0, 1].plot(X, dk1, 'b--', label="dK1/dx")
-#    ax[0, 1].set_xlabel('x')
-#    ax[0, 1].set_ylabel('Derivative of diabatic potential')
-#    ax[0, 1].legend(loc='best')
-#
-#    ax[1, 0].plot(X, V1_ad, 'r-', label="V1")
-#    ax[1, 0].plot(X, V2_ad, 'k-', label="V2")
-#    ax[1, 0].set_xlabel('x')
-#    ax[1, 0].set_ylabel('Adiabatic Potential')
-#    ax[1, 0].legend(loc='best')
-#    # ax[1, 0].set_ylim((-0.001, 0.05))
-#
-#    ax[1, 1].plot(X, dV1_ad, 'r-', label="dV1/dx")
-#    ax[1, 1].plot(X, dV2_ad, 'k-', label="dV2/dx")
-#    ax[1, 1].set_xlabel('x')
-#    ax[1, 1].set_ylabel('Derivative of Adiabatic Potential')
-#    ax[1, 1].legend(loc='best')
-#
-#    ax[1, 2].plot(X, np.array(nac1) / scaling_nac, 'r-', label="NAC / "+str(scaling_nac))
-#    ax[1, 2].set_xlabel('x')
-#    ax[1, 2].set_ylabel('NAC')
-#    ax[1, 2].legend(loc='best')
-#    # ax[1, 2].set_xlim((2, 6))
-#
-#    plt.show()
+if __name__ == '__main__':
+
+    # Plotting script to visualize the potential.
+    # Runs only if this file is executed on its own by doing:
+    # "python TullyModel.py <model_type>" where <model_type> can be model_A,
+    # model_B or model_C.
+    import sys
+    import matplotlib.pyplot as plt
+
+    import XPACDT.Input.Inputfile as infile
+
+    nb = 1
+    model_type = sys.argv[1]  # 'model_C'
+    # Get input file with 1 bead from tests.
+    in_file_dir = "../UnitTests/FilesForTesting/InterfaceTests/"
+
+    if (model_type == 'model_A'):
+        scaling_nac = 50.
+        in_file = in_file_dir + "input_TullyA_1.in"
+    elif (model_type == 'model_B'):
+        scaling_nac = 12.
+        in_file = in_file_dir + "input_TullyB_1.in"
+    elif (model_type == 'model_C'):
+        scaling_nac = 1.
+        in_file = in_file_dir + "input_TullyC_1.in"
+
+    pot = TullyModel(infile.Inputfile(in_file))
+
+    # len(linspace) array of positions
+    X = np.linspace(-10., 10., num=1000)
+
+    v1 = []
+    v2 = []
+    k1 = []
+    dv1 = []
+    dv2 = []
+    dk1 = []
+
+    V1_ad = []
+    V2_ad = []
+    dV1_ad = []
+    dV2_ad = []
+    nac1 = []
+
+
+    for i in X:
+        pot._calculate_adiabatic_all(np.array([[i]]))
+
+        v1.append(pot._diabatic_energy[0, 0, 0])
+        v2.append(pot._diabatic_energy[1, 1, 0])
+        k1.append(pot._diabatic_energy[0, 1, 0])
+        dv1.append(pot._diabatic_gradient[0, 0, 0, 0])
+        dv2.append(pot._diabatic_gradient[1, 1, 0, 0])
+        dk1.append(pot._diabatic_gradient[0, 1, 0, 0])
+
+        V1_ad.append(pot._adiabatic_energy[0, 0])
+        V2_ad.append(pot._adiabatic_energy[1, 0])
+        dV1_ad.append(pot._adiabatic_gradient[0, 0, 0])
+        dV2_ad.append(pot._adiabatic_gradient[1, 0, 0])
+        nac1.append(pot._nac[0, 1, 0, 0])
+
+    # Plot all
+    fig, ax = plt.subplots(2, 3, figsize=(18, 12))
+    fig.suptitle('Tully ' + model_type, fontsize=20)
+
+    ax[0, 0].plot(X, v1, 'r-', label="V1")
+    ax[0, 0].plot(X, v2, 'k-', label="V2")
+    ax[0, 0].plot(X, k1, 'b--', label="K1")
+    ax[0, 0].set_xlabel('x')
+    ax[0, 0].set_ylabel('Diabatic Potential')
+    ax[0, 0].legend(loc='best')
+    # ax[0, 0].set_ylim((-0.001, 0.05))
+
+    ax[0, 1].plot(X, dv1, 'r-', label="dV1/dx")
+    ax[0, 1].plot(X, dv2, 'k-', label="dV2/dx")
+    ax[0, 1].plot(X, dk1, 'b--', label="dK1/dx")
+    ax[0, 1].set_xlabel('x')
+    ax[0, 1].set_ylabel('Derivative of diabatic potential')
+    ax[0, 1].legend(loc='best')
+
+    ax[1, 0].plot(X, V1_ad, 'r-', label="V1")
+    ax[1, 0].plot(X, V2_ad, 'k-', label="V2")
+    ax[1, 0].set_xlabel('x')
+    ax[1, 0].set_ylabel('Adiabatic Potential')
+    ax[1, 0].legend(loc='best')
+    # ax[1, 0].set_ylim((-0.001, 0.05))
+
+    ax[1, 1].plot(X, dV1_ad, 'r-', label="dV1/dx")
+    ax[1, 1].plot(X, dV2_ad, 'k-', label="dV2/dx")
+    ax[1, 1].set_xlabel('x')
+    ax[1, 1].set_ylabel('Derivative of Adiabatic Potential')
+    ax[1, 1].legend(loc='best')
+
+    ax[1, 2].plot(X, np.array(nac1) / scaling_nac, 'r-', label="NAC / "+str(scaling_nac))
+    ax[1, 2].set_xlabel('x')
+    ax[1, 2].set_ylabel('NAC')
+    ax[1, 2].legend(loc='best')
+    # ax[1, 2].set_xlim((2, 6))
+
+    plt.show()

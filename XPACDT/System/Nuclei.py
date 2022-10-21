@@ -167,6 +167,15 @@ class Nuclei(object):
         return np.mean(self.positions, axis=1)
 
     @property
+    def radius_of_gyration(self):
+        """ float : The radius of gyration of the ring polymer.
+        i.e. :math:`\\sqrt( \\frac{1}{n} (\\sum_i |r_i - r_c|^2)`."""
+
+        pos_diff = self.positions.T - self.x_centroid
+        r_g = math.sqrt(np.mean([np.dot(pd, pd) for pd in pos_diff]))
+        return r_g
+
+    @property
     def momenta(self):
         """(n_dof, n_beads) ndarray of floats : The momenta of all beads in
             the system. The first axis is the degrees of freedom and the
@@ -175,7 +184,10 @@ class Nuclei(object):
 
     @momenta.setter
     def momenta(self, a):
-        self.__momenta = a.copy()
+        if a is not None:
+            self.__momenta = a.copy()
+        else:
+            self.__momenta = None
 
     @property
     def p_centroid(self):
@@ -239,8 +251,8 @@ class Nuclei(object):
 
         Parameters:
         -----------
-        other : any object
-            Object to compare to.
+        other : XPACDT.System.Nuclei object
+            Nuclei object to compare to.
 
         Returns:
         -------
@@ -249,20 +261,23 @@ class Nuclei(object):
             freedom, the same number of beads, thesame positions, momenta
             and masses. False else.
         """
+        # 'beta' is tested using 'is' since it can have the value np.nan
+        # and np.nan == np.nan is False, so need another way to test it.
         return (self.n_dof == other.n_dof
                 and self.n_beads == other.n_beads
                 and self.beta is other.beta
+                and self.time == other.time
                 and (self.positions == other.positions).all()
                 and (self.momenta == other.momenta).all()
                 and (self.masses == other.masses).all())
 
     def make_sparse(self):
         """ Decrease size of the object for sparse logging.
-        Right now this removes the propagator object.
+        Right now this removes the propagator and pes object.
         """
 
         self.__propagator = None
-        
+        # self.electrons.pes = None
 
     def init_electrons(self, parameters):
         """ Initialize the representation of the electrons in the system. This
@@ -414,12 +429,14 @@ class Nuclei(object):
 
         for i in range(n_steps):
             self.electrons.step(self.positions, self.momenta, timestep,
-                                **{'step_index': 'before_nuclei'})
+                                **{'step_index': 'before_nuclei',
+                                   'step_count': i})
             self.positions, self.momenta = \
                 self.__propagator.propagate(self.positions, self.momenta,
                                             timestep, self.time + i*timestep)
             self.electrons.step(self.positions, self.momenta, timestep,
-                                **{'step_index': 'after_nuclei'})
+                                **{'step_index': 'after_nuclei',
+                                   'step_count': i})
 
         self.time += time_propagate
 

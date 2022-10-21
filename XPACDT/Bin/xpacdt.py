@@ -34,6 +34,7 @@
 """
 
 import argparse
+import bz2
 import datetime
 import git
 import inspect
@@ -43,6 +44,7 @@ import pickle
 import random
 import time
 import sys
+import shutil
 
 import XPACDT.Dynamics.RealTimePropagation as rt
 import XPACDT.Sampling.Sampling as sampling
@@ -102,10 +104,6 @@ def start():
             branch_name = input_file.readline().split()[1]
             hexsha = input_file.readline().split()[1]
 
-    version_file = open('.version', 'w')
-    version_file.write("Branch: " + branch_name + " \n")
-    version_file.write("Commit: " + hexsha + " \n")
-    version_file.close()
     print("Branch: " + branch_name)
     print("Commit: " + hexsha)
     now = datetime.datetime.now()
@@ -121,22 +119,26 @@ def start():
                         ' analysis, plot, sampling, propagation.')
 
     i_help = "Name of the main XPACDT input file. The input file is required" \
-             " for any calculation. Please refer to the general " \
-             "documentation for instructions on how this has to be structured."
+             " for any calculation and can contain any job such as sample,"\
+             " propagate, analyze, plot or full. Please refer to the general" \
+             " documentation for instructions on how this has to be structured."
     parser.add_argument("-i", "--input", type=str, dest="InputFile",
                         required=False, help=i_help)
 
-    i_help = "Name of an additional XPACDT input file used for real time " \
-             " propagation. Please refer to the general " \
-             "documentation for instructions on how this has to be structured."
+    i_help = "Name of an additional XPACDT input file used for real time" \
+             " propagation. This input file should only be given if sampling"\
+             " job is given in the -i inputfile (i.e. job = sample) and"\
+             " propagation is desired directly after sampling."\
+             " Please refer to the general documentation for instructions " \
+             " on how this has to be structured."
     parser.add_argument("-p", "--propagation_input", type=str,
                         dest="PropagationInputFile",
                         required=False, help=i_help)
 
-    i_help = "Name of an additional XPACDT input file used for analysis. " \
-             "This input file is only used if job = full in the -i inputfile" \
-             "or if -p is given. " \
-             "Please refer to the general documentation for instructions " \
+    i_help = "Name of an additional XPACDT input file used for analysis." \
+             " This input file is only used if job = full in the -i inputfile" \
+             " or if -p is given." \
+             " Please refer to the general documentation for instructions " \
              " on how this has to be structured."
     parser.add_argument("-a", "--analysis_input", type=str,
                         dest="AnalysisInputFile",
@@ -147,37 +149,36 @@ def start():
     if args.help is not None:
         parser.print_help()
 
-        if args.help.lower() == 'analysis':
-            print()
-            print()
-            print("Printing additional help for " + args.help + ":")
-            print()
-            print_helpfile("analysis.txt")
-            operations.position(["-h"], None)
-            print()
-            operations.momentum(["-h"], None)
-            print()
-            operations.electronic_state(["-h"], None)
-        elif (args.help.lower() == 'plot'
-              or args.help.lower() == 'sampling'
-              or args.help.lower() == 'propagation'):
+        if (args.help.lower() == 'analysis'
+            or args.help.lower() == 'plot'
+            or args.help.lower() == 'sampling'
+            or args.help.lower() == 'propagation'):
             print()
             print()
             print("Printing additional help for " + args.help + ":")
             print()
             print_helpfile(args.help.lower() + ".txt")
+            if args.help.lower() == 'analysis':
+                operations.Operations("", print_help=True)
+
         elif args.help == 'nothing':
             pass
         else:
             print("Incorect keyword given to -h :" + args.help)
         return
 
+    # Store the git version and branch in file '.version'
+    version_file = open('.version', 'w')
+    version_file.write("Branch: " + branch_name + " \n")
+    version_file.write("Commit: " + hexsha + " \n")
+    version_file.close()
+
     # Get input file
     if args.InputFile is None:
         print("Input file required!")
         return
-    print("The inputfile '" + args.InputFile + "' is read! \n")
     input_parameters = infile.Inputfile(args.InputFile)
+    print("The inputfile '" + args.InputFile + "' is read! \n")
 
     # Initialize random number generators
     seed = int(input_parameters.get('system').get('seed', time.time()))
@@ -260,12 +261,20 @@ def start():
         return
 
     # read from pickle file if exists
+    if 'compressed_pickle' in input_parameters.get('system'):
+        default_file_name = 'pickle.bz2'
+    else:
+        default_file_name = 'pickle.dat'
+
     name_folder = input_parameters.get('system').get('folder')
-    name_file = input_parameters.get('system').get('picklefile', 'pickle.dat')
+    name_file = input_parameters.get('system').get('picklefile', default_file_name)
     path_file = os.path.join(name_folder, name_file)
     if os.path.isfile(path_file):
         print("Reading system state from pickle file!")
-        system = pickle.load(open(path_file, 'rb'))
+        if 'compressed_pickle' in input_parameters.get('system'):
+            system = pickle.load(bz2.BZ2File(path_file, 'rb'))
+        else:
+            system = pickle.load(open(path_file, 'rb'))
         # Updating input parameters appropriately
         system.parameters = input_parameters
         initiated = False
@@ -280,14 +289,17 @@ def start():
         systems = sampling.sample(system, input_parameters, do_return=True)
         print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
-        # loop and propagate
+        # Copy sampling or full input file to sampling folder.
+        shutil.copy(args.InputFile, name_folder)
+
+        # loop over samples and propagate them
         print("Running Real time propagation...", end='', flush=True)
         start_time = time.time()
         # Read new input file if given
         if args.PropagationInputFile is not None:
+            input_parameters = infile.Inputfile(args.PropagationInputFile)
             print("The inputfile '" + args.PropagationInputFile +
                   "' is read! \n")
-            input_parameters = infile.Inputfile(args.PropagationInputFile)
         else:
             # Remove thermostat if exists
             input_parameters.pop('thermostat', None)
@@ -317,8 +329,8 @@ def start():
         print("Running analysis...", end='', flush=True)
         start_time = time.time()
         if args.AnalysisInputFile is not None:
-            print("The inputfile '" + args.AnalysisInputFile + "' is read! \n")
             input_parameters = infile.Inputfile(args.AnalysisInputFile)
+            print("The inputfile '" + args.AnalysisInputFile + "' is read! \n")
         else:
             input_parameters['system']['folder'] = name_folder
 
@@ -334,10 +346,16 @@ def start():
         sampling.sample(system, input_parameters)
         print("...Samping done in {: .2f} s.".format(time.time() - start_time), flush=True)
 
+        # Copy sampling input file to sampling folder.
+        # TODO: use copy or copy2? copy2 preserves metadata like creation and modification times.
+        shutil.copy(args.InputFile, name_folder)
+
     elif job == "propagate":
         print("Running Real time propagation...", end='', flush=True)
         rt.propagate(system, input_parameters, initiated)
         print("...real time propagation done in {: .2f} s.".format(time.time() - start_time), flush=True)
+        # TODO: where to copy input file? In each trj directory is a bit too
+        # excessive. Maybe make it possible to generate through genLog.
 
     else:
         raise NotImplementedError("\nXPACDT: Requested job type not"

@@ -1,7 +1,7 @@
-$system                     # general parameters
+$system
 
-seed = 0                    # Seed for random number generator
-dof = 1                     # the number of degrees of freedom
+seed = 0
+dof = 1
 electrons = SurfaceHoppingElectrons
 Interface = MorseDiabatic
 
@@ -30,16 +30,16 @@ $end
 
 ##############################################################################
 
-$nuclei_propagator             # nuclei propagator input
+$nuclei_propagator
 
-method = VelocityVerlet # method to be used for propagating (possible: VelocityVerlet)
-timestep = 1.0 au      # timestep in fs or au
+method = VelocityVerlet
+timestep = 1.0 au
 
 $end
 
 ##############################################################################
 
-$coordinates	           # coordinates given here
+$coordinates
 
 type = mass-value
 2.0 2.5
@@ -47,7 +47,7 @@ $end
 
 ##############################################################################
 
-$momenta               # momenta, must be the same ordering as coordinates
+$momenta
 
 0.001
 $end

@@ -49,7 +49,7 @@ class NRPMDElectronsTest(unittest.TestCase):
         parameters_mb = infile.Inputfile("FilesForTesting/SystemTests/input_NRPMD_multibeads.in")
 #        print(parameters.n_beads)
 #        self.system = xSystem.System(self.parameters0)
-        self.electron = nrpmd.NRPMDElectrons(parameters_c, parameters_c.n_beads)  
+        self.electron = nrpmd.NRPMDElectrons(parameters_c, parameters_c.n_beads)
         self.electron_mb = nrpmd.NRPMDElectrons(parameters_mb, parameters_mb.n_beads)
 #       self.pes = tullym.TullyModel(1, **{'model_type': 'model_C'})
 #       self.pes.diabatic_energy(np.array([[[0.0006], [0.1]],[[0.1], [-0.0006]]]))
@@ -65,22 +65,24 @@ class NRPMDElectronsTest(unittest.TestCase):
     def test_step(self):
 
         R = np.array([[0.0]])
+        P = np.array([[0.0]])
         time_propagate=2.0
         step_q_ref = np.array([[-0.33850079], [-1.77728803]])
         step_p_ref = np.array([[-0.77959315], [-0.34481733]])
-        self.electron.step(R, time_propagate)
+        self.electron.step(R, P, time_propagate)
         step_p = self.electron.p
         step_q = self.electron.q
         np.testing.assert_allclose(step_q, step_q_ref, rtol=1e-7)
         np.testing.assert_allclose(step_p, step_p_ref, rtol=1e-7)
 
         R = np.array([[1.0e5, -1.0e5]])
+        P = np.array([[0.0, 0.0]])
         time_propagate=2.0
         step_q_ref_mb = np.array([[-0.89549266, -0.27886244],
                                  [0.62565698, -1.37389828]])
         step_p_ref_mb = np.array([[-0.94121693, -0.96033106],
                                  [-1.38591375, -1.05470541]])
-        self.electron_mb.step(R, time_propagate)
+        self.electron_mb.step(R, P, time_propagate)
         step_q_mb = self.electron_mb.q
         step_p_mb = self.electron_mb.p
         np.testing.assert_allclose(step_q_mb, step_q_ref_mb, rtol=1e-7)
@@ -105,7 +107,7 @@ class NRPMDElectronsTest(unittest.TestCase):
     def test_gradient(self):
 
         R = np.array([[0.0]])
-        gradient_ref = np.array([[-0.078188825]])
+        gradient_ref = np.array([[0.078188825]])
         gradient = self.electron.gradient(R, centroid=False)
         np.testing.assert_allclose(gradient, gradient_ref, rtol=1e-7)
 
@@ -139,7 +141,7 @@ class NRPMDElectronsTest(unittest.TestCase):
         proj = 0
         pop_ref_mb = 0.0
         pop_mb = self.electron_mb.get_population(proj, "diabatic")
-        np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)        
+        np.testing.assert_allclose(pop_mb, pop_ref_mb, atol=1e-7)
         return
 
 

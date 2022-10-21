@@ -45,6 +45,7 @@ import re
 
 import XPACDT.Dynamics.RingPolymerTransformations as RPtrafo
 import XPACDT.Tools.Units as units
+import XPACDT.Tools.Operations as op
 
 
 class Inputfile(collections.MutableMapping):
@@ -75,6 +76,7 @@ class Inputfile(collections.MutableMapping):
         self.store = dict()
         self.__momenta = None
         self.__masses = None
+        self.__atom_symbols = None
         self.__coordinates = None
 
         self.__positionShift = None
@@ -142,14 +144,24 @@ class Inputfile(collections.MutableMapping):
             self.__format_coordinates()
 
         self.__commands = {k: self[k] for k in self.keys() if 'command' in k}
-        for key in self.commands:
-            self.commands[key]['name'] = key
-            self.commands[key]['results'] = []
+
+        # Iterate through all analysis commands.
+        for key, command in self.commands.items():
+            command['name'] = key
+            command['results'] = []
+            # Create a dictionary with all operations ('op', 'op0', '2op' and
+            #'2op0') as keys and its corresponding operations class object as value.
+            command['all_operations'] = {k: op.Operations(v) for k, v in command.items()
+                                         if 'op' in k}
 
     @property
     def commands(self):
         """dict : Contains all input sections for 'commands' used in
-        the analysis."""
+        the analysis. Each command key contains a further dictionary with keys
+        the command input options, 'name' (the command key name),
+        'results' (result of the command to be added here) and
+        'all_operations' (dictionary with all operations requested such as
+        'op', 'op0', '2op' and '2op0')."""
         return self.__commands
 
     @property
@@ -157,6 +169,12 @@ class Inputfile(collections.MutableMapping):
         """(n_dof) ndarray of floats: Array containing the masses of each
         degree of freedom in au."""
         return self.__masses
+
+    @property
+    def atom_symbol(self):
+        """(n_dof/3) ndarray of strings /or/ None: Array containing the atomic
+        symbol of each atom (i.e. n_dof/3) if 'xyz' format given, else it is None."""
+        return self.__atom_symbol
 
     def _parse_masses(self, m):
         """Set the masses for each degree of freedom.
@@ -365,9 +383,13 @@ class Inputfile(collections.MutableMapping):
 
         self._c_type = "xyz"
         d = StringIO(values)
+        # TODO: how to get atom symbols here???
         try:
             mc = np.loadtxt(d, ndmin=2,
                             converters={0: lambda s: units.atom_mass(str(s)[2])})
+            # TODO: also include parse atom symbol to check if atom exists
+            #       Also check if 'd' instead of stringIO below works.
+            self.__atom_symbols = np.loadtxt(StringIO(values), ndmin=2, dtype=str)[:, 0]
         except AttributeError as e:
             raise type(e)(str(e) + "\nXPACDT: Unknwon atomic symbol given!")
         except ValueError as e:

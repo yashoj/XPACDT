@@ -42,6 +42,7 @@ Optional (through command line arguments):
 """
 
 import argparse
+import bz2
 import pickle
 import sys
 
@@ -59,6 +60,11 @@ def start():
     parser.add_argument("-i", "--input", type=str, dest="PickleFile",
                         required=False, help=i_help, default='pickle.dat')
 
+    c_help = "If the input pickle file is in compressed '.bz2' format," \
+        " use this option."
+    parser.add_argument("-c", "--compressed", action="store_true", dest="compressed",
+                        required=False, help=c_help, default=False)
+
     w_help = "Width for number format in output. Default 16."
     parser.add_argument("-w", "--width", type=int, dest="width",
                         required=False, help=w_help, default=16)
@@ -71,6 +77,15 @@ def start():
     parser.add_argument("-s", "--state", action="store_true", dest="state",
                         required=False, help=s_help, default=False)
 
+    e_help = "Generate energy logfile. Default: False."
+    parser.add_argument("-e", "--energy", action="store_true", dest="energy",
+                        required=False, help=e_help, default=False)
+
+    hop_help = "Generate logfile for successful and attempted surface hops."\
+               " This only applies for surface hopping electrons. Default: False."
+    parser.add_argument("--hops", action="store_true", dest="hops",
+                        required=False, help=hop_help, default=False)
+
     args = parser.parse_args()
 
     # Formatting style
@@ -78,7 +93,10 @@ def start():
     PREC = args.prec
 
     # Get input file
-    system = pickle.load(open(args.PickleFile, 'rb'))
+    if args.compressed:
+        system = pickle.load(bz2.BZ2File(args.PickleFile, 'rb'))
+    else:
+        system = pickle.load(open(args.PickleFile, 'rb'))
 
     # Generate appropriate output files
     outfiles = setup_outfiles(args)
@@ -202,6 +220,89 @@ def write_electronic_state(log_nuclei, outfile, width, prec):
     return
 
 
+def write_energy(log_nuclei, outfile, width, prec):
+    """ Write centroid energy to outfile with given precision. The columns
+    represent time in au, centroid kinetic energy in au, centroid potential
+    energy in au and total centroid energy in au.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.kinetic_energy_centroid,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.potential_energy_centroid,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.energy_centroid,
+                  width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def write_energy_rp(log_nuclei, outfile, width, prec):
+    """ Write ring polymer energy to outfile with given precision. The columns
+    represent time in au, ring polymer kinetic energy in au, energy of spring
+    terms of the ring polymer, potential energy in au and total ring polymer
+    energy in au.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.kinetic_energy,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.spring_energy,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.potential_energy,
+                  width=width, prec=prec))
+    outfile.write("{: {width}.{prec}f} ".format(log_nuclei.energy,
+                  width=width, prec=prec))
+    outfile.write(" \n")
+    return
+
+
+def write_surface_hops(log_nuclei, outfile, width, prec):
+    """ Write successful and attempted hopping events to outfile with
+    given precision. This only applies to surface hopping electrons.
+
+    Paramters
+    ---------
+    log_nuclei : XPACDT.System.Nuclei
+        Current nuclei object (from system.log).
+    outfile : file object
+        Opened log file to be written to.
+    width, prec : integers
+        Width and precicion for formatting the output.
+    """
+    # !!! Should this be generated here? This is very specific to SH?
+    assert (log_nuclei.electrons.name == "SurfaceHoppingElectrons"), \
+           ("Generating hopping log only makes sense for surface hopping"
+            " electrons.")
+
+    hop_status = log_nuclei.electrons.hop_status
+
+    if hop_status != "No hop":
+        outfile.write("{: {width}.{prec}f} ".format(log_nuclei.time,
+                      width=width, prec=prec))
+        outfile.write(hop_status)
+        outfile.write(" \n")
+    return
+
+
 def setup_outfiles(args):
     """Open output files based on command line arguments.
 
@@ -220,6 +321,11 @@ def setup_outfiles(args):
     # Check command line arguments for additional requests
     if (args.state):
         outfiles['electronic_state'] = open('state.log', 'w')
+    if (args.energy):
+        outfiles['energy'] = open('energy.log', 'w')
+        outfiles['energy_rp'] = open('energy_rp.log', 'w')
+    if (args.hops):
+        outfiles['surface_hops'] = open('hops.log', 'w')
 
     return outfiles
 

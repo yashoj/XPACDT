@@ -93,16 +93,16 @@ class InterfaceTemplateTest(unittest.TestCase):
         # '_recalculate_adiabatic' function which in turn calculates all the
         # adiabatic properties.
         R = np.array([[0.]])
-        # FIXME The variable V is never used
-        V = pes.diabatic_energy(R, SI=None, SJ=None, centroid=False,
-                                return_matrix=True)
+        # This is done to calculate all diabatic properties.
+        pes.diabatic_energy(R, SI=None, SJ=None, centroid=False,
+                            return_matrix=True)
 
-        # Checking if all diabatic properties have been calculated
+        # Checking if all diabatic properties have been calculated.
         np.testing.assert_allclose(pes._diabatic_energy, [[[0.0006], [0.1]],
                                                           [[0.1], [-0.0006]]], rtol=1e-7)
         np.testing.assert_allclose(pes._diabatic_gradient, [[[[0.0]], [[0.09]]],
                                                             [[[0.09]], [[0.0]]]], rtol=1e-7)
-        # Now accessing adiabatic energy to calculate all adiabatic properties
+        # Now accessing adiabatic energy to calculate all adiabatic properties.
         V_ad = pes.adiabatic_energy(R, 0, centroid=False, return_matrix=True)
 
         np.testing.assert_allclose(V_ad, [[-math.sqrt(0.01 + 3.6e-07)],
@@ -172,7 +172,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         # Now checking if the adiabatic properties have been changed due to
         # trying to access the adiabatic energy
         V_ad = pes.adiabatic_energy(R, 0, centroid=False, return_matrix=True)
-        
+
         np.testing.assert_allclose(V_ad, [[-math.sqrt(0.01 + 3.6e-07)],
                                           [math.sqrt(0.01 + 3.6e-07)]], rtol=1e-7)
         np.testing.assert_allclose(
@@ -230,8 +230,7 @@ class InterfaceTemplateTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             pes._get_adiabatic_from_diabatic(R)
 
-        raise NotImplementedError("Please implement a test here while"
-                                  " implmenting the function!!")
+        raise NotImplementedError("Please implement a test here.")
         # TODO: add more tests with more beads and 3 state test using morse diabatic
 
     @unittest.skip("Please implement a test here.")
